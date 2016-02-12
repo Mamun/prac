@@ -115,7 +115,7 @@
             (handler input))))))
 
 
-(defn do-result
+(defn do-result1
   [t m]
   (condp = t
     map-format
@@ -132,7 +132,7 @@
 
 (defn assoc-result-format
   [tm-coll t]
-  (mapv (fn [m] (do-result t m)) tm-coll))
+  (mapv (fn [m] (do-result1 t m)) tm-coll))
 
 
 (defn into-model-map
