@@ -1,0 +1,271 @@
+(ns tiesql.plugin.param-impl-test
+  (:use [clojure.test])
+  (:require
+    [tiesql.plugin.base-impl :as b]
+    [tiesql.proto :as p]
+    [tiesql.proto :refer :all]
+    [tiesql.plugin.util :refer :all]
+    [tiesql.plugin.param-impl :refer :all]
+    [tiesql.common :refer :all]
+    ))
+
+
+(deftest param-paths-test
+  (testing "test param-paths  "
+    (let [coll [{param-key [[:id :ref-gen :gen-dept]]}
+                {param-key [[:id3 :ref-gen :gen-dept]]}]
+          expected-result (list [[:id] :ref-gen :gen-dept] [[:id3] :ref-gen :gen-dept])
+          actual-result (param-paths map-format coll {:id2 1})]
+      (is (= actual-result
+             expected-result)))))
+
+;(param-paths-test)
+
+
+(deftest model-param-paths-test
+  (testing "test model-param-paths  "
+    (let [coll [{param-key [[:transaction_id param-ref-con-key 0]
+                            [:transaction_id2 param-ref-key :id]
+                            [:id param-ref-gen-key :gen-dept]],
+                 model-key :employee}
+                {param-key [[:city :ref-con 0]],
+                 model-key :employee-detail}]
+          param {:employee {:firstname "Schwan"
+                            :lastname  "Ragg"
+                            :dept_id   1
+                            :employee-detail
+                                       {:street  "Schwan",
+                                        :state   "Bayern",
+                                        :country "Germany"}}}
+          expected-result [[[:employee :transaction_id] :ref-con 0]
+                           [[:employee :transaction_id2] :ref-key :id]
+                           [[:employee :id] :ref-gen :gen-dept]
+                           [[:employee :employee-detail :city] :ref-con 0]]
+          actual-result (param-paths nested-map-format coll param)]
+      (is (= actual-result
+             expected-result)))))
+
+;(model-param-paths-test)
+
+
+(deftest param-ref-con-test
+  (testing "test param-ref-con "
+    (let [w (new-child-keys)
+          cw (get-node-from-path w [param-ref-con-key])]
+      (is (not-empty
+            (p/compiler-validate cw [:id param-ref-con-key 5])))))
+  (testing "test param-ref-con "
+    (let [w (new-child-keys)
+          cw (get-node-from-path w [param-ref-con-key])]
+      (is (= 5
+             (-pprocess cw [:id param-ref-con-key 5] {})))))
+  (testing "test param-ref-con-key"
+    (let [context (new-param-key 0 (new-child-keys))
+          coll [{param-key [[:transaction_id param-ref-con-key 0]],
+                 model-key :employee}]
+          input {:id 2}
+          expected-result {:id 2 :transaction_id 0}
+          actual-result (do-param input
+                                  map-format
+                                  coll
+                                  context
+                                  )]
+      (is (= expected-result
+             actual-result))))
+  (testing "test param-ref-con "
+    (let [context (-> (b/new-root-node)
+                      (b/select-module-node-processor)
+                      (assoc-param-ref-gen (fn [k v] 5)))
+          context (get-node-from-path context [param-key])
+          coll [{param-key [[:transaction_id param-ref-con-key 0]],
+                 model-key :employee}]
+          input {:employee {:id 2}}
+          expected-result {:employee {:id 2 :transaction_id 0}}
+          actual-result (do-param input
+                                  nested-map-format
+                                  coll
+                                  context)]
+      (is (= expected-result
+             actual-result)))))
+
+
+;(param-ref-con-test)
+
+
+(deftest param-ref-key-test
+  (testing "test param-ref-key"
+    (let [context (new-param-key 0 (new-child-keys))
+          coll [{param-key [[:transaction_id param-ref-key :id]],
+                 model-key :employee}]
+          input {:id 2}
+          expected-result {:id 2 :transaction_id 2}
+          actual-result (do-param input
+                                  map-format
+                                  coll
+                                  context
+                                  )]
+      (is (= expected-result
+             actual-result))))
+  (testing "test param-ref-key "
+    (let [context (-> (b/new-root-node)
+                      (b/select-module-node-processor)
+                      (assoc-param-ref-gen (fn [k v] 5)))
+          context (get-node-from-path context [param-key])
+          ;         _ (clojure.pprint/pprint context)
+          coll [{param-key [[:transaction_id param-ref-key :id]],
+                 model-key :employee}]
+          input {:employee {:id 2}}
+          expected-result {:employee {:id 2 :transaction_id 2}}
+          actual-result (do-param input
+                                  nested-map-format
+                                  coll
+                                  context)]
+      (is (= expected-result
+             actual-result)))))
+
+;(param-ref-key-test)
+
+(deftest param-ref-fn-key-test
+  (testing "test params-ref-fn-key "
+    (let [context (new-param-key 0 (new-child-keys))
+          coll [{param-key [[:transaction_id param-ref-fn-key inc :id]],
+                 model-key :employee}]
+          input {:id 2}
+          expected-result {:id 2 :transaction_id 3}
+          actual-result (do-param input
+                                  map-format
+                                  coll
+                                  context
+                                  )]
+      (is (= expected-result
+             actual-result))))
+  (testing "test param-ref-fn-key "
+    (let [context (-> (b/new-root-node)
+                      (b/select-module-node-processor)
+                      (assoc-param-ref-gen (fn [k v] 5)))
+          context (get-node-from-path context [param-key])
+          coll [{param-key [[:transaction_id param-ref-fn-key inc :id]],
+                 model-key :employee}]
+          input {:employee {:id 2}}
+          expected-result {:employee {:id 2 :transaction_id 3}}
+          actual-result (do-param input
+                                  nested-map-format
+                                  coll
+                                  context)]
+      (is (= expected-result
+             actual-result)))))
+
+
+
+
+(deftest param-impl-test
+  (testing "test params-ref-gen-key"
+    (let [context (-> (b/new-root-node)
+                      (b/select-module-node-processor)
+                      (assoc-param-ref-gen (fn [k v] 5)))
+          context (get-node-from-path context [param-key])
+          coll [{param-key [[:transaction_id param-ref-gen-key :id]],
+                 model-key :employee}]
+          input {:id 2}
+          expected-result {:id 2 :transaction_id 5}
+          actual-result (do-param input
+                                  map-format
+                                  coll
+                                  context
+                                  )]
+      (is (= expected-result
+             actual-result))))
+  (testing "test params-ref-gen-key"
+    (let [context (-> (b/new-root-node)
+                      (b/select-module-node-processor)
+                      (assoc-param-ref-gen (fn [k v] (fail "Not found"))))
+          context (get-node-from-path context [param-key])
+          coll [{param-key [[:transaction_id param-ref-gen-key :id]],
+                 model-key :employee}]
+          input {:id 2}
+          actual-result (do-param input
+                                  map-format
+                                  coll
+                                  context)]
+      (is (failed? actual-result)))))
+
+
+;(param-impl-test)
+
+
+(deftest params-ref-gen-key-test
+  (testing "test param-ref-fn-key "
+    (let [context (-> (b/new-root-node)
+                      (b/select-module-node-processor)
+                      (assoc-param-ref-gen (fn [k v] 3)))
+          context (get-node-from-path context [param-key])
+          coll [{param-key [[:transaction_id param-ref-gen-key :id]],
+                 model-key :employee}]
+          input {:employee {:id 2}}
+          expected-result {:employee {:id 2, :transaction_id 3}}
+          actual-result (do-param input
+                                  nested-map-format
+                                  coll
+                                  context)]
+      (is (= (expected-result
+               actual-result)))))
+  (testing "test params-ref-gen-key"
+    (let [context (-> (b/new-root-node)
+                      (b/select-module-node-processor)
+                      (assoc-param-ref-gen (fn [k v] (fail "Not found"))))
+          context (get-node-from-path context [param-key])
+          coll [{param-key [[:transaction_id param-ref-gen-key :id]],
+                 model-key :employee}]
+          input {:employee {:id 2}}
+          actual-result (do-param input
+                                  nested-map-format
+                                  coll
+                                  context)]
+      (is (failed? actual-result)))))
+
+
+;(params-ref-gen-key-test)
+
+
+(deftest do-param-comp-test
+  (testing "test do-params-comp  "
+    (let [context (-> (b/new-root-node)
+                      (b/select-module-node-processor)
+                      (assoc-param-ref-gen (fn [k v] 5)))
+          context (get-node-from-path context [param-key])
+          coll [{param-key [[:transaction_id param-ref-con-key 0]
+                            [:id2 param-ref-fn-key inc :transaction_id]
+                            [:id4 param-ref-key :id]
+                            [:id3 param-ref-gen-key :id]]
+                 model-key :employee}]
+          input {:employee {:id 2}}
+          expected-result {:employee {:id 2, :transaction_id 0, :id4 2, :id2 1, :id3 5}}
+          actual-result (do-param input
+                                  nested-map-format
+                                  coll
+                                  context)]
+      (is (= expected-result
+             actual-result))))
+  (testing "test do-params-comp for empty collection  "
+    (let [context (-> (b/new-root-node)
+                      (b/select-module-node-processor)
+                      (assoc-param-ref-gen (fn [k v] 5)))
+          context (get-node-from-path context [param-key])
+          coll []
+          input {:employee {:id 2}}
+          expected-result {:employee {:id 2}}
+          actual-result (do-param input
+                                  nested-map-format
+                                  coll
+                                  context)]
+      (is (= expected-result
+             actual-result)))))
+
+;(do-param-comp-test)
+
+
+
+
+;(param-key-compile-test)
+
+;(run-tests)
