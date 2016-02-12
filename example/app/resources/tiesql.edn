@@ -1,0 +1,4 @@
+{:port        3000
+ :routes-path "/tie"
+ :tiesql-init [:create-ddl :init-data]
+ :tiesql-file "tie.edn.sql"}
