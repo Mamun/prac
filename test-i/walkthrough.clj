@@ -1,8 +1,8 @@
-(ns tiesql.walkthrough
+(ns walkthrough
   (:require [clojure.java.jdbc :as jdbc]
             [tiesql.jdbc :as t]
             [tiesql.common :refer :all]
-            [tiesql.test-data :as td]
+            [test-data :as td]
             ))
 
 

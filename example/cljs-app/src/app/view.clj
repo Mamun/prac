@@ -20,21 +20,27 @@
                           [:td (str c)]))]))]]]]])
 
 
-(defn table-view [t-heading t-data]
+#_(defn table-view [t-heading t-data]
   (h/html (table-structure t-heading t-data)))
 
 
 (defn edn-view [data]
   (jhtml/edn->html data))
 
+;(jhtml/edn->)
 
-(defmacro adder [name p ]
-  (-> (into [] p)
-      (conj 7)
-      (seq)
-      ))
+(comment
 
-(adder "sfds" (+ 4))
+  (defmacro adder [name p ]
+    (-> (into [] p)
+        (conj 7)
+        (seq)
+        ))
 
-(macroexpand-1 '(adder :hello (+ 3)))
+  (adder "sfds" (+ 4))
+
+  (macroexpand-1 '(adder :hello (+ 3)))
+
+
+  )
 

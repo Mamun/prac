@@ -1,4 +1,4 @@
-(ns tools.client
+(ns tiesql.client
   (:require [ajax.core :as a]
             [tiesql.common :as c]
             [ring.middleware.util :as u]

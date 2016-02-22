@@ -4,7 +4,7 @@
     [com.stuartsierra.component :as c]
     [clojure.tools.namespace.repl :as r]
     [figwheel-sidecar.system :as sys]
-    [tools.server :as a]))
+    [tiesql.server :as a]))
 
 
 (defrecord FigRecord [app fig]

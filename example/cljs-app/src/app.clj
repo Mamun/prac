@@ -1,5 +1,5 @@
 (ns app
-  (:require [tools.server :as s])
+  (:require [tiesql.server :as s])
   (:gen-class))
 
 

@@ -1,5 +1,5 @@
 (ns ^:figwheel-always app.main
-  (:require [tools.client :as tiesql]
+  (:require [tiesql.client :as tiesql]
             [devcards.core]
             [tiesql.common :as v]
             [cljs.core.async :refer [<! >! timeout chan]])
@@ -7,7 +7,7 @@
     [cljs.core.async.macros :refer [go]]
     [devcards.core :as dc :refer [defcard deftest]]
     [cljs.test :refer [is testing async]]
-    [tools.macro :refer [defcard-tiesql]]))
+    [tiesql.macro :refer [defcard-tiesql]]))
 
 
 (defn fig-reload []

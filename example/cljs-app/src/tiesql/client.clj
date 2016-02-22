@@ -1,4 +1,4 @@
-(ns tools.client
+(ns tiesql.client
     (:require [clj-http.client :as client]))
 
 

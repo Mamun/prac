@@ -10,8 +10,7 @@
             [ring.middleware.format-response :as fr]
             [ring.middleware.tiesql :as hs]
             [compojure.route :as route]
-            [immutant.web :as im]
-            [tiesql.jdbc :as tj])
+            [immutant.web :as im])
   (:import
     [com.mchange.v2.c3p0 ComboPooledDataSource])
   (:gen-class))
@@ -31,7 +30,6 @@
         ds-atom  (atom ds)]
     (-> (routes
           (GET "/" [] (resp/response "App is running"))
-          (GET "/hello" [] (resp/response "back from hello"))
           (route/resources "/")
           (route/not-found "Not found"))
         (hs/warp-tiesql ds-atom tms-atom)                   ;; Data service here
@@ -45,10 +43,8 @@
 (defn boot
   [& {:keys [file-name]
       :or   {file-name "tiesql.edn"}}]
-  (let [{:keys [port] :as w} (read-app-file file-name)]
-    (im/run (app-routes w) {:port port})
-    (tj/start-sql-execution-log)))
-
+  (let [{:keys [immutant] :as w} (read-app-file file-name)]
+    (im/run (app-routes w) (or immutant {:port 3000} ) )))
 
 
 (defn -main

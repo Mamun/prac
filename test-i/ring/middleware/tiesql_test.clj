@@ -3,7 +3,7 @@
   (:require [tiesql.common :refer :all]
             [ring.middleware.util :refer :all]
             [ring.middleware.tiesql :refer :all]
-            [tiesql.test-data :as td]))
+            [test-data :as td]))
 
 
 (use-fixtures :once (fn [f]

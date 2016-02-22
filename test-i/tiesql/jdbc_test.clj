@@ -2,7 +2,7 @@
   (:use [clojure.test])
   (:require [tiesql.common :refer :all]
             [tiesql.jdbc :refer :all]
-            [tiesql.test-data :as td]))
+            [test-data :as td]))
 
 
 (use-fixtures :once (fn [f]
