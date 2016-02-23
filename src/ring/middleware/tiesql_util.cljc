@@ -1,27 +1,20 @@
-(ns ring.middleware.util
+(ns ring.middleware.tiesql-util
   (:require [tiesql.common :as cc])
   #?(:cljs
      (:require-macros [tiesql.common :refer [try->]])))
 
 
-(defn response-format
-  [m]
-  (if (cc/failed? m)
-    [nil (into {} m)]
-    [m nil]))
+(def tiesql-param :params)
+(def tiesql-name :name)
+(def url-endpoint :default)
+(def api-endpoint :api)
 
-
-(defn response
-  [body]
-  {:status  200
-   :headers {}
-   :body    body})
 
 
 (defn merge-default
   [m]
   (-> m
-      (update-in [:input] (fn [v] (or v :keyword)))
+      (update-in [:input]  (fn [v] (or v :keyword)))
       (update-in [:output] (fn [v] (or v :keyword)))
       (update-in [:accept] (fn [v] (or v "application/transit+json")))))
 
@@ -35,16 +28,12 @@
                    (merge-default)))
 
 
-(defn filter-nil-value
+
+(defn response-format
   [m]
-  (->> m
-       (filter (comp not nil? val))
-       (into {})))
+  (if (cc/failed? m)
+    [nil (into {} m)]
+    [m nil]))
 
-
-(def tiesql-param :params)
-(def tiesql-name :name)
-(def web-endpoint :default)
-(def api-endpoint :api)
 
 

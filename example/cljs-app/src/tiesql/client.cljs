@@ -1,7 +1,7 @@
 (ns tiesql.client
   (:require [ajax.core :as a]
             [tiesql.common :as c]
-            [ring.middleware.util :as u]
+            [ring.middleware.tiesql-util :as u]
             [cljs.core.async :refer [<! >! timeout chan]])
   (:require-macros [cljs.core.async.macros :refer [go]]))
 

@@ -5,7 +5,7 @@
  :builds            [{:id            "dev",
                       :source-paths  ["src" "test"]
                       :figwheel      {:devcards true}
-                      :build-options {:main                 "app.main"
+                      :build-options {:main                 "app.card"
                                       :asset-path           "js/compiled/out"
                                       :output-to            "resources/public/js/compiled/app.js"
                                       :output-dir           "resources/public/js/compiled/out"

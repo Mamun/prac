@@ -1,9 +1,25 @@
 (ns ring.middleware.tiesql
   (:require [clojure.tools.logging :as log]
             [tiesql.common :refer :all]
-            [ring.middleware.util :as u]
+            [ring.middleware.tiesql-util :as u]
             [clojure.tools.reader.edn :as edn]
             [tiesql.jdbc :as tj]))
+
+
+
+
+(defn response
+  [body]
+  {:status  200
+   :headers {}
+   :body    body})
+
+
+(defn filter-nil-value
+  [m]
+  (->> m
+       (filter (comp not nil? val))
+       (into {})))
 
 
 (defn read-params-string
@@ -17,13 +33,6 @@
                  ) {})))
 
 
-(defn param-reader
-  [req t]
-  (if (= t u/web-endpoint)
-    (update-in req [:params] (fn [w] (read-params-string w)))
-    req))
-
-
 (defn param-keywordize-keys
   [req]
   (if (= :string (:input req))
@@ -31,22 +40,25 @@
     req))
 
 
+(defn response-stringify
+  [response req]
+  (if (= :string (:output req))
+    (mapv stringify-keys2 response)
+    response))
+
+
+
 (defn endpoint-type
-  [ring-request]
+  [{:keys [request-method content-type]}]
   (if (and
-        (= (:request-method ring-request)
-           :post)
-        (or (= (:content-type ring-request)
-               "application/transit+json")
-            (= (:content-type ring-request)
-               "application/json")))
+        (= request-method :post)
+        (or (= content-type "application/transit+json")
+            (= content-type "application/json")))
     u/api-endpoint
-    u/web-endpoint))
+    u/url-endpoint))
 
 
 (defmulti parse-request (fn [t _] t))
-
-
 
 
 (defmethod parse-request u/api-endpoint
@@ -56,9 +68,7 @@
                                            (if (sequential? w)
                                              (mapv as-keyword (remove nil? w))
                                              (keyword w)))))
-      (u/filter-nil-value)))
-
-
+      (filter-nil-value)))
 
 
 (defn as-keyword-value
@@ -68,8 +78,7 @@
           [(keyword k) (keyword v)])))
 
 
-
-(defmethod parse-request u/web-endpoint
+(defmethod parse-request u/url-endpoint
   [_ params]
   (let [r-params (dissoc params u/tiesql-name :rformat :pformat :gname)
         q-name (when-let [w (u/tiesql-name params)]
@@ -81,9 +90,8 @@
                   (as-keyword-value))]
     (-> other
         (assoc :name q-name)
-        (assoc :params r-params)
-        (u/filter-nil-value))))
-
+        (assoc :params (read-params-string r-params))
+        (filter-nil-value))))
 
 
 (defn tiesql-request
@@ -91,16 +99,10 @@
   (if params
     (let [type (endpoint-type req)]
       (-> (parse-request type params)
-          (param-reader type)
           (param-keywordize-keys)))
     (fail "No params is set in http request ")))
 
 
-(defn response-stringify
-  [response req]
-  (if (= :string (:output req))
-    (mapv stringify-keys2 response)
-    response))
 
 
 (defn read-init-validate-file
@@ -146,7 +148,7 @@
     (-> res
         (response-stringify req)
         (u/response-format)
-        (u/response))))
+        (response))))
 
 
 (defn push!
@@ -155,7 +157,7 @@
                    (apply-op tj/push! ds tms))]
     (-> res
         (u/response-format)
-        (u/response))))
+        (response))))
 
 
 (defn warp-tiesql
