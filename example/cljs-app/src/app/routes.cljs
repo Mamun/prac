@@ -1,25 +1,43 @@
 (ns app.routes
   (:require [secretary.core :as secretary]
-            [tiesql.history :as h])
+            [tiesql.client :as tiesql]
+            [tiesql.history :as h]
+            [app.component :as c])
   (:require-macros [secretary.core :refer [defroute]]))
 
 
-(secretary/set-config! :prefix "#")
-
 
 (defroute "/users/:id" {:as params}
-   (js/console.log (str "User: " (:id params))))
+   (do
+     (tiesql/pull "/"
+                  :name [:get-dept-list]
+                  :callback (fn [w]
+                              (let [[v e] w
+                                    d (atom (:department v))]
+                                (c/show-counter d ))
 
 
-(defroute "/" []
+                              (print "------------")
+
+
+                              ))))
+
+
+(defroute "*" []
    (js/console.log "home path "))
 
 
 
+#_(tiesql/pull "/"
+             :name :get-dept-by-id
+             :params {:id 1}
+             :callback (fn [v]
+                         (print "------------")
+                         (print v)
+
+                         ))
 
 ;(h/nav! "/users/gf3")
-
-
 ;(secretary/dispatch! "/users/gf3")
 ;(secretary/dispatch! "/users/gf3")
 ;(secretary/dispatch! "/users/hello2")

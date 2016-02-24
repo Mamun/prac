@@ -40,9 +40,9 @@
   [ds-atom tms-atom]
   (-> (routes
         (GET "/" [] (resp/response "App is running"))
-        (GET "/hello" [] (resp/response "Back from hello"))
         (route/resources "/")
-        (route/not-found {}))
+        (route/not-found {:status 200
+                          :body   "Not found"}))
       (hs/warp-tiesql ds-atom tms-atom)                     ;; Data service here
       (log-request)
       (wrap-webjars)

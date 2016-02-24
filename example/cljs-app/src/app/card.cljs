@@ -47,7 +47,7 @@
                            ))
 
 
-(defcard my-first-card
+#_(defcard my-first-card
          (sab/html [:a {:href "#/users/he"} "Clieck here !"]))
 
 ;(devcards.core/start-devcard-ui!)
@@ -81,6 +81,7 @@
                   tiesql/pull "/"
                   :gname :load-employee
                   :params {:id 1})
+
 
 
 

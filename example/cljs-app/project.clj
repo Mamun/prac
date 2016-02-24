@@ -46,6 +46,7 @@
                                      [org.clojure/clojurescript "1.7.228"]
                                      [cljs-ajax "0.5.2"]
                                      [secretary "1.2.3"]
+                                     [org.omcljs/om "1.0.0-alpha22"]
                                      [com.cognitect/transit-clj "0.8.283"]
                                      [com.cognitect/transit-cljs "0.8.225"]
 
