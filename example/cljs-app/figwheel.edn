@@ -4,12 +4,12 @@
  :server-logfile    "target/figwheel-logfile.log"
  :builds            [{:id            "dev",
                       :source-paths  ["src" "test"]
-                      :figwheel      {:devcards true}
+                     ; :figwheel      {:devcards true}
                       :build-options {:main                 "app.card"
                                       :asset-path           "js/compiled/out"
                                       :output-to            "resources/public/js/compiled/app.js"
                                       :output-dir           "resources/public/js/compiled/out"
-                                      :devcards             true
+                                ;      :devcards             true
                                       :source-map-timestamp true
                                       :parallel-build       true
                                       :optimizations        :none

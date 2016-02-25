@@ -1,13 +1,14 @@
 (ns ^:figwheel-always app.card
   (:require [tiesql.client :as tiesql]
-            [devcards.core]
+    ;        [devcards.core]
             [tiesql.common :as v]
             [app.routes :as r]
+            [app.component]
             [sablono.core :as sab]
             [cljs.core.async :refer [<! >! timeout chan]])
   (:require-macros
     [cljs.core.async.macros :refer [go]]
-    [devcards.core :as dc :refer [defcard deftest]]
+   ; [devcards.core :as dc :refer [defcard deftest]]
     [cljs.test :refer [is testing async]]
     [tiesql.macro :refer [defcard-tiesql]]))
 
@@ -52,7 +53,7 @@
 
 ;(devcards.core/start-devcard-ui!)
 
-(defcard-tiesql get-dept-by-id
+#_(defcard-tiesql get-dept-by-id
                 "**With name keyword**"
                 tiesql/pull "/"
                 :name :get-dept-by-id
@@ -60,7 +61,7 @@
 
 
 
-(defcard-tiesql employee-by-id
+#_(defcard-tiesql employee-by-id
                 "**Join example**"
                 tiesql/pull "/"
                 :name [:get-employee-by-id :get-employee-dept]

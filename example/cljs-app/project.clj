@@ -24,7 +24,8 @@
                  [json-html "0.3.6"]
                  [hiccup "1.0.5"]
                  [ring-webjars "0.1.1"]
-                 [org.webjars/bootstrap "3.3.5"]
+                 ;[org.webjars/bootstrap "3.3.5"]
+                 [org.webjars/material-design-lite "1.1.1"]
 
                  [tiesql "0.1.0-alpha-SNAPSHOT"]
                  [com.stuartsierra/component "0.2.3"]
@@ -47,6 +48,7 @@
                                      [cljs-ajax "0.5.2"]
                                      [secretary "1.2.3"]
                                      [org.omcljs/om "1.0.0-alpha22"]
+                                     [sablono "0.6.2"]
                                      [com.cognitect/transit-clj "0.8.283"]
                                      [com.cognitect/transit-cljs "0.8.225"]
 

@@ -56,13 +56,13 @@
     ch))
 
 
-(defn pull [url & {:as request-m}]
-  (do-ajax (str url "pull") request-m))
+(defn pull [& {:keys [url] :as request-m}]
+  (do-ajax (str (or url "") "/pull") request-m))
 
 
 (defn push!
-  [url & {:as request-m}]
-  (do-ajax (str url "push") request-m))
+  [& {:keys [url] :as request-m}]
+  (do-ajax (str (or url "") "/push") request-m))
 
 
 (defn build-js-request
@@ -95,6 +95,5 @@
     [url name params callback]
     (->> (build-js-request name params {} callback)
          (call-http-service (str url "/push"))))
-
 
 

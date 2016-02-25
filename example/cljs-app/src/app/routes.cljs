@@ -1,26 +1,16 @@
 (ns app.routes
   (:require [secretary.core :as secretary]
-            [tiesql.client :as tiesql]
-            [tiesql.history :as h]
-            [app.component :as c])
+            [tiesql.history]
+            [app.component :as h])
   (:require-macros [secretary.core :refer [defroute]]))
 
 
+#_(defroute "/users/:id" {:as params}
+     (h/dept-list "app" params))
+
 
 (defroute "/users/:id" {:as params}
-   (do
-     (tiesql/pull "/"
-                  :name [:get-dept-list]
-                  :callback (fn [w]
-                              (let [[v e] w
-                                    d (atom (:department v))]
-                                (c/show-counter d ))
-
-
-                              (print "------------")
-
-
-                              ))))
+    (h/dept-list "app" params))
 
 
 (defroute "*" []

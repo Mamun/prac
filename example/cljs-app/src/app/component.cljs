@@ -1,40 +1,40 @@
 (ns app.component
   (:require [goog.dom :as gdom]
+            [tiesql.client :as tiesql]
             [om.next :as om :refer-macros [defui]]
-            [om.dom :as dom]
-            [sablono.core :as html :refer-macros [html]]))
+            [app.ui :as u]))
 
 
-(defn table-view [t-heading t-data]
-  [:div.panel.panel-default
-   [:div.panel-heading (str t-heading)]
-   [:div.panel-body
-    [:div.table-responsive
-     [:table.table.table-bordered
-      [:thead
-       (for [h (first t-data)]
-         [:th (str h)])]
-      [:tbody
-       (for [r (rest t-data)]
-         [:tr
-          (doall (for [c r]
-                   [:td (str c)]))])]]]]])
+(defonce app-state (atom {}))
+(defonce reconciler (om/reconciler {:state app-state}))
 
 
-(defui Counter
-       Object
-       (render [this]
-               (let [data (om/props this)]
-                 (html (table-view "Hello " data)))))
+(defn pull-dept
+  [params]
+  (tiesql/pull :name [:get-dept-list]
+               :callback (fn [[model e]]
+                           (swap! app-state merge model))))
 
 
-(defn show-counter
-  [state]
-  (-> (om/reconciler {:state state })
-      (om/add-root! Counter (gdom/getElement "app"))))
+(defui Department
+  Object
+  (render [this]
+    (let [{:keys [department]} (om/props this)]
+      (u/table department))
+    ;(u/edn  (om/props this))
+    ))
 
 
-;(def reconsi (om/reconciler {:state app-state}))
+
+(defn dept-list [id params]
+  (do
+    (pull-dept params)
+    (om/add-root! reconciler Department (gdom/getElement id ))))
 
 
-;(om/add-root! reconsi Counter (gdom/getElement "app"))
+;(swap! app-state update-in [:department 1 1] (fn [_] 5))
+;(print @app-state)
+
+;(print (name :keyword ))
+
+
