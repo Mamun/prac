@@ -2,6 +2,8 @@
   (:require [goog.dom :as gdom]
             [tiesql.client :as tiesql]
             [om.next :as om :refer-macros [defui]]
+            [sablono.core :as html :refer-macros [html]]
+            [json-html.core :as jhtml]
             [app.ui :as u]))
 
 
@@ -16,13 +18,19 @@
                            (swap! app-state merge model))))
 
 
+
+
+
+
 (defui Department
   Object
   (render [this]
     (let [{:keys [department]} (om/props this)]
-      (u/table department))
+      (html (u/table department)))
     ;(u/edn  (om/props this))
     ))
+
+
 
 
 
