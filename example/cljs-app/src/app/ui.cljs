@@ -5,7 +5,7 @@
 
 (defn table [[header & row]]
   (html
-    [:table.mdl-data-table.mdl-js-data-table.mdl-data-table--selectable.mdl-shadow--2dp
+    [:table.mdl-data-table.mdl-js-data-table.mdl-data-table--selectable
      [:thead
       [:tr
        (for [h header]

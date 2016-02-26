@@ -21,35 +21,29 @@
 <body>
 
 
-<div class=" mdl-layout mdl-js-layout mdl-layout--fixed-drawer mdl-layout--fixed-header">
-
-    <header class=" mdl-layout__header mdl-color--grey-100 mdl-color-text--grey-600">
+<div class="mdl-layout mdl-js-layout mdl-layout--fixed-drawer mdl-layout--fixed-header">
+    <header class="mdl-layout__header ">
     </header>
 
-    <div class="mdl-layout__drawer mdl-color--blue-grey-900 mdl-color-text--blue-grey-50">
+    <div class="mdl-layout__drawer">
+        <header class="mdl-layout__header ">
+        </header>
+        <nav class="demo-navigation mdl-navigation">
+            <a class="mdl-navigation__link" href="#">
+                <i class="mdl-color-text--amber-grey-400 material-icons"
+                   role="presentation">home</i>Home</a>
+            <a class="mdl-navigation__link" href="#/users/jim">
+                <i class="mdl-color-text--blue-yellow-400 material-icons"
+                   role="presentation">inbox</i>Department</a>
+
+            <div class="mdl-layout-spacer"></div>
+        </nav>
     </div>
 
-    <main class="mdl-layout__content mdl-color--grey-100">
+    <main class="mdl-layout__content">
         <div class="mdl-grid ">
-            <div class=" mdl-shadow--2dp mdl-color--white mdl-cell mdl-cell--10-col">
-                <span class="mdl-grid " id="app"></span>
-            </div>
-            <div class="mdl-cell mdl-cell--2-col mdl-cell--8-col-tablet mdl-grid mdl-grid--no-spacing">
-                <div class=" mdl-card mdl-shadow--2dp mdl-cell mdl-cell--4-col mdl-cell--4-col-tablet mdl-cell--12-col-desktop">
-
-                    <ul class=" mdl-list">
-                        <li class="mdl-list__item">
-                            <a href="#/users/jim" class="mdl-button mdl-js-button mdl-js-ripple-effect">Department </a>
-                        </li>
-                        <li class="mdl-list__item">
-                            <a href="#" class="mdl-button mdl-js-button mdl-js-ripple-effect">Department </a>
-                        </li>
-                        <li class="mdl-list__item">
-                            <a href="#" class="mdl-button mdl-js-button mdl-js-ripple-effect">Department </a>
-                        </li>
-                    </ul>
-                </div>
-                <div class=" mdl-cell--1-col"></div>
+            <div class="mdl-shadow--2dp mdl-color--white mdl-cell mdl-cell--12-col">
+                <span id="app"></span>
             </div>
         </div>
     </main>
