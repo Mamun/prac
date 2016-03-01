@@ -1,6 +1,6 @@
 (ns ^:figwheel-always app.card
   (:require [tiesql.client :as tiesql]
-    ;        [devcards.core]
+            [devcards.core]
             [tiesql.common :as v]
             [app.routes :as r]
             [app.component]
@@ -8,7 +8,7 @@
             [cljs.core.async :refer [<! >! timeout chan]])
   (:require-macros
     [cljs.core.async.macros :refer [go]]
-   ; [devcards.core :as dc :refer [defcard deftest]]
+    [devcards.core :as dc :refer [defcard deftest]]
     [cljs.test :refer [is testing async]]
     [tiesql.macro :refer [defcard-tiesql]]))
 
@@ -19,6 +19,9 @@
   ;; (swap! app-state update-in [:__figwheel_counter] inc)
   ;        (query "http://localhost:3000/tie" [:get-dept-by-id] {:id 1} handler)
   )
+
+
+
 
 #_(defcard Hello
            "Hello"
@@ -77,25 +80,25 @@
                   :params {:id 1})
 
 
-#_(defcard-tiesql load-employee
+(defcard-tiesql load-employee
                   "**Load Employee**  "
-                  tiesql/pull "/"
+                  tiesql/pull
                   :gname :load-employee
                   :params {:id 1})
 
 
 
 
-#_(defcard-tiesql dept-list
+(defcard-tiesql dept-list
                   "Load dept list as array  "
-                  tiesql/pull "/"
+                  tiesql/pull
                   :name [:get-dept-list])
 
 
 
 #_(defcard-tiesql insert-dept
                   "Create department  "
-                  tiesql/push! "/"
+                  tiesql/push!
                   :name [:create-dept]
                   :params {:department {:dept_name "Call Center 9"}})
 
