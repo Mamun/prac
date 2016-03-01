@@ -1,9 +1,10 @@
 (ns app.component
   (:require-macros [reagent.ratom :refer [reaction]])
   (:require [goog.dom :as gdom]
+            [devcards.util.edn-renderer :as edn]
             [tiesql.client :as tiesql]
             [reagent.core :as r]
-            [json-html.core :as jhtml]
+       ;     [json-html.core :as jhtml]
             [app.ui :as u]
             [re-frame.core :refer [register-handler
                                    path
@@ -17,7 +18,7 @@
 
 
 (register-handler
-  :init
+  :data
   (fn [db [_ v]]
     (merge db v)))
 
@@ -25,10 +26,10 @@
 
 
 (register-sub
-  :department
+  :data
   (fn
     [db _]                                                  ;; db is the app-db atom
-    (reaction (:department @db))))
+    (reaction @db )))
 
 
 
@@ -36,7 +37,14 @@
   []
   (tiesql/pull :name [:get-dept-list]
                :callback (fn [[model e]]
-                           (dispatch [:init model]))))
+                           (dispatch [:data model]))))
+
+
+(tiesql/pull
+               :gname :load-employee
+               :params {:id 1}
+             :callback (fn [[model e]]
+                         (dispatch [:data model])))
 
 ;(dispatch [:init {:department []}])
 ;(pull-dept )
@@ -46,10 +54,11 @@
 ;(print "------" @(subscribe [:department]))
 
 (defn simple-component []
-  (let [department (subscribe [:department])]
+  (let [data (subscribe [:data])]
     (fn []
-      (jhtml/edn->hiccup @department)
-      #_(u/table @department))))
+      (edn/html-edn @data)
+      #_(jhtml/edn->hiccup @data)
+      #_(u/table @data))))
 
 
 
