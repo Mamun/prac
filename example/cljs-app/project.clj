@@ -43,18 +43,16 @@
                                      [org.clojure/tools.nrepl "0.2.10"]
                                      [com.h2database/h2 "1.3.154"]
                                      [clj-http "2.0.0"]
+                                     [com.cognitect/transit-clj "0.8.283"]
 
                                      [org.clojure/clojurescript "1.7.228"]
                                      [cljs-ajax "0.5.2"]
+                                     [com.cognitect/transit-cljs "0.8.225"]
+
                                      [secretary "1.2.3"]
                                      [reagent "0.6.0-alpha" ]
                                      [re-frame "0.7.0-alpha-3"]
-
-
-                                     ;[org.omcljs/om "1.0.0-alpha22"]
-                                     ;[sablono "0.6.2"]
-                                     [com.cognitect/transit-clj "0.8.283"]
-                                     [com.cognitect/transit-cljs "0.8.225"]
+                                     [kibu/pushy "0.3.6"]
 
                                      [figwheel-sidecar "0.5.0-3"]
                                      ;[clj-http "2.0.0"]

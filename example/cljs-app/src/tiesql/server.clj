@@ -39,7 +39,7 @@
 (defn app-routes
   [ds-atom tms-atom]
   (-> (routes
-        (GET "/" [] (resp/response "App is running"))
+        (GET "/" [] (resp/resource-response "index.html" {:root "public"}))
         (route/resources "/")
         (route/not-found {:status 200
                           :body   "Not found"}))

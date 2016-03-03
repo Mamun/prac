@@ -15,5 +15,3 @@
           [:td {:key c} (str c)])])]]])
 
 
-#_(defn edn [data]
-    (html (jhtml/edn->hiccup data)))

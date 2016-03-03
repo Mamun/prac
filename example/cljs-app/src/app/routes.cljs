@@ -1,31 +1,21 @@
 (ns app.routes
   (:require [secretary.core :as secretary]
-            [tiesql.history]
-            [app.component :as h])
+            [app.component :as h]
+            [pushy.core :as pushy])
   (:require-macros [secretary.core :refer [defroute]]))
 
 
-#_(defroute "/users/:id" {:as params}
-     (h/dept-list "app" params))
+;(defroute "/users/:id" {:as params} #_(h/pull-dept))
+(defroute "*" [] (js/console.log "home path "))
 
+(secretary/set-config! :prefix "/")
 
-(defroute "/users/:id" {:as params}
-    (h/dept-list "app" params))
+(def history (pushy/pushy secretary/dispatch!
+                          (fn [x] (when (secretary/locate-route x) x))))
 
+;; Start event listeners
+(pushy/start! history)
 
-(defroute "*" []
-   (js/console.log "home path "))
-
-
-
-#_(tiesql/pull "/"
-             :name :get-dept-by-id
-             :params {:id 1}
-             :callback (fn [v]
-                         (print "------------")
-                         (print v)
-
-                         ))
 
 ;(h/nav! "/users/gf3")
 ;(secretary/dispatch! "/users/gf3")
