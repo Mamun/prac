@@ -80,7 +80,7 @@
                   :params {:id 1})
 
 
-(defcard-tiesql load-employee
+#_(defcard-tiesql load-employee
                   "**Load Employee**  "
                   tiesql/pull
                   :gname :load-employee
@@ -89,7 +89,7 @@
 
 
 
-(defcard-tiesql dept-list
+#_(defcard-tiesql dept-list
                   "Load dept list as array  "
                   tiesql/pull
                   :name [:get-dept-list])

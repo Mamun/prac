@@ -1,6 +1,5 @@
 (ns app.component
-  (:require-macros [reagent.ratom :refer [reaction]]
-                   [tiesql.macro :refer [dispatch-tiesql-pull]])
+  (:require-macros [reagent.ratom :refer [reaction]])
   (:require [goog.dom :as gdom]
             [devcards.util.edn-renderer :as edn]
             [tiesql.client :as tiesql]
@@ -14,27 +13,14 @@
                                    subscribe]]))
 
 
-#_(defn remote-pull [handler]
-  (fn [db [t & w]]
-    (tiesql.client/pull
-      (into [])
-      :callback (fn [v]
-                  (handler db v)
-                  ))
-    #_(handler db e)))
-
-
-(defn remote-pull-handler
-  [db [_ [v e]]]
-  (if v
-    (merge db v)
-    (merge db e)))
-
 
 (register-handler
-  :remote-pull
-  ;remote-pull
-  remote-pull-handler)
+  :pull
+  (fn [db [_ [v e]]]
+    (if v
+      (merge db v)
+      (merge db e))))
+
 
 
 (register-handler
@@ -51,22 +37,36 @@
     (reaction @db)))
 
 
-(defn menu-handler
-  [v]
-  (condp = v
-    "Department" (dispatch-tiesql-pull [:remote-pull :name [:get-dept-list]])
-    "Employee"   (dispatch-tiesql-pull [:remote-pull :name [:get-employee-list]])
-    "Meeting"    (dispatch-tiesql-pull [:remote-pull :name [:get-meeting-list]])
-    (dispatch [:not-found {:empty "Link not found "}])))
+
+(def menu [["Home" "/" [:not-found {:empty "Empty state  "}]]
+           ["Department" "/pull?name=get-dept-list" [:pull :name [:get-dept-list]]]
+           ["OneEmployee" "/pull?name=get-dept-list" [:pull :gname :load-employee
+                                                      :params {:id 1}]]
+           ["Employee" "/pull?name=get-employee-list" [:pull :name [:get-employee-list]]]
+           ["Meeting" "/pull?name=:get-meeting-list" [:pull :name [:get-meeting-list]]]])
+
+
+(defn map-menu-dispatch
+  [[_ _ [n & p :as w]]]
+  (if (= n :pull)
+    (->> (conj (into [] p)
+               :callback
+               (fn [v]
+                 (dispatch [n v])))
+         (apply tiesql/pull))
+    (dispatch w)))
+
+;(map-menu-dispatch ["Department" "/pull?name=get-dept-list" [:remote-pull :name [:get-dept-list]]])
+
+(defn map-menu-action
+  [menu-list]
+  (into [] (map (fn [w]
+                  (assoc w 2 (fn [_] (map-menu-dispatch w)))
+                  )) menu-list))
 
 
 
-(def menu [["Home" "/" menu-handler]
-           ["Department" "/pull?name=get-dept-list" menu-handler]
-           ["Employee" "/pull?name=get-employee-list" menu-handler]
-           ["Meeting" "/pull?name=:get-meeting-list" menu-handler]])
-
-
+;(print "---" (process-menu menu))
 
 (defn main-component []
   (let [data (subscribe [:pull])]
@@ -85,7 +85,7 @@
 
 
 (defn init-component []
-  (r/render-component [u/menu-component menu]
+  (r/render-component [u/menu-component (map-menu-action menu)]
                       (gdom/getElement "menu"))
   (r/render-component [main-component]
                       (gdom/getElement "app")))
