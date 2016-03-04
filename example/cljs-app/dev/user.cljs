@@ -1,9 +1,7 @@
-(ns ^:figwheel-always app.card
+(ns ^:figwheel-always user
   (:require [tiesql.client :as tiesql]
             [devcards.core]
-            [tiesql.common :as v]
-            [app.routes :as r]
-            [app.component]
+            [app.core]
             [sablono.core :as sab]
             [cljs.core.async :refer [<! >! timeout chan]])
   (:require-macros

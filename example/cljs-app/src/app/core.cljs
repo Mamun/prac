@@ -1,26 +1,28 @@
-(ns app.component
-  (:require-macros [reagent.ratom :refer [reaction]])
+(ns  app.core
+  (:require-macros [reagent.ratom :refer [reaction]]
+                   [secretary.core :refer [defroute]])
   (:require [goog.dom :as gdom]
             [devcards.util.edn-renderer :as edn]
-            [tiesql.client :as tiesql]
             [reagent.core :as r]
-            [app.ui :as u]
+            [secretary.core :as secretary]
+            [pushy.core :as pushy]
             [re-frame.core :refer [register-handler
                                    path
                                    register-sub
                                    dispatch
                                    dispatch-sync
-                                   subscribe]]))
+                                   subscribe]]
+            [app.hiccup-ui :as u]
+            [app.util :as util]))
 
 
-(defn tiesql-dispatch
-  [[n & p]]
-  (->> (conj (into [] p)
-             :callback
-             (fn [v]
-               (dispatch [n v])))
-       (apply tiesql/pull)))
+(defroute "*" [] (js/console.log "home path "))
+(secretary/set-config! :prefix "/")
+(def history (pushy/pushy secretary/dispatch!
+                          (fn [x] (when (secretary/locate-route x) x))))
 
+;; Start event listeners
+(pushy/start! history)
 
 
 (register-handler
@@ -31,12 +33,10 @@
       (merge db e))))
 
 
-
 (register-handler
   :not-found
   (fn [db [_ v]]
     (merge (empty db) v)))
-
 
 
 (register-sub
@@ -46,7 +46,6 @@
     (reaction @db)))
 
 
-
 (def menu [["Home" "/" [:not-found {:empty "Empty state  "}]]
            ["Department" "/pull?name=get-dept-list" [:pull :name [:get-dept-list]]]
            ["OneEmployee" "/pull?name=get-dept-list" [:pull :gname :load-employee
@@ -54,28 +53,6 @@
            ["Employee" "/pull?name=get-employee-list" [:pull :name [:get-employee-list]]]
            ["Meeting" "/pull?name=:get-meeting-list" [:pull :name [:get-meeting-list]]]])
 
-
-
-(defn map-menu-dispatch
-  [[_ _ w]]
-  (fn [_]
-    (if (= (first w) :pull)
-      (tiesql-dispatch w)
-      (dispatch w))))
-
-
-
-;(map-menu-dispatch ["Department" "/pull?name=get-dept-list" [:remote-pull :name [:get-dept-list]]])
-
-(defn map-menu-action
-  [menu-list]
-  (into [] (map (fn [w]
-                  (assoc w 2 (map-menu-dispatch w))
-                  )) menu-list))
-
-
-
-;(print "---" (process-menu menu))
 
 (defn main-component []
   (let [data (subscribe [:pull])]
@@ -94,7 +71,7 @@
 
 
 (defn init-component []
-  (r/render-component [u/menu-component (map-menu-action menu)]
+  (r/render-component [u/menu-component (util/map-menu-action menu)]
                       (gdom/getElement "menu"))
   (r/render-component [main-component]
                       (gdom/getElement "app")))

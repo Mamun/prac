@@ -21,8 +21,7 @@
                                org.clojure/tools.reader]]
                  [compojure "1.1.6"]
                  [c3p0/c3p0 "0.9.1.2"]
-                 [json-html "0.3.6"]
-                 [hiccup "1.0.5"]
+
                  [ring-webjars "0.1.1"]
                  ;[org.webjars/bootstrap "3.3.5"]
                  [org.webjars/material-design-lite "1.1.1"]
@@ -43,6 +42,8 @@
                                      [org.clojure/tools.nrepl "0.2.10"]
                                      [com.h2database/h2 "1.3.154"]
                                      [clj-http "2.0.0"]
+                                     ; [json-html "0.3.6"]
+                                     ;     [hiccup "1.0.5"]
                                      [com.cognitect/transit-clj "0.8.283"]
 
                                      [org.clojure/clojurescript "1.7.228"]

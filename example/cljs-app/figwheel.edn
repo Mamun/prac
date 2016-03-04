@@ -3,10 +3,10 @@
  :open-file-command "emacsclient"
  :server-logfile    "target/figwheel-logfile.log"
  :builds            [{:id            "dev",
-                      :source-paths  ["src" "test"]
+                      :source-paths  ["src" "dev"]
                       :figwheel      {:devcards true
                                       }
-                      :build-options {:main                 "app.card"
+                      :build-options {:main                 "user"
                                       :asset-path           "js/compiled/out"
                                       :output-to            "resources/public/js/compiled/app.js"
                                       :output-dir           "resources/public/js/compiled/out"

@@ -1,4 +1,4 @@
-(ns app.ui)
+(ns app.hiccup-ui)
 
 
 (defn table [[header & row]]
