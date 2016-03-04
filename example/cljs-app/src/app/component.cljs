@@ -1,5 +1,6 @@
 (ns app.component
-  (:require-macros [reagent.ratom :refer [reaction]])
+  (:require-macros [reagent.ratom :refer [reaction]]
+                   [tiesql.macro :refer [dispatch-tiesql-pull]])
   (:require [goog.dom :as gdom]
             [devcards.util.edn-renderer :as edn]
             [tiesql.client :as tiesql]
@@ -13,58 +14,70 @@
                                    subscribe]]))
 
 
-;(defonce app-state (r/atom {}))
+#_(defn remote-pull [handler]
+  (fn [db [t & w]]
+    (tiesql.client/pull
+      (into [])
+      :callback (fn [v]
+                  (handler db v)
+                  ))
+    #_(handler db e)))
+
+
+(defn remote-pull-handler
+  [db [_ [v e]]]
+  (if v
+    (merge db v)
+    (merge db e)))
 
 
 (register-handler
-  :data
-  (fn [db [_ v]]
-    (merge db v)))
+  :remote-pull
+  ;remote-pull
+  remote-pull-handler)
 
+
+(register-handler
+  :not-found
+  (fn [db [_ v]]
+    (merge (empty db) v)))
 
 
 
 (register-sub
-  :data
+  :pull
   (fn
     [db _]                                                  ;; db is the app-db atom
     (reaction @db)))
 
 
-(defn click-handler
-  [action-name]
-  (condp = action-name
+(defn menu-handler
+  [v]
+  (condp = v
+    "Department" (dispatch-tiesql-pull [:remote-pull :name [:get-dept-list]])
+    "Employee"   (dispatch-tiesql-pull [:remote-pull :name [:get-employee-list]])
+    "Meeting"    (dispatch-tiesql-pull [:remote-pull :name [:get-meeting-list]])
+    (dispatch [:not-found {:empty "Link not found "}])))
 
-    "Department" (tiesql/pull :name [:get-dept-list]
-                        :callback (fn [[model e]]
-                                    (dispatch [:data model])))
-    (dispatch [:data {:empty "Link not found "}])))
+
+
+(def menu [["Home" "/" menu-handler]
+           ["Department" "/pull?name=get-dept-list" menu-handler]
+           ["Employee" "/pull?name=get-employee-list" menu-handler]
+           ["Meeting" "/pull?name=:get-meeting-list" menu-handler]])
 
 
 
 (defn main-component []
-  (let [data (subscribe [:data])]
+  (let [data (subscribe [:pull])]
     (fn []
-      (when-not (empty? @data)
+      (if (empty? @data)
+        [:span "Click menu to view data  "]
         (edn/html-edn @data))
+
       #_(jhtml/edn->hiccup @data)
       #_(u/table @data))))
 
-
-(def menu [["Home" "/" "home"]
-           ["Department" "/pull?name=get-dept-list" "inbox"]])
-
-
-
-(defn menu-component []
-  [:span
-   (for [[v u p] menu]
-     [:a {:on-click #(click-handler v)
-          :class    "mdl-navigation__link"
-          :href     u}
-      [:i {:class "mdl-color-text--amber-grey-400 material-icons"
-           :role  "presentation"} p]
-      v])])
 
 
 
@@ -72,7 +85,7 @@
 
 
 (defn init-component []
-  (r/render-component [menu-component]
+  (r/render-component [u/menu-component menu]
                       (gdom/getElement "menu"))
   (r/render-component [main-component]
                       (gdom/getElement "app")))

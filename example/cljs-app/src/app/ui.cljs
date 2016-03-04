@@ -15,3 +15,13 @@
           [:td {:key c} (str c)])])]]])
 
 
+
+(defn menu-component [menu]
+  [:span
+   (for [[v u h] menu]
+     [:a {:on-click #(h v)
+          :class    "mdl-navigation__link"
+          :href     u}
+      [:i {:class "mdl-color-text--amber-grey-400 material-icons"
+           :role  "presentation"} "inbox"]
+      v])])
