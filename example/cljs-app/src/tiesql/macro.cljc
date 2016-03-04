@@ -23,7 +23,7 @@
 
 
 (defmacro dispatch-tiesql-pull
-  [[hname & params]]
+  [hname & params]
   (let [v (gensym 'v)]
     `(tiesql.client/pull
        ~@params
@@ -31,9 +31,15 @@
                    (re-frame.core/dispatch [~hname ~v])))))
 
 
+#_(defn dispatch-tiesql-pull2
+  [v]
+  (apply dispatch-tiesql-pull v))
 
 
-;(macroexpand-1 '(pull :name :ge))
+#_(let [w [:pull :name [:get-dept-list]]]
+  (dispatch-tiesql-pull w)
+  )
+;(macroexpand-1 '(dispatch-tiesql-pull [:pull :name :ge]))
 
 #_(defn pull
     [n params]

@@ -13,6 +13,15 @@
                                    subscribe]]))
 
 
+(defn tiesql-dispatch
+  [[n & p]]
+  (->> (conj (into [] p)
+             :callback
+             (fn [v]
+               (dispatch [n v])))
+       (apply tiesql/pull)))
+
+
 
 (register-handler
   :pull
@@ -46,22 +55,22 @@
            ["Meeting" "/pull?name=:get-meeting-list" [:pull :name [:get-meeting-list]]]])
 
 
+
 (defn map-menu-dispatch
-  [[_ _ [n & p :as w]]]
-  (if (= n :pull)
-    (->> (conj (into [] p)
-               :callback
-               (fn [v]
-                 (dispatch [n v])))
-         (apply tiesql/pull))
-    (dispatch w)))
+  [[_ _ w]]
+  (fn [_]
+    (if (= (first w) :pull)
+      (tiesql-dispatch w)
+      (dispatch w))))
+
+
 
 ;(map-menu-dispatch ["Department" "/pull?name=get-dept-list" [:remote-pull :name [:get-dept-list]]])
 
 (defn map-menu-action
   [menu-list]
   (into [] (map (fn [w]
-                  (assoc w 2 (fn [_] (map-menu-dispatch w)))
+                  (assoc w 2 (map-menu-dispatch w))
                   )) menu-list))
 
 
