@@ -80,8 +80,9 @@
                 :compiler     {:main                 app.core
                                :devcards true ; <- note this
                                :asset-path           "js/compiled/out"
-                               :output-to            "resources/public/js/compiled/web_app.js"
                                :output-dir           "resources/public/js/compiled/out"
+                               :output-to            "resources/public/js/compiled/web_app.js"
+
                                :source-map-timestamp true}}}}
 
   ;; When running figwheel from nREPL, figwheel will read this configuration
@@ -118,7 +119,7 @@
 
 
 
-             :server-logfile "log/figwheel.log"}
+             :server-logfile "target/figwheel.log"}
 
   :doo {:build "test"}
 
@@ -138,6 +139,8 @@
                               {:source-paths ["src/cljs" "test/cljs"]
                                :compiler
                                              {:output-to     "resources/public/js/compiled/testable.js"
+                                              :asset-path           "js/compiled/out"
+                                              :output-dir           "resources/public/js/compiled/out"
                                               :main          app.test-runner
                                               :optimizations :none}}}}}
 

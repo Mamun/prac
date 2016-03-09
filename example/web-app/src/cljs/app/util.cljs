@@ -1,5 +1,5 @@
 (ns app.util
-  (:require [app.client :as client]
+  (:require [tiesql.client :as client]
             [re-frame.core :refer [dispatch
                                    dispatch-sync
                                    subscribe]]))
