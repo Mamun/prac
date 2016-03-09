@@ -18,7 +18,7 @@
             [app.util :as util]))
 
 
-(devcards.core/start-devcard-ui!)
+;(devcards.core/start-devcard-ui!)
 
 
 (defroute "*" [] (js/console.log "home path "))

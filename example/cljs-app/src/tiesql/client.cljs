@@ -97,3 +97,10 @@
          (call-http-service (str url "/push"))))
 
 
+
+#_(pull        :name :get-dept-by-id
+             :params {:id 1}
+             :callback (fn [v]
+                         (print v)
+
+                         ))

@@ -50,10 +50,16 @@
 
 (defn endpoint-type
   [{:keys [request-method content-type]}]
+  ;(log/info request-method)
+  ;(log/info content-type)
+  #_(log/info (and
+              (= request-method :post)
+              (or (re-find #"application/transit+json" content-type )
+                  (re-find #"application/json" content-type ))))
   (if (and
         (= request-method :post)
-        (or (= content-type "application/transit+json")
-            (= content-type "application/json")))
+        (or (clojure.string/includes? content-type "application/transit+json" )
+            (clojure.string/includes? content-type "application/json" )))
     u/api-endpoint
     u/url-endpoint))
 
@@ -63,6 +69,7 @@
 
 (defmethod parse-request u/api-endpoint
   [_ params]
+  (log/info "api end point ")
   (-> params
       (update-in [u/tiesql-name] (fn [w] (if w
                                            (if (sequential? w)
@@ -80,6 +87,7 @@
 
 (defmethod parse-request u/url-endpoint
   [_ params]
+  (log/info "url endpoint ")
   (let [r-params (dissoc params u/tiesql-name :rformat :pformat :gname)
         q-name (when-let [w (u/tiesql-name params)]
                  (if (sequential? w)

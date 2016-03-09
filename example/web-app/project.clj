@@ -78,7 +78,7 @@
                 ;; :figwheel {:on-jsload "web-app.core/on-figwheel-reload"}
 
                 :compiler     {:main                 app.core
-                               :devcards true ; <- note this
+                           ;    :devcards true ; <- note this
                                :asset-path           "js/compiled/out"
                                :output-dir           "resources/public/js/compiled/out"
                                :output-to            "resources/public/js/compiled/web_app.js"
@@ -91,7 +91,7 @@
   ;; not be picked up, instead configure figwheel here on the top level.
 
   :figwheel {;; :http-server-root "public"       ;; serve static assets from resources/public/
-             :server-port    3000                           ;; default
+             :server-port    3001                           ;; default
              ;; :server-ip "127.0.0.1"           ;; default
              :css-dirs       ["resources/public/css"]       ;; watch and update CSS
 
