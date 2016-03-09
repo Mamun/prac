@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!--
+    <link rel='stylesheet' href='/assets/bootstrap/css/bootstrap.min.css'/>
+    -->
+    <!--
+        <script src="/assets/material-design-lite/material.min.js" type="text/javascript"></script>
+        -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="stylesheet" href="https://code.getmdl.io/1.1.1/material.amber-yellow.min.css">
+    <script defer src="https://code.getmdl.io/1.1.1/material.min.js"></script>
+    <link rel='stylesheet' href='/css/app.css'/>
+
+    <!--
+    <link rel='stylesheet' href='/css/com_rigsomelight_edn.css'/>
+    -->
+</head>
+<body>
+
+
+<div class="mdl-layout mdl-js-layout mdl-layout--fixed-drawer mdl-layout--fixed-header">
+    <header class="mdl-layout__header ">
+    </header>
+
+    <div class="mdl-layout__drawer">
+        <header class="mdl-layout__header ">
+        </header>
+        <nav class="demo-navigation mdl-navigation">
+            <span id="menu"></span>
+
+            <div class="mdl-layout-spacer"></div>
+        </nav>
+    </div>
+
+    <main class="mdl-layout__content">
+
+        <div class="mdl-tabs mdl-js-tabs mdl-js-ripple-effect">
+            <div class="mdl-tabs__tab-bar">
+                <a href="#starks-panel" class="mdl-tabs__tab ">UI</a>
+                <a href="#lannisters-panel" class="mdl-tabs__tab is-active">Data</a>
+            </div>
+
+            <div class="mdl-tabs__panel " id="starks-panel">
+                <div class="mdl-grid " id="comp">
+                </div>
+            </div>
+            <div class="mdl-tabs__panel is-active" id="lannisters-panel">
+                <div class="mdl-grid " id="app">
+                </div>
+            </div>
+
+        </div>
+    </main>
+</div>
+
+
+<script src="js/compiled/web_app.js" type="text/javascript"></script>
+</body>
+
+</html>
+
+
+

@@ -4,8 +4,7 @@
  :server-logfile    "target/figwheel-logfile.log"
  :builds            [{:id            "dev",
                       :source-paths  ["src" "dev"]
-                      :figwheel      {:devcards true
-                                      }
+                      :figwheel      {:devcards true}
                       :build-options {:main                 "user"
                                       :asset-path           "js/compiled/out"
                                       :output-to            "resources/public/js/compiled/app.js"

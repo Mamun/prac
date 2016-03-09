@@ -123,13 +123,13 @@
       (c/stop))
 
 
-  (def system (boot-system))
+  (def dev-system (boot-system))
 
-  (clojure.pprint/pprint system)
+  (clojure.pprint/pprint dev-system)
 
-  (alter-var-root #'system c/start)
+  (alter-var-root #'dev-system c/start)
 
-  (alter-var-root #'system c/stop)
+  (alter-var-root #'dev-system c/stop)
 
   )
 
