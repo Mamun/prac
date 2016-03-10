@@ -3,11 +3,6 @@
   (:require [clojure.java.io :as io]
             [clojure.tools.reader.edn :as edn]
             [ring.util.response :as resp]
-            [ring.middleware.params :as p]
-            [ring.middleware.multipart-params :as mp]
-            [ring.middleware.keyword-params :as kp]
-            [ring.middleware.format-params :as fp]
-            [ring.middleware.format-response :as fr]
             [ring.middleware.tiesql :as hs]
             [compojure.route :as route]
             [immutant.web :as im])
@@ -23,31 +18,26 @@
       (edn/read-string)))
 
 
-(defn app-routes
-  [{:keys [tiesql-file tiesql-init]}]
-  (let [ds {:datasource (ComboPooledDataSource.)}
-        tms-atom (atom (hs/read-init-validate-file tiesql-file ds tiesql-init))
-        ds-atom  (atom ds)]
-    (-> (routes
-          (GET "/" [] (resp/response "App is running"))
-          (route/resources "/")
-          (route/not-found "Not found"))
-        (hs/warp-tiesql ds-atom tms-atom)                   ;; Data service here
-        (kp/wrap-keyword-params)
-        (p/wrap-params)
-        (mp/wrap-multipart-params)
-        (fp/wrap-restful-params)
-        (fr/wrap-restful-response))))
+(defonce config (read-app-file "tiesql.edn"))
+(defonce ds-atom (atom {:datasource (ComboPooledDataSource.)}))
+(defonce tms-atom (atom (hs/read-init-validate-file (:tiesql-file config) @ds-atom (:tiesql-init config))))
 
 
-(defn boot
-  [& {:keys [file-name]
-      :or   {file-name "tiesql.edn"}}]
-  (let [{:keys [immutant] :as w} (read-app-file file-name)]
-    (im/run (app-routes w) (or immutant {:port 3000} ) )))
+(defroutes app-handler
+   (GET "/" _ (resp/resource-response "index.html" {:root "public"}))
+   (route/resources "/")
+   (route/not-found {:status 200
+                     :body   "Not found"}))
+
+
+(def http-handler
+  (-> app-handler
+      (hs/warp-tiesql-handler ds-atom tms-atom)))
 
 
 (defn -main
   [& args]
-  (println "Starting tie app  ")
-  (boot))
+  (println "Starting tie app 3000 ")
+  (im/run http-handler {:port 3000
+                        ;:host "0.0.0.0"
+                        }))

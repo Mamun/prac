@@ -3,9 +3,12 @@
             [tiesql.common :refer :all]
             [ring.middleware.tiesql-util :as u]
             [clojure.tools.reader.edn :as edn]
-            [tiesql.jdbc :as tj]))
-
-
+            [tiesql.jdbc :as tj]
+            [ring.middleware.params :as p]
+            [ring.middleware.multipart-params :as mp]
+            [ring.middleware.keyword-params :as kp]
+            [ring.middleware.format-params :as fp]
+            [ring.middleware.format-response :as fr]))
 
 
 (defn response
@@ -53,13 +56,13 @@
   ;(log/info request-method)
   ;(log/info content-type)
   #_(log/info (and
-              (= request-method :post)
-              (or (re-find #"application/transit+json" content-type )
-                  (re-find #"application/json" content-type ))))
+                (= request-method :post)
+                (or (re-find #"application/transit+json" content-type)
+                    (re-find #"application/json" content-type))))
   (if (and
         (= request-method :post)
-        (or (clojure.string/includes? content-type "application/transit+json" )
-            (clojure.string/includes? content-type "application/json" )))
+        (or (clojure.string/includes? content-type "application/transit+json")
+            (clojure.string/includes? content-type "application/json")))
     u/api-endpoint
     u/url-endpoint))
 
@@ -111,9 +114,8 @@
     (fail "No params is set in http request ")))
 
 
-
-
 (defn read-init-validate-file
+  "todo need to refactor or delete this "
   ([file-name ds] (read-init-validate-file file-name ds nil))
   ([file-name ds init-name]
    (let [v (tj/read-file file-name)]
@@ -168,7 +170,25 @@
         (response))))
 
 
-(defn warp-tiesql
+(defn tiesql-handler [ds-atom tms-atom t req]
+  (let [new-tms-atom (reload-validate-file tms-atom ds-atom)]
+    (if (= "/pull" t)
+      (pull @ds-atom @new-tms-atom req)
+      (push! @ds-atom @new-tms-atom req))))
+
+
+(defn log-request
+  [handler log?]
+  (fn [req]
+    (if log?
+      (let [res (handler req)]
+        (log/info "tiesql reqest ---------------" res)
+        res)
+      (handler req))))
+
+
+
+(defn warp-tiesql-handler
   "Warper that tries to do with tiesql. It should use next to the ring-handler. If path-in is matched with
    pull-path or push-path then it will API and return result.
 
@@ -178,14 +198,20 @@
    pull-path and push path string
 
   "
-  [handler ds-atom tms-atom & {:keys [pull-path push-path]
+  [handler ds-atom tms-atom & {:keys [pull-path push-path log?]
                                :or   {pull-path "/pull"
-                                      push-path "/push"}}]
-  (fn [req]
-    (condp = (or (:path-info req)
-                 (:uri req))
-      pull-path (let [new-tms-atom (reload-validate-file tms-atom ds-atom)]
-                  (pull @ds-atom @new-tms-atom req))
-      push-path (let [new-tms-atom (reload-validate-file tms-atom ds-atom)]
-                  (push! @ds-atom @new-tms-atom req))
-      (handler req))))
+                                      push-path "/push"
+                                      log? false}}]
+  (let [p-set #{pull-path push-path}]
+    (fn [req]
+      (let [request-path (or (:path-info req)
+                             (:uri req))]
+        (if (contains? p-set request-path)
+          ( (-> (partial tiesql-handler ds-atom tms-atom request-path) ;; Data service here
+                (kp/wrap-keyword-params)
+                (p/wrap-params)
+                (mp/wrap-multipart-params)
+                (fp/wrap-restful-params)
+                (fr/wrap-restful-response)
+                (log-request log? )) req)
+          (handler req))))))

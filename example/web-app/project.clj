@@ -13,14 +13,9 @@
                  [ring/ring-defaults "0.1.5"]
                  [bk/ring-gzip "0.1.1"]
                  [ring.middleware.logger "0.5.0"]
-                 [compojure "1.4.0"]
+                 ;[compojure "1.4.0"]
                  ;[org.omcljs/om "1.0.0-alpha28"]
-                 ;     [environ "1.0.2"]
 
-                 [ring-middleware-format "0.6.0"
-                  :exclusions [ring
-                               org.clojure/core.memoize
-                               org.clojure/tools.reader]]
                  [compojure "1.1.6"]
                  [c3p0/c3p0 "0.9.1.2"]
 
@@ -29,10 +24,12 @@
                  [org.webjars/material-design-lite "1.1.1"]
 
                  [tiesql "0.1.0-alpha-SNAPSHOT"]
+                 [tiesql-http "0.1.0-SNAPSHOT"]
+
                  [com.h2database/h2 "1.3.154"]
 
-                 [cljs-ajax "0.5.2" :scope "provided"]
-                 [com.cognitect/transit-cljs "0.8.225" :scope "provided"]
+                 ;[cljs-ajax "0.5.2" :scope "provided"]
+                 ;[com.cognitect/transit-cljs "0.8.225" :scope "provided"]
                  [secretary "1.2.3" :scope "provided"]
                  [reagent "0.6.0-alpha" :scope "provided"]
                  [re-frame "0.7.0-alpha-3" :scope "provided"]
