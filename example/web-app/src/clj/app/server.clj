@@ -4,11 +4,12 @@
             [clojure.tools.reader.edn :as edn]
             [ring.util.response :as resp]
             [ring.middleware.webjars :refer [wrap-webjars]]
-            [ring.middleware.defaults :refer [wrap-defaults api-defaults]]
+            [ring.middleware.defaults :refer [wrap-defaults api-defaults site-defaults]]
             [ring.middleware.logger :refer [wrap-with-logger]]
             [compojure.route :as route]
             [immutant.web :as im]
             [ring.middleware.tiesql :as hs]
+            [tiesql.jdbc :as tj]
             [clojure.tools.logging :as log])
   (:import
     [com.mchange.v2.c3p0 ComboPooledDataSource])
@@ -22,24 +23,39 @@
       (edn/read-string)))
 
 
-(defonce config (read-app-file "tiesql.edn"))
-(defonce ds-atom (atom {:datasource (ComboPooledDataSource.)}))
-(defonce tms-atom (atom (hs/read-init-validate-file (:tiesql-file config) @ds-atom (:tiesql-init config))))
+(defn read-file [ds {:keys [tiesql-file tiesql-init]}]
+  (let [v (tj/read-file tiesql-file)]
+    (when tiesql-init
+      (tj/db-do ds v tiesql-init))
+    (tj/validate-dml! ds (tj/get-dml v))
+    v))
+
+
+(defonce config   (read-app-file "tiesql.edn"))
+(defonce ds-atom  (atom {:datasource (ComboPooledDataSource.)}))
+(defonce tms-atom (atom (read-file @ds-atom config)))
 
 
 (defroutes app-handler
    (GET "/" _ (resp/resource-response "index.html" {:root "public"}))
    (route/resources "/")
    (route/not-found {:status 200
-                     :body   "Not found"}))
+                     :body   "Not found From app "}))
+
+
+#_(defn warp-log [handler]
+  (fn [req]
+    (log/info "-----------------" req)
+    (handler req)
+    ))
 
 
 (def http-handler
   (-> app-handler
       (hs/warp-tiesql-handler ds-atom tms-atom)
+      (wrap-defaults (assoc-in site-defaults [:security :anti-forgery] false))
+   ;   (warp-log)
       (wrap-webjars)
-      ;wrap-with-logger
-      ;(wrap-defaults api-defaults)
       wrap-with-logger
       ;wrap-gzip
       ))
@@ -59,6 +75,5 @@
   (im/run http-handler {:port 3000
                         ;:host "0.0.0.0"
                         })
-
 
   )

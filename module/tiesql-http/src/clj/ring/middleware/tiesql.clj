@@ -114,7 +114,7 @@
     (fail "No params is set in http request ")))
 
 
-(defn read-init-validate-file
+(defn- read-init-validate-file
   "todo need to refactor or delete this "
   ([file-name ds] (read-init-validate-file file-name ds nil))
   ([file-name ds init-name]

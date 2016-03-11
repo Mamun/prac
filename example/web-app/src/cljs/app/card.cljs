@@ -1,14 +1,14 @@
-(ns ^:figwheel-always user
+(ns ^:figwheel-always app.card
   (:require [tiesql.client :as tiesql]
             [devcards.core]
             [app.core]
-            [sablono.core :as sab]
+            ;[sablono.core :as sab]
             [cljs.core.async :refer [<! >! timeout chan]])
   (:require-macros
     [cljs.core.async.macros :refer [go]]
     [devcards.core :as dc :refer [defcard deftest]]
     [cljs.test :refer [is testing async]]
-    [tiesql.macro :refer [defcard-tiesql]]))
+    [app.macro :refer [defcard-tiesql]]))
 
 
 (defn fig-reload []
@@ -21,7 +21,7 @@
 
 
 
-#_(defcard Hello
+(defcard Hello
            "Hello"
            {:a 3})
 
@@ -50,23 +50,23 @@
 
 
 #_(defcard my-first-card
-         (sab/html [:a {:href "#/users/he"} "Clieck here !"]))
+           (sab/html [:a {:href "#/users/he"} "Clieck here !"]))
 
 ;(devcards.core/start-devcard-ui!)
 
 #_(defcard-tiesql get-dept-by-id
-                "**With name keyword**"
-                tiesql/pull "/"
-                :name :get-dept-by-id
-                :params {:id 1})
+                  "**With name keyword**"
+                  tiesql/pull "/"
+                  :name :get-dept-by-id
+                  :params {:id 1})
 
 
 
 #_(defcard-tiesql employee-by-id
-                "**Join example**"
-                tiesql/pull "/"
-                :name [:get-employee-by-id :get-employee-dept]
-                :params {:id 1})
+                  "**Join example**"
+                  tiesql/pull "/"
+                  :name [:get-employee-by-id :get-employee-dept]
+                  :params {:id 1})
 
 
 

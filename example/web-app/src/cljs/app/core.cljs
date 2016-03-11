@@ -1,10 +1,9 @@
 (ns app.core
   (:require-macros [reagent.ratom :refer [reaction]]
-                   [secretary.core :refer [defroute]]
-                   [devcards.core :as dc :refer [defcard edn]])
+                   [secretary.core :refer [defroute]])
   (:require [goog.dom :as gdom]
             [devcards.util.edn-renderer :as edn]
-            [devcards.core :as dc]
+           ; [devcards.core :as dc]
             [reagent.core :as r]
             [secretary.core :as secretary]
             [pushy.core :as pushy]
@@ -52,7 +51,7 @@
 
 
 (def menu [["Home" "/" [:not-found {:empty "Empty state  "}]]
-           ["Department" "/pull?name=get-dept-list" [:pull :name [:get-dept-list]]]
+           ["Department" "/pull?name=get-dept-list"  [:pull :name [:get-dept-list]]]
            ["OneEmployee" "/pull?name=get-dept-list" [:pull :gname :load-employee
                                                       :params {:id 1}]]
            ["Employee" "/pull?name=get-employee-list" [:pull :name [:get-employee-list]]]

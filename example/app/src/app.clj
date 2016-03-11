@@ -5,7 +5,8 @@
             [ring.util.response :as resp]
             [ring.middleware.tiesql :as hs]
             [compojure.route :as route]
-            [immutant.web :as im])
+            [immutant.web :as im]
+            [tiesql.jdbc :as tj])
   (:import
     [com.mchange.v2.c3p0 ComboPooledDataSource])
   (:gen-class))
@@ -18,16 +19,23 @@
       (edn/read-string)))
 
 
+(defn read-file [ds {:keys [tiesql-file tiesql-init]}]
+  (let [v (tj/read-file tiesql-file)]
+    (when tiesql-init
+      (tj/db-do ds v tiesql-init))
+    (tj/validate-dml! ds (tj/get-dml v))
+    v))
+
+
 (defonce config (read-app-file "tiesql.edn"))
 (defonce ds-atom (atom {:datasource (ComboPooledDataSource.)}))
-(defonce tms-atom (atom (hs/read-init-validate-file (:tiesql-file config) @ds-atom (:tiesql-init config))))
+(defonce tms-atom (atom (read-file @ds-atom config)))
 
 
 (defroutes app-handler
    (GET "/" _ (resp/resource-response "index.html" {:root "public"}))
    (route/resources "/")
-   (route/not-found {:status 200
-                     :body   "Not found"}))
+   (route/not-found {:status 200 :body "Not found"}))
 
 
 (def http-handler

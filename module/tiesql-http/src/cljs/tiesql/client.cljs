@@ -32,9 +32,13 @@
                       :callback)))
 
 
+(def csrf-headers {"Accept"       "application/transit+json"
+                   "x-csrf-token" (.-value (.getElementById js/document "csrf-token"))})
+
 (defmethod do-ajax :callback
-  [url {:keys [callback] :as request-m}]
-  (let [w (u/validate-and-assoc-default request-m)]
+  [url {:keys [callback headers] :as request-m}]
+  (let [w (u/validate-and-assoc-default request-m)
+        headers (or headers {})]
     (if (c/failed? w)
       (callback (u/response-format w))
       (let [cb (warp-accept-callback callback request-m)]
@@ -43,7 +47,8 @@
                      :params          w
                      :handler         cb
                      :error-handler   cb
-                     })))))
+                     :headers         headers}
+                )))))
 
 
 (defmethod do-ajax :default

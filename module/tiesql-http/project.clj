@@ -4,7 +4,7 @@
   :license {:name "Eclipse Public License"
             :url  "http://www.eclipse.org/legal/epl-v10.html"}
 
-  :dependencies [[org.clojure/clojure "1.8.0-RC5"]
+  :dependencies [[org.clojure/clojure "1.8.0-RC5" :scope "provided"]
                  [org.clojure/clojurescript "1.7.228" :scope "provided"]
                  [ring "1.4.0" :scope "provided"]
                  [ring-middleware-format "0.6.0"
@@ -19,7 +19,6 @@
   :min-lein-version "2.5.3"
   :source-paths ["src/clj" "src/cljs"]
   :test-paths ["test/clj"]
-  :clean-targets ^{:protect false} [:target-path :compile-path "resources/public/js"]
 
   :cljsbuild {:builds
               {:app
