@@ -3,7 +3,6 @@
                    [secretary.core :refer [defroute]])
   (:require [goog.dom :as gdom]
             [devcards.util.edn-renderer :as edn]
-           ; [devcards.core :as dc]
             [reagent.core :as r]
             [secretary.core :as secretary]
             [pushy.core :as pushy]

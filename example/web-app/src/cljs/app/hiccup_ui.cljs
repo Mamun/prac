@@ -19,9 +19,11 @@
 (defn menu-component [menu]
   [:span
    (for [[v u h] menu]
-     [:a {:on-click (fn [w] (h w) )
+     [:a {:on-click (fn [w] (do
+                              (.preventDefault w)
+                              (h w)))
           :class    "mdl-navigation__link"
-          :key v
+          :key      v
           :href     u}
       [:i {:class "mdl-color-text--amber-grey-400 material-icons"
            :role  "presentation"} "inbox"]

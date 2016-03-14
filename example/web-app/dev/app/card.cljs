@@ -1,12 +1,12 @@
 (ns ^:figwheel-always app.card
   (:require [tiesql.client :as tiesql]
             [devcards.core]
-            [app.core]
+            [app.core :as a]
             ;[sablono.core :as sab]
             [cljs.core.async :refer [<! >! timeout chan]])
   (:require-macros
     [cljs.core.async.macros :refer [go]]
-    [devcards.core :as dc :refer [defcard deftest]]
+    [devcards.core :as dc :refer [defcard deftest defcard-rg]]
     [cljs.test :refer [is testing async]]
     [app.macro :refer [defcard-tiesql]]))
 
@@ -19,9 +19,13 @@
   )
 
 
+#_(defcard-rg rg-example-2
+            "Data View "
+            [a/main-component])
 
 
-(defcard Hello
+
+#_(defcard Hello
            "Hello"
            {:a 3})
 
@@ -56,7 +60,7 @@
 
 #_(defcard-tiesql get-dept-by-id
                   "**With name keyword**"
-                  tiesql/pull "/"
+                  tiesql/pull
                   :name :get-dept-by-id
                   :params {:id 1})
 
@@ -64,7 +68,7 @@
 
 #_(defcard-tiesql employee-by-id
                   "**Join example**"
-                  tiesql/pull "/"
+                  tiesql/pull
                   :name [:get-employee-by-id :get-employee-dept]
                   :params {:id 1})
 
@@ -73,7 +77,7 @@
 
 #_(defcard-tiesql load-dept
                   "**Load Department 2**  "
-                  tiesql/pull "/"
+                  tiesql/pull
                   :gname :load-dept
                   :params {:id 1})
 
