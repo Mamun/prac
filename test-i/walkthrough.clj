@@ -17,11 +17,11 @@
   (do
     (td/get-ds)
     (-> @td/ds
-        (t/db-do (t/read-file "tie.edn.sql") [:create-ddl :init-data])))
+        (t/db-do  [:create-ddl :init-data] (t/read-file "tie.edn.sql"))))
 
 
   (-> @td/ds
-      (t/db-do (t/read-file "tie.edn.sql") [:drop-ddl]))
+      (t/db-do  [:drop-ddl] (t/read-file "tie.edn.sql")))
 
   ;; Validate all sql statment with database
   (-> (t/validate-dml! @td/ds (t/get-dml (t/read-file "tie.edn.sql")))

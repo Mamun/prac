@@ -1,6 +1,6 @@
 (ns ring.middleware.tiesql
   (:require [clojure.tools.logging :as log]
-            [tiesql.common :refer :all]
+            [tiesql.common :as c]
             [ring.middleware.tiesql-util :as u]
             [clojure.tools.reader.edn :as edn]
             [tiesql.jdbc :as tj]
@@ -46,7 +46,7 @@
 (defn response-stringify
   [response req]
   (if (= :string (:output req))
-    (mapv stringify-keys2 response)
+    (mapv c/stringify-keys2 response)
     response))
 
 
@@ -76,7 +76,7 @@
   (-> params
       (update-in [u/tiesql-name] (fn [w] (if w
                                            (if (sequential? w)
-                                             (mapv as-keyword (remove nil? w))
+                                             (mapv c/as-keyword (remove nil? w))
                                              (keyword w)))))
       (filter-nil-value)))
 
@@ -90,11 +90,11 @@
 
 (defmethod parse-request u/url-endpoint
   [_ params]
-  (log/info "url endpoint ")
+  (log/info " url endpoint ")
   (let [r-params (dissoc params u/tiesql-name :rformat :pformat :gname)
         q-name (when-let [w (u/tiesql-name params)]
                  (if (sequential? w)
-                   (mapv as-keyword (remove nil? w))
+                   (mapv c/as-keyword (remove nil? w))
                    (keyword w)))
         other (-> params
                   (select-keys [:gname :rformat :pformat])
@@ -111,34 +111,8 @@
     (let [type (endpoint-type req)]
       (-> (parse-request type params)
           (param-keywordize-keys)))
-    (fail "No params is set in http request ")))
+    (c/fail "No params is set in http request ")))
 
-
-(defn- read-init-validate-file
-  "todo need to refactor or delete this "
-  ([file-name ds] (read-init-validate-file file-name ds nil))
-  ([file-name ds init-name]
-   (let [v (tj/read-file file-name)]
-     (when init-name
-       (tj/db-do ds v init-name))
-     (tj/validate-dml! ds (tj/get-dml v))
-     v)))
-
-
-(defn reload-validate-file
-  ([tie-atom ds-atom]
-   (when (get-in @tie-atom [global-key file-reload-key])
-     (let [f-name (get-in @tie-atom [global-key file-name-key])
-           new-tms (read-init-validate-file f-name @ds-atom)]
-       (log/info "file is reloading ---" f-name)
-       (reset! tie-atom new-tms)))
-   tie-atom))
-
-
-(defn get-sql-file-value [tms-atom]
-  (->> @tms-atom
-       (vals)
-       (mapv (fn [w] (select-keys w [name-key model-key sql-key])))))
 
 
 (defn- apply-op
@@ -153,7 +127,7 @@
 (defn pull
   [ds tms ring-request]
   (let [req (tiesql-request ring-request)
-        res (try-> req
+        res (c/try-> req
                    (apply-op tj/pull ds tms))]
     (-> res
         (response-stringify req)
@@ -163,18 +137,25 @@
 
 (defn push!
   [ds tms ring-request]
-  (let [res (try-> (tiesql-request ring-request)
+  (let [res (c/try-> (tiesql-request ring-request)
                    (apply-op tj/push! ds tms))]
     (-> res
         (u/response-format)
         (response))))
 
 
-(defn tiesql-handler [ds-atom tms-atom t req]
-  (let [new-tms-atom (reload-validate-file tms-atom ds-atom)]
+(defn tiesql-handler [ds tms t req]
+  ;(log/info "--------------" tms )
+  (if (c/failed? tms)
+    (do
+    ;  (log/info "--------------" (u/response-format tms) )
+      (-> tms
+          ;(response-stringify req)
+          (u/response-format)
+          (response)))
     (if (= "/pull" t)
-      (pull @ds-atom @new-tms-atom req)
-      (push! @ds-atom @new-tms-atom req))))
+      (pull ds tms req)
+      (push! ds tms req))))
 
 
 (defn log-request
@@ -188,6 +169,26 @@
 
 
 
+(defn- reload-tms
+  ([tms-atom ds]
+   (when (get-in @tms-atom [c/global-key c/file-reload-key])
+     (c/try->> (get-in @tms-atom [c/global-key c/file-name-key])
+             (tj/read-file)
+             (tj/warp-validate-dml! ds)
+             (reset! tms-atom)))
+   @tms-atom))
+
+
+(defn try!
+  [form & v]
+  (try
+    (apply form v)
+    (catch Exception e
+      (log/error e)
+      (c/fail {:msg "Error in server "}))))
+
+
+;ds-atom tms-atom
 (defn warp-tiesql-handler
   "Warper that tries to do with tiesql. It should use next to the ring-handler. If path-in is matched with
    pull-path or push-path then it will API and return result.
@@ -198,20 +199,36 @@
    pull-path and push path string
 
   "
-  [handler ds-atom tms-atom & {:keys [pull-path push-path log?]
-                               :or   {pull-path "/pull"
-                                      push-path "/push"
-                                      log? false}}]
+  [handler & {:keys [pull-path push-path log? tms ds]
+              :or   {pull-path "/pull"
+                     push-path "/push"
+                     log?      false}}]
+  #_{:pre [(instance? clojure.lang.Ref )]}
   (let [p-set #{pull-path push-path}]
     (fn [req]
-      (let [request-path (or (:path-info req)
+      ;(log/info "----" @tms )
+      (let [ds (or (:ds req) @ds)
+            tms (or (:tms req)
+                    (try! reload-tms tms ds))
+            request-path (or (:path-info req)
                              (:uri req))]
         (if (contains? p-set request-path)
-          ( (-> (partial tiesql-handler ds-atom tms-atom request-path) ;; Data service here
-                (kp/wrap-keyword-params)
-                (p/wrap-params)
-                (mp/wrap-multipart-params)
-                (fp/wrap-restful-params)
-                (fr/wrap-restful-response)
-                (log-request log? )) req)
+          ((-> (partial tiesql-handler ds tms request-path) ;; Data service here
+               (kp/wrap-keyword-params)
+               (p/wrap-params)
+               (mp/wrap-multipart-params)
+               (fp/wrap-restful-params)
+               (fr/wrap-restful-response)
+               (log-request log?)) req)
           (handler req))))))
+
+
+
+(defn get-sql-file-value [tms-atom]
+  (->> @tms-atom
+       (vals)
+       (mapv (fn [w] (select-keys w [c/name-key c/model-key c/sql-key])))))
+
+
+
+

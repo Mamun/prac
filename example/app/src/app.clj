@@ -19,17 +19,19 @@
       (edn/read-string)))
 
 
-(defn read-file [ds {:keys [tiesql-file tiesql-init]}]
-  (let [v (tj/read-file tiesql-file)]
-    (when tiesql-init
-      (tj/db-do ds v tiesql-init))
-    (tj/validate-dml! ds (tj/get-dml v))
-    v))
-
-
 (defonce config (read-app-file "tiesql.edn"))
-(defonce ds-atom (atom {:datasource (ComboPooledDataSource.)}))
-(defonce tms-atom (atom (read-file @ds-atom config)))
+(defonce ds-atom (atom nil))
+(defonce tms-atom (atom nil))
+
+
+(defn init-state []
+  (when (nil? @ds-atom)
+    (reset! ds-atom {:datasource (ComboPooledDataSource.)}))
+  (if (nil? @tms-atom)
+    (->> (tj/read-file (:tiesql-file config))
+         (tj/warp-db-do @ds-atom (:tiesql-init config))
+         (tj/warp-validate-dml! @ds-atom)
+         (reset! tms-atom))))
 
 
 (defroutes app-handler
@@ -40,12 +42,13 @@
 
 (def http-handler
   (-> app-handler
-      (hs/warp-tiesql-handler ds-atom tms-atom)))
+      (hs/warp-tiesql-handler :tms tms-atom :ds ds-atom)))
 
 
 (defn -main
   [& args]
   (println "Starting tie app 3000 ")
+  (init-state)
   (im/run http-handler {:port 3000
                         ;:host "0.0.0.0"
                         }))

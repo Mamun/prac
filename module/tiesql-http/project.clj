@@ -20,6 +20,19 @@
   :source-paths ["src/clj" "src/cljs"]
   :test-paths ["test/clj"]
 
+  :profiles {:dev {:repl-options {:port 4555}
+                   :source-paths ["src-dev"]
+                   :resource-paths [ "../../test-i"]
+                   :dependencies [[compojure "1.1.6"]
+                                  [org.immutant/web "2.1.3" ;; default Web server
+                                   :exclusions [ch.qos.logback/logback-core
+                                                org.slf4j/slf4j-api]]
+                                  [ch.qos.logback/logback-classic "1.1.3"]
+
+                                  [com.h2database/h2 "1.3.154"]
+                                  [c3p0/c3p0 "0.9.1.2"]]}}
+
+
   :cljsbuild {:builds
               {:app
                {:source-paths ["src/cljs"]

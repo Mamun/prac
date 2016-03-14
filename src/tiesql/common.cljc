@@ -183,6 +183,14 @@
   (-failed? v))
 
 
+(defmacro try->>
+  [expr & forms]
+  (let [g (gensym)
+        pstep (fn [step] `(if (failed? ~g) ~g (->> ~g ~step)))]
+    `(let [~g ~expr
+           ~@(interleave (repeat g) (map pstep forms))]
+       ~g)))
+
 
 (defmacro try->
   [expr & forms]

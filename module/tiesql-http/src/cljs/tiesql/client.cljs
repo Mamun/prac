@@ -33,7 +33,8 @@
 
 
 (def csrf-headers {"Accept"       "application/transit+json"
-                   "x-csrf-token" (.-value (.getElementById js/document "csrf-token"))})
+                   ;"x-csrf-token" (.-value (.getElementById js/document "csrf-token"))
+                   })
 
 (defmethod do-ajax :callback
   [url {:keys [callback headers] :as request-m}]
