@@ -16,15 +16,23 @@
 
 
 
-(defn menu-component [menu]
-  [:span
-   (for [[v u h] menu]
-     [:a {:on-click (fn [w] (do
-                              (.preventDefault w)
-                              (h w)))
-          :class    "mdl-navigation__link"
-          :key      v
-          :href     u}
-      [:i {:class "mdl-color-text--amber-grey-400 material-icons"
-           :role  "presentation"} "inbox"]
-      v])])
+(defn navigation-view [href-list]
+  [:nav {:class "mdl-list"}
+   (for [[v u h] href-list]
+     [:li {:class "mdl-list__item"
+           :key v}
+      [:a {:on-click (fn [w] (do
+                            ;   (.preventDefault w)
+                               (h w)))
+           :class    "mdl-navigation__link"
+           :key      v
+           :href     u}
+       #_[:i {:class "mdl-color-text--amber-grey-400 material-icons"
+            :role  "presentation"} "inbox"]
+       v]])
+   #_[:div {:class "mdl-layout-spacer"}]]
+  #_[:div {:class "mdl-layout__drawer"}
+   ])
+
+
+

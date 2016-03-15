@@ -4,80 +4,72 @@
   (:require [goog.dom :as gdom]
             [devcards.util.edn-renderer :as edn]
             [reagent.core :as r]
-            [secretary.core :as secretary]
-            [pushy.core :as pushy]
+            [app.rregister :as util]
             [re-frame.core :refer [register-handler
                                    path
                                    register-sub
                                    dispatch
                                    dispatch-sync
                                    subscribe]]
-            [app.hiccup-ui :as u]
-            [app.util :as util]))
+            [app.hiccup-ui :as u]))
 
 
 ;(devcards.core/start-devcard-ui!)
 
-
-(defroute "*" [] (js/console.log "home path "))
-(secretary/set-config! :prefix "/")
-(def history (pushy/pushy secretary/dispatch!
-                          (fn [x] (when (secretary/locate-route x) x))))
-
-;; Start event listeners
-(pushy/start! history)
+(defn map-menu-action
+  [menu-list]
+  (into [] (map (fn [w]
+                  (assoc w 2 (util/map-menu-dispatch w))
+                  )) menu-list))
 
 
-(register-handler
-  :pull
-  (fn [db [_ [v e]]]
-    (if v
-      (merge db v)
-      (merge db e))))
-
-
-(register-handler
-  :not-found
-  (fn [db [_ v]]
-    (merge (empty db) v)))
-
-
-(register-sub
-  :pull
-  (fn
-    [db _]                                                  ;; db is the app-db atom
-    (reaction @db)))
-
-
-(def menu [["Home" "/" [:not-found {:empty "Empty state  "}]]
-           ["Department" "/pull?name=get-dept-list"  [:pull :name [:get-dept-list]]]
-           ["OneEmployee" "/pull?name=get-dept-list" [:pull :gname :load-employee
+(def menu [["Home" "#" [:not-found {:empty "Empty state  "}]]
+           ["Department" "#"  [:pull :name [:get-dept-list]]]
+           ["OneEmployee" "#" [:pull :gname :load-employee
                                                       :params {:id 1}]]
-           ["Employee" "/pull?name=get-employee-list" [:pull :name [:get-employee-list]]]
-           ["Meeting" "/pull?name=:get-meeting-list" [:pull :name [:get-meeting-list]]]])
+           ["Employee" "#" [:pull :name [:get-employee-list]]]
+           ["Meeting" "#" [:pull :name [:get-meeting-list]]]])
 
 
-(defn main-component []
+
+
+
+(defn search-box []
+  (let [v (map-menu-action menu)]
+    (fn []
+      [:div {:class "mdl-cell mdl-card mdl-shadow--4dp portfolio-card"
+             :style {:width "100%"}}
+       ;"Hello "
+       [u/navigation-view v]
+       ])))
+
+
+(defn show-box []
   (let [data (subscribe [:pull])]
     (fn []
       (if (empty? @data)
         [:span "Click menu to view data  "]
-        (edn/html-edn @data))
+        (edn/html-edn @data)))))
 
-      #_(jhtml/edn->hiccup @data)
-      #_(u/table @data))))
+;;Join meeting
+
+(defn app-content []
+  [:span {:style {:width "100%"}}
+   [search-box]
+   [show-box]])
 
 
 
 
-;(print (r/render-to-static-markup (menu-component)))
+
+(defn run []
+
+  (r/render-component [app-content]
+                      (gdom/getElement "content")))
+
+(run)
 
 
-(defn init-component []
-  (r/render-component [u/menu-component (util/map-menu-action menu)]
-                      (gdom/getElement "menu"))
-  (r/render-component [main-component]
-                      (gdom/getElement "app")))
-
-(init-component)
+#_(r/render-component [init-app]
+                    (gdom/getElement "app"))
 

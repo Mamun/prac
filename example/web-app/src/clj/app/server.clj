@@ -64,7 +64,7 @@
   (-> app-handler
       (hs/warp-tiesql-handler :tms tms-atom :ds ds-atom)
       (warp-state)
-      (wrap-defaults (assoc-in site-defaults [:security :anti-forgery] false))
+      ;(wrap-defaults (assoc-in site-defaults [:security :anti-forgery] false))
    ;   (warp-log)
       (wrap-webjars)
       wrap-with-logger

@@ -58,7 +58,7 @@
               {:app
                {:source-paths ["src/cljs" "dev"]
                 :figwheel     {:devcards true}
-                :compiler     {:main                 app.card
+                :compiler     {:main                 app.run
                                :asset-path           "js/compiled/out"
                                :output-dir           "resources/public/js/compiled/out"
                                :output-to            "resources/public/js/compiled/web_app.js"
