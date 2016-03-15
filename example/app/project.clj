@@ -24,7 +24,9 @@
                  [c3p0/c3p0 "0.9.1.2"]
 
                  [tiesql "0.1.0-alpha-SNAPSHOT"]
-                 [tiesql-http "0.1.0-SNAPSHOT"]]
+                 [tiesql-http "0.1.0-SNAPSHOT"]
+
+                 ]
 
   :profiles {:uberjar {:main         app
                        :aot          [app]

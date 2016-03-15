@@ -80,7 +80,8 @@
               :cljsbuild    {:builds
                              {:test
                               {:source-paths ["src/cljs" "test/cljs"]
-                               :compiler     {:output-to     "resources/public/js/compiled/testable.js"
+                               :compiler
+                                             {:output-to     "resources/public/js/compiled/testable.js"
                                               :asset-path    "js/compiled/out"
                                               :output-dir    "resources/public/js/compiled/out"
                                               :main          app.test-runner
