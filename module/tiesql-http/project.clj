@@ -31,10 +31,10 @@
               {:app
                {:source-paths ["src/cljs" "dev"]
                 :figwheel     {:devcards true}
-                :compiler     {:main                 tiesql.card
+                :compiler     {:main                 app.core
                                :asset-path           "js/compiled/out"
                                :output-dir           "dev-resources/public/js/compiled/out"
-                               :output-to            "dev-resources/public/js/compiled/client.js"
+                               :output-to            "dev-resources/public/js/compiled/app.js"
                                :source-map-timestamp true
 
                                }}}}

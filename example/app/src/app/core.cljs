@@ -1,4 +1,4 @@
-(ns ^:figwheel-always tiesql.card
+(ns ^:figwheel-always app.core
   (:require [tiesql.client :as tiesql]
             [devcards.core]
 
@@ -8,7 +8,7 @@
     [cljs.core.async.macros :refer [go]]
     [devcards.core :as dc :refer [defcard deftest defcard-rg]]
     [cljs.test :refer [is testing async]]
-    [tiesql.card-macro :refer [defcard-tiesql]]))
+    [tiesql.devcard :refer [defcard-tiesql]]))
 
 
 (defn fig-reload []

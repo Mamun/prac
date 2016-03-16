@@ -1,4 +1,4 @@
-(ns tiesql.card-macro)
+(ns tiesql.devcard)
 
 (defmacro defcard-tiesql
   [name description & param]

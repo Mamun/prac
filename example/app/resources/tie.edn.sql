@@ -31,13 +31,15 @@ call next value for seq_meet;
                                      :result #{:array}}}
  :timeout 5000
  :result #{:array}
+ :params [[:limit :ref-con 10]
+          [:offset :ref-con 0]]
  :skip #{:join}
   }*/
-select * from department;
-select * from department where id in (:id);
-select * from employee;
-select * from meeting;
-select * from employee_meeting;
+select * from department LIMIT :limit OFFSET :offset;
+select * from department where id in (:id) ;
+select * from employee LIMIT :limit OFFSET :offset;
+select * from meeting LIMIT :limit OFFSET :offset;
+select * from employee_meeting LIMIT :limit OFFSET :offset;
 
 
 
@@ -76,7 +78,7 @@ select e.*, em.employee_id from employee e, employee_meeting em where em.meeting
 
 /*
 {:doc " General select statement with extend. "
- :name  [:get-dept-by-id :get-dept-employee :get-employee2]
+ :name  [:get-dept-by-id :get-dept-employee ]
  :model [:department :employee :department]
  :group :load-dept
  :extend {:department {:timeout 2000
@@ -88,7 +90,7 @@ select e.*, em.employee_id from employee e, employee_meeting em where em.meeting
  }*/
 select * from department where id = :id ;
 select * from employee where dept_id = :id;
-select * from employee;
+
 
 
 

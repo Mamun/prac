@@ -1,8 +1,8 @@
-(ns ^:figwheel-always app.card
+(ns ^:figwheel-always app.core
   (:require [tiesql.client :as tiesql]
             [devcards.core]
 
-            ;[sablono.core :as sab]
+    ;[sablono.core :as sab]
             [cljs.core.async :refer [<! >! timeout chan]])
   (:require-macros
     [cljs.core.async.macros :refer [go]]
@@ -19,15 +19,17 @@
   )
 
 
+
+
 #_(defcard-rg rg-example-2
-            "Data View "
-            [a/main-component])
+              "Data View "
+              [a/main-component])
 
-
+;(js/alert "Hello")
 
 #_(defcard Hello
-           "Hello"
-           {:a 3})
+         "Hello"
+         {:a 3})
 
 
 #_(defcard Hello
@@ -58,11 +60,11 @@
 
 ;(devcards.core/start-devcard-ui!)
 
-#_(defcard-tiesql get-dept-by-id
-                  "**With name keyword**"
-                  tiesql/pull
-                  :name :get-dept-by-id
-                  :params {:id 1})
+(defcard-tiesql get-dept-by-id
+                "**With name keyword**"
+                tiesql/pull
+                :name :get-dept-by-id
+                :params {:id 1})
 
 
 
@@ -75,26 +77,26 @@
 
 
 
-#_(defcard-tiesql load-dept
-                  "**Load Department 2**  "
-                  tiesql/pull
-                  :gname :load-dept
-                  :params {:id 1})
+(defcard-tiesql load-dept
+                "**Load Department 2**  "
+                tiesql/pull
+                :gname :load-dept
+                :params {:id 1})
 
 
-#_(defcard-tiesql load-employee
-                  "**Load Employee**  "
-                  tiesql/pull
-                  :gname :load-employee
-                  :params {:id 1})
+(defcard-tiesql load-employee
+                "**Load Employee**  "
+                tiesql/pull
+                :gname :load-employee
+                :params {:id 1})
 
 
 
 
-#_(defcard-tiesql dept-list
-                  "Load dept list as array  "
-                  tiesql/pull
-                  :name [:get-dept-list])
+(defcard-tiesql dept-list
+                "Load dept list as array  "
+                tiesql/pull
+                :name [:get-dept-list])
 
 
 

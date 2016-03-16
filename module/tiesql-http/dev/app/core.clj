@@ -1,4 +1,4 @@
-(ns tiesql.app
+(ns app.core
   (:use compojure.core)
   (:require [clojure.java.io :as io]
             [clojure.tools.reader.edn :as edn]
