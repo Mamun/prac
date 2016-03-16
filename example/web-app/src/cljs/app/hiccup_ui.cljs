@@ -17,14 +17,13 @@
 
 
 (defn navigation-view [href-list]
-  [:nav {:class "mdl-list"}
+  [:ui {:class "nav nav-sidebar"}
    (for [[v u h] href-list]
-     [:li {:class "mdl-list__item"
-           :key v}
+     [:li {:key v}
       [:a {:on-click (fn [w] (do
                             ;   (.preventDefault w)
                                (h w)))
-           :class    "mdl-navigation__link"
+           ;:class    "mdl-navigation__link"
            :key      v
            :href     u}
        #_[:i {:class "mdl-color-text--amber-grey-400 material-icons"

@@ -19,8 +19,8 @@
                  [c3p0/c3p0 "0.9.1.2"]
 
                  [ring-webjars "0.1.1"]
-                 ;[org.webjars/bootstrap "3.3.5"]
-                 [org.webjars/material-design-lite "1.1.1"]
+                 [org.webjars/bootstrap "3.3.5"]
+                 ;[org.webjars/material-design-lite "1.1.1"]
 
                  [tiesql "0.1.0-alpha-SNAPSHOT"]
                  [tiesql-http "0.1.0-SNAPSHOT"]

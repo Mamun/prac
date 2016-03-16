@@ -1,7 +1,7 @@
 (ns ^:figwheel-always app.card
   (:require [tiesql.client :as tiesql]
             [devcards.core]
-
+            [app.core]
             ;[sablono.core :as sab]
             [cljs.core.async :refer [<! >! timeout chan]])
   (:require-macros
