@@ -4,6 +4,7 @@
   (:require [goog.dom :as gdom]
             [devcards.util.edn-renderer :as edn]
             [reagent.core :as r]
+    ;[reagent.core :as reagent :refer [atom]]
             [app.rregister :as util]
             [reagent-forms.core :refer [bind-fields init-field value-of]]
             [re-frame.core :refer [register-handler
@@ -25,19 +26,39 @@
 
 
 (def menu [["Home" "#" [:not-found {:empty "Empty state  "}]]
-           ["Department" "#"  [:pull :name [:get-dept-list]]]
+           ["Department" "#" [:pull :name [:get-dept-list]]]
            ["OneEmployee" "#" [:pull :gname :load-employee
-                                                      :params {:id 1}]]
+                               :params {:id 1}]]
            ["Employee" "#" [:pull :name [:get-employee-list]]]
            ["Meeting" "#" [:pull :name [:get-meeting-list]]]])
-
 
 
 (defn menu-view []
   (let [v (map-menu-action menu)]
     (fn []
-      [u/navigation-view v]
-      )))
+      [u/navigation-view v])))
+
+
+(def search-template
+  [:span
+   [:div.form-group
+    [:input.form-control {:field :text
+                          :id    :search.value}]]])
+
+
+(defn search-view []
+  (let [doc (r/atom {:search {:value "Hello"}})]
+    (fn []
+      [:div
+       [:div.page-header "Search "]
+       [bind-fields
+        search-template
+        doc]
+       [:button.btn.btn-primary
+        {:on-click
+         #(if-not (empty? (get-in @doc [:search :value]))
+           (js/console.log (get-in @doc [:search :value])))}
+        "save"]])))
 
 
 (defn content-view []
@@ -47,63 +68,15 @@
         [:span "Click menu to view data  "]
         (edn/html-edn @data)))))
 
-;;Join meeting
-
-(defn row [label input]
-  [:div.row
-   [:div.col-md-2 [:label label]]
-   [:div.col-md-5 input]])
-
-(defn radio [label name value]
-  [:div.radio
-   [:label
-    [:input {:field :radio :name name :value value}]
-    label]])
-
-
-(defn input [label type id]
-  (row label [:input.form-control {:field type :id id}]))
-
-
-(def form-template
-  [:span
-   (input "last name" :text :search.value)
-   [:div.form-group
-    [:input.form-control {:type :text
-                          ; :field :text
-                          :id   :search.value}]]])
-
-
-
-(defn search-box []
-  (let [doc  (atom {:search {:value "Hello"}})]
-    (fn []
-      [:div
-       [:div.page-header "Search "]
-       [bind-fields
-        form-template
-        doc]
-       [:button.btn.btn-primary
-        {:on-click
-         #(if-not (empty? (get-in @doc [:search :value]))
-           (js/console.log (get-in @doc [:search :value]))
-           #_(swap! doc assoc-in [:errors :first-name] "first name is empty"))}
-        "save"]
-       ])
-    ))
-
 
 (defn app-content []
   [:span
-
-   [:nav {:class  "navbar navbar-default navbar-fixed-top"}
+   [:nav {:class "navbar navbar-default navbar-fixed-top"}
     [:div {:class "container"}
-     [:div {:class "navbar-collapse collapse" }
+     [:div {:class "navbar-collapse collapse"}
       [:ul {:class "nav navbar-nav navbar-right"}
        [:li {:class "active"}
-        [:a {:href "#"} "Hello"] ]
-       ]
-      ]]]
+        [:a {:href "#"} "Hello"]]]]]]
    [:div {:class "container-fluid"}
     [:div {:class "row"}
      [:div {:class "col-sm-3 col-md-2 sidebar"}
@@ -111,7 +84,7 @@
      [:div {:class "col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main"}
       [:div {:class "panel panel-default"}
        [:div {:class "panel-body"}
-        [search-box]]]
+        [search-view]]]
       [content-view]]]]])
 
 
@@ -127,5 +100,5 @@
 
 
 #_(r/render-component [init-app]
-                    (gdom/getElement "app"))
+                      (gdom/getElement "app"))
 

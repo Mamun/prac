@@ -32,6 +32,7 @@
                  [secretary "1.2.3" :scope "provided"]
                  [reagent "0.6.0-alpha" :scope "provided"]
                  [reagent-forms "0.5.21" :scope "provided"]
+                 ;[reagent-reforms "0.4.3" :scope "provided"]
                  [re-frame "0.7.0-alpha-3" :scope "provided"]
                  [kibu/pushy "0.3.6" :scope "provided"]
                  [devcards "0.2.1-5" :scope "provided"]
