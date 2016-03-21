@@ -45,11 +45,7 @@
     (into [] p (vals tms))))
 
 
-(defn- exec-node
-  [ds tms type]
-  (let [tx (apply hash-map (get-in tms [cc/global-key cc/tx-prop]))
-        f (fn [m-coll] (ce/db-execute m-coll type ds tx))]
-    (c/fn-as-node-processor f :name :sql-executor)))
+
 
 
 (defn node-processor
@@ -104,7 +100,9 @@
 
 
 (defn pull
-  "Read or query value from database. It will return as model map "
+  "Read or query value from database. It will return as model map
+   ds: datasource
+   "
   [ds tms & {:as request-m}]
   (if-let [w (cc/failed? (cc/validate-input! request-m))]
     w
@@ -112,7 +110,7 @@
       (cc/try-> tms
                 (node-processor)
                 (filter-processor request-m)
-                (c/add-child-one (exec-node ds tms ce/Parallel))
+                (c/add-child-one (ce/exec-node ds tms ce/Parallel))
                 (tie/do-run tms request-m)))))
 
 
@@ -125,7 +123,7 @@
       (cc/try-> tms
                 (node-processor)
                 (c/remove-type :output)
-                (c/add-child-one (exec-node ds tms ce/Transaction))
+                (c/add-child-one (ce/exec-node ds tms ce/Transaction))
                 (p/assoc-param-ref-gen (fn [& {:as m}]
                                          (->> (pull-sequence-format! m)
                                               (seq)
@@ -153,11 +151,12 @@
       (let [tm-coll (vals (tie/select-name tms name-coll))]
         (doseq [m tm-coll]
           (when-let [sql (get-in m [cc/sql-key])]
-            (log/info "db do with " sql)
+            ;       (log/info "db do with " sql)
             (jdbc/db-do-commands ds false sql))))
       (catch Exception e
-        (log/error e)
-        (log/error (.getMessage e)))))
+        ;(log/error e)
+        ;(log/error (.getMessage e))
+        )))
   tms)
 
 

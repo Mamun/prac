@@ -215,3 +215,9 @@
         (notify-async-tracking))))
 
 
+(defn sql-executor-node
+  [ds tms type]
+  (let [tx (apply hash-map (get-in tms [cc/global-key cc/tx-prop]))
+        f (fn [m-coll] (db-execute m-coll type ds tx))]
+    (fn-as-node-processor f :name :sql-executor)))
+
