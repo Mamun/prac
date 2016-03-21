@@ -174,7 +174,7 @@
    (when (get-in @tms-atom [c/global-key c/file-reload-key])
      (c/try->> (get-in @tms-atom [c/global-key c/file-name-key])
              (tj/read-file)
-             (tj/warp-validate-dml! ds)
+             (tj/validate-dml! ds)
              (reset! tms-atom)))
    @tms-atom))
 

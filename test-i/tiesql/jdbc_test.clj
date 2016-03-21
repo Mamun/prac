@@ -166,7 +166,7 @@
 (deftest validate-dml!-test
   (testing "test validate-dml!"
     (do
-      (->> (validate-dml! @td/ds (get-dml @td/tms)))
+      (->> (validate-dml! @td/ds @td/tms))
       (is true))))
 
 

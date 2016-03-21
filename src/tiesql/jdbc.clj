@@ -23,6 +23,111 @@
                  (imp/select-module-node-processor pc)))))
 
 
+(defmulti default-request (fn [t _] t))
+
+
+(defmethod default-request :pull
+  [_ {:keys [name gname] :as request-m}]
+  (let [dfmat (if (or gname
+                      (sequential? name))
+                {:pformat cc/map-format :rformat cc/nested-join-format}
+                {:pformat cc/map-format :rformat cc/map-format})
+        request-m (merge dfmat request-m)
+        request-m (if gname
+                    (assoc request-m :rformat cc/nested-join-format)
+                    request-m)]
+    request-m))
+
+
+(defmethod default-request :push
+  [_ {:keys [gname name] :as request-m}]
+  (let [d (if (or gname
+                  (sequential? name))
+            {:pformat cc/nested-map-format :rformat cc/nested-map-format}
+            {:pformat cc/map-format :rformat cc/map-format})
+        request-m (merge d request-m)
+        request-m (if gname
+                    (-> request-m
+                        (assoc :pformat cc/nested-map-format)
+                        (assoc :rformat cc/nested-map-format))
+                    request-m)]
+    request-m))
+
+
+(defmethod default-request :db-seq
+  [_ request-m]
+  (-> request-m
+      (assoc :pformat cc/map-format)
+      (assoc :rformat cc/value-format)))
+
+
+(defn- filter-processor
+  [process {:keys [out-format]}]
+  (if (= out-format cc/value-format)
+    (c/remove-type process :output)
+    process))
+
+
+(defn select-pull-node [ds tms request-m]
+  (cc/try-> tms
+            (get-in [cc/global-key cc/process-context-key] [])
+            (filter-processor request-m)
+            (c/add-child-one (ce/sql-executor-node ds tms ce/Parallel))))
+
+
+(defn pull
+  "Read or query value from database. It will return as model map
+   ds: datasource
+   "
+  [ds tms & {:as request-m}]
+  (cc/try->> request-m
+             (cc/validate-input!)
+             (default-request :pull)
+             (tie/do-run (select-pull-node ds tms request-m) tms)))
+
+
+(defn select-push-node [ds tms]
+  (cc/try-> tms
+            (get-in [cc/global-key cc/process-context-key] [])
+            (c/remove-type :output)
+            (c/add-child-one (ce/sql-executor-node ds tms ce/Transaction))
+            (p/assoc-param-ref-gen (fn [& {:as m}]
+                                     (->> (default-request :db-seq m)
+                                          (seq)
+                                          (apply concat)
+                                          (cons tms)
+                                          (cons ds)
+                                          (apply pull))))))
+
+
+(defn push!
+  "Create, update or delete value in database. DB O/P will be run within transaction. "
+  [ds tms & {:as request-m}]
+  (cc/try->> request-m
+             (cc/validate-input!)
+             (default-request :push)
+             (tie/do-run (select-push-node ds tms) tms)))
+
+
+
+
+
+(defn db-do [ds name-coll tms]
+  (when name-coll
+    (try
+      (let [tm-coll (vals (tie/select-name tms name-coll))]
+        (doseq [m tm-coll]
+          (when-let [sql (get-in m [cc/sql-key])]
+            ;       (log/info "db do with " sql)
+            (jdbc/db-do-commands ds false sql))))
+      (catch Exception e
+        (cc/fail {:detail e})
+        ;(log/error e)
+        ;(log/error (.getMessage e))
+        )))
+  tms)
+
+
 
 (defn has-dml-type? [m-map]
   (let [dml (cc/dml-key m-map)]
@@ -45,125 +150,15 @@
     (into [] p (vals tms))))
 
 
+(defn validate-dml! [ds tms]
+  (let [str-coll (get-dml tms)]
+    (jdbc/with-db-connection
+      [conn ds]
+      (doseq [str str-coll]
+        (jdbc/prepare-statement (:connection conn) str)))
+    (log/info (format "checking %d dml statement is done " (count str-coll)))
 
-
-
-(defn node-processor
-  [tms]
-  (if-let [w (get-in tms [cc/global-key cc/process-context-key])]
-    w
-    (cc/fail "There is no node processorprocess to do process ")))
-
-
-
-
-
-(defn pull-default-request!
-  [{:keys [name gname] :as request-m}]
-  (let [dfmat (if (or gname
-                      (sequential? name))
-                {:pformat cc/map-format :rformat cc/nested-join-format}
-                {:pformat cc/map-format :rformat cc/map-format})
-        request-m (merge dfmat request-m)
-        request-m (if gname
-                    (assoc request-m :rformat cc/nested-join-format)
-                    request-m)]
-    request-m))
-
-
-(defn pull-sequence-format!
-  [request-m]
-  (merge request-m {:pformat cc/map-format :rformat cc/value-format}))
-
-
-(defn push-default-request!
-  [{:keys [gname name] :as request-m}]
-  (let [d (if (or gname
-                  (sequential? name))
-            {:pformat cc/nested-map-format :rformat cc/nested-map-format}
-            {:pformat cc/map-format :rformat cc/map-format})
-        request-m (merge d request-m)
-        request-m (if gname
-                    (-> request-m
-                        (assoc :pformat cc/nested-map-format)
-                        (assoc :rformat cc/nested-map-format))
-                    request-m)]
-    request-m))
-
-
-(defn- filter-processor
-  [process {:keys [out-format]}]
-  (if (= out-format cc/value-format)
-    (c/remove-type process :output)
-    process))
-
-
-
-(defn pull
-  "Read or query value from database. It will return as model map
-   ds: datasource
-   "
-  [ds tms & {:as request-m}]
-  (if-let [w (cc/failed? (cc/validate-input! request-m))]
-    w
-    (let [request-m (pull-default-request! request-m)]
-      (cc/try-> tms
-                (node-processor)
-                (filter-processor request-m)
-                (c/add-child-one (ce/exec-node ds tms ce/Parallel))
-                (tie/do-run tms request-m)))))
-
-
-(defn push!
-  "Create, update or delete value in database. DB O/P will be run within transaction. "
-  [ds tms & {:as request-m}]
-  (if-let [w (cc/failed? (cc/validate-input! request-m))]
-    w
-    (let [request-m (push-default-request! request-m)]
-      (cc/try-> tms
-                (node-processor)
-                (c/remove-type :output)
-                (c/add-child-one (ce/exec-node ds tms ce/Transaction))
-                (p/assoc-param-ref-gen (fn [& {:as m}]
-                                         (->> (pull-sequence-format! m)
-                                              (seq)
-                                              (apply concat)
-                                              (cons tms)
-                                              (cons ds)
-                                              (apply pull))))
-                (tie/do-run tms request-m)))))
-
-
-
-(defn validate-dml!
-  [ds str-coll]
-  (jdbc/with-db-connection
-    [conn ds]
-    (doseq [str str-coll]
-      (jdbc/prepare-statement (:connection conn) str)))
-  (log/info (format "checking %d dml statement is done " (count str-coll))))
-
-
-
-(defn warp-db-do [ds name-coll tms]
-  (when name-coll
-    (try
-      (let [tm-coll (vals (tie/select-name tms name-coll))]
-        (doseq [m tm-coll]
-          (when-let [sql (get-in m [cc/sql-key])]
-            ;       (log/info "db do with " sql)
-            (jdbc/db-do-commands ds false sql))))
-      (catch Exception e
-        ;(log/error e)
-        ;(log/error (.getMessage e))
-        )))
-  tms)
-
-
-
-(defn warp-validate-dml! [ds tms]
-  (do
-    (validate-dml! ds (get-dml tms))
+    ;(validate-dml! ds (get-dml tms))
     tms))
 
 

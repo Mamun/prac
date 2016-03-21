@@ -35,8 +35,8 @@
     (reset! ds-atom {:datasource (ComboPooledDataSource.)}))
   (if (nil? @tms-atom)
     (cc/try->> (tj/read-file (:tiesql-file app-config))
-               (tj/warp-db-do @ds-atom (:tiesql-init app-config))
-               (tj/warp-validate-dml! @ds-atom)
+               (tj/db-do @ds-atom (:tiesql-init app-config))
+               (tj/validate-dml! @ds-atom)
                (reset! tms-atom))))
 
 
