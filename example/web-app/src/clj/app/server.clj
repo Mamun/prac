@@ -41,19 +41,25 @@
 
 
 (defroutes app-handler
-   (GET "/" _ (resp/resource-response "index.html" {:root "public"}))
-   (route/resources "/")
-   (route/not-found {:status 200
-                     :body   "Not found From app "}))
+           (GET "/" _
+             {:status  200
+              :headers {"Content-Type" "text/html; charset=utf-8"}
+              :body    (io/input-stream (io/resource "public/index.html"))} #_(resp/resource-response "index.html" {:root "public"}))
+           (route/resources "/")
+           (route/not-found {:status 200
+                             :body   "Not found From app "}))
 
 
 (defn warp-state [handler]
   (fn [request]
-    (init-state)
-    (handler request)))
+    (do
+
+      (init-state)
+
+      (handler request))))
 
 
-#_(defn warp-log [handler]
+(defn warp-log [handler]
   (fn [req]
     (log/info "-----------------" req)
     (handler req)
@@ -64,10 +70,10 @@
   (-> app-handler
       (hs/warp-tiesql-handler :tms tms-atom :ds ds-atom)
       (warp-state)
-      ;(wrap-defaults (assoc-in site-defaults [:security :anti-forgery] false))
-   ;   (warp-log)
+      (wrap-defaults (assoc-in site-defaults [:security :anti-forgery] false))
+      ;  (warp-log)
       (wrap-webjars)
-      wrap-with-logger
+      ;  wrap-with-logger
       ;wrap-gzip
       ))
 

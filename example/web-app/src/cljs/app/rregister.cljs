@@ -1,15 +1,17 @@
 (ns app.rregister
   (:require-macros [reagent.ratom :refer [reaction]]
                    [secretary.core :refer [defroute]])
-  (:require ;[secretary.core :as secretary]
-            ;[pushy.core :as pushy]
-            [re-frame.core :refer [register-handler
-                                   path
-                                   register-sub
-                                   dispatch
-                                   dispatch-sync
-                                   subscribe]]
-            [tiesql.client :as client]))
+  (:require                                                 ;[secretary.core :as secretary]
+    ;[pushy.core :as pushy]
+    [tiesql.util :as u]
+    [re-frame.core  :refer [register-handler
+                            trim-v
+                           path
+                           register-sub
+                           dispatch
+                           dispatch-sync
+                           subscribe]]
+    [tiesql.client :as client]))
 
 
 #_(defroute "*" [] (js/console.log "home path "))
@@ -21,44 +23,57 @@
 #_(pushy/start! history)
 
 
+
 (register-handler
-  :pull
+  :pull-merge
   (fn [db [_ [v e]]]
     (if v
-      (update-in db [:data] merge v)
-      (update-in db [:data] merge e))))
+      (update-in db [:data] (fn [_] v))
+      (update-in db [:data] (fn [_] e)))))
+
+
+
+(defn pull-handler [db [p]]
+  (do
+    (->> (conj p
+               :callback
+               (fn [v]
+                 (dispatch [:pull-merge v])))
+         (apply client/pull))
+    db))
+
+
+(defn removeevent [handler]
+  (fn []))
+
+(register-handler :pull trim-v pull-handler)
+
 
 
 (register-sub
   :pull
   (fn
     [db _]                                                  ;; db is the app-db atom
-    (reaction (get-in @db [:data]))))
+    (reaction (->> (get-in @db [:data])
+                   (u/postwalk-remove-nils)
+                   (u/postwalk-replace-tag-value)))))
+
+
 
 
 (register-handler
-  :not-found
+  :url
   (fn [db [_ v]]
-    (merge (empty db) v)))
+    (print v)
+    (assoc-in db [:url] v)))
 
 
+(register-sub
+  :url
+  (fn [db _]
+    (reaction (get-in @db [:url]))))
 
 
-(defn tiesql-dispatch
-  [[n & p]]
-  (->> (conj (into [] p)
-             :callback
-             (fn [v]
-               (dispatch [n v])))
-       (apply client/pull)))
-
-
-(defn map-menu-dispatch
-  [[_ _ w]]
-  (fn [_]
-    (if (= (first w) :pull)
-      (tiesql-dispatch w)
-      (dispatch w))))
 
 ;(dispatch [:pull [{:a {:a 2}} nil] ])
 

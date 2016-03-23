@@ -78,15 +78,19 @@
 
 
 
+
   (cc/try->> (tj/read-file "tie.edn.sql")
          ;    (tj/warp-db-do @ds-atom (:tiesql-init app-config))
           ;   (tj/warp-validate-dml! @ds-atom)
              #_(reset! tms-atom))
 
   (println @tms-atom)
+
+
+
+
+
+
   )
 
 
-(defn cgheck [& {:keys [tms]}]
-  (fn [])
-  )

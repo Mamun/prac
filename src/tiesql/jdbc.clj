@@ -5,7 +5,6 @@
     [clojure.tools.logging :as log]
     [clojure.java.jdbc :as jdbc]
     [tiesql.common :as cc]
-    ;[tiesql.common :refer :all]
     [tiesql.core :as tie]
     [tiesql.compiler.file-reader :as fr]
     [tiesql.plugin.base-impl :as imp]
@@ -110,8 +109,6 @@
 
 
 
-
-
 (defn db-do [ds name-coll tms]
   (when name-coll
     (try
@@ -160,8 +157,6 @@
 
     ;(validate-dml! ds (get-dml tms))
     tms))
-
-
 
 
 (defn start-tracking
