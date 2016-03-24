@@ -1,6 +1,5 @@
-(ns app.hiccup-view
-  (:require [reagent-forms.core :refer [bind-fields init-field value-of]]
-            [reagent.core :as r]
+(ns app.view.common-view
+  (:require
             [re-frame.core :refer [register-handler
                                    path
                                    register-sub
@@ -36,44 +35,9 @@
 
 
 
-(defn null-check []
-  [:div {:class "checkbox" }
-   [:label
-    [:input {:type "checkbox" } "Null"]]] )
 
 
 
-(def employee-template
-  [:div.form-group
-   [:input.form-control {:field :numeric
-                         :placeholder "Employee id "
-                         :id :search.id}]
-   [:div.alert.alert-danger {:field :alert :id :errors.id}]])
-
-
-
-(defn employee-search-view []
-  (let [doc (r/atom {})]
-    (fn []
-      [:div {:class "panel panel-default"}
-       [:div {:class "panel-body"}
-        [:div.page-header "Search employee "]
-        [bind-fields
-         employee-template
-         doc]
-        [:button.btn.btn-primary
-         {:on-click
-          #(do
-            (print @doc)
-            (if (get-in @doc [:search :id])
-              (dispatch [:pull
-                         [:gname :load-employee
-                          :params {:id (get-in @doc [:search :id])}]])
-              (do
-                (swap! doc assoc-in [:errors :id] "Id is empty or not number "))))}
-         "Search"]
-        ; [null-check]
-        ]])))
 
 
 
