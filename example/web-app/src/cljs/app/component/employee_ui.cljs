@@ -1,4 +1,4 @@
-(ns app.view.employee
+(ns app.component.employee-ui
   (:require-macros [reagent.ratom :refer [reaction]])
   (:require [reagent.core :as r]
             [reagent-forms.core :refer [bind-fields init-field value-of]]
@@ -9,58 +9,14 @@
                                    dispatch-sync
                                    subscribe]]
             [devcards.util.edn-renderer :as d]
-            [tiesql.util :as tu]
-            [app.view.common-view :as v]
-            [tiesql.client :as client]))
+            [app.component.common-view :as v]
+            ))
 
 
 ;(def model :employee)
 ;(def model-list :)
 
 
-(register-sub
-  :employee
-  (fn [db _]
-    (reaction (-> (get-in @db [:tiesql-db])
-                  (select-keys [:employee])
-                  (tu/postwalk-remove-nils)
-                  (tu/postwalk-replace-tag-value)))))
-
-
-(register-sub
-  :employee-list
-  (fn [db _]
-    (reaction (-> (get-in @db [:app :employee :list])
-
-                  ;    (tu/postwalk-remove-nils)
-                  (tu/postwalk-replace-tag-value)))
-    ))
-
-
-(register-handler
-  :employee-list
-  (fn [db [_ [v e]]]
-    (update-in db [:app :employee :list] (fn [_] v))
-    ))
-
-
-;(dispatch [:employee-list])
-
-(defn get-employee-by-id [id]
-  (client/pull
-    :gname :load-employee
-    :params {:id id}
-    :callback (fn [v] (dispatch [:tiesql-db v]))))
-
-
-(defn get-employee-list []
-  (client/pull
-    :name [:get-employee-list]
-    ;:params {:id id}
-    :callback (fn [v] (dispatch [:employee-list v]))))
-
-
-(get-employee-list)
 
 (def employee-template
   [:div.form-group
@@ -87,7 +43,7 @@
         {:on-click
          #(do
            (if (get-in @doc [:search :id])
-             (get-employee-by-id (get-in @doc [:search :id]))
+             (dispatch [:employee-search (get-in @doc [:search :id])])
              (do
                (swap! doc assoc-in [:errors :id] "Id is empty or not number "))))}
         "Search"]]
@@ -95,14 +51,14 @@
 
 
 (defn employee-list-view []
-  (let [data (subscribe [:employee-list])]
+  (let [data (subscribe [:model-employee-list])]
     (fn []
       ; (print @data)
-      (v/table (:employee  @data) )
+      (v/table @data )
       )))
 
 (defn employee-content-view []
-  (let [data (subscribe [:employee])]
+  (let [data (subscribe [:model-employee-one])]
     (fn []
       (when @data
         (d/html-edn @data)))))

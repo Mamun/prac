@@ -8,12 +8,13 @@
                                    dispatch
                                    dispatch-sync
                                    subscribe]]
-            [app.view.employee :as e]
-            [app.view.common-view :as u]))
+            [app.component.employee-ui :as e]
+            [app.component.employee]
+            [app.component.common-view :as u]))
 
 
 
-(register-handler
+#_(register-handler
   :tiesql-db
   (fn [db [_ [v e]]]
     (if v
@@ -22,7 +23,7 @@
 
 
 
-(register-sub
+#_(register-sub
   :tiesql-db
   (fn
     [db _]                                                  ;; db is the app-db atom

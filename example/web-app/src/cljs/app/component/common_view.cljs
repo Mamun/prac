@@ -1,11 +1,5 @@
-(ns app.view.common-view
-  (:require
-            [re-frame.core :refer [register-handler
-                                   path
-                                   register-sub
-                                   dispatch
-                                   dispatch-sync
-                                   subscribe]]))
+(ns app.component.common-view
+  )
 
 
 (defn table [[header & row]]
@@ -19,7 +13,8 @@
      (for [r row]
        [:tr {:key r}
         (for [c r]
-          [:td {:key c} (str c)])])]]])
+          [:td                                              ;{:key c}
+           (str c)])])]]])
 
 
 
