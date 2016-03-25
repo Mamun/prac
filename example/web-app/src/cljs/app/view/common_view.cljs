@@ -10,7 +10,7 @@
 
 (defn table [[header & row]]
   [:div {:class "mdl-shadow--2dp mdl-color--white mdl-cell"}
-   [:table {:class "mdl-data-table mdl-js-data-table mdl-data-table--selectable"}
+   [:table {:class "table table-striped"}
     [:thead
      [:tr
       (for [h header]

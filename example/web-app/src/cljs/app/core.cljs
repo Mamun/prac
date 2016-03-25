@@ -1,6 +1,5 @@
 (ns app.core
-  (:require-macros [reagent.ratom :refer [reaction]]
-                   [secretary.core :refer [defroute]])
+  (:require-macros [reagent.ratom :refer [reaction]])
   (:require [goog.dom :as gdom]
             [reagent.core :as r]
             [re-frame.core :refer [register-handler
@@ -10,27 +9,24 @@
                                    dispatch-sync
                                    subscribe]]
             [app.view.employee :as e]
-            [tiesql.util :as tu]
             [app.view.common-view :as u]))
 
 
 
 (register-handler
-  :db
+  :tiesql-db
   (fn [db [_ [v e]]]
     (if v
-      (update-in db [:db] (fn [_] v))
-      (update-in db [:db] (fn [_] e)))))
+      (update-in db [:tiesql-db] merge v #_(fn [_] v))
+      (update-in db [:tiesql-db] merge e #_(fn [_] e)))))
 
 
 
 (register-sub
-  :db
+  :tiesql-db
   (fn
     [db _]                                                  ;; db is the app-db atom
-    (reaction (->> (get-in @db [:db])
-                   (tu/postwalk-remove-nils)
-                   (tu/postwalk-replace-tag-value)))))
+    (reaction (get-in @db [:tiesql-db]))))
 
 
 
