@@ -29,20 +29,5 @@
                   (tu/postwalk-remove-nils)
                   (tu/postwalk-replace-tag-value)))))
 
-#_(defn- get-employee-by-id [id]
-  (client/pull
-    :gname :load-employee
-    :params {:id id}
-    :callback (fn [v] (dispatch [model-employee v]))))
 
-
-#_(register-handler
-  :employee-search
-  (fn [db [_ id]]
-    (do
-      (get-employee-by-id id)
-      db)))
-
-
-;(dispatch [:employee-list])
 

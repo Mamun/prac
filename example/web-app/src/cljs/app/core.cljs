@@ -65,7 +65,7 @@
           (cond
             (= @url "Employee")
             [e/employee-view]
-            :else [e/employee-view])]]]])))
+            :else [:div "Default view "])]]]])))
 
 
 

@@ -27,6 +27,7 @@
 
 
 (defn load-employee-list [callback]
+  (print "load employee list ")
   (client/pull
     :name [:get-employee-list]
     :callback callback))
