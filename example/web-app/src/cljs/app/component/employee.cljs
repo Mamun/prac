@@ -11,62 +11,32 @@
             [tiesql.client :as client]))
 
 
-(def m-list :model-employee-list)
-(def m-one  :model-employee-one)
-;(def path-employee-list [model-list])
+
+(def model-employee  :model-employee)
 
 
 (register-handler
-  m-list
-  (fn [db [_ [v e]]]
-    (update-in db [m-list] (fn [_] (or v e)))))
-
-
-(register-sub
-  m-list
-  (fn [db _]
-    (reaction (-> (get-in @db [m-list])
-                  (:employee)
-                  (tu/postwalk-replace-tag-value)))))
-
-
-
-(defn get-employee-list []
-  (client/pull
-    :name [:get-employee-list]
-    ;:params {:id id}
-    :callback (fn [v]
-                (do
-                  (print v)
-                  (dispatch [m-list v])))))
-
-
-(get-employee-list)
-
-
-
-(register-handler
-  m-one
+  model-employee
   (fn [db [_  [v e]]]
-    (update-in db [m-one] (fn [_] (or v e)))))
+    (update-in db [model-employee] (fn [_] (or v e)))))
 
 
 (register-sub
-  m-one
+  model-employee
   (fn [db _]
-    (reaction (-> (get-in @db [m-one])
+    (reaction (-> (get-in @db [model-employee])
                   (select-keys [:employee])
                   (tu/postwalk-remove-nils)
                   (tu/postwalk-replace-tag-value)))))
 
-(defn- get-employee-by-id [id]
+#_(defn- get-employee-by-id [id]
   (client/pull
     :gname :load-employee
     :params {:id id}
-    :callback (fn [v] (dispatch [m-one v]))))
+    :callback (fn [v] (dispatch [model-employee v]))))
 
 
-(register-handler
+#_(register-handler
   :employee-search
   (fn [db [_ id]]
     (do

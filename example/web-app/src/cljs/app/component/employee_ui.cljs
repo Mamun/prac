@@ -10,12 +10,26 @@
                                    subscribe]]
             [devcards.util.edn-renderer :as d]
             [app.component.common-view :as v]
+            [tiesql.client :as client]
+            [tiesql.util :as tu]
             ))
 
 
 ;(def model :employee)
 ;(def model-list :)
 
+
+(defn load-employee [id]
+  (client/pull
+    :gname :load-employee
+    :params {:id id}
+    :callback (fn [[v e]] (dispatch [:model-employee v]))))
+
+
+(defn load-employee-list [callback]
+  (client/pull
+    :name [:get-employee-list]
+    :callback callback))
 
 
 (def employee-template
@@ -43,22 +57,24 @@
         {:on-click
          #(do
            (if (get-in @doc [:search :id])
-             (dispatch [:employee-search (get-in @doc [:search :id])])
+             (load-employee (get-in @doc [:search :id]))
              (do
                (swap! doc assoc-in [:errors :id] "Id is empty or not number "))))}
-        "Search"]]
-      )))
+        "Search"]])))
 
 
 (defn employee-list-view []
-  (let [data (subscribe [:model-employee-list])]
+  (let [data (r/atom {})
+        f (fn [[v e]]
+            (do
+              (swap! data merge v)))
+        _ (load-employee-list f)]
     (fn []
-      ; (print @data)
-      (v/table @data )
-      )))
+      (v/table (:employee @data)))))
+
 
 (defn employee-content-view []
-  (let [data (subscribe [:model-employee-one])]
+  (let [data (subscribe [:model-employee])]
     (fn []
       (when @data
         (d/html-edn @data)))))
@@ -69,12 +85,7 @@
    [:div {:class "panel panel-default"}
     [:div {:class "panel-body"}
      [:div.page-header "Employee "]
-     [employee-list-view]
-
-
-
-     ; [null-check]
-     ]]
+     [employee-list-view]]]
    [employee-search-view]
    [employee-content-view]])
 
