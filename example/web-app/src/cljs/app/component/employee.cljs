@@ -17,8 +17,8 @@
 
 (register-handler
   model-employee
-  (fn [db [_  [v e]]]
-    (update-in db [model-employee] (fn [_] (or v e)))))
+  (fn [db [_  v]]
+    (update-in db [model-employee] (fn [_] v ))))
 
 
 (register-sub

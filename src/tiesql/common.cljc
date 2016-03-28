@@ -1,6 +1,6 @@
 (ns tiesql.common
   (:require [clojure.string :as s]
-            [clojure.walk :as w]))
+            ))
 
 
 (defonce global-key :_global_)
@@ -125,21 +125,7 @@
     (str v)))
 
 
-(defn stringify-keys2
-  "Recursively transforms all map and first  vector keys from keywords to strings."
-  {:added "1.1"}
-  [m]
-  (let [f (fn [[k v]] (if (keyword? k) [(name k) v] [k v]))
-        fv (fn [v] (update-in v [0] (fn [w]
-                                      (if-not (vector? w)
-                                        w
-                                        (mapv #(name %) w)))))]
-    ;; only apply to maps and vector
-    (w/postwalk (fn [x]
-                  (cond (map? x)
-                        (into {} (map f x))
-                        (vector? x) (fv x)
-                        :else x)) m)))
+
 
 
 

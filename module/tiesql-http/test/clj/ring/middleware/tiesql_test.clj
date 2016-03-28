@@ -1,7 +1,7 @@
 (ns ring.middleware.tiesql-test
   (:use [clojure.test])
   (:require [tiesql.common :refer :all]
-            [ring.middleware.tiesql-util :refer :all]
+            [ring.middleware.util :refer :all]
             [ring.middleware.tiesql :refer :all]
             [test-data :as td]))
 

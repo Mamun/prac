@@ -14,24 +14,6 @@
 
 
 
-#_(register-handler
-  :tiesql-db
-  (fn [db [_ [v e]]]
-    (if v
-      (update-in db [:tiesql-db] merge v #_(fn [_] v))
-      (update-in db [:tiesql-db] merge e #_(fn [_] e)))))
-
-
-
-#_(register-sub
-  :tiesql-db
-  (fn
-    [db _]                                                  ;; db is the app-db atom
-    (reaction (get-in @db [:tiesql-db]))))
-
-
-
-
 (register-handler :url (fn [db [_ v]] (assoc-in db [:url] v)))
 (register-sub :url (fn [db _]  (reaction (get-in @db [:url]))))
 

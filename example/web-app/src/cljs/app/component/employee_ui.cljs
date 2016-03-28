@@ -83,10 +83,7 @@
 
 (defn employee-view []
   [:div
-   [:div {:class "panel panel-default"}
-    [:div {:class "panel-body"}
-     [:div.page-header "Employee "]
-     [employee-list-view]]]
    [employee-search-view]
+   [employee-list-view]
    [employee-content-view]])
 
