@@ -55,21 +55,20 @@
         el))
     nm))
 
+
+#?(:cljs
+   (defn get-tag-value [v]
+     (if (t/tagged-value? v)
+       (.-rep v)
+       v)))
+
+
 #?(:cljs
    (defn replace-map-tag-value
      [m]
-     (let [f (fn [[k v]] (if (t/tagged-value? v)
-                           [k (.-rep v)]
-                           [k v]))]
+     (let [f (fn [[k v]] [k (get-tag-value v)] )]
        (into {} (map f m)))))
 
-#?(:cljs
-   (defn replace-vector-tag-value
-     [w]
-     (mapv (fn [v]
-             (if (t/tagged-value? v)
-               (.-rep v)
-               v)) w)))
 
 #?(:cljs
    (defn postwalk-replace-tag-value
@@ -80,7 +79,7 @@
                            (map? x)
                            (replace-map-tag-value x)
                            (vector? x)
-                           (replace-vector-tag-value x)
+                           (mapv get-tag-value x)
                            :else x)) m)))
 
 

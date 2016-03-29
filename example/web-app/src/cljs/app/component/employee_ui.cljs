@@ -11,8 +11,7 @@
             [devcards.util.edn-renderer :as d]
             [app.component.common-view :as v]
             [tiesql.client :as client]
-            [tiesql.util :as tu]
-            ))
+            [tiesql.util :as tu]))
 
 
 ;(def model :employee)
