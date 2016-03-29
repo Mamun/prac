@@ -1,8 +1,6 @@
 (ns app.server
   (:use compojure.core)
   (:require [clojure.java.io :as io]
-            [clojure.tools.reader.edn :as edn]
-            [ring.util.response :as resp]
             [ring.middleware.webjars :refer [wrap-webjars]]
             [ring.middleware.defaults :refer [wrap-defaults api-defaults site-defaults]]
             [ring.middleware.logger :refer [wrap-with-logger]]
@@ -17,15 +15,6 @@
   (:gen-class))
 
 
-(defn read-app-file [app-file]
-  (-> app-file
-      (io/resource)
-      (slurp)
-      (edn/read-string)))
-
-
-
-(defonce app-config (read-app-file "tiesql.edn"))
 (defonce ds-atom (atom nil))
 (defonce tms-atom (atom nil))
 
@@ -33,9 +22,9 @@
 (defn init-state []
   (when (nil? @ds-atom)
     (reset! ds-atom {:datasource (ComboPooledDataSource.)}))
-  (if (nil? @tms-atom)
-    (cc/try->> (tj/read-file (:tiesql-file app-config))
-               (tj/db-do @ds-atom (:tiesql-init app-config))
+  (when (nil? @tms-atom)
+    (cc/try->> (tj/read-file "tie.edn.sql" )
+               (tj/db-do @ds-atom [:create-ddl :init-data])
                (tj/validate-dml! @ds-atom)
                (reset! tms-atom))))
 
@@ -44,19 +33,10 @@
            (GET "/" _
              {:status  200
               :headers {"Content-Type" "text/html; charset=utf-8"}
-              :body    (io/input-stream (io/resource "public/index.html"))} #_(resp/resource-response "index.html" {:root "public"}))
+              :body    (io/input-stream (io/resource "public/index.html"))} )
            (route/resources "/")
            (route/not-found {:status 200
                              :body   "Not found From app "}))
-
-
-(defn warp-state [handler]
-  (fn [request]
-    (do
-
-      (init-state)
-
-      (handler request))))
 
 
 (defn warp-log [handler]
@@ -69,7 +49,6 @@
 (def http-handler
   (-> app-handler
       (hs/warp-tiesql-handler :tms tms-atom :ds ds-atom)
-      (warp-state)
       (wrap-defaults (assoc-in site-defaults [:security :anti-forgery] false))
       ;  (warp-log)
       (wrap-webjars)

@@ -1,5 +1,5 @@
 (ns user
-  (:require [app.server]
+  (:require [app.server :as app]
             [ring.middleware.reload :refer [wrap-reload]]
             [figwheel-sidecar.repl-api :as figwheel]))
 
@@ -10,9 +10,10 @@
 (set! *unchecked-math* :warn-on-boxed)
 
 (def http-handler
-  (wrap-reload #'app.server/http-handler))
+  (wrap-reload #'app/http-handler))
 
 (defn run []
+  (app/init-state)
   (figwheel/start-figwheel!))
 
 (def browser-repl figwheel/cljs-repl)

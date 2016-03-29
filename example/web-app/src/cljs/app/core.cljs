@@ -8,14 +8,16 @@
                                    dispatch
                                    dispatch-sync
                                    subscribe]]
-            [app.component.employee-ui :as e]
-            [app.component.employee]
+            [app.component.employee :as e]
             [app.component.common-view :as u]))
 
 
+(register-handler :error (fn [db [_ v]] (assoc-in db [:error] v)))
+(register-sub :error (fn [db _] (reaction (get-in @db [:error]))))
+
 
 (register-handler :url (fn [db [_ v]] (assoc-in db [:url] v)))
-(register-sub :url (fn [db _]  (reaction (get-in @db [:url]))))
+(register-sub :url (fn [db _] (reaction (get-in @db [:url]))))
 
 
 ;(devcards.core/start-devcard-ui!)
@@ -27,6 +29,12 @@
            ["Employee" "#" menu-action]])
 
 
+
+(defn error-view []
+  (let [data (subscribe [:error])]
+    (fn []
+      (when @data
+        [:div.alert.alert-danger @data]))))
 
 
 (defn app-content []
@@ -44,6 +52,7 @@
          [:div {:class "col-sm-3 col-md-2 sidebar"}
           [u/navigation-view menu]]
          [:div {:class "col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main"}
+          [error-view]
           (cond
             (= @url "Employee")
             [e/employee-view]

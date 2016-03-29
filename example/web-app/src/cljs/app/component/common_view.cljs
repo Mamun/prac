@@ -1,4 +1,5 @@
 (ns app.component.common-view
+  (:require [devcards.util.edn-renderer :as d])
   )
 
 
@@ -29,7 +30,8 @@
        v]])])
 
 
-
+(defn html-edn [edn-data]
+  (d/html-edn edn-data))
 
 
 

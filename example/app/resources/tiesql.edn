@@ -1,4 +1,0 @@
-{:immutant {:port        3001}
- :routes-path "/tie"
- :tiesql-init [:create-ddl :init-data]
- :tiesql-file "tie.edn.sql"}
