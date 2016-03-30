@@ -3,8 +3,7 @@
      (:require [tiesql.common :as cc]
                [clojure.walk :as w]))
   #?@(:cljs
-      [
-       (:require [cognitect.transit :as t]
+      [(:require [cognitect.transit :as t]
          [tiesql.common :as cc]
          [clojure.walk :as w])
        (:require-macros [tiesql.common :refer [try->]])]))

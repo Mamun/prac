@@ -17,8 +17,8 @@
   :plugins [[lein-cljsbuild "1.1.1"]]
 
   :min-lein-version "2.5.3"
-  :source-paths ["src/clj" "src/cljs"]
-  :test-paths ["test/clj"]
+  ;:source-paths ["src/clj" ]
+  ;:test-paths ["test/clj"]
   :clean-targets ^{:protect false} [:target-path :compile-path "dev-resources/public/js"]
 
 
@@ -29,7 +29,7 @@
 
   :cljsbuild {:builds
               {:app
-               {:source-paths ["src/cljs" "dev"]
+               {:source-paths [ "dev"]
                 :figwheel     {:devcards true}
                 :compiler     {:main                 app.core
                                :asset-path           "js/compiled/out"

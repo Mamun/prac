@@ -2,7 +2,7 @@
   (:require [clojure.tools.logging :as log]
             [tiesql.common :as c]
             [tiesql.util :as u]
-            [tiesql.http :as h]
+            [tiesql.http-service :as h]
             [tiesql.jdbc :as tj]
             [ring.middleware.params :as p]
             [ring.middleware.multipart-params :as mp]

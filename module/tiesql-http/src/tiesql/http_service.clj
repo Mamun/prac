@@ -1,4 +1,4 @@
-(ns tiesql.http
+(ns tiesql.http-service
   (:require [clojure.tools.logging :as log]
             [tiesql.common :as c]
     ;    [tiesql.util :as ]
