@@ -5,7 +5,8 @@
             [compojure.route :as route]
             [immutant.web :as im]
             [tiesql.jdbc :as tj]
-            [tiesql.common :as cc])
+            [tiesql.common :as cc]
+            [clojure.tools.logging :as log])
   (:import
     [com.mchange.v2.c3p0 ComboPooledDataSource])
   (:gen-class))
@@ -31,9 +32,20 @@
            (route/not-found {:status 200 :body "Not found"}))
 
 
+(defn warp-log [handler]
+  (fn [req]
+    (log/info "-----------------" req)
+    (let [w (handler req)]
+      (log/info "-----------------" w)
+      w
+      )
+    ))
+
+
 (def http-handler
   (-> app-handler
-      (hs/warp-tiesql-handler :tms tms-atom :ds ds-atom)))
+      (hs/warp-tiesql-handler :tms tms-atom :ds ds-atom)
+      (warp-log)))
 
 
 (defn -main

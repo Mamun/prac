@@ -14,6 +14,7 @@
 
 (def default-request-format
   {:method          :post
+   ;:format          :transit
    :format          (a/transit-request-format)
    :response-format (a/transit-response-format)})
 
@@ -40,12 +41,13 @@
         headers (or headers {})]
     (if (c/failed? w)
       (callback (u/response-format w))
-      (-> default-request-format
-          (assoc :uri url)
-          (assoc :params w)
-          (assoc :headers headers)
-          (assoc :handler (fn [[_ v]] (callback v)))
-          (a/ajax-request)))))
+      (let [t (-> default-request-format
+                  (assoc :uri url)
+                  (assoc :params w)
+                  (assoc :headers headers)
+                  (assoc :error-handler callback)
+                  (assoc :handler callback))]
+        (a/POST url t)))))
 
 
 
@@ -94,7 +96,7 @@
             :name :get-dept-by-id
             :params {:id 1}
             :callback (fn [w]
-                        (clojure.pprint/pprint w)
+                        (clojure.pprint/pprint "--" w)
                         ))]
     (println @v)
     )
