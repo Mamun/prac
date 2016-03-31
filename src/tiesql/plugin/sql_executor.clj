@@ -5,7 +5,7 @@
             [tiesql.common :as cc]
             [tiesql.proto :refer :all]
             [tiesql.common :refer :all]
-            ))
+            [clojure.tools.logging :as log]))
 
 
 ;@todo will be private
@@ -137,6 +137,7 @@
                    exec-time-total-key total
                    exec-time-start-key stm)))
       (catch Exception e
+        (log/error e (sql-key m))
         (-> (cc/fail {query-exception-key (.getMessage e)})
             (merge m))))))
 

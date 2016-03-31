@@ -10,11 +10,13 @@
             [ring.middleware.format-params :as fp]
             [ring.middleware.format-response :as fr]))
 
+
 (defn response
   [body]
   {:status  200
    :headers {}
    :body    body})
+
 
 (defn tiesql-handler [ds tms t req]
   ;(log/info "--------------" tms )
@@ -70,14 +72,13 @@
    pull-path and push path string
 
   "
-  [handler & {:keys [pull-path push-path log? tms ds]
+  [handler & {:keys [pull-path push-path log? tms ds encoding]
               :or   {pull-path "/pull"
+                     encoding  "UTF-8"
                      push-path "/push"
                      log?      false}}]
-  #_{:pre [(instance? clojure.lang.Ref)]}
   (let [p-set #{pull-path push-path}]
     (fn [req]
-      ;(log/info "----" @tms )
       (let [ds (or (:ds req) @ds)
             tms (or (:tms req)
                     (try! reload-tms tms ds))
@@ -86,7 +87,7 @@
         (if (contains? p-set request-path)
           ((-> (partial tiesql-handler ds tms request-path) ;; Data service here
                (kp/wrap-keyword-params)
-               (p/wrap-params)
+               (p/wrap-params :encoding encoding)
                (mp/wrap-multipart-params)
                (fp/wrap-restful-params)
                (fr/wrap-restful-response)

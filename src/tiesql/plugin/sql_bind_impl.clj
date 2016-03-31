@@ -127,9 +127,12 @@
       (keyword)))
 
 
+(def sql-param-regex #"\w*:[\w|\-]+")
+
+
 (defn sql-str-compiler-emit
   [sql-str]
-  (->> (re-seq #"\w*:\w+" sql-str)
+  (->> (re-seq sql-param-regex sql-str)
        (transduce (comp (map read-string)) conj)
        (reduce (fn [acc v]
                  (let [w (cc/as-lower-case-keyword v)

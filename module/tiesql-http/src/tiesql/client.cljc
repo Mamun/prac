@@ -93,10 +93,10 @@
 
   (let [v (pull
             :url "http://localhost:3001"
-            :name :get-dept-by-id
+                   :name :get-dept-by-id
             :params {:id 1}
             :callback (fn [w]
-                        (clojure.pprint/pprint "--" w)
+                        (print w)
                         ))]
     (println @v)
     )

@@ -30,9 +30,20 @@
           expected-result ["select * from dual param = :a and param3 = :b" :a :b]]
       ;     (println actual-result)
       (is (= expected-result
+             actual-result))))
+  (testing "test sql-emission-single"
+    (let [w "select * from dual param = :a-b and param3 = :b-c"
+          actual-result (sql-str-compiler-emit w)
+          expected-result ["select * from dual param = :a-b and param3 = :b-c" :a-b :b-c]]
+      ;     (println actual-result)
+      (is (= expected-result
              actual-result)))))
 
-;(sql-str-emission-test)
+;(sql-str-compiler-emit-test)
+
+
+;(re-seq #"\w*:[\w|\-]+" "=:a-b and :b-c and :b_c :b|c")
+
 
 (deftest sql-compiler-emit-test
   (testing "test sql-emission"
