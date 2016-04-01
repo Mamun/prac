@@ -76,14 +76,6 @@
 ;;;; For branch
 
 
-(defn select-node
-  "Return all select node "
-  [node-coll node-name-coll]
-  (let [s (into #{} node-name-coll)
-        r (filter (fn [v] (contains? s (node-name v))) node-coll)]
-    (if (empty? r)
-      r
-      (into (empty node-coll) r))))
 
 
 
@@ -103,13 +95,7 @@
 
 
 
-(defn filter-node-processor
-  ""
-  [node-coll]
-  (->> node-coll
-       (filter (fn [v] (or (satisfies? INodeProcessor v)
-                           (satisfies? IParamNodeProcessor v))))
-       (into (empty node-coll))))
+
 
 
 (defn get-child

@@ -1,7 +1,8 @@
 (ns tiesql.compiler.core-test
   (:use [clojure.test]
+
         [tiesql.compiler.core :as r]
-        [tiesql.plugin.base-impl :as ci]
+        [tiesql.plugin.factory :as ci]
     ;   [tiesql.plugin.core :as p]
         [tiesql.core :as c]
         [tiesql.common]

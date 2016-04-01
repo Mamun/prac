@@ -3,7 +3,7 @@
   (:require [tiesql.common :refer :all]
             [tiesql.common :as cc]
             [tiesql.core-util :as ccu]
-            [tiesql.plugin.util :as cu]
+            [tiesql.plugin.base-impl :as cu]
             [schema.core :as s]))
 
 (defbranch ParamKey [cname ccoll corder])

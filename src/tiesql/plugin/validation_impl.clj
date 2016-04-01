@@ -2,7 +2,7 @@
   (:use [tiesql.proto])
   (:require [tiesql.common :refer :all]
             [tiesql.common :as cc]
-            [tiesql.plugin.util :as cu]
+            [tiesql.plugin.base-impl :as cu]
             [schema.core :as s]))
 
 

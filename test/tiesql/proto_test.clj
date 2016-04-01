@@ -1,10 +1,8 @@
 (ns tiesql.proto-test
   (:use [clojure.test]
-        [tiesql.proto]
-        [tiesql.plugin.util]
-        )
+        [tiesql.proto])
   (:require [tiesql.plugin.base-impl :as bi]
-            [tiesql.plugin.validation-impl :as v]
+            [tiesql.plugin.factory :as c]
             [tiesql.plugin.param-impl :as p]
             [tiesql.common :refer :all]))
 
@@ -20,7 +18,7 @@
 
 (deftest cell-index-single-test
   (testing "testing path-index-single "
-    (let [impl (bi/new-leaf-node-coll)
+    (let [impl (c/new-leaf-node-coll)
           gpc (bi/new-global-key-node impl)
           mpc (bi/new-module-key-node impl)
           c [gpc mpc]
@@ -33,7 +31,7 @@
 
 (deftest cell-index-batch-test
   (testing "testing path-index-batch "
-    (let [impl (bi/new-leaf-node-coll)
+    (let [impl (c/new-leaf-node-coll)
           gpc (bi/new-global-key-node impl)
           mpc (bi/new-module-key-node impl)
           c [gpc mpc]
@@ -130,7 +128,7 @@
 
 (deftest update-cell-test
   (testing "testing assoc-path-component "
-    (let [impl (bi/new-root-node)
+    (let [impl (c/new-root-node)
           actual-result (update-node-to-path impl [module-key param-key]
                                              (map->TestParamKey {:cname  :param-ref-con-key
                                                                  :corder 1}))]
@@ -141,7 +139,7 @@
 
 (deftest cell-compiler-emit-test
   (testing "cell emit test "
-    (let [app-proc (bi/new-module-key-node (bi/new-leaf-node-coll))
+    (let [app-proc (bi/new-module-key-node (c/new-leaf-node-coll))
           sch-value {doc-key   "hello"
                      name-key  [:hello :hell2]
                      ;      extend-meta-key {:hello {param-key [[:Next_transaction_id param-ref-key :transaction_id]]}}
@@ -157,8 +155,8 @@
 (deftest remove-type-test
   (testing "testing remove type "
     (let [w (->
-              (bi/new-root-node)
-              (bi/select-module-node-processor)
+              (c/new-root-node)
+              (c/select-module-node-processor)
               (remove-type :output))
           w (get-child w :column)]
       (is (nil? w)))))

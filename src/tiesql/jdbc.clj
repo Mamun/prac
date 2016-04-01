@@ -7,7 +7,7 @@
     [tiesql.common :as cc]
     [tiesql.core :as tie]
     [tiesql.compiler.file-reader :as fr]
-    [tiesql.plugin.base-impl :as imp]
+    [tiesql.plugin.factory :as imp]
     [tiesql.proto :as c]
     [tiesql.plugin.sql-executor :as ce]
     [tiesql.plugin.param-impl :as p]))

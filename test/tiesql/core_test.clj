@@ -1,7 +1,7 @@
 (ns tiesql.core-test
   (:use [clojure.test])
   (:require [tiesql.core :refer :all]
-    ;[tie.impl.impl-factory :as fac]
+            [tiesql.plugin.factory :refer :all]
             [tiesql.common :refer :all]
             [tiesql.core-util :as cu]
             ))

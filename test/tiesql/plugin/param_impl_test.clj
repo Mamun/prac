@@ -1,10 +1,10 @@
 (ns tiesql.plugin.param-impl-test
   (:use [clojure.test])
   (:require
-    [tiesql.plugin.base-impl :as b]
+    [tiesql.plugin.factory :as b]
     [tiesql.proto :as p]
     [tiesql.proto :refer :all]
-    [tiesql.plugin.util :refer :all]
+
     [tiesql.plugin.param-impl :refer :all]
     [tiesql.common :refer :all]
     ))
