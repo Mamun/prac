@@ -12,8 +12,6 @@
             [app.component.common-view :as u]))
 
 
-(register-handler :error (fn [db [_ v]] (assoc-in db [:error] v)))
-(register-sub :error (fn [db _] (reaction (get-in @db [:error]))))
 
 
 (register-handler :url (fn [db [_ v]] (assoc-in db [:url] v)))

@@ -6,6 +6,10 @@
 
 (def tiesql-path :tiesql)
 
+(r/register-handler :error (fn [db [_ v]] (assoc-in db [:error] v)))
+(r/register-sub :error (fn [db _] (reaction (get-in @db [:error]))))
+
+
 (r/register-sub
   tiesql-path
   (fn
