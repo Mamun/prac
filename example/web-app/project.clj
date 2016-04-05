@@ -7,9 +7,7 @@
   :dependencies [[org.clojure/clojure "1.8.0-RC5"]
                  [org.clojure/clojurescript "1.7.228" :scope "provided"]
                  [ring "1.4.0"
-                  :exclusions [ring/ring-jetty-adapter
-                               ;ring/ring-devel
-                               ]]
+                  :exclusions [ring/ring-jetty-adapter]]
                  [ring/ring-defaults "0.2.0"]
                  [ring.middleware.logger "0.5.0"]
                  ;[compojure "1.4.0"]

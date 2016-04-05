@@ -12,7 +12,9 @@
                                org.clojure/core.memoize
                                org.clojure/tools.reader]]
                  [tiesql "0.1.0-alpha-SNAPSHOT" :scope "provided"]
-                 [cljs-ajax "0.5.2"]]
+                 [cljs-ajax "0.5.2"]
+                 [reagent "0.6.0-alpha" :scope "provided"]
+                 [re-frame "0.7.0-alpha-3" :scope "provided"]]
 
   :plugins [[lein-cljsbuild "1.1.1"]]
 
