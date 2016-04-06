@@ -14,7 +14,8 @@
                  [tiesql "0.1.0-alpha-SNAPSHOT" :scope "provided"]
                  [cljs-ajax "0.5.2"]
                  [reagent "0.6.0-alpha" :scope "provided"]
-                 [re-frame "0.7.0-alpha-3" :scope "provided"]]
+                 [re-frame "0.7.0-alpha-3" :scope "provided"]
+                 [devcards "0.2.1-5" :scope "provided"]]
 
   :plugins [[lein-cljsbuild "1.1.1"]]
 
@@ -56,10 +57,9 @@
                                     [com.h2database/h2 "1.3.154"]
                                     [c3p0/c3p0 "0.9.1.2"]
 
-                                    [devcards "0.2.1-5" :scope "provided"]
+
                                     [figwheel "0.5.0-6"]
                                     [figwheel-sidecar "0.5.0-6"]
                                     [com.cemerick/piggieback "0.2.1"]
-                                    [org.clojure/tools.nrepl "0.2.12"]]}}
-  )
+                                    [org.clojure/tools.nrepl "0.2.12"]]}})
 

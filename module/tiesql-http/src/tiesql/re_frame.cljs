@@ -7,6 +7,7 @@
 (def tiesql-path :tiesql)
 
 (r/register-handler :error (fn [db [_ v]] (assoc-in db [:error] v)))
+(r/register-handler :clear-error (fn [db [_ v]] (assoc-in db [:error] nil)))
 (r/register-sub :error (fn [db _] (reaction (get-in @db [:error]))))
 
 
@@ -28,7 +29,9 @@
         subscribe-path (or subscribe-key gname n)]
     (->> (assoc api-map :callback (fn [[v e]]
                                     (if v
-                                      (r/dispatch [tiesql-path [subscribe-path v]])
+                                      (do
+                                        (r/dispatch [:clear-error ])
+                                        (r/dispatch [tiesql-path [subscribe-path v]]))
                                       (r/dispatch [:error e]))))
          (seq)
          (apply concat)
