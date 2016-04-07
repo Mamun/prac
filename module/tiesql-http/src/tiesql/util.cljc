@@ -99,21 +99,35 @@
                         :else x)) m)))
 
 
-(defn is-include? [search-v w]
-  (if (or (clojure.string/includes? (clojure.string/lower-case (str (first w))) (clojure.string/lower-case search-v))
-          (clojure.string/includes? (clojure.string/lower-case (str (second w))) (clojure.string/lower-case search-v)))
-    true ))
+(defn is-include? [filter-v w]
+  (reduce (fn [acc v]
+            (if (or (clojure.string/includes? (clojure.string/lower-case (str (first w)))
+                                              (clojure.string/lower-case v))
+                    (clojure.string/includes? (clojure.string/lower-case (str (second w)))
+                                              (clojure.string/lower-case v)))
+              (reduced true)
+              acc))
+          nil
+          (clojure.string/split filter-v #" ")))
 
 
 (defn postwalk-filter
   "remove pairs of key-value that has nil value from a (possibly nested) map. also transform map to nil if all of its value are nil"
-  [search-v nm]
-  (if (or (nil? search-v)
-          (empty? search-v))
+  [filter-v nm]
+  (if (or (nil? filter-v)
+          (empty? filter-v))
     nm
     (w/postwalk
       (fn [el]
         (if (map? el)
-          (into {} (remove (comp nil? (partial is-include? search-v)) el))
+          (into {} (remove (comp nil? (partial is-include? filter-v)) el))
           el))
       nm)))
+
+
+
+(comment
+
+  ;(postwalk-filter "hello 3" {:hello 2 :check 3 :5 5})
+
+  )
