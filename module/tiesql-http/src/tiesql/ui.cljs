@@ -5,7 +5,7 @@
 
 
 (defn show-edn [edn-data]
-  (-> (tu/postwalk-replace-tag-value edn-data)
+  (-> (tu/postwalk-replace-value-with tu/as-str edn-data)
       (d/html-edn)))
 
 
@@ -20,7 +20,7 @@
 
 (defn table [data & {:keys [on-row-click]}]
   (let [[header & row] (add-key-for-table-data data)]
-    [:table {:class "table table-striped"}
+    [:table {:class "table table-striped table-hover"}
      [:thead
       [:tr
        (for [h header]
@@ -30,7 +30,7 @@
         [:tr {:key      r
               :on-click #(on-row-click r)}
          (for [[c k] r]
-           [:td {:key k} (tu/get-tag-value c)])])]]))
+           [:td {:key k} (tu/as-str c)])])]]))
 
 
 

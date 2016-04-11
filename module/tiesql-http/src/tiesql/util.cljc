@@ -42,61 +42,83 @@
 
 
 
-(defn postwalk-remove-nils
-  "remove pairs of key-value that has nil value from a (possibly nested) map. also transform map to nil if all of its value are nil"
-  [nm]
-  (w/postwalk
-    (fn [el]
-      (if (map? el)
-        (let [m (into {} (remove (comp nil? second) el))]
-          (when (seq m)
-            m))
-        el))
-    nm))
+
+
+
+#?(:clj
+   (defn as-str [v]
+     (cond
+       (string? v) v
+       (keyword? v) (name v)
+       (number? v)  (str v)
+       :else v)))
 
 
 #?(:cljs
-   (defn get-tag-value [v]
-     (if (t/tagged-value? v)
-       (.-rep v)
-       v)))
+  (defn as-str [v]
+    (if (t/tagged-value? v)
+      (.-rep v)
+      v)))
 
 
-#?(:cljs
-   (defn replace-map-tag-value
-     [m]
-     (let [f (fn [[k v]] [k (get-tag-value v)] )]
-       (into {} (map f m)))))
+(defn- replace-mv
+  [f1 m]
+  (let [f (fn [[k v]] [k (f1 v)] )]
+    (into {} (map f m))))
 
 
-#?(:cljs
-   (defn postwalk-replace-tag-value
-     "Recursively transforms all map keys from strings to keywords."
-     {:added "1.1"}
-     [m]
-     (w/postwalk (fn [x] (cond
-                           (map? x)
-                           (replace-map-tag-value x)
-                           (vector? x)
-                           (mapv get-tag-value x)
-                           :else x)) m)))
+(defn postwalk-replace-value-with
+  "Recursively transforms all map keys from strings to keywords."
+  {:added "1.1"}
+  [f m]
+  (w/postwalk (fn [x] (cond
+                        (map? x)
+                        (replace-mv f x)
+                        (vector? x)
+                        (mapv f x)
+                        :else x)) m))
 
 
-(defn postwalk-stringify-keys
+(defn keyword->str
+  [v]
+  (if (keyword? v)
+    (name v)
+    v))
+
+
+(defn replace-mk
+  [f1 m]
+  (let [f (fn [[k v]] [(f1 k) v] )]
+    (into {} (map f m))))
+
+
+(defn postwalk-replace-key-with
   "Recursively transforms all map and first  vector keys from keywords to strings."
   {:added "1.1"}
-  [m]
-  (let [f (fn [[k v]] (if (keyword? k) [(name k) v] [k v]))
-        fv (fn [v] (update-in v [0] (fn [w]
-                                      (if-not (vector? w)
-                                        w
-                                        (mapv #(name %) w)))))]
-    ;; only apply to maps and vector
-    (w/postwalk (fn [x]
-                  (cond (map? x)
-                        (into {} (map f x))
-                        (vector? x) (fv x)
-                        :else x)) m)))
+  [f m]
+  (w/postwalk (fn [x]
+                (cond (map? x)
+                      (replace-mk f m)
+                      (vector? x)
+                      (mapv f x)
+                      :else x)) m))
+
+
+
+
+
+
+(comment
+
+  (postwalk-replace-value-with [[:a :b]
+                               [1 2]
+                               [:a :b]
+                               ])
+
+
+  )
+
+
 
 
 (defn is-include? [filter-v w]
@@ -107,7 +129,7 @@
                                               (clojure.string/lower-case v)))
               (reduced true)
               acc))
-          nil
+          false
           (clojure.string/split filter-v #" ")))
 
 
@@ -120,14 +142,33 @@
     (w/postwalk
       (fn [el]
         (if (map? el)
-          (into {} (remove (comp nil? (partial is-include? filter-v)) el))
+          (into {} (filter (partial is-include? filter-v)  el))
           el))
       nm)))
+
+
+(defn postwalk-remove-with
+  [f nm]
+  (w/postwalk
+    (fn [el]
+      (if (map? el)
+        (let [m (into {} (remove (comp f second) el))]
+          (when (seq m)
+            m))
+        el))
+    nm))
+
+
+(defn postwalk-remove-nils
+  "remove pairs of key-value that has nil value from a (possibly nested) map. also transform map to nil if all of its value are nil"
+  [nm]
+  (postwalk-remove-with nil? nm))
+
 
 
 
 (comment
 
-  ;(postwalk-filter "hello 3" {:hello 2 :check 3 :5 5})
+  (postwalk-filter "hello 3" {:hello 2 :check 3 :5 5 :check3 4})
 
   )

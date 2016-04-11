@@ -37,8 +37,8 @@
         {:on-click
          #(do
            (if (get-in @doc [:search :id])
-             (tr/pull :gname :load-employee
-                      :params {:id (get-in @doc [:search :id])})
+             (tr/dispatch-pull :gname :load-employee
+                               :params {:id (get-in @doc [:search :id])})
              (do
                (swap! doc assoc-in [:errors :id] "Id is empty or not number "))))}
         "Search"]])))
@@ -47,7 +47,7 @@
 (defn employee-list-view []
   (let [data (tr/subscribe [:get-employee-list :employee])]
     (if-not @data
-      (tr/pull :name [:get-employee-list]))
+      (tr/dispatch-pull :name [:get-employee-list]))
     (fn []
       (if @data
         (v/table @data)))))

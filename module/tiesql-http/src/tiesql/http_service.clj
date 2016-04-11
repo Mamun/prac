@@ -1,12 +1,9 @@
 (ns tiesql.http-service
   (:require [clojure.tools.logging :as log]
             [tiesql.common :as c]
-    ;    [tiesql.util :as ]
             [tiesql.util :as u]
             [clojure.tools.reader.edn :as edn]
             [tiesql.jdbc :as tj]))
-
-
 
 
 
@@ -38,19 +35,13 @@
 (defn response-stringify
   [response req]
   (if (= :string (:output req))
-    (mapv u/postwalk-stringify-keys response)
+    (mapv (partial u/postwalk-replace-key-with u/keyword->str) response)
     response))
 
 
 
 (defn endpoint-type
   [{:keys [request-method content-type]}]
-  ;(log/info request-method)
-  ;(log/info content-type)
-  #_(log/info (and
-                (= request-method :post)
-                (or (re-find #"application/transit+json" content-type)
-                    (re-find #"application/json" content-type))))
   (if (and
         (= request-method :post)
         (or (clojure.string/includes? content-type "transit")
@@ -59,12 +50,11 @@
     u/url-endpoint))
 
 
-(defmulti parse-request (fn [t _] t))
+(defmulti params-format (fn [_ t] t))
 
 
-(defmethod parse-request u/api-endpoint
-  [_ params]
-  ;(log/info "api end point " params)
+(defmethod params-format u/api-endpoint
+  [params _]
   (-> params
       (update-in [u/tiesql-name] (fn [w] (if w
                                            (if (sequential? w)
@@ -80,8 +70,8 @@
           [(keyword k) (keyword v)])))
 
 
-(defmethod parse-request u/url-endpoint
-  [_ params]
+(defmethod params-format u/url-endpoint
+  [params _]
   ;(log/info " url endpoint " params)
   (let [r-params (dissoc params u/tiesql-name :rformat :pformat :gname)
         q-name (when-let [w (u/tiesql-name params)]
@@ -97,38 +87,62 @@
         (filter-nil-value))))
 
 
-(defn tiesql-request
-  [{:keys [params] :as req}]
-  (if params
-    (let [type (endpoint-type req)]
-      (-> (parse-request type params)
-          (param-keywordize-keys)))
-    (c/fail "No params is set in http request ")))
 
+(defmulti output-format (fn [_ t] t))
+
+
+(defmethod output-format u/api-endpoint
+  [output _]
+  output)
+
+
+(defmethod output-format u/url-endpoint
+  [output _]
+  (->> output
+       (u/postwalk-replace-value-with u/as-str )
+       (u/postwalk-replace-key-with u/keyword->str)))
 
 
 (defn- apply-op
-  [request-m handler ds tms]
-  (->> (seq request-m)
+  [r handler ds tms]
+  (->> (seq r)
        (apply concat)
        (cons tms)
        (cons ds)
        (apply handler)))
 
 
+
+(defn is-params-not-nil? [params]
+  (if params
+    params
+    (c/fail "No params is set in http request")))
+
+
+
 (defn pull
-  [ds tms ring-request]
-  (let [req (tiesql-request ring-request)
+  [ds tms {:keys [params] :as ring-request}]
+  (let [type (endpoint-type ring-request)
+        req (c/try-> params
+                     (is-params-not-nil?)
+                     (params-format type)
+                     (param-keywordize-keys))
         res (c/try-> req
-                     (apply-op tj/pull ds tms))]
-    (-> res
-        (response-stringify req)
-        (u/response-format))))
+                     (apply-op tj/pull ds tms)
+                     (response-stringify req)
+                     (output-format type))]
+    (u/response-format
+      res)))
 
 
 (defn push!
-  [ds tms ring-request]
-  (let [res (c/try-> (tiesql-request ring-request)
+  [ds tms {:keys [params] :as ring-request}]
+  (let [type (endpoint-type ring-request)
+        req (c/try-> params
+                     (is-params-not-nil?)
+                     (params-format type)
+                     (param-keywordize-keys))
+        res (c/try-> req
                      (apply-op tj/push! ds tms))]
-    (-> res
-        (u/response-format))))
+    (u/response-format
+      res)))
