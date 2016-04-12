@@ -116,8 +116,8 @@
 
 
 (defn do-result1
-  [t m]
-  (condp = t
+  [format m]
+  (condp = format
     map-format
     (dissoc m result-key)
     array-format
@@ -131,8 +131,8 @@
 
 
 (defn assoc-result-format
-  [tm-coll t]
-  (mapv (fn [m] (do-result1 t m)) tm-coll))
+  [tm-coll format]
+  (mapv (fn [m] (do-result1 format m)) tm-coll))
 
 
 (defn into-model-map
@@ -149,11 +149,11 @@
 
 
 (defn format-output
-  [tm-coll t]
+  [tm-coll format]
   (cond
-    (contains? #{map-format array-format} t)
+    (= :one format)
     (cc/try-> tm-coll first output-key)
-    (= value-format t)
+    (= value-format format)
     (cc/try-> tm-coll first output-key (get-in [1 0]))
     :else
     (let [xf (comp (map into-model-map))]
@@ -231,6 +231,8 @@
                name)
         tm-coll (select-name tms name)
         ]
+
+
     (if (cc/failed? tm-coll)
       tm-coll
       (proc tm-coll params))))

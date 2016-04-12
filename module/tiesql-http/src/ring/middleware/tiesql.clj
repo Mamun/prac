@@ -27,8 +27,8 @@
           (u/response-format)
           (response)))
     (if (= "/pull" t)
-      (response (h/pull ds tms req))
-      (response (h/push! ds tms req)))))
+      (response (u/response-format (h/pull ds tms req)))
+      (response (u/response-format (h/push! ds tms req))))))
 
 
 (defn log-request

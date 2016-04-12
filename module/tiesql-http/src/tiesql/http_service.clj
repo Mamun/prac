@@ -50,10 +50,10 @@
     u/url-endpoint))
 
 
-(defmulti params-format (fn [_ t] t))
+(defmulti request-format (fn [_ t] t))
 
 
-(defmethod params-format u/api-endpoint
+(defmethod request-format u/api-endpoint
   [params _]
   (-> params
       (update-in [u/tiesql-name] (fn [w] (if w
@@ -70,7 +70,7 @@
           [(keyword k) (keyword v)])))
 
 
-(defmethod params-format u/url-endpoint
+(defmethod request-format u/url-endpoint
   [params _]
   ;(log/info " url endpoint " params)
   (let [r-params (dissoc params u/tiesql-name :rformat :pformat :gname)
@@ -88,15 +88,15 @@
 
 
 
-(defmulti output-format (fn [_ t] t))
+(defmulti resposne-format (fn [_ t] t))
 
 
-(defmethod output-format u/api-endpoint
+(defmethod resposne-format u/api-endpoint
   [output _]
   output)
 
 
-(defmethod output-format u/url-endpoint
+(defmethod resposne-format u/url-endpoint
   [output _]
   (->> output
        (u/postwalk-replace-value-with u/as-str )
@@ -125,24 +125,19 @@
   (let [type (endpoint-type ring-request)
         req (c/try-> params
                      (is-params-not-nil?)
-                     (params-format type)
-                     (param-keywordize-keys))
-        res (c/try-> req
-                     (apply-op tj/pull ds tms)
-                     (response-stringify req)
-                     (output-format type))]
-    (u/response-format
-      res)))
+                     (request-format type)
+                     (param-keywordize-keys))]
+    (c/try-> req
+             (apply-op tj/pull ds tms)
+             (response-stringify req)
+             (resposne-format type))))
 
 
 (defn push!
   [ds tms {:keys [params] :as ring-request}]
-  (let [type (endpoint-type ring-request)
-        req (c/try-> params
-                     (is-params-not-nil?)
-                     (params-format type)
-                     (param-keywordize-keys))
-        res (c/try-> req
-                     (apply-op tj/push! ds tms))]
-    (u/response-format
-      res)))
+  (let [type (endpoint-type ring-request)]
+    (c/try-> params
+             (is-params-not-nil?)
+             (request-format type)
+             (param-keywordize-keys)
+             (apply-op tj/push! ds tms))))

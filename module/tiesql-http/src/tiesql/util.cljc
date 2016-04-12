@@ -88,6 +88,7 @@
 
 (defn replace-mk
   [f1 m]
+  (println "--" m)
   (let [f (fn [[k v]] [(f1 k) v] )]
     (into {} (map f m))))
 
@@ -98,7 +99,7 @@
   [f m]
   (w/postwalk (fn [x]
                 (cond (map? x)
-                      (replace-mk f m)
+                      (replace-mk f x)
                       (vector? x)
                       (mapv f x)
                       :else x)) m))
@@ -109,6 +110,11 @@
 
 
 (comment
+
+  (replace-mk keyword->str [{:a 2}])
+
+  (postwalk-replace-key-with keyword->str
+                             [{:a 3}])
 
   (postwalk-replace-value-with [[:a :b]
                                [1 2]

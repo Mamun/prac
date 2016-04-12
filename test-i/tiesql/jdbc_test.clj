@@ -22,7 +22,7 @@
     (is (= (pull @td/ds @td/tms
                  :name :get-dept-by-id
                  :params {:id 1})
-           [{:id 1, :transaction_id 0, :dept_name "Business"}]))
+           {:id 1, :transaction_id 0, :dept_name "Business"}))
 
     (is (= (pull @td/ds @td/tms
                  :name [:get-dept-by-id]
@@ -34,6 +34,12 @@
                          [1 0 "Business"]
                          [2 0 "Marketing"]
                          [3 0 "HR"]]}))
+
+    (is (= (pull @td/ds @td/tms :name :get-dept-list)
+           [[:id :transaction_id :dept_name]
+            [1 0 "Business"]
+            [2 0 "Marketing"]
+            [3 0 "HR"]]))
 
     (is (= (pull @td/ds @td/tms
                  :name [:get-employee-by-id :get-employee-dept]
@@ -96,6 +102,8 @@
              :department      {:id 1, :transaction_id 0, :dept_name "Business"}}}))
     ))
 
+
+;(pull-test)
 
 (deftest push!-test
   (testing "testing push! "

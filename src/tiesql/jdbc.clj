@@ -30,7 +30,7 @@
   (let [dfmat (if (or gname
                       (sequential? name))
                 {:pformat cc/map-format :rformat cc/nested-join-format}
-                {:pformat cc/map-format :rformat cc/map-format})
+                {:pformat cc/map-format :rformat :one })
         request-m (merge dfmat request-m)
         request-m (if gname
                     (assoc request-m :rformat cc/nested-join-format)
@@ -43,7 +43,7 @@
   (let [d (if (or gname
                   (sequential? name))
             {:pformat cc/nested-map-format :rformat cc/nested-map-format}
-            {:pformat cc/map-format :rformat cc/map-format})
+            {:pformat cc/map-format :rformat :one})
         request-m (merge d request-m)
         request-m (if gname
                     (-> request-m

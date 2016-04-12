@@ -43,7 +43,7 @@
   (-> @td/ds
       (t/pull (t/read-file "tie.edn.sql")
               :name [:get-dept-list])
-      ;(clojure.pprint/pprint)
+      (clojure.pprint/pprint)
       )
 
 

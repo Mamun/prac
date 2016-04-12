@@ -109,7 +109,6 @@
         sql (sql-key tm)
         result (result-key tm)]
     ;todo Need to move this log from here
-    ; (debug (select-keys tm [sql-key dml-type]))
     (condp = dml-type
       dml-select-key
       (if (contains? result result-array-key)

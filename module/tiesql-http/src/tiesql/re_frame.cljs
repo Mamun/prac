@@ -14,7 +14,14 @@
 (r/register-sub event-path (fn [db path]  (reaction (get-in @db path))))
 
 
+(def clear-path :_clear_path_)
 (def tiesql-path :_tiesql_)
+
+
+(r/register-handler clear-path (fn [db [_ v]] (update-in db [tiesql-path] nil)))
+
+
+
 
 
 (r/register-handler
