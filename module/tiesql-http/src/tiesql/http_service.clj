@@ -18,6 +18,7 @@
   [params]
   (->> params
        (reduce (fn [acc [k v]]
+                 (log/info "type --" (type v ))
                  (let [v1 (edn/read-string v)]
                    (if (symbol? v1)
                      (assoc acc k v)
@@ -72,7 +73,7 @@
 
 (defmethod request-format u/url-endpoint
   [params _]
-  ;(log/info " url endpoint " params)
+  (log/info " url endpoint " params)
   (let [r-params (dissoc params u/tiesql-name :rformat :pformat :gname)
         q-name (when-let [w (u/tiesql-name params)]
                  (if (sequential? w)
@@ -83,7 +84,7 @@
                   (as-keyword-value))]
     (-> other
         (assoc :name q-name)
-        (assoc :params (read-params-string r-params))
+        (assoc :params r-params #_(read-params-string r-params))
         (filter-nil-value))))
 
 

@@ -9,18 +9,19 @@
                                    dispatch-sync
                                    subscribe]]
             [app.component.employee :as e]
-            [app.component.common-view :as u]))
+            [app.component.common-view :as u]
+            [tiesql.re-frame :as tr]))
 
 
 
 
-(register-handler :url (fn [db [_ v]] (assoc-in db [:url] v)))
-(register-sub :url (fn [db _] (reaction (get-in @db [:url]))))
+;(register-handler :url (fn [db [_ v]] (assoc-in db [:url] v)))
+;(register-sub :url (fn [db _] (reaction (get-in @db [:url]))))
 
 
 ;(devcards.core/start-devcard-ui!)
 
-(defn menu-action [v] (dispatch [:url v]))
+(defn menu-action [v] (tr/dispatch [:url v]) #_(dispatch [:url v]))
 
 
 (def menu [["Home" "#" menu-action]
@@ -29,14 +30,14 @@
 
 
 (defn error-view []
-  (let [data (subscribe [:error])]
+  (let [data (tr/subscribe [:error])]
     (fn []
       (when @data
         [:div.alert.alert-danger @data]))))
 
 
 (defn app-content []
-  (let [url (subscribe [:url])]
+  (let [url (tr/subscribe [:url])]
     (fn []
       [:span
        [:nav {:class "navbar navbar-default navbar-fixed-top"}
