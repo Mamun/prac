@@ -78,7 +78,7 @@
   "Read or query value from database. It will return as model map
    ds: datasource
    "
-  [ds tms & {:as request-m}]
+  [ds tms request-m]
   (cc/try->> request-m
              (cc/validate-input!)
              (default-request :pull)
@@ -92,16 +92,16 @@
             (c/add-child-one (ce/sql-executor-node ds tms ce/Transaction))
             (p/assoc-param-ref-gen (fn [& {:as m}]
                                      (->> (default-request :db-seq m)
-                                          (seq)
-                                          (apply concat)
-                                          (cons tms)
-                                          (cons ds)
-                                          (apply pull))))))
+                                          ;(seq)
+                                          ;(apply concat)
+                                          ;(cons tms)
+                                          ;(cons ds)
+                                          (pull ds tms))))))
 
 
 (defn push!
   "Create, update or delete value in database. DB O/P will be run within transaction. "
-  [ds tms & {:as request-m}]
+  [ds tms request-m ]
   (cc/try->> request-m
              (cc/validate-input!)
              (default-request :push)

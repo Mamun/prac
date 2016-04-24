@@ -34,7 +34,7 @@
 
 
 (defn response-stringify
-  [response req]
+  [ req response]
   (if (= :string (:output req))
     (mapv (partial u/postwalk-replace-key-with u/keyword->str) response)
     response))
@@ -51,11 +51,11 @@
     u/url-endpoint))
 
 
-(defmulti request-format (fn [_ t] t))
+(defmulti request-format (fn [t _ ] t))
 
 
 (defmethod request-format u/api-endpoint
-  [params _]
+  [_ params ]
   (-> params
       (update-in [u/tiesql-name] (fn [w] (if w
                                            (if (sequential? w)
@@ -72,7 +72,7 @@
 
 
 (defmethod request-format u/url-endpoint
-  [params _]
+  [_ params ]
   (log/info " url endpoint " params)
   (let [r-params (dissoc params u/tiesql-name :rformat :pformat :gname)
         q-name (when-let [w (u/tiesql-name params)]
@@ -89,29 +89,19 @@
 
 
 
-(defmulti resposne-format (fn [_ t] t))
+(defmulti resposne-format (fn [ t _] t))
 
 
 (defmethod resposne-format u/api-endpoint
-  [output _]
+  [_ output ]
   output)
 
 
 (defmethod resposne-format u/url-endpoint
-  [output _]
+  [_ output ]
   (->> output
        (u/postwalk-replace-value-with u/as-str )
        (u/postwalk-replace-key-with u/keyword->str)))
-
-
-(defn- apply-op
-  [r handler ds tms]
-  (->> (seq r)
-       (apply concat)
-       (cons tms)
-       (cons ds)
-       (apply handler)))
-
 
 
 (defn is-params-not-nil? [params]
@@ -124,21 +114,21 @@
 (defn pull
   [ds tms {:keys [params] :as ring-request}]
   (let [type (endpoint-type ring-request)
-        req (c/try-> params
-                     (is-params-not-nil?)
-                     (request-format type)
-                     (param-keywordize-keys))]
-    (c/try-> req
-             (apply-op tj/pull ds tms)
-             (response-stringify req)
-             (resposne-format type))))
+        req (c/try->> params
+                      (is-params-not-nil?)
+                      (request-format type)
+                      (param-keywordize-keys))]
+    (c/try->> req
+              (tj/pull ds tms)
+              (response-stringify req)
+              (resposne-format type))))
 
 
 (defn push!
   [ds tms {:keys [params] :as ring-request}]
   (let [type (endpoint-type ring-request)]
-    (c/try-> params
-             (is-params-not-nil?)
-             (request-format type)
-             (param-keywordize-keys)
-             (apply-op tj/push! ds tms))))
+    (c/try->> params
+              (is-params-not-nil?)
+              (request-format type)
+              (param-keywordize-keys)
+              (tj/push! ds tms))))

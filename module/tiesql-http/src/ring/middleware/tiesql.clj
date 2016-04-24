@@ -27,7 +27,9 @@
           (u/response-format)
           (response)))
     (if (= "/pull" t)
-      (response (u/response-format (h/pull ds tms req)))
+      (->> (h/pull ds tms req)
+           (u/response-format)
+           (response))
       (response (u/response-format (h/push! ds tms req))))))
 
 
