@@ -2,7 +2,8 @@
   (:use [clojure.test])
   (:require [tiesql.common :refer :all]
             [tiesql.http-service :refer :all]
-            [test-data :as td]))
+            [test-data :as td]
+            [tiesql.jdbc :as tj]))
 
 
 
@@ -17,25 +18,31 @@
 
 (deftest pull-test
   (testing "pull test "
-    (let [res (->> {:params         {:name :get-dept-list}
+    (let [handler (partial tj/pull @td/ds @td/tms)
+          res (->> {:params         {:name :get-dept-list}
 
                     :content-type   "transit"}
-                   (pull @td/ds @td/tms))]
+                   )
+          res ((warp-pull handler) res)]
       (clojure.pprint/pprint res)
       (is (= 1 1
 
              ))))
   (testing "pull test "
-    (let [res (->> {:params         {:name :get-dept-list}
+    (let [handler (partial tj/pull @td/ds @td/tms)
+          res (->> {:params         {:name :get-dept-list}
                     :request-method :post
                     :content-type   "transit"}
-                   (pull @td/ds @td/tms))]
+                   )
+          res ((warp-pull handler) res)]
       ; (println res)
       (is (= 1 1
 
              )))))
 
+
 (comment
+
   (run-tests)
 
   )

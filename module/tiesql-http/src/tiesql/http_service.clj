@@ -2,8 +2,7 @@
   (:require [clojure.tools.logging :as log]
             [tiesql.common :as c]
             [tiesql.util :as u]
-            [clojure.tools.reader.edn :as edn]
-            [tiesql.jdbc :as tj]))
+            [clojure.tools.reader.edn :as edn]))
 
 
 
@@ -18,7 +17,7 @@
   [params]
   (->> params
        (reduce (fn [acc [k v]]
-                 (log/info "type --" (type v ))
+                 (log/info "type --" (type v))
                  (let [v1 (edn/read-string v)]
                    (if (symbol? v1)
                      (assoc acc k v)
@@ -34,7 +33,7 @@
 
 
 (defn response-stringify
-  [ req response]
+  [req response]
   (if (= :string (:output req))
     (mapv (partial u/postwalk-replace-key-with u/keyword->str) response)
     response))
@@ -51,11 +50,11 @@
     u/url-endpoint))
 
 
-(defmulti request-format (fn [t _ ] t))
+(defmulti request-format (fn [t _] t))
 
 
 (defmethod request-format u/api-endpoint
-  [_ params ]
+  [_ params]
   (-> params
       (update-in [u/tiesql-name] (fn [w] (if w
                                            (if (sequential? w)
@@ -72,7 +71,7 @@
 
 
 (defmethod request-format u/url-endpoint
-  [_ params ]
+  [_ params]
   (log/info " url endpoint " params)
   (let [r-params (dissoc params u/tiesql-name :rformat :pformat :gname)
         q-name (when-let [w (u/tiesql-name params)]
@@ -89,18 +88,18 @@
 
 
 
-(defmulti resposne-format (fn [ t _] t))
+(defmulti resposne-format (fn [t _] t))
 
 
 (defmethod resposne-format u/api-endpoint
-  [_ output ]
+  [_ output]
   output)
 
 
 (defmethod resposne-format u/url-endpoint
-  [_ output ]
+  [_ output]
   (->> output
-       (u/postwalk-replace-value-with u/as-str )
+       (u/postwalk-replace-value-with u/as-str)
        (u/postwalk-replace-key-with u/keyword->str)))
 
 
@@ -110,25 +109,47 @@
     (c/fail "No params is set in http request")))
 
 
-
-(defn pull
-  [ds tms {:keys [params] :as ring-request}]
+(defn pull [pull-handler ring-request]
   (let [type (endpoint-type ring-request)
-        req (c/try->> params
+        req (c/try->> ring-request
+                      (:params)
                       (is-params-not-nil?)
                       (request-format type)
                       (param-keywordize-keys))]
-    (c/try->> req
-              (tj/pull ds tms)
-              (response-stringify req)
-              (resposne-format type))))
+    (u/response-format
+      (c/try->> req
+                (pull-handler)
+                (response-stringify req)
+                (resposne-format type)))))
 
 
-(defn push!
-  [ds tms {:keys [params] :as ring-request}]
+(defn push [push-handler ring-request]
   (let [type (endpoint-type ring-request)]
-    (c/try->> params
-              (is-params-not-nil?)
-              (request-format type)
-              (param-keywordize-keys)
-              (tj/push! ds tms))))
+    (u/response-format
+      (c/try->> ring-request
+                (:params)
+                (is-params-not-nil?)
+                (request-format type)
+                (param-keywordize-keys)
+                (push-handler)))))
+
+
+
+(defn warp-pull
+  [handler]
+  (fn [ring-request]
+    (pull handler ring-request) ))
+
+
+(defn warp-push!
+  [handler]
+  (fn [ring-request]
+    (push handler ring-request) ))
+
+
+(defn warp-tiesql [handler t]
+  (fn [ring-request]
+    (if (= t "/push")
+      ((warp-push! handler) ring-request)
+      ((warp-pull handler) ring-request)
+      )))

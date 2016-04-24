@@ -11,26 +11,16 @@
             [ring.middleware.format-response :as fr]))
 
 
-(defn response
-  [body]
-  {:status  200
-   :headers {}
-   :body    body})
+(defn http-response
+  [handler]
+  (fn [req]
+    (let [body (handler req)]
+      {:status  200
+       :headers {}
+       :body    body})))
 
 
-(defn tiesql-handler [ds tms t req]
-  ;(log/info "--------------" tms )
-  (if (c/failed? tms)
-    (do
-      (-> tms
-          ;(response-stringify req)
-          (u/response-format)
-          (response)))
-    (if (= "/pull" t)
-      (->> (h/pull ds tms req)
-           (u/response-format)
-           (response))
-      (response (u/response-format (h/push! ds tms req))))))
+
 
 
 (defn log-request
@@ -63,6 +53,30 @@
       (c/fail {:msg "Error in server "}))))
 
 
+(defn default-middleware [handler  encoding log?]
+  (-> handler
+      ;  (h/warp-tiesql t)
+      (http-response)
+      (kp/wrap-keyword-params)
+      (p/wrap-params :encoding encoding)
+      (mp/wrap-multipart-params)
+      (fp/wrap-restful-params)
+      (fr/wrap-restful-response)
+      (log-request log?)
+      ))
+
+
+#_(defn tiesql-handler [ds tms t req]
+  ;(log/info "--------------" tms )
+
+  (if (= "/pull" t)
+    (let [handler (h/warp-pull (partial tj/pull ds tms))]
+      (handler req)
+      )
+    (let [handler (h/warp-push! (partial tj/push! ds tms))]
+      (handler req)))
+  )
+
 ;ds-atom tms-atom
 (defn warp-tiesql-handler
   "Warper that tries to do with tiesql. It should use next to the ring-handler. If path-in is matched with
@@ -87,13 +101,12 @@
             request-path (or (:path-info req)
                              (:uri req))]
         (if (contains? p-set request-path)
-          ((-> (partial tiesql-handler ds tms request-path) ;; Data service here
-               (kp/wrap-keyword-params)
-               (p/wrap-params :encoding encoding)
-               (mp/wrap-multipart-params)
-               (fp/wrap-restful-params)
-               (fr/wrap-restful-response)
-               (log-request log?)) req)
+          (let [h (if (= "/pull" request-path)
+                    (h/warp-pull  (partial tj/pull ds tms))
+                    (h/warp-push! (partial tj/push! ds tms))
+                    #_(partial tj/push! ds tms))
+                thandler (default-middleware h  encoding log?)]
+            (thandler req))
           (handler req))))))
 
 

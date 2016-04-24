@@ -8,7 +8,7 @@
                                    dispatch
                                    dispatch-sync
                                    subscribe]]
-            [app.component.common-view :as v]
+            [tiesql.ui :as v]
             [tiesql.re-frame :as tr]))
 
 
@@ -46,9 +46,10 @@
 
 (defn employee-list-view []
   (let [data (tr/subscribe [:get-employee-list :employee])]
-    (if-not @data
-      (tr/dispatch-pull :name [:get-employee-list]))
+
     (fn []
+      (if-not @data
+        (tr/dispatch-pull :name [:get-employee-list]))
       (if @data
         (v/table @data)))))
 
@@ -57,7 +58,7 @@
   (let [data (tr/subscribe [:load-employee])]
     (fn []
       (when @data
-        (v/html-edn @data)))))
+        (v/show-edn @data)))))
 
 
 (defn employee-view []

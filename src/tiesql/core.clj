@@ -27,6 +27,8 @@
       (or (nil? tms)
           (empty? tms))
       (cc/fail " Source is empty ")
+      (cc/failed? tms)
+      tms
       (or (nil? tm-map)
           (empty? tm-map))
       (cc/fail (format " %s Name not found" (str name-key-coll)))

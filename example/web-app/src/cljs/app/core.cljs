@@ -9,7 +9,7 @@
                                    dispatch-sync
                                    subscribe]]
             [app.component.employee :as e]
-            [app.component.common-view :as u]
+            [tiesql.ui :as u]
             [tiesql.re-frame :as tr]))
 
 
@@ -21,11 +21,11 @@
 
 ;(devcards.core/start-devcard-ui!)
 
-(defn menu-action [v] (tr/dispatch [:url v]) #_(dispatch [:url v]))
+(defn menu-action [v] (tr/dispatch [:url (first v)]) #_(dispatch [:url v]))
 
 
-(def menu [["Home" "#" menu-action]
-           ["Employee" "#" menu-action]])
+(def menu [["Home" "#" ]
+           ["Employee" "#" ]])
 
 
 
@@ -49,7 +49,7 @@
        [:div {:class "container-fluid"}
         [:div {:class "row"}
          [:div {:class "col-sm-3 col-md-2 sidebar"}
-          [u/navigation-view menu]]
+          [u/nav menu :on-click menu-action]]
          [:div {:class "col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main"}
           [error-view]
           (cond
