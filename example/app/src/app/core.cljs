@@ -63,8 +63,8 @@
 (defcard-tiesql get-dept-by-id
                 "**With name keyword**"
                 tiesql/pull
-                :name :get-dept-by-id
-                :params {:id 1})
+                {:name   :get-dept-by-id
+                 :params {:id 1}})
 
 
 
@@ -80,8 +80,8 @@
 (defcard-tiesql load-dept
                 "**Load Department 2**  "
                 tiesql/pull
-                :gname :load-dept
-                :params {:id 1})
+                {:gname  :load-dept
+                 :params {:id 1}})
 
 
 (defcard-tiesql load-employee

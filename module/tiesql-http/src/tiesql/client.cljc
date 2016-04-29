@@ -61,12 +61,12 @@
     ch))
 
 
-(defn pull [& {:keys [url] :as request-m}]
+(defn pull [{:keys [url] :as request-m}]
   (do-ajax-request (str (or url "") "/pull") request-m))
 
 
 (defn push!
-  [& {:keys [url] :as request-m}]
+  [{:keys [url] :as request-m}]
   (do-ajax-request (str (or url "") "/push") request-m))
 
 

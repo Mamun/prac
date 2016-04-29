@@ -127,7 +127,7 @@
       (keyword)))
 
 
-(def sql-param-regex #"\w*:[\w|\-]+")
+(def sql-param-regex #"\w*:[\w|\-|#]+")
 
 
 (defn sql-str-compiler-emit

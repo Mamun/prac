@@ -20,17 +20,18 @@
 
 (defn table [data & {:keys [on-row-click]}]
   (let [[header & row] (add-key-for-table-data data)]
-    [:table {:class "table table-striped table-hover"}
-     [:thead
-      [:tr
-       (for [h header]
-         [:th {:key h} (str h)])]]
-     [:tbody
-      (for [r row]
-        [:tr {:key      r
-              :on-click #(on-row-click r)}
-         (for [[c k] r]
-           [:td {:key k} (tu/as-str c)])])]]))
+    [:div.table-responsive
+     [:table {:class "table table-striped table-hover"}
+      [:thead
+       [:tr
+        (for [h header]
+          [:th {:key h} (str h)])]]
+      [:tbody
+       (for [r row]
+         [:tr {:key      r
+               :on-click #(on-row-click r)}
+          (for [[c k] r]
+            [:td {:key k} (tu/as-str c)])])]]]))
 
 
 
