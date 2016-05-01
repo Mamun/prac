@@ -17,7 +17,6 @@
 
 
 (defn load-employee-by-id [id]
-  
   (-> {:gname :load-employee :params {:id id}}
       (client/pull (tr/as-dispatch :load-employee))))
 

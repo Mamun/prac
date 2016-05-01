@@ -1,7 +1,6 @@
 (ns tiesql.re-frame
   (:require-macros [reagent.ratom :refer [reaction]])
-  (:require [re-frame.core :as r]
-            ))
+  (:require [re-frame.core :as r]))
 
 
 (def r-store-key :_rkey_)
@@ -14,7 +13,6 @@
   :clear-error
   (fn [db [_ v]]
     (assoc-in db [r-store-key error-path] nil)))
-
 
 
 ;; Clear all value from here
@@ -64,12 +62,10 @@
         (dispatch [subscribe-key v]))
       (dispatch [error-path e]))))
 
-
 (defn apply-dispatch
   ([f k v]
     (f v (as-dispatch k)))
   ([f v]
-    (apply-dispatch f (find-subscribe-key v) v)
-    ))
+    (apply-dispatch f (find-subscribe-key v) v)))
 
 

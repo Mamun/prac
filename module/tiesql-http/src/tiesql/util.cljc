@@ -15,14 +15,7 @@
 (def api-endpoint :api)
 
 
-(defn build-request
-  [param-m]
-  (merge
-    {:input  :keyword
-     :output :keyword
-     :accept "application/transit+json"}
 
-    param-m))
 
 
 #_(defn merge-default
