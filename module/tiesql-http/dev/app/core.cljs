@@ -4,12 +4,14 @@
             [ajax.core :as a]
     ;[sablono.core :as sab]
             [cognitect.transit :as t]
+            [tiesql.re-frame :as re]
             [cljs.core.async :refer [<! >! timeout chan]])
   (:require-macros
     [cljs.core.async.macros :refer [go]]
     [devcards.core :as dc :refer [defcard deftest defcard-rg]]
     [cljs.test :refer [is testing async]]
-    [tiesql.devcard :refer [defcard-tiesql]]))
+    [tiesql.devcard :refer [defcard-tiesql]]
+    ))
 
 
 (defn fig-reload []
@@ -20,10 +22,16 @@
   )
 
 
-(let [re (t/writer :json)]
-  ;(println (t/write re {:a 4}))
+(let [s (re/subscribe [:get-employee-list])]
+  (defcard Hello
+           "Date view "
+           s))
 
-  )
+(-> {:name :get-employee-list}
+    (tiesql/pull (re/as-dispatch :get-employee-list)))
+
+(a/GET "/api" (tiesql/build-request {:a 10}) )
+
 
 #_(defcard-rg rg-example-2
               "Data View "
@@ -31,7 +39,7 @@
 
 ;(js/alert "Hello")
 
-#_(defcard Hello
+(defcard Hello
          "Hello"
          {:a 3})
 
@@ -64,11 +72,11 @@
 
 ;(devcards.core/start-devcard-ui!)
 
-(defcard-tiesql get-dept-by-id
-                "**With name keyword**"
-                tiesql/pull
-                {:name   :get-dept-by-id
-                 :params {:id 1}})
+#_(defcard-tiesql get-dept-by-id
+                  "**With name keyword**"
+                  tiesql/pull
+                  {:name   :get-dept-by-id
+                   :params {:id 1}})
 
 
 #_(defcard-tiesql employee-by-id
@@ -78,24 +86,24 @@
                   :params {:id 1})
 
 
-(defcard-tiesql load-dept
-                "**Load Department 2**  "
-                tiesql/pull
-                {:gname  :load-dept
-                 :params {:id 1}})
+#_(defcard-tiesql load-dept
+                  "**Load Department 2**  "
+                  tiesql/pull
+                  {:gname  :load-dept
+                   :params {:id 1}})
 
 
-(defcard-tiesql load-employee
-                "**Load Employee**  "
-                tiesql/pull
-                {:gname  :load-employee
-                 :params {:id 1}})
+#_(defcard-tiesql load-employee
+                  "**Load Employee**  "
+                  tiesql/pull
+                  {:gname  :load-employee
+                   :params {:id 1}})
 
 
-(defcard-tiesql dept-list
-                "Load dept list as array  "
-                tiesql/pull
-                {:name [:get-dept-list]})
+#_(defcard-tiesql dept-list
+                  "Load dept list as array  "
+                  tiesql/pull
+                  {:name [:get-dept-list]})
 
 
 #_(defcard-tiesql insert-dept

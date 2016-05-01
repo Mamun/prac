@@ -2,8 +2,15 @@
   (:require [clojure.tools.logging :as log]
             [tiesql.common :as c]
             [tiesql.util :as u]
+            [tiesql.jdbc :as tj]
             [clojure.tools.reader.edn :as edn]))
 
+
+(defn response
+  [m]
+  (if (c/failed? m)
+    [nil (into {} m)]
+    [m nil]))
 
 
 (defn filter-nil-value
@@ -106,47 +113,31 @@
     (c/fail "No params is set in http request")))
 
 
-(defn pull [pull-handler ring-request]
+(defn pull-handler
+  [ds tms ring-request]
   (let [type (endpoint-type ring-request)
         req (c/try->> ring-request
                       (:params)
                       (is-params-not-nil?)
                       (request-format type)
                       (param-keywordize-keys))]
-    (u/response-format
+    (response
       (c/try->> req
-                (pull-handler)
+                (tj/pull ds tms)
                 (response-stringify req)
                 (resposne-format type)))))
 
 
-(defn push [push-handler ring-request]
+(defn push-handler
+  [ds tms ring-request]
   (let [type (endpoint-type ring-request)]
-    (u/response-format
+    (response
       (c/try->> ring-request
                 (:params)
                 (is-params-not-nil?)
                 (request-format type)
                 (param-keywordize-keys)
-                (push-handler)))))
+                (tj/push! ds tms)))))
 
 
 
-(defn warp-pull
-  [handler]
-  (fn [ring-request]
-    (pull handler ring-request) ))
-
-
-(defn warp-push!
-  [handler]
-  (fn [ring-request]
-    (push handler ring-request) ))
-
-
-(defn warp-tiesql [handler t]
-  (fn [ring-request]
-    (if (= t "/push")
-      ((warp-push! handler) ring-request)
-      ((warp-pull handler) ring-request)
-      )))

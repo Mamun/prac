@@ -8,7 +8,7 @@
          [tiesql.util :as u])]))
 
 
-(defn build-request
+(defn build-tiesql-request
   [param-m]
   (let [d {:input  :keyword
            :output :keyword
@@ -17,16 +17,22 @@
 
 
 (defn build-ajax-request
-  ([handler params ]
-   {:method          :post
-    :headers         {}
-    :params          params
-    :format          (a/transit-request-format)
-    :response-format (a/transit-response-format)
-    :handler         handler
-    :error-handler   handler})
-  ([params]
-   (build-ajax-request (fn [v] (js/console.log v)) params )))
+  [params handler ]
+  {:method          :post
+   :headers         {}
+   :params          params
+   :format          (a/transit-request-format)
+   :response-format (a/transit-response-format)
+   :handler         handler
+   :error-handler   handler})
+
+
+(defn build-request
+  ([params-m handler]
+   (-> (build-tiesql-request params-m)
+       (build-ajax-request handler)))
+  ([params-m]
+   (build-request params-m (fn [v] (js/console.log (str v))))))
 
 
 #_(def accept-html-options
@@ -41,16 +47,15 @@
 
 
 (defn pull
-  [request-m handler & [url]]
-  (->> (build-request request-m)
-       (build-ajax-request handler)
-       (a/POST (str (or url "") "/pull"))))
+  ([request-m handler & [url]]
+   (->> (build-request request-m handler)
+        (a/POST (str (or url "") "/pull"))))
+  )
 
 
 (defn push!
   [request-m handler & [url]]
-  (->> handler
-       (build-ajax-request (build-request request-m))
+  (->> (build-request request-m handler)
        (a/POST (str (or url "") "/push"))))
 
 
