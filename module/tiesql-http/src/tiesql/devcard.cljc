@@ -1,5 +1,10 @@
 (ns tiesql.devcard)
 
+
+(defn devcard-callback []
+  )
+
+
 (defmacro defcard-tiesql
   [name description & param]
   (let [v (gensym 'v)
@@ -15,7 +20,7 @@
                          ```
                        ")]
     `(~@param
-       :callback (fn [~v]
+      (fn [~v]
                    (devcards.core/defcard ~name
                                           ~description
                                           ~v)))))

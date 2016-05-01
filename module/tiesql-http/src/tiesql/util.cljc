@@ -15,23 +15,31 @@
 (def api-endpoint :api)
 
 
+(defn build-request
+  [param-m]
+  (merge
+    {:input  :keyword
+     :output :keyword
+     :accept "application/transit+json"}
 
-(defn merge-default
-  [m]
-  (-> m
-      (update-in [:input]  (fn [v] (or v :keyword)))
-      (update-in [:output] (fn [v] (or v :keyword)))
-      (update-in [:accept] (fn [v] (or v "application/transit+json")))))
+    param-m))
 
 
-(defn validate-and-assoc-default
-  [request-m]
-  (#?(:clj  cc/try->
-      :cljs try->) request-m
-                   (select-keys [:gname :name :params :pformat :rformat :input :accept :output])
-                   (cc/validate-input!)
-                   (merge-default)))
+#_(defn merge-default
+    [m]
+    (-> m
+        (update-in [:input] (fn [v] (or v :keyword)))
+        (update-in [:output] (fn [v] (or v :keyword)))
+        (update-in [:accept] (fn [v] (or v "application/transit+json")))))
 
+
+#_(defn validate-and-assoc-default
+    [request-m]
+    (#?(:clj  cc/try->
+        :cljs try->) request-m
+                     (select-keys [:gname :name :params :pformat :rformat :input :accept :output])
+                     (cc/validate-input!)
+                     (merge-default)))
 
 
 (defn response-format
@@ -41,29 +49,25 @@
     [m nil]))
 
 
-
-
-
-
 #?(:clj
    (defn as-str [v]
      (cond
        (string? v) v
        (keyword? v) (name v)
-       (number? v)  (str v)
+       (number? v) (str v)
        :else v)))
 
 
 #?(:cljs
-  (defn as-str [v]
-    (if (t/tagged-value? v)
-      (.-rep v)
-      v)))
+   (defn as-str [v]
+     (if (t/tagged-value? v)
+       (.-rep v)
+       v)))
 
 
 (defn- replace-mv
   [f1 m]
-  (let [f (fn [[k v]] [k (f1 v)] )]
+  (let [f (fn [[k v]] [k (f1 v)])]
     (into {} (map f m))))
 
 
@@ -89,7 +93,7 @@
 (defn replace-mk
   [f1 m]
   (println "--" m)
-  (let [f (fn [[k v]] [(f1 k) v] )]
+  (let [f (fn [[k v]] [(f1 k) v])]
     (into {} (map f m))))
 
 
@@ -117,10 +121,9 @@
                              [{:a 3}])
 
   (postwalk-replace-value-with [[:a :b]
-                               [1 2]
-                               [:a :b]
-                               ])
-
+                                [1 2]
+                                [:a :b]
+                                ])
 
   )
 
@@ -148,7 +151,7 @@
     (w/postwalk
       (fn [el]
         (if (map? el)
-          (into {} (filter (partial is-include? filter-v)  el))
+          (into {} (filter (partial is-include? filter-v) el))
           el))
       nm)))
 

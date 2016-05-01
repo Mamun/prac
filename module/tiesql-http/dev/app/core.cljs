@@ -3,6 +3,7 @@
             [devcards.core]
             [ajax.core :as a]
     ;[sablono.core :as sab]
+            [cognitect.transit :as t]
             [cljs.core.async :refer [<! >! timeout chan]])
   (:require-macros
     [cljs.core.async.macros :refer [go]]
@@ -19,7 +20,10 @@
   )
 
 
+(let [re (t/writer :json)]
+  ;(println (t/write re {:a 4}))
 
+  )
 
 #_(defcard-rg rg-example-2
               "Data View "
@@ -67,14 +71,11 @@
                  :params {:id 1}})
 
 
-
 #_(defcard-tiesql employee-by-id
                   "**Join example**"
                   tiesql/pull
                   :name [:get-employee-by-id :get-employee-dept]
                   :params {:id 1})
-
-
 
 
 (defcard-tiesql load-dept
@@ -91,13 +92,10 @@
                  :params {:id 1}})
 
 
-
-
 (defcard-tiesql dept-list
                 "Load dept list as array  "
                 tiesql/pull
                 {:name [:get-dept-list]})
-
 
 
 #_(defcard-tiesql insert-dept
@@ -105,10 +103,6 @@
                   tiesql/push!
                   :name [:create-dept]
                   :params {:department {:dept_name "Call Center 9"}})
-
-
-
-
 
 
 #_(defcard-tiesql create-employee

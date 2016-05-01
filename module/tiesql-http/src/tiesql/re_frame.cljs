@@ -1,7 +1,7 @@
 (ns tiesql.re-frame
   (:require-macros [reagent.ratom :refer [reaction]])
   (:require [re-frame.core :as r]
-            [tiesql.client :as client]))
+            ))
 
 
 (def r-store-key :_rkey_)
@@ -21,7 +21,7 @@
 (r/register-handler
   clear-r-store-key
   (fn [db [_ v]]
-    (assoc-in db [r-store-key ] nil)))
+    (assoc-in db [r-store-key] nil)))
 
 
 ;;Store all value here
@@ -47,29 +47,29 @@
   (r/dispatch [r-store-key v]))
 
 
-(defn dispatch-pull [& {:keys [subscribe-key gname name] :as api-map}]
-  (let [n (if (sequential? name) (first name) name)
-        subscribe-path (or subscribe-key gname n)]
-    (->> (assoc api-map :callback (fn [[v e]]
-                                    (if v
-                                      (do
-                                        (r/dispatch [:clear-error])
-                                        (dispatch [subscribe-path v]))
-                                      (dispatch [error-path e]))))
-
-         (client/pull))))
+(defn find-subscribe-key
+  [{:keys [gname name]}]
+  (let [n (if (sequential? name)
+            (first name)
+            name)]
+    (or gname n)))
 
 
-(defn dispatch-push [& {:keys [subscribe-key gname name] :as api-map}]
-  (let [n (if (sequential? name) (first name) name)
-        subscribe-path (or subscribe-key gname n)]
-    (->> (assoc api-map :callback (fn [[v e]]
-                                    (if v
-                                      (do
-                                        (r/dispatch [:clear-error])
-                                        (dispatch [subscribe-path v]))
-                                      (dispatch [error-path e]))))
-         (client/push!))))
+(defn as-dispatch
+  [subscribe-key]
+  (fn [[v e]]
+    (if v
+      (do
+        (r/dispatch [:clear-error])
+        (dispatch [subscribe-key v]))
+      (dispatch [error-path e]))))
 
+
+(defn apply-dispatch
+  ([f k v]
+    (f v (as-dispatch k)))
+  ([f v]
+    (apply-dispatch f (find-subscribe-key v) v)
+    ))
 
 

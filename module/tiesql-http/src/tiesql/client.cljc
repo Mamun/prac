@@ -1,73 +1,47 @@
 (ns tiesql.client
   #?(:clj
      (:require [ajax.core :as a]
-               [tiesql.common :as c]
-               [tiesql.util :as u]
-               [clojure.core.async :refer [<! >! timeout chan go]]))
+               [tiesql.util :as u]))
   #?@(:cljs
       [(:require [ajax.core :as a]
          [tiesql.common :as c]
-         [tiesql.util :as u]
-         [cljs.core.async :refer [<! >! timeout chan]])
-       (:require-macros [cljs.core.async.macros :refer [go]])]))
+         [tiesql.util :as u])]))
 
 
-(def default-request-format
+(defn build-ajax-request [params handler]
   {:method          :post
+   :headers         {}
    ;:format          :transit
+   :params          params
    :format          (a/transit-request-format)
-   :response-format (a/transit-response-format)})
+   :response-format (a/transit-response-format)
+   :handler         handler
+   :error-handler   handler})
 
 
-
-(def accept-html-options
-  {:accept "text/html"
-   :input  :string
-   :output :string})
-
-
-(defmulti do-ajax-request (fn [_ {:keys [callback]}]
-                            (when callback
-                              :callback)))
+#_(def accept-html-options
+    {:accept "text/html"
+     :input  :string
+     :output :string})
 
 
 (def csrf-headers {"Accept" "application/transit+json"
                    ;"x-csrf-token" (.-value (.getElementById js/document "csrf-token"))
                    })
 
-(defmethod do-ajax-request :callback
-  [url {:keys [callback headers] :as request-m}]
-  (let [w (u/validate-and-assoc-default request-m)
-        headers (or headers {})]
-    (if (c/failed? w)
-      (callback (u/response-format w))
-      (let [t (-> default-request-format
-                  (assoc :uri url)
-                  (assoc :params w)
-                  (assoc :headers headers)
-                  (assoc :error-handler callback)
-                  (assoc :handler callback))]
-        (a/POST url t)))))
 
-
-
-(defmethod do-ajax-request :default
-  [url request-m]
-  (let [ch (chan 1)
-        callback (fn [v] (go (>! ch v)))]
-    (go
-      (->> (assoc request-m :callback callback)
-           (do-ajax-request url)))
-    ch))
-
-
-(defn pull [{:keys [url] :as request-m}]
-  (do-ajax-request (str (or url "") "/pull") request-m))
+(defn pull
+  [request-m handler & [url]]
+  (->> handler
+       (build-ajax-request (u/build-request request-m))
+       (a/POST (str (or url "") "/pull"))))
 
 
 (defn push!
-  [{:keys [url] :as request-m}]
-  (do-ajax-request (str (or url "") "/push") request-m))
+  [request-m handler & [url]]
+  (->> handler
+       (build-ajax-request (u/build-request request-m))
+       (a/POST (str (or url "") "/push"))))
 
 
 #?(:cljs
@@ -93,7 +67,7 @@
 
   (let [v (pull
             :url "http://localhost:3001"
-                   :name :get-dept-by-id
+            :name :get-dept-by-id
             :params {:id 1}
             :callback (fn [w]
                         (print w)

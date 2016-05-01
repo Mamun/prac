@@ -13,11 +13,19 @@
        (into {})))
 
 
+(defn as-keyword-value
+  [m]
+  (into {}
+        (for [[k v] m]
+          [(keyword k) (keyword v)])))
+
+
+
 (defn read-params-string
   [params]
   (->> params
        (reduce (fn [acc [k v]]
-                 (log/info "type --" (type v))
+                 ; (log/info "type --" (type v))
                  (let [v1 (edn/read-string v)]
                    (if (symbol? v1)
                      (assoc acc k v)
@@ -56,34 +64,23 @@
 (defmethod request-format u/api-endpoint
   [_ params]
   (-> params
-      (update-in [u/tiesql-name] (fn [w] (if w
-                                           (if (sequential? w)
-                                             (mapv c/as-keyword (remove nil? w))
-                                             (keyword w)))))
+      (update-in [u/tiesql-name] c/as-keyword-batch )
       (filter-nil-value)))
 
 
-(defn as-keyword-value
-  [m]
-  (into {}
-        (for [[k v] m]
-          [(keyword k) (keyword v)])))
 
 
 (defmethod request-format u/url-endpoint
   [_ params]
-  (log/info " url endpoint " params)
+  ; (log/info " url endpoint " params)
   (let [r-params (dissoc params u/tiesql-name :rformat :pformat :gname)
-        q-name (when-let [w (u/tiesql-name params)]
-                 (if (sequential? w)
-                   (mapv c/as-keyword (remove nil? w))
-                   (keyword w)))
+        q-name (c/as-keyword-batch (u/tiesql-name params))
         other (-> params
                   (select-keys [:gname :rformat :pformat])
                   (as-keyword-value))]
     (-> other
         (assoc :name q-name)
-        (assoc :params r-params #_(read-params-string r-params))
+        (assoc :params r-params )
         (filter-nil-value))))
 
 

@@ -118,6 +118,14 @@
     v-str))
 
 
+(defn as-keyword-batch
+  [w]
+  (if w
+    (if (sequential? w)
+      (mapv as-keyword (remove nil? w))
+      (keyword w))))
+
+
 (defn as-string
   [v]
   (if (string? v)

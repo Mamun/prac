@@ -1,6 +1,7 @@
 (ns app.component.employee
   (:require-macros [reagent.ratom :refer [reaction]])
   (:require [reagent.core :as r]
+            [reagent.dom :as d]
             [reagent-forms.core :refer [bind-fields init-field value-of]]
             [re-frame.core :refer [register-handler
                                    path
@@ -9,7 +10,21 @@
                                    dispatch-sync
                                    subscribe]]
             [tiesql.ui :as v]
-            [tiesql.re-frame :as tr]))
+            [tiesql.util :as u]
+            [tiesql.re-frame :as tr]
+            [tiesql.client :as client]))
+
+
+
+(defn load-employee-by-id [id]
+  
+  (-> {:gname :load-employee :params {:id id}}
+      (client/pull (tr/as-dispatch :load-employee))))
+
+
+(defn load-employee-list []
+  (-> {:name :get-employee-list}
+      (client/pull (tr/as-dispatch :get-employee-list))))
 
 
 (def employee-template
@@ -37,21 +52,18 @@
         {:on-click
          #(do
            (if (get-in @doc [:search :id])
-             (tr/dispatch-pull :gname :load-employee
-                               :params {:id (get-in @doc [:search :id])})
+             (load-employee-by-id (get-in @doc [:search :id]))
              (do
                (swap! doc assoc-in [:errors :id] "Id is empty or not number "))))}
         "Search"]])))
 
 
 (defn employee-list-view []
-  (let [data (tr/subscribe [:get-employee-list :employee])]
-
+  (let [data (tr/subscribe [:get-employee-list])]
     (fn []
-      (if-not @data
-        (tr/dispatch-pull :name [:get-employee-list]))
+
       (if @data
-        (v/table @data)))))
+        (v/table @data :on-row-click (fn [v] (load-employee-by-id (first (first v)))))))))
 
 
 (defn employee-content-view []
@@ -61,9 +73,15 @@
         (v/show-edn @data)))))
 
 
-(defn employee-view []
+(defn employee-view2 []
   [:div
    [employee-list-view]
    [employee-search-view]
    [employee-content-view]])
 
+
+(def employee-view
+  (with-meta
+    employee-view2
+    {:getInitialState #(load-employee-list)})
+  )
