@@ -35,11 +35,6 @@
    (build-request params-m (fn [v] (js/console.log (str v))))))
 
 
-#_(def accept-html-options
-    {:accept "text/html"
-     :input  :string
-     :output :string})
-
 
 (def csrf-headers {"Accept" "application/transit+json"
                    ;"x-csrf-token" (.-value (.getElementById js/document "csrf-token"))
@@ -49,8 +44,7 @@
 (defn pull
   ([request-m handler & [url]]
    (->> (build-request request-m handler)
-        (a/POST (str (or url "") "/pull"))))
-  )
+        (a/POST (str (or url "") "/pull")))))
 
 
 (defn push!

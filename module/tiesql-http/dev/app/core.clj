@@ -30,7 +30,7 @@
 
 (defn api-routes []
   (-> (routes
-        (GET "/" _ (m/ok-response {:a 3})))
+        (GET "/" _ (m/ok-response {:a3 3})))
       (m/warp-default)))
 
 #_(defroutes api-routes
@@ -46,9 +46,9 @@
 
 (defn warp-log [handler]
   (fn [req]
-    (log/info "Request -----------------" req)
+    ;(log/info "Request -----------------" req)
     (let [w (handler req)]
-      (log/info "Response -----------------" w)
+     ; (log/info "Response -----------------" w)
       w
       )
     ))

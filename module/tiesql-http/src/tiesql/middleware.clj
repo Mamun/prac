@@ -9,26 +9,22 @@
 
 
 (defn ok-response [v]
-  [v nil])
+  {:status  200
+   :headers {"Content-Type" "text/html; charset=utf-8"}
+   :body    [v nil]})
+
 
 (defn error-response [e]
-  [nil e])
-
-
-(defn warp-http-response
-  [handler]
-  (fn [req]
-    (let [body (handler req)]
-      {:status  200
-       :headers {}
-       :body    body})))
+  {:status  200
+   :headers {"Content-Type" "text/html; charset=utf-8"}
+   :body    [nil e]})
 
 
 (defn warp-log-request
   [handler log?]
   (fn [req]
     (when log?
-      (log/info "http request  ---------------" req))
+      (log/info "After warp-log-request  ---------------" req))
     (handler req)))
 
 
@@ -37,12 +33,10 @@
               :or   {encoding "UTF-8"
                      log?     false}}]
   (-> handler
-      (warp-log-request log?)
-      (warp-http-response)
       (kp/wrap-keyword-params)
       (p/wrap-params :encoding encoding)
       (mp/wrap-multipart-params)
       (fp/wrap-restful-params)
       (fr/wrap-restful-response)
-      ))
+      (warp-log-request log?)))
 

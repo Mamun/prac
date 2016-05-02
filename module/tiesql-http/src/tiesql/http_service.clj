@@ -6,11 +6,15 @@
             [clojure.tools.reader.edn :as edn]))
 
 
-(defn response
+(defn http-response
   [m]
-  (if (c/failed? m)
-    [nil (into {} m)]
-    [m nil]))
+  (let [w
+        (if (c/failed? m)
+          [nil (into {} m)]
+          [m nil])]
+    {:status  200
+     :headers {"Content-Type" "text/html; charset=utf-8"}
+     :body    w}))
 
 
 (defn filter-nil-value
@@ -32,7 +36,6 @@
   [params]
   (->> params
        (reduce (fn [acc [k v]]
-                 ; (log/info "type --" (type v))
                  (let [v1 (edn/read-string v)]
                    (if (symbol? v1)
                      (assoc acc k v)
@@ -71,7 +74,7 @@
 (defmethod request-format u/api-endpoint
   [_ params]
   (-> params
-      (update-in [u/tiesql-name] c/as-keyword-batch )
+      (update-in [u/tiesql-name] c/as-keyword-batch)
       (filter-nil-value)))
 
 
@@ -79,7 +82,6 @@
 
 (defmethod request-format u/url-endpoint
   [_ params]
-  ; (log/info " url endpoint " params)
   (let [r-params (dissoc params u/tiesql-name :rformat :pformat :gname)
         q-name (c/as-keyword-batch (u/tiesql-name params))
         other (-> params
@@ -87,7 +89,7 @@
                   (as-keyword-value))]
     (-> other
         (assoc :name q-name)
-        (assoc :params r-params )
+        (assoc :params r-params)
         (filter-nil-value))))
 
 
@@ -121,7 +123,7 @@
                       (is-params-not-nil?)
                       (request-format type)
                       (param-keywordize-keys))]
-    (response
+    (http-response
       (c/try->> req
                 (tj/pull ds tms)
                 (response-stringify req)
@@ -131,7 +133,7 @@
 (defn push-handler
   [ds tms ring-request]
   (let [type (endpoint-type ring-request)]
-    (response
+    (http-response
       (c/try->> ring-request
                 (:params)
                 (is-params-not-nil?)

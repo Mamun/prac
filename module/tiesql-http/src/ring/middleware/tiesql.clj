@@ -46,7 +46,7 @@
   (fn [req]
     (let [request-path (or (:path-info req)
                            (:uri req))]
-      (log/info "---request path " request-path)
+      ;(log/info "---request path " request-path)
       (cond
         (= pull-path request-path)
         (let [ds (or (:ds req) @ds)
@@ -64,7 +64,7 @@
           (thandler req))
         :else
         (do
-          (log/info "default ----")
+          ;(log/info "default ----")
           (handler req))))))
 
 
