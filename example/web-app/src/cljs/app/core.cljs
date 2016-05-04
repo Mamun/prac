@@ -8,20 +8,12 @@
                                    dispatch
                                    dispatch-sync
                                    subscribe]]
-            [app.component.employee :as e]
+            [app.component.deal :as e]
             [tiesql.ui :as u]
             [tiesql.re-frame :as tr]))
 
 
-
-
-;(register-handler :url (fn [db [_ v]] (assoc-in db [:url] v)))
-;(register-sub :url (fn [db _] (reaction (get-in @db [:url]))))
-
-
-;(devcards.core/start-devcard-ui!)
-
-(defn menu-action [v] (tr/apply-dispatch [:url (first v)]) #_(dispatch [:url v]))
+(defn menu-action [v] (tr/dispatch [:url (first v)]))
 
 
 (def menu [["Home" "#" ]

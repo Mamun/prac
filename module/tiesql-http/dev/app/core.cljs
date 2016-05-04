@@ -47,11 +47,16 @@
 ;(re/build-request {:name :get-employee-list})
 
 
-
+;(js/alert "Hello")
 
 (->> (re/build-ajax-request {:name :get-employee-list})
      (tiesql/pull))
 
+(->> (re/build-ajax-request :ajax1 {:a 3})
+     (a/GET "/api"))
+
+(->> (re/build-ajax-request :ajax4 {:a 3})
+     (a/POST "/api/hello"))
 
 ;(a/GET "")
 

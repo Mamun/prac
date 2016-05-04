@@ -14,6 +14,8 @@
                  ;[org.omcljs/om "1.0.0-alpha28"]
 
                  [compojure "1.1.6"]
+                 [selmer "1.0.4"]
+
                  [c3p0/c3p0 "0.9.1.2"]
 
                  [ring-webjars "0.1.1"]

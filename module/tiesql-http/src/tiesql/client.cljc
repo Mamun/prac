@@ -8,29 +8,28 @@
          [tiesql.util :as u])]))
 
 
-(defn default-tiesql-params
-  []
-  {:input  :keyword
-   :output :keyword
-   :accept "application/transit+json"})
+#_(defn default-tiesql-params
+    []
+    {:input  :keyword
+     :output :keyword
+     :accept "application/transit+json"})
 
 
 (defn default-ajax-params
   [ajax-m]
   (-> (merge {:method          :post
               :headers         {}
-              :params          {}
               :format          (a/transit-request-format)
               :response-format (a/transit-response-format)
               :handler         (fn [v] (js/console.log (str v)))
               :error-handler   (fn [v] (js/console.log (str v)))}
              ajax-m)
-      (update-in [:params] (fn [v] (merge (default-tiesql-params) v)))))
+      #_(update-in [:params] (fn [v] (merge (default-tiesql-params) v)))))
 
 
 (defn build-ajax-request
-  [tiesql-params]
-  {:params        tiesql-params
+  [params]
+  {:params        params
    :handler       (fn [v] (js/console.log (str v)))
    :error-handler (fn [v] (js/console.log (str v)))})
 

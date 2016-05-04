@@ -30,7 +30,8 @@
 
 (defn api-routes []
   (-> (routes
-        (GET "/" _ (m/ok-response {:a3 3})))
+        (GET "/" _ (m/ok-response {:a3 3}))
+        (POST "/hello" _ (m/ok-response {:a 7})))
       (m/warp-default)))
 
 #_(defroutes api-routes
