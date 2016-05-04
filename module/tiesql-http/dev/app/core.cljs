@@ -22,15 +22,43 @@
   )
 
 
+;(re/clear-store)
+
+
+(let [s (re/subscribe [])]
+  (defcard All
+           "all view "
+           s))
+
+
+
+(let [s (re/subscribe [re/error-path :get-employee-list])]
+  (defcard Error
+           "Error view "
+           s))
+
+
+
 (let [s (re/subscribe [:get-employee-list])]
   (defcard Hello
            "Date view "
            s))
 
-(-> {:name :get-employee-list}
-    (tiesql/pull (re/as-dispatch :get-employee-list)))
+;(re/build-request {:name :get-employee-list})
 
-(a/GET "/api" (tiesql/build-request {:a 10}) )
+
+
+
+(->> (re/build-ajax-request {:name :get-employee-list})
+     (tiesql/pull))
+
+
+;(a/GET "")
+
+#_(-> {:name :get-employee-list}
+      (tiesql/pull (re/as-dispatch :get-employee-list)))
+
+;(a/GET "/api" (tiesql/build-request {:a 10}) )
 
 
 #_(defcard-rg rg-example-2

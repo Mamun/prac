@@ -21,7 +21,7 @@
 
 ;(devcards.core/start-devcard-ui!)
 
-(defn menu-action [v] (tr/dispatch [:url (first v)]) #_(dispatch [:url v]))
+(defn menu-action [v] (tr/apply-dispatch [:url (first v)]) #_(dispatch [:url v]))
 
 
 (def menu [["Home" "#" ]

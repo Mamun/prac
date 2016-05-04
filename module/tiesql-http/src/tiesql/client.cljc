@@ -8,32 +8,31 @@
          [tiesql.util :as u])]))
 
 
-(defn build-tiesql-request
-  [param-m]
-  (let [d {:input  :keyword
-           :output :keyword
-           :accept "application/transit+json"}]
-    (merge d param-m)))
+(defn default-tiesql-params
+  []
+  {:input  :keyword
+   :output :keyword
+   :accept "application/transit+json"})
+
+
+(defn default-ajax-params
+  [ajax-m]
+  (-> (merge {:method          :post
+              :headers         {}
+              :params          {}
+              :format          (a/transit-request-format)
+              :response-format (a/transit-response-format)
+              :handler         (fn [v] (js/console.log (str v)))
+              :error-handler   (fn [v] (js/console.log (str v)))}
+             ajax-m)
+      (update-in [:params] (fn [v] (merge (default-tiesql-params) v)))))
 
 
 (defn build-ajax-request
-  [params handler ]
-  {:method          :post
-   :headers         {}
-   :params          params
-   :format          (a/transit-request-format)
-   :response-format (a/transit-response-format)
-   :handler         handler
-   :error-handler   handler})
-
-
-(defn build-request
-  ([params-m handler]
-   (-> (build-tiesql-request params-m)
-       (build-ajax-request handler)))
-  ([params-m]
-   (build-request params-m (fn [v] (js/console.log (str v))))))
-
+  [tiesql-params]
+  {:params        tiesql-params
+   :handler       (fn [v] (js/console.log (str v)))
+   :error-handler (fn [v] (js/console.log (str v)))})
 
 
 (def csrf-headers {"Accept" "application/transit+json"
@@ -42,15 +41,29 @@
 
 
 (defn pull
-  ([request-m handler & [url]]
-   (->> (build-request request-m handler)
-        (a/POST (str (or url "") "/pull")))))
+  ([url ajax-m]
+   (->> (default-ajax-params ajax-m)
+        (a/POST (str (or url "") "/pull"))))
+  ([ajax-m]
+   (pull "" ajax-m)))
 
 
 (defn push!
-  [request-m handler & [url]]
-  (->> (build-request request-m handler)
-       (a/POST (str (or url "") "/push"))))
+  ([url ajax-m]
+   (->> (default-ajax-params ajax-m)
+        (a/POST (str (or url "") "/push"))))
+  ([ajax-m]
+   (push! "" ajax-m)))
+
+
+
+(comment
+
+  (->> (default-tiesql-params {:a 3})
+       (default-tiesql-params)
+       (a/POST "/pull")
+       )
+  )
 
 
 #?(:cljs
@@ -71,17 +84,3 @@
 
 #_(def ^:export h-options (clj->js accept-html-options))
 
-
-(comment
-
-  (let [v (pull
-            :url "http://localhost:3001"
-            :name :get-dept-by-id
-            :params {:id 1}
-            :callback (fn [w]
-                        (print w)
-                        ))]
-    (println @v)
-    )
-
-  )

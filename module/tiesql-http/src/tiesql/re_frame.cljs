@@ -19,7 +19,10 @@
 (r/register-handler
   clear-r-store-key
   (fn [db [_ v]]
-    (assoc-in db [r-store-key] nil)))
+    (if v
+      (assoc-in db [r-store-key v] nil)
+      (assoc-in db [r-store-key] nil))))
+
 
 
 ;;Store all value here
@@ -60,12 +63,21 @@
       (do
         (r/dispatch [:clear-error])
         (dispatch [subscribe-key v]))
-      (dispatch [error-path e]))))
-
-(defn apply-dispatch
-  ([f k v]
-    (f v (as-dispatch k)))
-  ([f v]
-    (apply-dispatch f (find-subscribe-key v) v)))
+      (dispatch [error-path {subscribe-key e}]))))
 
 
+(defn clear-store [& k-list]
+  (if (empty? k-list)
+    (r/dispatch [clear-r-store-key])
+    (doseq [k k-list]
+      (r/dispatch [clear-r-store-key k]))))
+
+
+(defn build-ajax-request
+  ([subscribe-key param-m]
+   (let []
+     {:params        param-m
+      :handler       (as-dispatch subscribe-key)
+      :error-handler (as-dispatch subscribe-key)}))
+  ([param-m]
+   (build-ajax-request (find-subscribe-key param-m) param-m)))
