@@ -10,7 +10,8 @@
                                    subscribe]]
             [tiesql.ui :as v]
             [tiesql.re-frame :as tr]
-            [app.service :as s]))
+            [app.service :as s]
+            [app.component.ui :as appui]))
 
 
 
@@ -45,29 +46,35 @@
         "Search"]])))
 
 
-(defn employee-list-view []
-  (let [data (tr/subscribe [:get-employee-list])]
+(defn deal-list-view-template []
+  (let [data (tr/subscribe [:deals])]
     (fn []
-      (if @data
-        (v/table @data :on-row-click (fn [v] (s/load-deal-by-id (first (first v)))))))))
+      (appui/mdl-card-batch @data)
+    ;  (print "---deals " @data )
+      #_[:div
+       (for [i @data]
+         [:div
+          (appui/mdl-card i )
+          ])]
+      )))
 
 
-(defn employee-content-view []
+#_(defn employee-content-view []
   (let [data (tr/subscribe [:load-employee])]
     (fn []
       (when @data
         (v/show-edn @data)))))
 
 
-(defn employee-view2 []
+(defn deal-view-template []
   [:div
-   [employee-list-view]
-   [employee-search-view]
-   [employee-content-view]])
+   [deal-list-view-template]
+   #_[employee-search-view]
+   #_[employee-content-view]])
 
 
-(def employee-view
+(def deal-view
   (with-meta
-    employee-view2
-    {:getInitialState #(s/load-deal-list)})
+    deal-view-template
+    {:getInitialState #(s/load-deals)})
   )

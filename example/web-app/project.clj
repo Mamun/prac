@@ -48,7 +48,6 @@
   :min-lein-version "2.5.3"
   :source-paths ["src/clj" "src/cljs" "dev"]
   :test-paths ["test/clj"]
-  :resource-paths ["resources" "../../test-i"]
   :clean-targets ^{:protect false} [:target-path :compile-path "resources/public/js"]
   :uberjar-name "web-app.jar"
 
@@ -59,7 +58,8 @@
   :cljsbuild {:builds
               {:app
                {:source-paths ["src/cljs" "dev"]
-                :figwheel     {:devcards true}
+                :figwheel     {;:devcards true
+                               }
                 :compiler     {:main                 app.card
                                :asset-path           "js/compiled/out"
                                :output-dir           "resources/public/js/compiled/out"

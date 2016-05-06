@@ -1,5 +1,6 @@
 (ns app.state
   (:require [clojure.java.io :as io]
+            [clojure.java.jdbc :as jdbc]
             [ring.middleware.webjars :refer [wrap-webjars]]
             [ring.middleware.defaults :refer [wrap-defaults api-defaults site-defaults]]
             [ring.middleware.logger :refer [wrap-with-logger]]
@@ -27,3 +28,22 @@
 
 (defn get-ds [] @ds-atom)
 (defn get-tms [] @tms-atom)
+
+
+
+
+
+
+(comment
+
+
+  (jdbc/query @ds-atom "select * from deal")
+
+  (init-state)
+
+  (tj/db-do @ds-atom [:init-data] @tms-atom)
+
+  (let [v (tj/pull @ds-atom @tms-atom {:name :get-deal-list})]
+    (log/info "---" v)
+    v)
+  )

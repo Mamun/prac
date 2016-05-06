@@ -9,12 +9,10 @@
        (client/pull)))
 
 
-(defn load-deal-list []
-  (->> (tr/build-ajax-request {:name :get-employee-list})
-       (client/pull)))
-
 
 (defn load-deals []
-  (a/GET "/api/deals" (tr/build-ajax-request :deals {}) ))
+  (->> (tr/build-ajax-request :deals {})
+       (client/default-ajax-params)
+       (a/GET "/api/deals" )))
 
 ;(load-deals)

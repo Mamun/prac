@@ -115,10 +115,12 @@
       (let [tm-coll (vals (tie/select-name tms name-coll))]
         (doseq [m tm-coll]
           (when-let [sql (get-in m [cc/sql-key])]
-            ;       (log/info "db do with " sql)
-            (jdbc/db-do-commands ds false sql))))
+                   (log/info "db do with " sql)
+            (jdbc/db-do-commands ds  sql))))
       (catch Exception e
-        (cc/fail {:detail e})
+        (do
+          (log/error e)
+          (cc/fail {:detail e}))
         ;(log/error e)
         ;(log/error (.getMessage e))
         )))

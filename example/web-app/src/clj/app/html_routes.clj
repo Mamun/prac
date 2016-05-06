@@ -20,29 +20,21 @@
 
 (defn index []
   (html-response
-    (render-file "index2.html" {:title "index"
-                                :navs [{:link "index2" :text "Home" :is-active "is-active"}
-                                       {:link "about" :text "Blog"}
+    (render-file "index.html" {:title "index"
+                                :navs [{:link "index" :text "Home" :is-active "is-active"}
                                        {:link "contact" :text "Contact"}]})))
 
 (defn contact []
   (html-response
     (render-file "contact.html" {:title "Contact"
-                                 :navs [{:link "index2" :text "Home"}
-                                        {:link "about" :text "Blog" :is-active "is-active"}
-                                        {:link "contact" :text "Contact"}]})))
+                                 :navs [{:link "index" :text "Home"}
+                                        {:link "contact" :text "Contact" :is-active "is-active"}]})))
 
-(defn blog []
-  (html-response
-    (render-file "blog.html" {:title "blog"
-                              :navs [{:link "index2" :text "Home"}
-                                     {:link "about" :text "Blog"}
-                                     {:link "contact" :text "Contact" :is-active "is-active"}]})))
+
 
 
 (defroutes
   html-page-routes
   (GET "/" _ (index) )
-  (GET "/index2" _ (index))
-  (GET "/contact" _ (contact))
-  (GET "/about" _ (blog)))
+  (GET "/index" _ (index))
+  (GET "/contact" _ (contact)))

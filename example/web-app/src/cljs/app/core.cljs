@@ -13,15 +13,15 @@
             [tiesql.re-frame :as tr]))
 
 
-(defn menu-action [v] (tr/dispatch [:url (first v)]))
+#_(defn menu-action [v] (tr/dispatch [:url (first v)]))
 
 
-(def menu [["Home" "#" ]
+#_(def menu [["Home" "#" ]
            ["Employee" "#" ]])
 
 
 
-(defn error-view []
+#_(defn error-view []
   (let [data (tr/subscribe [:error])]
     (fn []
       (when @data
@@ -29,7 +29,8 @@
 
 
 (defn app-content []
-  (let [url (tr/subscribe [:url])]
+  [e/deal-view]
+  #_(let [url (tr/subscribe [:url])]
     (fn []
       [:span
        [:nav {:class "navbar navbar-default navbar-fixed-top"}
@@ -46,18 +47,18 @@
           [error-view]
           (cond
             (= @url "Employee")
-            [e/employee-view]
+            [e/deal-view]
             :else [:div "Default view "])]]]])))
 
 
 
 
 
-(defn run []
+(defn ^:export run []
   (r/render-component [app-content]
                       (gdom/getElement "content")))
 
-(run)
+;(run)
 
 
 #_(r/render-component [init-app]
