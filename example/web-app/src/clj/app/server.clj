@@ -1,7 +1,6 @@
 (ns app.server
   (:use compojure.core)
-  (:require
-            [ring.middleware.webjars :refer [wrap-webjars]]
+  (:require [ring.middleware.webjars :refer [wrap-webjars]]
             [ring.middleware.defaults :refer [wrap-defaults api-defaults site-defaults]]
             [ring.middleware.logger :refer [wrap-with-logger]]
             [compojure.route :as route]
