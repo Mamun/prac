@@ -51,11 +51,7 @@
     (fn []
       (appui/mdl-card-batch @data)
     ;  (print "---deals " @data )
-      #_[:div
-       (for [i @data]
-         [:div
-          (appui/mdl-card i )
-          ])]
+
       )))
 
 

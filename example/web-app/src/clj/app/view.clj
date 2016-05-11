@@ -1,8 +1,5 @@
-(ns app.html-routes
-  (:use [selmer.parser]
-        [compojure.core])
-  (:require [clojure.java.io :as io]
-            [compojure.route :as route]))
+(ns app.view
+  (:use [selmer.parser]))
 
 
 (set-resource-path! (clojure.java.io/resource "public"))
@@ -31,10 +28,9 @@
                                         {:link "contact" :text "Contact" :is-active "is-active"}]})))
 
 
+(defn admin-index []
+  (html-response
+    (render-file "admin_index.html" {:title "index"
+                               :navs [{:link "index" :text "Home" :is-active "is-active"}
+                                      {:link "contact" :text "Contact"}]})))
 
-
-(defroutes
-  html-page-routes
-  (GET "/" _ (index) )
-  (GET "/index" _ (index))
-  (GET "/contact" _ (contact)))

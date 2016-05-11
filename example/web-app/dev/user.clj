@@ -1,5 +1,5 @@
 (ns user
-  (:require [app.server :as app]
+  (:require [app.routes :as app]
             [app.state :as s]
             [ring.middleware.reload :refer [wrap-reload]]
             [figwheel-sidecar.repl-api :as figwheel]))

@@ -5,42 +5,47 @@
             :url  "http://www.eclipse.org/legal/epl-v10.html"}
 
   :dependencies [[org.clojure/clojure "1.8.0-RC5"]
-                 [org.clojure/clojurescript "1.7.228" :scope "provided"]
+                 ;Rule engine deps
+                 [org.toomuchcode/clara-rules "0.11.1"]
+
+                 ;;Db deps
+                 [c3p0/c3p0 "0.9.1.2"]
+                 [com.h2database/h2 "1.3.154"]
+
+                 [tiesql "0.1.0-alpha-SNAPSHOT"]
+                 [tiesql-http "0.1.0-SNAPSHOT"]
+
+
+                 ;;Web application deps
                  [ring "1.4.0"
                   :exclusions [ring/ring-jetty-adapter]]
                  [ring/ring-defaults "0.2.0"]
                  [ring.middleware.logger "0.5.0"]
-                 ;[compojure "1.4.0"]
-                 ;[org.omcljs/om "1.0.0-alpha28"]
-
                  [compojure "1.1.6"]
-                 [selmer "1.0.4"]
-
-                 [c3p0/c3p0 "0.9.1.2"]
+                 [selmer "1.0.4"]  ;; html template
 
                  [ring-webjars "0.1.1"]
                  [org.webjars/bootstrap "3.3.5"]
                  ;[org.webjars/material-design-lite "1.1.1"]
 
-                 [tiesql "0.1.0-alpha-SNAPSHOT"]
-                 [tiesql-http "0.1.0-SNAPSHOT"]
 
-                 [com.h2database/h2 "1.3.154"]
 
-                 ;[cljs-ajax "0.5.2" :scope "provided"]
-                 ;[com.cognitect/transit-cljs "0.8.225" :scope "provided"]
-                 [secretary "1.2.3" :scope "provided"]
-                 [reagent "0.6.0-alpha" :scope "provided"]
-                 [reagent-forms "0.5.21" :scope "provided"]
-                 ;[reagent-reforms "0.4.3" :scope "provided"]
-                 [re-frame "0.7.0-alpha-3" :scope "provided"]
-                 [kibu/pushy "0.3.6" :scope "provided"]
-                 [devcards "0.2.1-5" :scope "provided"]
 
                  [org.immutant/web "2.1.3"                  ;; default Web server
                   :exclusions [ch.qos.logback/logback-core
                                org.slf4j/slf4j-api]]
-                 [ch.qos.logback/logback-classic "1.1.3"]]
+                 [ch.qos.logback/logback-classic "1.1.3"]
+
+                 ;;ClojureScript
+                 [org.clojure/clojurescript "1.7.228" :scope "provided"]
+                 [secretary "1.2.3" :scope "provided"]
+                 [reagent "0.6.0-alpha" :scope "provided"]
+                 [reagent-forms "0.5.21" :scope "provided"]
+                 [re-frame "0.7.0-alpha-3" :scope "provided"]
+                 [kibu/pushy "0.3.6" :scope "provided"]
+                 [devcards "0.2.1-5" :scope "provided"]
+
+                 ]
 
   :plugins [[lein-cljsbuild "1.1.1"]
             [lein-environ "1.0.1"]]
