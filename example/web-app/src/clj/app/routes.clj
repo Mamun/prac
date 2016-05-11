@@ -26,8 +26,6 @@
   (GET "/" _ (v/admin-index) ))
 
 
-
-
 (defroutes
   api-routes
   (GET "/deals" _ (h/http-response (api/load-deals) ) ))

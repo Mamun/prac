@@ -1,5 +1,4 @@
 (ns app.service
-  (:use compojure.core)
   (:require
     [clojure.tools.logging :as log]
     [app.state :as s]
