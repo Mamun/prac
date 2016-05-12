@@ -1,39 +1,46 @@
 (ns app.rule.price-reduce-rule
-  (:require [clara.rules :refer :all]))
-
-(defrecord ClientRepresentative [name client])
-(defrecord SupportRequest [client level])
+  (:require [clara.rules :refer :all]
+            [clara.rules.accumulators :as acc]))
 
 
+(defrecord Customer [status])
+(defrecord Order [year month day])
+(defrecord Purchase [cost item])
+(defrecord Total [total])
+(defrecord Discount [reason percent])
 
-(defrule is-important
-         "Find important support requests."
-         [SupportRequest (= :high level)]
+
+(defrule total-purchase
+         "Total purchase"
+         [?total <- (acc/sum :cost) :from [Purchase]]
          =>
-         (println "High support requested!"))
+         (insert! (->Total ?total)))
 
 
-(defrule notify-client-rep
-         "Find the client representative and request support."
-         [SupportRequest (= ?client client)]
-         [ClientRepresentative (= ?client client) (= ?name name)]
+(defrule total-purchase-discount
+         "Discount on total purchase"
+         [Total (> total 20)]
          =>
-         (println "Notify" ?name "that"
-                  ?client "has a new support request!"))
+         (insert! (->Discount :total_purchase 10)))
+
+
+(defquery get-total-purchase
+          []
+          [?total <- Total]
+          [?discount <- Discount])
 
 
 (comment
 
-  (println "Hello")
-
-  (-> (mk-session )
-      (insert (->ClientRepresentative "Alice" "Acme")
-              (->SupportRequest "Acme" :high1))
-      (fire-rules)
-      )
 
 
-
-
+  (let [w (-> (mk-session)
+              (insert (->Purchase 10 :hello)
+                      (->Purchase 30 :hello1)
+                      )
+              (fire-rules)
+              (query get-total-purchase))]
+    w
+    )
 
   )
