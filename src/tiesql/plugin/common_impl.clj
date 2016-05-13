@@ -3,7 +3,7 @@
     [schema.core :as s]
     [tiesql.common :refer :all]
     [tiesql.proto :refer :all]
-    [tiesql.common :as cc]))
+    [cljc.common :as cc]))
 
 
 

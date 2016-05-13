@@ -6,6 +6,7 @@
     ;   [tiesql.plugin.core :as p]
         [tiesql.core :as c]
         [tiesql.common]
+        [cljc.common]
         ))
 
 

@@ -5,7 +5,7 @@
             [compojure.route :as route]
             [immutant.web :as im]
             [tiesql.jdbc :as tj]
-            [tiesql.common :as cc])
+            [common :as cc])
   (:import
     [com.mchange.v2.c3p0 ComboPooledDataSource])
   (:gen-class))

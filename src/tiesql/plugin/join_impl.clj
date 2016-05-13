@@ -1,7 +1,7 @@
 (ns tiesql.plugin.join-impl
   (:use [tiesql.proto])
   (:require [tiesql.common :refer :all]
-            [tiesql.common :as cc]
+            [cljc.common :as cc]
             [schema.core :as s]))
 
 

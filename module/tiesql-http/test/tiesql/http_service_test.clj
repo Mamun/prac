@@ -1,6 +1,7 @@
 (ns tiesql.http-service-test
   (:use [clojure.test])
   (:require [tiesql.common :refer :all]
+            [cljc.common :refer :all]
             [tiesql.http-service :refer :all]
             [test-data :as td]
             [tiesql.jdbc :as tj]))
@@ -16,7 +17,7 @@
 
 
 
-(deftest pull-test
+#_(deftest pull-test
   (testing "pull test "
     (let [handler (partial tj/pull @td/ds @td/tms)
           res (->> {:params         {:name :get-dept-list}

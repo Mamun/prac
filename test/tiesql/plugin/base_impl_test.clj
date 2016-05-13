@@ -6,6 +6,7 @@
             [tiesql.plugin.base-impl :refer :all]
             [tiesql.plugin.factory :refer :all]
             [tiesql.common :refer :all]
+            [cljc.common :refer :all]
             [tiesql.core :as c]
             [tiesql.jdbc :as j]
             ))

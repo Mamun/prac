@@ -4,7 +4,8 @@
   (:require
     [clojure.tools.logging :as log]
     [clojure.java.jdbc :as jdbc]
-    [tiesql.common :as cc]
+    [cljc.common :as cc]
+    [tiesql.common :as tc]
     [tiesql.core :as tie]
     [tiesql.compiler.file-reader :as fr]
     [tiesql.plugin.factory :as imp]
@@ -17,8 +18,8 @@
   ([file-name] (read-file file-name (imp/new-root-node)))
   ([file-name pc]
    (-> (fr/read-file file-name pc)
-       (assoc-in [cc/global-key cc/file-name-key] file-name)
-       (assoc-in [cc/global-key cc/process-context-key]
+       (assoc-in [tc/global-key tc/file-name-key] file-name)
+       (assoc-in [tc/global-key tc/process-context-key]
                  (imp/select-module-node-processor pc)))))
 
 
@@ -29,11 +30,11 @@
   [_ {:keys [name gname] :as request-m}]
   (let [dfmat (if (or gname
                       (sequential? name))
-                {:pformat cc/map-format :rformat cc/nested-join-format}
-                {:pformat cc/map-format :rformat :one })
+                {:pformat tc/map-format :rformat tc/nested-join-format}
+                {:pformat tc/map-format :rformat :one })
         request-m (merge dfmat request-m)
         request-m (if gname
-                    (assoc request-m :rformat cc/nested-join-format)
+                    (assoc request-m :rformat tc/nested-join-format)
                     request-m)]
     request-m))
 
@@ -42,13 +43,13 @@
   [_ {:keys [gname name] :as request-m}]
   (let [d (if (or gname
                   (sequential? name))
-            {:pformat cc/nested-map-format :rformat cc/nested-map-format}
-            {:pformat cc/map-format :rformat :one})
+            {:pformat tc/nested-map-format :rformat tc/nested-map-format}
+            {:pformat tc/map-format :rformat :one})
         request-m (merge d request-m)
         request-m (if gname
                     (-> request-m
-                        (assoc :pformat cc/nested-map-format)
-                        (assoc :rformat cc/nested-map-format))
+                        (assoc :pformat tc/nested-map-format)
+                        (assoc :rformat tc/nested-map-format))
                     request-m)]
     request-m))
 
@@ -56,20 +57,20 @@
 (defmethod default-request :db-seq
   [_ request-m]
   (-> request-m
-      (assoc :pformat cc/map-format)
-      (assoc :rformat cc/value-format)))
+      (assoc :pformat tc/map-format)
+      (assoc :rformat tc/value-format)))
 
 
 (defn- filter-processor
   [process {:keys [out-format]}]
-  (if (= out-format cc/value-format)
+  (if (= out-format tc/value-format)
     (c/remove-type process :output)
     process))
 
 
 (defn select-pull-node [ds tms request-m]
   (cc/try-> tms
-            (get-in [cc/global-key cc/process-context-key] [])
+            (get-in [tc/global-key tc/process-context-key] [])
             (filter-processor request-m)
             (c/add-child-one (ce/sql-executor-node ds tms ce/Parallel))))
 
@@ -80,14 +81,14 @@
    "
   [ds tms request-m]
   (cc/try->> request-m
-             (cc/validate-input!)
+             (tc/validate-input!)
              (default-request :pull)
              (tie/do-run (select-pull-node ds tms request-m) tms)))
 
 
 (defn select-push-node [ds tms]
   (cc/try-> tms
-            (get-in [cc/global-key cc/process-context-key] [])
+            (get-in [tc/global-key tc/process-context-key] [])
             (c/remove-type :output)
             (c/add-child-one (ce/sql-executor-node ds tms ce/Transaction))
             (p/assoc-param-ref-gen (fn [& {:as m}]
@@ -103,7 +104,7 @@
   "Create, update or delete value in database. DB O/P will be run within transaction. "
   [ds tms request-m ]
   (cc/try->> request-m
-             (cc/validate-input!)
+             (tc/validate-input!)
              (default-request :push)
              (tie/do-run (select-push-node ds tms) tms)))
 
@@ -114,7 +115,7 @@
     (try
       (let [tm-coll (vals (tie/select-name tms name-coll))]
         (doseq [m tm-coll]
-          (when-let [sql (get-in m [cc/sql-key])]
+          (when-let [sql (get-in m [tc/sql-key])]
                    (log/info "db do with " sql)
             (jdbc/db-do-commands ds  sql))))
       (catch Exception e
@@ -129,19 +130,19 @@
 
 
 (defn has-dml-type? [m-map]
-  (let [dml (cc/dml-key m-map)]
+  (let [dml (tc/dml-key m-map)]
     (or
-      (= cc/dml-update-key dml)
-      (= cc/dml-call-key dml)
-      (= cc/dml-insert-key dml)
-      (= cc/dml-delete-key dml)
-      (= cc/dml-select-key dml))))
+      (= tc/dml-update-key dml)
+      (= tc/dml-call-key dml)
+      (= tc/dml-insert-key dml)
+      (= tc/dml-delete-key dml)
+      (= tc/dml-select-key dml))))
 
 
 (defn get-dml
   [tms]
   (let [p (comp (filter has-dml-type?)
-                (map cc/sql-key)
+                (map tc/sql-key)
                 (filter (fn [v] (if (< 1 (count v))
                                   true false)))
                 (map first)
@@ -178,9 +179,9 @@
 
 (defn- execution-log
   [tm-coll]
-  (let [v (mapv #(select-keys % [cc/sql-key cc/exec-time-total-key cc/exec-time-start-key]) tm-coll)
+  (let [v (mapv #(select-keys % [tc/sql-key tc/exec-time-total-key tc/exec-time-start-key]) tm-coll)
         w (mapv (fn [t]
-                  (update-in t [cc/exec-time-start-key] (fn [o] (str (as-date o))))
+                  (update-in t [tc/exec-time-start-key] (fn [o] (str (as-date o))))
                   ) v)]
     (log/info w)))
 

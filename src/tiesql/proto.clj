@@ -1,5 +1,5 @@
 (ns tiesql.proto
-  (:require [tiesql.common :as cc])
+  (:require [cljc.common :as cc])
   (:import [PersistentVector]
            (clojure.lang PersistentVector)))
 

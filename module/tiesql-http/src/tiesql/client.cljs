@@ -1,7 +1,7 @@
 (ns tiesql.client
   #?(:clj
      (:require [ajax.core :as a]
-               [tiesql.util :as u]))
+       [tiesql.util :as u]))
   #?@(:cljs
       [(:require [ajax.core :as a]
          [tiesql.common :as c]
@@ -82,4 +82,5 @@
 
 
 #_(def ^:export h-options (clj->js accept-html-options))
+
 

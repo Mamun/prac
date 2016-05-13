@@ -1,5 +1,6 @@
 (ns ring.middleware.tiesql
   (:require [clojure.tools.logging :as log]
+            [cljc.common :as cc]
             [tiesql.common :as c]
             [tiesql.middleware :as u]
             [tiesql.http-service :as h]
@@ -9,7 +10,7 @@
 (defn- reload-tms
   ([tms-atom ds]
    (when (get-in @tms-atom [c/global-key c/file-reload-key])
-     (c/try->> (get-in @tms-atom [c/global-key c/file-name-key])
+     (cc/try->> (get-in @tms-atom [c/global-key c/file-name-key])
                (tj/read-file)
                (tj/validate-dml! ds)
                (reset! tms-atom)))
@@ -22,7 +23,7 @@
     (apply form v)
     (catch Exception e
       (log/error e)
-      (c/fail {:msg "Error in server "}))))
+      (cc/fail {:msg "Error in server "}))))
 
 
 

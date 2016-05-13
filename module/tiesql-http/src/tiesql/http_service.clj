@@ -1,6 +1,6 @@
 (ns tiesql.http-service
   (:require [clojure.tools.logging :as log]
-            [tiesql.common :as c]
+            [cljc.common :as c]
             [tiesql.util :as u]
             [tiesql.jdbc :as tj]
             [clojure.tools.reader.edn :as edn]))
@@ -53,7 +53,7 @@
 (defn response-stringify
   [req response]
   (if (= :string (:output req))
-    (mapv (partial u/postwalk-replace-key-with u/keyword->str) response)
+    (mapv (partial c/postwalk-replace-key-with c/keyword->str) response)
     response))
 
 
@@ -105,8 +105,8 @@
 (defmethod resposne-format u/url-endpoint
   [_ output]
   (->> output
-       (u/postwalk-replace-value-with u/as-str)
-       (u/postwalk-replace-key-with u/keyword->str)))
+       (c/postwalk-replace-value-with u/as-str)
+       (c/postwalk-replace-key-with c/keyword->str)))
 
 
 (defn is-params-not-nil? [params]

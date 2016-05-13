@@ -4,7 +4,8 @@
   (:require [tiesql.plugin.base-impl :as bi]
             [tiesql.plugin.factory :as c]
             [tiesql.plugin.param-impl :as p]
-            [tiesql.common :refer :all]))
+            [tiesql.common :refer :all]
+            [cljc.common :refer :all]))
 
 
 (defrecord TestParamKey [lname lorder]

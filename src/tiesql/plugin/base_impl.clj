@@ -3,6 +3,7 @@
     [clojure.walk :as w]
     [schema.core :as s]
     [tiesql.common :refer :all]
+    [cljc.common :refer :all]
     [tiesql.proto :refer :all]))
 
 

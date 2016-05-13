@@ -2,7 +2,7 @@
   (:use [clojure.test]
         [tiesql.proto])
   (:require [tiesql.plugin.validation-impl :refer :all]
-
+            [cljc.common :refer :all]
             [tiesql.common :refer :all]
             [schema.core :as s]))
 

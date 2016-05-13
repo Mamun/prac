@@ -1,5 +1,5 @@
 (ns tiesql.plugin.join-core
-  (:require [tiesql.common :as cc]
+  (:require [cljc.common :as cc]
             [tiesql.core-util :as cu]
             [tiesql.common :refer :all]))
 

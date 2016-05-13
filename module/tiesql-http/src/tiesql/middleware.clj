@@ -1,6 +1,5 @@
 (ns tiesql.middleware
   (:require [clojure.tools.logging :as log]
-            [tiesql.common :as c]
             [ring.middleware.params :as p]
             [ring.middleware.multipart-params :as mp]
             [ring.middleware.keyword-params :as kp]

@@ -2,7 +2,7 @@
   (:use [clojure.test]
         [tiesql.plugin.sql-executor])
   (:require [tiesql.common :refer :all]
-            [tiesql.common :as cc]))
+            [cljc.common :as cc]))
 
 
 (deftest warp-map-output-test

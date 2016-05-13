@@ -2,7 +2,7 @@
   (:require [clojure.set]
             [clojure.core.async :as async :refer [<! >! <!! chan alt! go go-loop onto-chan sliding-buffer]]
             [clojure.java.jdbc :as jdbc]
-            [tiesql.common :as cc]
+            [cljc.common :as cc]
             [tiesql.proto :refer :all]
             [tiesql.common :refer :all]
             [clojure.tools.logging :as log]))
@@ -217,7 +217,7 @@
 
 (defn sql-executor-node
   [ds tms type]
-  (let [tx (apply hash-map (get-in tms [cc/global-key cc/tx-prop]))
+  (let [tx (apply hash-map (get-in tms [global-key tx-prop]))
         f (fn [m-coll] (db-execute m-coll type ds tx))]
     (fn-as-node-processor f :name :sql-executor)))
 

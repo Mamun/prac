@@ -1,7 +1,7 @@
 (ns tiesql.core-util
   (:require [tiesql.common :refer :all]
             [tiesql.proto :refer :all]
-            [tiesql.common :as cc]
+            [cljc.common :as cc]
             [tiesql.plugin.join-impl :as j]))
 
 

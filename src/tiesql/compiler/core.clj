@@ -1,6 +1,6 @@
 (ns tiesql.compiler.core
   (:require [tiesql.common :refer :all]
-            [tiesql.common :as cc]
+            [cljc.common :as cc]
             [tiesql.proto :as p]))
 
 ;; Need to split it with name and model

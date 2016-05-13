@@ -1,6 +1,6 @@
 (ns tiesql.jdbc-test
   (:use [clojure.test])
-  (:require
+  (:require [cljc.common :refer :all]
             [tiesql.common :refer :all]
             [tiesql.jdbc :refer :all]))
 

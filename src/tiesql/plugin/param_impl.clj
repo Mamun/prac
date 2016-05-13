@@ -1,7 +1,7 @@
 (ns tiesql.plugin.param-impl
   (:use [tiesql.proto])
   (:require [tiesql.common :refer :all]
-            [tiesql.common :as cc]
+            [cljc.common :as cc]
             [tiesql.core-util :as ccu]
             [tiesql.plugin.base-impl :as cu]
             [schema.core :as s]))

@@ -7,7 +7,7 @@
             [compojure.route :as route]
             [immutant.web :as im]
             [tiesql.jdbc :as tj]
-            [tiesql.common :as cc]
+            [cljc.common :as cc]
             [clojure.tools.logging :as log])
   (:import
     [com.mchange.v2.c3p0 ComboPooledDataSource])
