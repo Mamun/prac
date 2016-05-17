@@ -2,7 +2,7 @@
   (:require [dadysql.constant :refer :all]
             [dady.common :as cc]
 
-            [dady.node-proto :as p]))
+            [dady.proto :as p]))
 
 ;; Need to split it with name and model
 

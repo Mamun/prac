@@ -1,6 +1,6 @@
 (ns dadysql.plugin.validation-impl-test
   (:use [clojure.test]
-        [dady.node-proto])
+        [dady.proto])
   (:require [dadysql.plugin.validation-impl :refer :all]
             [dady.common :refer :all]
             [dadysql.constant :refer :all]

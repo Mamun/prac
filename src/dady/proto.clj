@@ -1,4 +1,4 @@
-(ns dady.node-proto
+(ns dady.proto
   (:require [dady.fail :as f])
   (:import [PersistentVector]
            (clojure.lang PersistentVector)))

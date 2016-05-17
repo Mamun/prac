@@ -1,6 +1,6 @@
 (ns dady.node-proto
   (:use [clojure.test]
-        [dady.node-proto])
+        [dady.proto])
   (:require [dadysql.plugin.base-impl :as bi]
             [dadysql.plugin.factory :as c]
             [dadysql.plugin.param-impl :as p]

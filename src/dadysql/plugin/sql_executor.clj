@@ -4,7 +4,7 @@
             [clojure.java.jdbc :as jdbc]
             [dady.common :as cc]
             [dady.fail :as f]
-            [dady.node-proto :refer :all]
+            [dady.proto :refer :all]
             [dadysql.constant :refer :all]
             [clojure.tools.logging :as log]))
 

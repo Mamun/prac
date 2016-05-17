@@ -3,7 +3,7 @@
     [schema.core :as s]
     [dadysql.constant :refer :all]
     [dady.common :refer :all]
-    [dady.node-proto :refer :all]))
+    [dady.proto :refer :all]))
 
 
 (defbranch ExtendKey [lname coll lorder])

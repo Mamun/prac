@@ -1,7 +1,7 @@
 (ns dadysql.plugin.factory
   (:require
     [dadysql.constant :refer :all]
-    [dady.node-proto :as np]
+    [dady.proto :as np]
     [dadysql.plugin.base-impl :as b]
     [dadysql.plugin.common-impl :as c]
     [dadysql.plugin.param-impl :as p]

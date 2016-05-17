@@ -3,7 +3,7 @@
     [schema.core :as s]
     [dadysql.constant :refer :all]
     [dady.fail :as f]
-    [dady.node-proto :refer :all]
+    [dady.proto :refer :all]
     [dady.common :as cc]))
 
 

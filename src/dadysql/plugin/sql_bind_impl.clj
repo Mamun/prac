@@ -1,5 +1,5 @@
 (ns dadysql.plugin.sql-bind-impl
-  (:use [dady.node-proto])
+  (:use [dady.proto])
   (:require [dadysql.constant :refer :all]
             [dady.fail :as f]
             [dady.common :as cc]

@@ -1,5 +1,5 @@
 (ns dadysql.plugin.param-impl
-  (:use [dady.node-proto])
+  (:use [dady.proto])
   (:require [dadysql.constant :refer :all]
             [dady.common :as cc]
             [dady.fail :as f]

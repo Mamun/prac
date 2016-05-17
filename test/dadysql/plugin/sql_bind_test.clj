@@ -4,7 +4,7 @@
   (:require                                                 ;[dadysql.plugin.sql-bind-impl :refer :all]
     [dadysql.plugin.sql-bind-impl :refer :all]
     ;[dadysql.plugin.sql-util :refer :all]
-    [dady.node-proto :refer :all]
+    [dady.proto :refer :all]
     [dadysql.constant :refer :all]))
 
 

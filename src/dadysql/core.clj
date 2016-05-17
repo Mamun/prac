@@ -8,7 +8,7 @@
     [dadysql.core-util :as cu]
     [dadysql.plugin.join-core :as j]
     [dadysql.plugin.param-impl :as p]
-    [dady.node-proto :as c]))
+    [dady.proto :as c]))
 
 
 

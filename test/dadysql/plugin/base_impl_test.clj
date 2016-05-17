@@ -1,6 +1,6 @@
 (ns dadysql.plugin.base-impl-test
   (:use [clojure.test]
-        [dady.node-proto]
+        [dady.proto]
         )
   (:require [dadysql.plugin.common-impl :refer :all]
             [dadysql.plugin.base-impl :refer :all]

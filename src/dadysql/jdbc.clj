@@ -8,7 +8,7 @@
     [dadysql.core :as tie]
     [dadysql.compiler.file-reader :as fr]
     [dadysql.plugin.factory :as imp]
-    [dady.node-proto :as c]
+    [dady.proto :as c]
     [dady.fail :as f]
     [dadysql.plugin.sql-executor :as ce]
     [dadysql.plugin.param-impl :as p]))
