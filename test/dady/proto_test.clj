@@ -1,4 +1,4 @@
-(ns dady.node-proto
+(ns dady.proto-test
   (:use [clojure.test]
         [dady.proto])
   (:require [dadysql.plugin.base-impl :as bi]
@@ -157,7 +157,7 @@
   (testing "testing remove type "
     (let [w (->
               (c/new-root-node)
-              (c/select-module-node-processor)
+              (select-module-node-processor module-key)
               (remove-type :output))
           w (get-child w :column)]
       (is (nil? w)))))

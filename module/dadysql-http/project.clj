@@ -20,7 +20,7 @@
   :plugins [[lein-cljsbuild "1.1.1"]]
 
   :min-lein-version "2.5.3"
-  ;:source-paths ["src/clj" ]
+  :source-paths ["src/clj" "src/cljs"]
   ;:test-paths ["test/clj"]
   :clean-targets ^{:protect false} [:target-path :compile-path "dev-resources/public/js"]
 
