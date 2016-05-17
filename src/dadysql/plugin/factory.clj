@@ -29,9 +29,6 @@
 
 
 
-
-
-
 (defn select-node
   "Return all select node "
   [node-coll node-name-coll]
