@@ -1,11 +1,6 @@
 (ns dadysql.client
-  #?(:clj
-     (:require [ajax.core :as a]
-       [dadysql.util :as u]))
-  #?@(:cljs
-      [(:require [ajax.core :as a]
-         [dadysql.common :as c]
-         [dadysql.util :as u])]))
+  (:require [ajax.core :as a]
+            [dadysql.util :as u]))
 
 
 #_(defn default-dadysql-params
@@ -65,7 +60,7 @@
   )
 
 
-#?(:cljs
+#_(:cljs
    (defn build-js-request
      [name params options callback]
      (let [namev (mapv keyword (js->clj name))

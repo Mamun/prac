@@ -32,7 +32,7 @@
 
   :cljsbuild {:builds
               {:app
-               {:source-paths [ "dev"]
+               {:source-paths ["src/cljs" "dev"]
                 :figwheel     {:devcards true}
                 :compiler     {:main                 app.core
                                :asset-path           "js/compiled/out"

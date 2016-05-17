@@ -1,11 +1,6 @@
 (ns dadysql.util
-  #?(:clj
-     (:require [clojure.walk :as w]))
   #?@(:cljs
-      [(:require [cognitect.transit :as t]
-         [dadysql.common :as cc]
-         [clojure.walk :as w])
-       (:require-macros [dady.common :refer [try->]])]))
+      [(:require [cognitect.transit :as t])]))
 
 
 (def dadysql-param :params)
