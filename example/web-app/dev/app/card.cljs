@@ -1,5 +1,5 @@
 (ns ^:figwheel-always app.card
-  (:require [tiesql.client :as tiesql]
+  (:require [dadysql.client :as dadysql]
             [devcards.core]
             [app.core]
             ;[sablono.core :as sab]
@@ -8,7 +8,7 @@
     [cljs.core.async.macros :refer [go]]
     [devcards.core :as dc :refer [defcard deftest defcard-rg]]
     [cljs.test :refer [is testing async]]
-    [tiesql.devcard :refer [defcard-tiesql]]))
+    [dadysql.devcard :refer [defcard-dadysql]]))
 
 
 (defn fig-reload []
@@ -44,7 +44,7 @@
 
 
 
-#_(tiesql/pull "/"
+#_(dadysql/pull "/"
                :name :get-dept-by-id
                :params {:id 1}
                :callback (fn [v]
@@ -58,49 +58,49 @@
 
 ;(devcards.core/start-devcard-ui!)
 
-#_(defcard-tiesql get-dept-by-id
+#_(defcard-dadysql get-dept-by-id
                   "**With name keyword**"
-                  tiesql/pull
+                  dadysql/pull
                   :name :get-dept-by-id
                   :params {:id 1})
 
 
 
-#_(defcard-tiesql employee-by-id
+#_(defcard-dadysql employee-by-id
                   "**Join example**"
-                  tiesql/pull
+                  dadysql/pull
                   :name [:get-employee-by-id :get-employee-dept]
                   :params {:id 1})
 
 
 
 
-#_(defcard-tiesql load-dept
+#_(defcard-dadysql load-dept
                   "**Load Department 2**  "
-                  tiesql/pull
+                  dadysql/pull
                   :gname :load-dept
                   :params {:id 1})
 
 
-#_(defcard-tiesql load-employee
+#_(defcard-dadysql load-employee
                   "**Load Employee**  "
-                  tiesql/pull
+                  dadysql/pull
                   :gname :load-employee
                   :params {:id 1})
 
 
 
 
-#_(defcard-tiesql dept-list
+#_(defcard-dadysql dept-list
                   "Load dept list as array  "
-                  tiesql/pull
+                  dadysql/pull
                   :name [:get-dept-list])
 
 
 
-#_(defcard-tiesql insert-dept
+#_(defcard-dadysql insert-dept
                   "Create department  "
-                  tiesql/push!
+                  dadysql/push!
                   :name [:create-dept]
                   :params {:department {:dept_name "Call Center 9"}})
 
@@ -109,9 +109,9 @@
 
 
 
-#_(defcard-tiesql create-employee
+#_(defcard-dadysql create-employee
                   "Create employee  "
-                  tiesql/push! "/"
+                  dadysql/push! "/"
                   :name [:create-employee :create-employee-detail]
                   :params {:employee {:firstname       "Schwan"
                                       :lastname        "Ragg"
@@ -125,7 +125,7 @@
 
 #_(go
     (print
-      (<! (tiesql/pull "/"
+      (<! (dadysql/pull "/"
                        :name :get-dept-by-id
                        :params {:id 1}
                        ))))

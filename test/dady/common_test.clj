@@ -2,8 +2,8 @@
    (:use [clojure.test]
          [dady.common]
          [dady.fail])
-   (:require [tiesql.common :refer :all]
-             [tiesql.core-util :refer :all]))
+   (:require [dadysql.common :refer :all]
+             [dadysql.core-util :refer :all]))
 
 
 

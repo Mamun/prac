@@ -1,8 +1,8 @@
-(ns ring.middleware.tiesql-test
+(ns ring.middleware.dadysql-test
   (:use [clojure.test])
-  (:require [tiesql.common :refer :all]
+  (:require [dadysql.common :refer :all]
 
-            [ring.middleware.tiesql :refer :all]
+            [ring.middleware.dadysql :refer :all]
             [test-data :as td]))
 
 

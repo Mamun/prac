@@ -4,7 +4,7 @@
             [ring.middleware.webjars :refer [wrap-webjars]]
             [ring.middleware.defaults :refer [wrap-defaults api-defaults site-defaults]]
             [ring.middleware.logger :refer [wrap-with-logger]]
-            [tiesql.jdbc :as tj]
+            [dadysql.jdbc :as tj]
             [dady.common :as cc]
             [clojure.tools.logging :as log])
   (:import

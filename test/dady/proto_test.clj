@@ -1,10 +1,10 @@
 (ns dady.node-proto
   (:use [clojure.test]
         [dady.node-proto])
-  (:require [tiesql.plugin.base-impl :as bi]
-            [tiesql.plugin.factory :as c]
-            [tiesql.plugin.param-impl :as p]
-            [tiesql.common :refer :all]
+  (:require [dadysql.plugin.base-impl :as bi]
+            [dadysql.plugin.factory :as c]
+            [dadysql.plugin.param-impl :as p]
+            [dadysql.common :refer :all]
             [dady.common :refer :all]))
 
 

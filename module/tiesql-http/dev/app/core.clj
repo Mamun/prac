@@ -1,12 +1,12 @@
 (ns app.core
   (:use compojure.core)
   (:require [ring.util.response :as resp]
-            [tiesql.middleware :as m]
-            [ring.middleware.tiesql :as t]
+            [dadysql.middleware :as m]
+            [ring.middleware.dadysql :as t]
             [ring.middleware.defaults :refer :all]
             [compojure.route :as route]
             [immutant.web :as im]
-            [tiesql.jdbc :as tj]
+            [dadysql.jdbc :as tj]
             [dady.common :as cc]
             [dady.fail :as f]
             [clojure.tools.logging :as log])
@@ -58,7 +58,7 @@
 
 (def http-handler
   (-> app-routes
-      (t/warp-tiesql-handler :tms tms-atom :ds ds-atom)
+      (t/warp-dadysql-handler :tms tms-atom :ds ds-atom)
       (warp-log)))
 
 
@@ -88,7 +88,7 @@
 
 
   (cc/try->> (tj/read-file "tie.edn.sql")
-             ;    (tj/warp-db-do @ds-atom (:tiesql-init app-config))
+             ;    (tj/warp-db-do @ds-atom (:dadysql-init app-config))
              ;   (tj/warp-validate-dml! @ds-atom)
              #_(reset! tms-atom))
 

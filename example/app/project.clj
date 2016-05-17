@@ -1,6 +1,6 @@
 (defproject app "0.1.0-alpha-SNAPSHOT"
-  :description "tiesql micro service example  "
-  :url "https://github.com/tiesql/example/dateservice"
+  :description "dadysql micro service example  "
+  :url "https://github.com/dadysql/example/dateservice"
   :license {:alias "Eclipse Public License"
             :url   "http://www.eclipse.org/legal/epl-v10.html"}
   :scm {:dir ".."}
@@ -24,8 +24,8 @@
                  [com.h2database/h2 "1.3.154"]
                  [c3p0/c3p0 "0.9.1.2"]
 
-                 [tiesql "0.1.0-alpha-SNAPSHOT"]
-                 [tiesql-http "0.1.0-SNAPSHOT"]
+                 [dadysql "0.1.0-alpha-SNAPSHOT"]
+                 [dadysql-http "0.1.0-SNAPSHOT"]
 
                  [org.clojure/clojurescript "1.7.228" :scope "provided"]
                  [devcards "0.2.1-5" :scope "provided"]

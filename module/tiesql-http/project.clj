@@ -1,4 +1,4 @@
-(defproject tiesql-http "0.1.0-SNAPSHOT"
+(defproject dadysql-http "0.1.0-SNAPSHOT"
   :description "FIXME: write description"
   :url "http://example.com/FIXME"
   :license {:name "Eclipse Public License"
@@ -11,7 +11,7 @@
                   :exclusions [ring
                                org.clojure/core.memoize
                                org.clojure/tools.reader]]
-                 [tiesql "0.1.0-alpha-SNAPSHOT" :scope "provided"]
+                 [dadysql "0.1.0-alpha-SNAPSHOT" :scope "provided"]
                  [cljs-ajax "0.5.2"]
                  [reagent "0.6.0-alpha" :scope "provided"]
                  [re-frame "0.7.0-alpha-3" :scope "provided"]

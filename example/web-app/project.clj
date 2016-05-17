@@ -12,8 +12,8 @@
                  [c3p0/c3p0 "0.9.1.2"]
                  [com.h2database/h2 "1.3.154"]
 
-                 [tiesql "0.1.0-alpha-SNAPSHOT"]
-                 [tiesql-http "0.1.0-SNAPSHOT"]
+                 [dadysql "0.1.0-alpha-SNAPSHOT"]
+                 [dadysql-http "0.1.0-SNAPSHOT"]
 
 
                  ;;Web application deps

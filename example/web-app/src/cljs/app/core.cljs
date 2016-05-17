@@ -9,8 +9,8 @@
                                    dispatch-sync
                                    subscribe]]
             [app.component.deal :as e]
-            [tiesql.ui :as u]
-            [tiesql.re-frame :as tr]))
+            [dadysql.ui :as u]
+            [dadysql.re-frame :as tr]))
 
 
 #_(defn menu-action [v] (tr/dispatch [:url (first v)]))

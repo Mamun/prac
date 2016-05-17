@@ -1,7 +1,7 @@
 # micro service for sql database
  
 # How to get started 
-* git clone https://githum.com/mamun/tiesql/example/app
+* git clone https://githum.com/mamun/dadysql/example/app
 * cd app
 * lein run 
  

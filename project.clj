@@ -1,6 +1,6 @@
-(defproject tiesql "0.1.0-alpha-SNAPSHOT"
+(defproject dadysql "0.1.0-alpha-SNAPSHOT"
   :description "Clojure sql database access framework"
-  :url "https://github.com/Mamun/tiesql"
+  :url "https://github.com/Mamun/dadysql"
   :license {:alias "Eclipse Public License"
             :url   "http://www.eclipse.org/legal/epl-v10.html"}
   ;:offline? true

@@ -8,8 +8,8 @@
                                    dispatch
                                    dispatch-sync
                                    subscribe]]
-            [tiesql.ui :as v]
-            [tiesql.re-frame :as tr]
+            [dadysql.ui :as v]
+            [dadysql.re-frame :as tr]
             [app.service :as s]
             [app.component.ui :as appui]))
 

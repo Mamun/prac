@@ -1,7 +1,7 @@
 (ns app.service
-  (:require [tiesql.re-frame :as tr]
+  (:require [dadysql.re-frame :as tr]
             [ajax.core :as a]
-            [tiesql.client :as client]))
+            [dadysql.client :as client]))
 
 
 (defn load-deal-by-id [id]

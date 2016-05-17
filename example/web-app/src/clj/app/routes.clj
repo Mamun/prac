@@ -4,10 +4,10 @@
   (:require [ring.middleware.webjars :refer [wrap-webjars]]
             [ring.middleware.defaults :refer [wrap-defaults api-defaults site-defaults]]
             [ring.middleware.logger :refer [wrap-with-logger]]
-            [ring.middleware.tiesql :as hs]
+            [ring.middleware.dadysql :as hs]
             [clojure.tools.logging :as log]
-            [tiesql.middleware :as m]
-            [tiesql.http-service :as h]
+            [dadysql.middleware :as m]
+            [dadysql.http-service :as h]
             [app.view :as v]
             [app.service :as api]
             [app.state :as s]))
@@ -51,7 +51,7 @@
 
 (def http-handler
   (-> app-routes
-      (hs/warp-tiesql-handler :tms s/tms-atom :ds s/ds-atom)
+      (hs/warp-dadysql-handler :tms s/tms-atom :ds s/ds-atom)
       (wrap-defaults (assoc-in site-defaults [:security :anti-forgery] false))
       ;  (warp-log)
       (wrap-webjars)

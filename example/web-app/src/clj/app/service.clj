@@ -2,7 +2,7 @@
   (:require
     [clojure.tools.logging :as log]
     [app.state :as s]
-    [tiesql.jdbc :as j]))
+    [dadysql.jdbc :as j]))
 
 
 (defn load-deals []

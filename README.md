@@ -1,4 +1,4 @@
-# tiesql
+# dadysql
 
 It is clojure lib to execute sql statement. It is data relational mapping (DRM).
 
@@ -22,19 +22,19 @@ API are like git pull and push as SQL database are consider as remote part for a
 
 
 ## More 
-[tiesql metadata](doc/METADATA.md)
+[dadysql metadata](doc/METADATA.md)
 
 ## Installation
 
 Add this to your [Leiningen](https://github.com/technomancy/leiningen) `:dependencies`: 
 
-[![Clojars Project](http://clojars.org/tiesql/latest-version.svg)](http://clojars.org/tiesql)
+[![Clojars Project](http://clojars.org/dadysql/latest-version.svg)](http://clojars.org/dadysql)
 
 And setup your namespace imports:
 
 ```clj
 (ns app
- (:require [tiesql.jdbc :as tj]))
+ (:require [dadysql.jdbc :as tj]))
 ```
 
 ## Usage
@@ -146,7 +146,7 @@ Output
 
 [tie.edn.sql](test-i/tie.edn.sql "Example")
 
-[walkthrough](test-i/tiesql/jdbc_test.clj "Test file")
+[walkthrough](test-i/dadysql/jdbc_test.clj "Test file")
 
 
 

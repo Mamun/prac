@@ -1,10 +1,10 @@
-(ns ring.middleware.tiesql
+(ns ring.middleware.dadysql
   (:require [clojure.tools.logging :as log]
             [dady.fail :as f]
-            [tiesql.common :as c]
-            [tiesql.middleware :as u]
-            [tiesql.http-service :as h]
-            [tiesql.jdbc :as tj]))
+            [dadysql.common :as c]
+            [dadysql.middleware :as u]
+            [dadysql.http-service :as h]
+            [dadysql.jdbc :as tj]))
 
 
 (defn- reload-tms
@@ -30,13 +30,13 @@
 
 
 ;ds-atom tms-atom
-(defn warp-tiesql-handler
-  "Warper that tries to do with tiesql. It should use next to the ring-handler. If path-in is matched with
+(defn warp-dadysql-handler
+  "Warper that tries to do with dadysql. It should use next to the ring-handler. If path-in is matched with
    pull-path or push-path then it will API and return result.
 
    handler: Ring handler
    ds-atom: Clojure datasource as atom
-   tms-atom: tiesql file as atom
+   tms-atom: dadysql file as atom
    pull-path and push path string
 
   "

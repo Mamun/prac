@@ -1,10 +1,10 @@
 (ns app.core
   (:use compojure.core)
   (:require [ring.util.response :as resp]
-            [ring.middleware.tiesql :as hs]
+            [ring.middleware.dadysql :as hs]
             [compojure.route :as route]
             [immutant.web :as im]
-            [tiesql.jdbc :as tj]
+            [dadysql.jdbc :as tj]
             [common :as cc])
   (:import
     [com.mchange.v2.c3p0 ComboPooledDataSource])
@@ -33,7 +33,7 @@
 
 (def http-handler
   (-> app-handler
-      (hs/warp-tiesql-handler :tms tms-atom :ds ds-atom)))
+      (hs/warp-dadysql-handler :tms tms-atom :ds ds-atom)))
 
 
 (defn -main

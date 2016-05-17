@@ -1,6 +1,6 @@
-(defproject tiesql/client-java "0.1.0-alpha-SNAPSHOT"
-  :description "It is Java client for tiesql framework "
-  :url "https://github.com/Mamun/tiesql"
+(defproject dadysql/client-java "0.1.0-alpha-SNAPSHOT"
+  :description "It is Java client for dadysql framework "
+  :url "https://github.com/Mamun/dadysql"
   :min-lein-version "2.0.0"
   :dependencies [[org.apache.httpcomponents/httpclient "4.5.1"]
                  [com.google.code.gson/gson "2.4"]

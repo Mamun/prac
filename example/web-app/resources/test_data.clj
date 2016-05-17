@@ -1,6 +1,6 @@
 (ns test-data
-  (:require [tiesql.common :refer :all]
-            [tiesql.jdbc :refer :all])
+  (:require [dadysql.common :refer :all]
+            [dadysql.jdbc :refer :all])
   (:import [com.mchange.v2.c3p0 ComboPooledDataSource]))
 
 
