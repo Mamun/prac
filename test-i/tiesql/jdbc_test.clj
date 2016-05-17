@@ -1,7 +1,7 @@
 (ns tiesql.jdbc-test
   (:use [clojure.test])
   (:require [tiesql.common :refer :all]
-            [cljc.common :refer :all]
+            [dady.common :refer :all]
             [tiesql.jdbc :refer :all]
             [test-data :as td]))
 

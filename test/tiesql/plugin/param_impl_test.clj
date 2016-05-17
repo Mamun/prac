@@ -1,13 +1,15 @@
 (ns tiesql.plugin.param-impl-test
-  (:use [clojure.test])
+  (:use [clojure.test]
+        [dady.fail])
   (:require
     [tiesql.plugin.factory :as b]
-    [tiesql.proto :as p]
-    [tiesql.proto :refer :all]
+    [dady.node-proto :as p]
+    [dady.node-proto :refer :all]
+
 
     [tiesql.plugin.param-impl :refer :all]
     [tiesql.common :refer :all]
-    [cljc.common :refer :all]
+    [dady.common :refer :all]
     ))
 
 

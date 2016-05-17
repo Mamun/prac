@@ -5,7 +5,7 @@
             [ring.middleware.defaults :refer [wrap-defaults api-defaults site-defaults]]
             [ring.middleware.logger :refer [wrap-with-logger]]
             [tiesql.jdbc :as tj]
-            [cljc.common :as cc]
+            [dady.common :as cc]
             [clojure.tools.logging :as log])
   (:import
     [com.mchange.v2.c3p0 ComboPooledDataSource]))

@@ -1,6 +1,7 @@
- (ns cljc.common-test
+ (ns dady.common-test
    (:use [clojure.test]
-         [cljc.common])
+         [dady.common]
+         [dady.fail])
    (:require [tiesql.common :refer :all]
              [tiesql.core-util :refer :all]))
 

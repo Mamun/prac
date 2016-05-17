@@ -1,7 +1,8 @@
 (ns tiesql.plugin.sql-bind-impl
-  (:use [tiesql.proto])
+  (:use [dady.node-proto])
   (:require [tiesql.common :refer :all]
-            [cljc.common :as cc]
+            [dady.fail :as f]
+            [dady.common :as cc]
             [schema.core :as s]))
 
 
@@ -9,7 +10,7 @@
   [m]
   (if (and (not-empty (rest (sql-key m)))
            (empty? (input-key m)))
-    (cc/fail (format "Input is missing for %s " (name-key m)))
+    (f/fail (format "Input is missing for %s " (name-key m)))
     m))
 
 
@@ -21,7 +22,7 @@
     (if (and (not= dml-type dml-insert-key)
              (not-empty (rest sql))
              (not (map? input)))
-      (cc/fail (format "Input Params for %s will be map format but %s is not map format " sql input))
+      (f/fail (format "Input Params for %s will be map format but %s is not map format " sql input))
       m)))
 
 
@@ -31,16 +32,16 @@
         i-set (into #{} (keys input))
         diff-keys (clojure.set/difference p-set i-set)]
     (if-not (empty? diff-keys)
-      (cc/fail (format "Missing required parameter %s" (pr-str diff-keys)))
+      (f/fail (format "Missing required parameter %s" (pr-str diff-keys)))
       input)))
 
 
 (defn validate-required-params!
   [m]
   (let [input (cc/as-sequential (input-key m))
-        r (-> (cc/comp-xf-until (map #(validate-required-params*! (rest (sql-key m)) %)))
+        r (-> (f/comp-xf-until (map #(validate-required-params*! (rest (sql-key m)) %)))
               (transduce conj input))]
-    (if (cc/failed? r)
+    (if (f/failed? r)
       r
       m)))
 
@@ -99,7 +100,7 @@
 
 (defn do-default-proc
   [tm]
-  (cc/try-> tm
+  (f/try-> tm
             validate-input-not-empty!
             validate-input-type!
             validate-required-params!
@@ -108,7 +109,7 @@
 
 (defn do-insert-proc
   [tm]
-  (cc/try-> tm
+  (f/try-> tm
             validate-input-not-empty!
             validate-input-type!
             validate-required-params!

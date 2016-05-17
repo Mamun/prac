@@ -1,7 +1,7 @@
 (ns tiesql.http-service-test
   (:use [clojure.test])
   (:require [tiesql.common :refer :all]
-            [cljc.common :refer :all]
+            [dady.common :refer :all]
             [tiesql.http-service :refer :all]
             [test-data :as td]
             [tiesql.jdbc :as tj]))

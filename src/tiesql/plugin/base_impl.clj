@@ -1,10 +1,9 @@
 (ns tiesql.plugin.base-impl
   (:require
-    [clojure.walk :as w]
     [schema.core :as s]
     [tiesql.common :refer :all]
-    [cljc.common :refer :all]
-    [tiesql.proto :refer :all]))
+    [dady.common :refer :all]
+    [dady.node-proto :refer :all]))
 
 
 (defbranch ExtendKey [lname coll lorder])

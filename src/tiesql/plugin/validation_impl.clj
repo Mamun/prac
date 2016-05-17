@@ -1,7 +1,8 @@
 (ns tiesql.plugin.validation-impl
-  (:use [tiesql.proto])
+  (:use [dady.node-proto])
   (:require [tiesql.common :refer :all]
-            [cljc.common :as cc]
+            [dady.common :as cc]
+            [dady.fail :as f]
             [tiesql.plugin.base-impl :as cu]
             [schema.core :as s]))
 
@@ -102,7 +103,7 @@
                    (let [[src n] ks
                          cp (get pm n)
                          w (node-process cp ks)]
-                     (if (cc/failed? w)
+                     (if (f/failed? w)
                        (reduced w)
                        acc))
                    ) m))))
@@ -127,7 +128,7 @@
       (if (and (>= p-value min)
                (<= p-value max))
         result
-        (cc/fail e-message))))
+        (f/fail e-message))))
   ValidationTypeKey
   (-lorder [this] (:corder this))
   (-process-type [_] :input)
@@ -138,7 +139,7 @@
     (let [[p-value _ v-type e-message] result]
       (if (= v-type (type p-value))
         result
-        (cc/fail {:msg   e-message
+        (f/fail {:msg   e-message
                   :value p-value
                   :type  (str (type p-value))}))))
   ValidationContaionKey
@@ -153,7 +154,7 @@
           r (every? true? r)]
       (if r
         result
-        (cc/fail e-message)))))
+        (f/fail e-message)))))
 
 
 

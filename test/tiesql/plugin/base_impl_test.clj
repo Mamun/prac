@@ -1,12 +1,12 @@
 (ns tiesql.plugin.base-impl-test
   (:use [clojure.test]
-        [tiesql.proto]
+        [dady.node-proto]
         )
   (:require [tiesql.plugin.common-impl :refer :all]
             [tiesql.plugin.base-impl :refer :all]
             [tiesql.plugin.factory :refer :all]
             [tiesql.common :refer :all]
-            [cljc.common :refer :all]
+            [dady.common :refer :all]
             [tiesql.core :as c]
             [tiesql.jdbc :as j]
             ))

@@ -1,8 +1,9 @@
 (ns tiesql.plugin.sql-executor-test
   (:use [clojure.test]
+        [dady.fail]
         [tiesql.plugin.sql-executor])
   (:require [tiesql.common :refer :all]
-            [cljc.common :as cc]))
+            [dady.common :as cc]))
 
 
 (deftest warp-map-output-test
@@ -14,7 +15,7 @@
           reslt (hand input)]
       ;(println reslt)
       ;(println (cc/-failed? reslt ))
-      (is (cc/failed? reslt)))))
+      (is (failed? reslt)))))
 
 
 
@@ -47,7 +48,7 @@
                   {sql-key  "select * from dual1 "
                    name-key :c}]
           result (apply-handler-parallel han m-coll)]
-      (is (cc/failed? (get-in result [2]))))))
+      (is (failed? (get-in result [2]))))))
 
 
 ;(warp-parallel-coll-test)
@@ -67,7 +68,7 @@
           ;actual-result (apply-handler-until-fail hand coll)
           ]
       ;(clojure.pprint/pprint actual-result)
-      (is (cc/failed? (cc/fail "df"))))))
+      (is (failed? (fail "df"))))))
 
 
 ;(executor-test)

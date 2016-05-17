@@ -5,7 +5,7 @@
       [(:require [cognitect.transit :as t]
          [tiesql.common :as cc]
          [clojure.walk :as w])
-       (:require-macros [cljc.common :refer [try->]])]))
+       (:require-macros [dady.common :refer [try->]])]))
 
 
 (def tiesql-param :params)

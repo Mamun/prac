@@ -1,7 +1,8 @@
-(ns tiesql.proto
-  (:require [cljc.common :as cc])
+(ns dady.node-proto
+  (:require [dady.fail :as f])
   (:import [PersistentVector]
            (clojure.lang PersistentVector)))
+
 
 
 (defprotocol ILeafNode
@@ -56,7 +57,7 @@
   [node v]
   (if (satisfies? INodeProcessor node)
     (-process node v)
-    (cc/fail "Node type is not found")))
+    (f/fail "Node type is not found")))
 
 
 (defn compiler-schema

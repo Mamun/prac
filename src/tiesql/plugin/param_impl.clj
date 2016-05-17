@@ -1,7 +1,8 @@
 (ns tiesql.plugin.param-impl
-  (:use [tiesql.proto])
+  (:use [dady.node-proto])
   (:require [tiesql.common :refer :all]
-            [cljc.common :as cc]
+            [dady.common :as cc]
+            [dady.fail :as f]
             [tiesql.core-util :as ccu]
             [tiesql.plugin.base-impl :as cu]
             [schema.core :as s]))
@@ -103,8 +104,8 @@
          (reduce (fn [acc-input ks]
                    (let [[src n] ks
                          p (partial -pprocess (n pm))
-                         rv (cc/try! p ks acc-input)]
-                     (if (cc/failed? rv)
+                         rv (f/try! p ks acc-input)]
+                     (if (f/failed? rv)
                        (reduced rv)
                        (assoc-in acc-input src rv)))
                    ) input))))

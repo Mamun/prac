@@ -1,7 +1,7 @@
 (ns tiesql.plugin.factory
   (:require
     [tiesql.common :refer :all]
-    [tiesql.proto :refer :all]
+    [dady.node-proto :refer :all]
     [tiesql.plugin.base-impl :as b]
     [tiesql.plugin.common-impl :as c]
     [tiesql.plugin.param-impl :as p]

@@ -7,7 +7,8 @@
             [compojure.route :as route]
             [immutant.web :as im]
             [tiesql.jdbc :as tj]
-            [cljc.common :as cc]
+            [dady.common :as cc]
+            [dady.fail :as f]
             [clojure.tools.logging :as log])
   (:import
     [com.mchange.v2.c3p0 ComboPooledDataSource])
@@ -22,7 +23,7 @@
   (when (nil? @ds-atom)
     (reset! ds-atom {:datasource (ComboPooledDataSource.)}))
   (when (nil? @tms-atom)
-    (cc/try->> (tj/read-file "tie.edn.sql")
+    (f/try->> (tj/read-file "tie.edn.sql")
                (tj/db-do @ds-atom [:create-ddl :init-data])
                (tj/validate-dml! @ds-atom)
                (reset! tms-atom))))

@@ -2,8 +2,9 @@
   (:require
     [schema.core :as s]
     [tiesql.common :refer :all]
-    [tiesql.proto :refer :all]
-    [cljc.common :as cc]))
+    [dady.fail :as f]
+    [dady.node-proto :refer :all]
+    [dady.common :as cc]))
 
 
 
@@ -120,7 +121,7 @@
       (cond
         (nil? result)
         tm
-        (cc/failed? output)
+        (f/failed? output)
         tm
         (and (empty? output)
              (contains? result result-single-key))
@@ -142,8 +143,8 @@
           output (output-key tm)]
       (cond
         (or (nil? column)
-            (cc/failed? tm)
-            (cc/failed? output)
+            (f/failed? tm)
+            (f/failed? output)
             (not (map? (first output))))
         tm
         :else

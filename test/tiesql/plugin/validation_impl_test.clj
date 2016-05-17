@@ -1,8 +1,8 @@
 (ns tiesql.plugin.validation-impl-test
   (:use [clojure.test]
-        [tiesql.proto])
+        [dady.node-proto])
   (:require [tiesql.plugin.validation-impl :refer :all]
-            [cljc.common :refer :all]
+            [dady.common :refer :all]
             [tiesql.common :refer :all]
             [schema.core :as s]))
 

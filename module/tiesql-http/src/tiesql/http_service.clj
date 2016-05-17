@@ -1,6 +1,8 @@
 (ns tiesql.http-service
   (:require [clojure.tools.logging :as log]
-            [cljc.common :as c]
+            [dady.common :as c]
+            [dady.fail :as f]
+            [dady.walk :as w]
             [tiesql.util :as u]
             [tiesql.jdbc :as tj]
             [clojure.tools.reader.edn :as edn]))
@@ -9,7 +11,7 @@
 (defn http-response
   [m]
   (let [w
-        (if (c/failed? m)
+        (if (f/failed? m)
           [nil (into {} m)]
           [m nil])]
     {:status  200
@@ -53,7 +55,7 @@
 (defn response-stringify
   [req response]
   (if (= :string (:output req))
-    (mapv (partial c/postwalk-replace-key-with c/keyword->str) response)
+    (mapv (partial w/postwalk-replace-key-with w/keyword->str) response)
     response))
 
 
@@ -105,26 +107,26 @@
 (defmethod resposne-format u/url-endpoint
   [_ output]
   (->> output
-       (c/postwalk-replace-value-with u/as-str)
-       (c/postwalk-replace-key-with c/keyword->str)))
+       (w/postwalk-replace-value-with u/as-str)
+       (w/postwalk-replace-key-with w/keyword->str)))
 
 
 (defn is-params-not-nil? [params]
   (if params
     params
-    (c/fail "No params is set in http request")))
+    (f/fail "No params is set in http request")))
 
 
 (defn pull-handler
   [ds tms ring-request]
   (let [type (endpoint-type ring-request)
-        req (c/try->> ring-request
+        req (f/try->> ring-request
                       (:params)
                       (is-params-not-nil?)
                       (request-format type)
                       (param-keywordize-keys))]
     (http-response
-      (c/try->> req
+      (f/try->> req
                 (tj/pull ds tms)
                 (response-stringify req)
                 (resposne-format type)))))
@@ -134,7 +136,7 @@
   [ds tms ring-request]
   (let [type (endpoint-type ring-request)]
     (http-response
-      (c/try->> ring-request
+      (f/try->> ring-request
                 (:params)
                 (is-params-not-nil?)
                 (request-format type)

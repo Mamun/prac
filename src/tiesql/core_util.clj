@@ -1,7 +1,8 @@
 (ns tiesql.core-util
   (:require [tiesql.common :refer :all]
-            [tiesql.proto :refer :all]
-            [cljc.common :as cc]
+            [dady.node-proto :refer :all]
+            [dady.fail :as f]
+            [dady.common :as cc]
             [tiesql.plugin.join-impl :as j]))
 
 
@@ -14,7 +15,7 @@
       (->> (clojure.set/difference op-key skey)
            (first)
            (str "Name not found ")
-           (cc/fail)))))
+           (f/fail)))))
 
 
 (defn validate-model!
@@ -23,7 +24,7 @@
         m (distinct model-coll)]
     (if (not= (count model-coll)
               (count m))
-      (cc/fail (str "Selecting duplicate model " model-coll))
+      (f/fail (str "Selecting duplicate model " model-coll))
       tm-coll)))
 
 

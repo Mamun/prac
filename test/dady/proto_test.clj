@@ -1,11 +1,11 @@
-(ns tiesql.proto-test
+(ns dady.node-proto
   (:use [clojure.test]
-        [tiesql.proto])
+        [dady.node-proto])
   (:require [tiesql.plugin.base-impl :as bi]
             [tiesql.plugin.factory :as c]
             [tiesql.plugin.param-impl :as p]
             [tiesql.common :refer :all]
-            [cljc.common :refer :all]))
+            [dady.common :refer :all]))
 
 
 (defrecord TestParamKey [lname lorder]

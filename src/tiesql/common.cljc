@@ -1,5 +1,6 @@
 (ns tiesql.common
-  (:use [cljc.common]))
+  (:use [dady.common]
+        [dady.fail]))
 
 
 (defonce global-key :_global_)

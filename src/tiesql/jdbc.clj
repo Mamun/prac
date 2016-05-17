@@ -4,12 +4,13 @@
   (:require
     [clojure.tools.logging :as log]
     [clojure.java.jdbc :as jdbc]
-    [cljc.common :as cc]
+    [dady.common :as cc]
     [tiesql.common :as tc]
     [tiesql.core :as tie]
     [tiesql.compiler.file-reader :as fr]
     [tiesql.plugin.factory :as imp]
-    [tiesql.proto :as c]
+    [dady.node-proto :as c]
+    [dady.fail :as f]
     [tiesql.plugin.sql-executor :as ce]
     [tiesql.plugin.param-impl :as p]))
 
@@ -69,7 +70,7 @@
 
 
 (defn select-pull-node [ds tms request-m]
-  (cc/try-> tms
+  (f/try-> tms
             (get-in [tc/global-key tc/process-context-key] [])
             (filter-processor request-m)
             (c/add-child-one (ce/sql-executor-node ds tms ce/Parallel))))
@@ -80,14 +81,14 @@
    ds: datasource
    "
   [ds tms request-m]
-  (cc/try->> request-m
+  (f/try->> request-m
              (tc/validate-input!)
              (default-request :pull)
              (tie/do-run (select-pull-node ds tms request-m) tms)))
 
 
 (defn select-push-node [ds tms]
-  (cc/try-> tms
+  (f/try-> tms
             (get-in [tc/global-key tc/process-context-key] [])
             (c/remove-type :output)
             (c/add-child-one (ce/sql-executor-node ds tms ce/Transaction))
@@ -103,7 +104,7 @@
 (defn push!
   "Create, update or delete value in database. DB O/P will be run within transaction. "
   [ds tms request-m ]
-  (cc/try->> request-m
+  (f/try->> request-m
              (tc/validate-input!)
              (default-request :push)
              (tie/do-run (select-push-node ds tms) tms)))
@@ -121,7 +122,7 @@
       (catch Exception e
         (do
           (log/error e)
-          (cc/fail {:detail e}))
+          (f/fail {:detail e}))
         ;(log/error e)
         ;(log/error (.getMessage e))
         )))

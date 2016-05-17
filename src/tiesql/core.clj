@@ -2,12 +2,13 @@
 ;;
 (ns tiesql.core
   (:require
-    [cljc.common :as cc]
+    [dady.common :as cc]
+    [dady.fail :as f]
     [tiesql.common :refer :all]
     [tiesql.core-util :as cu]
     [tiesql.plugin.join-core :as j]
     [tiesql.plugin.param-impl :as p]
-    [tiesql.proto :as c]))
+    [dady.node-proto :as c]))
 
 
 
@@ -26,16 +27,16 @@
     (cond
       (or (nil? tms)
           (empty? tms))
-      (cc/fail " Source is empty ")
-      (cc/failed? tms)
+      (f/fail " Source is empty ")
+      (f/failed? tms)
       tms
       (or (nil? tm-map)
           (empty? tm-map))
-      (cc/fail (format " %s Name not found" (str name-key-coll)))
+      (f/fail (format " %s Name not found" (str name-key-coll)))
       (cu/is-reserve? tms name-key-coll)
       tm-map
       :else
-      (cc/try-> tm-map
+      (f/try-> tm-map
                 (cu/validate-name! name-key-coll)
                 (cc/select-values name-key-coll)
                 (cu/validate-model!)
@@ -60,7 +61,7 @@
 (defn- coll-failed?
   [tm-coll]
   (reduce (fn [acc v]
-            (if (cc/failed? v)
+            (if (f/failed? v)
               (reduced v)
               acc)
             ) tm-coll tm-coll))
@@ -68,9 +69,9 @@
 
 (defn do-node-process
   [tm-coll n-processor type]
-  (if (cc/failed? tm-coll)
+  (if (f/failed? tm-coll)
     tm-coll
-    (if-let [r (cc/failed? (coll-failed? tm-coll))]
+    (if-let [r (f/failed? (coll-failed? tm-coll))]
       r
       (condp = type
         :output
@@ -79,7 +80,7 @@
         :input
         (let [p (->> (c/remove-child n-processor param-key)
                      (c/as-xf-process :input)
-                     (apply cc/comp-xf-until))]
+                     (apply f/comp-xf-until))]
           (transduce p conj tm-coll))
         :sql-executor
         (-> (c/get-child n-processor :sql-executor)
@@ -96,7 +97,7 @@
   (fn [tm-coll params]
     (let [param-m (c/get-child n-processor param-key)
           input (p/do-param params map-format tm-coll param-m)]
-      (if (cc/failed? input)
+      (if (f/failed? input)
         input
         (-> (mapv (fn [m] (assoc m input-key input)) tm-coll)
             (do-node-process n-processor :input)
@@ -107,10 +108,10 @@
   [handler n-processor _]
   (fn [tm-coll params]
     (let [param-m (c/get-child n-processor param-key)
-          input (cc/try-> params
+          input (f/try-> params
                           (p/do-param nested-map-format tm-coll param-m)
                           (j/do-disjoin (get-in tm-coll [0 join-key])))]
-      (if (cc/failed? input)
+      (if (f/failed? input)
         input
         (-> (mapv (fn [m] (assoc m input-key ((model-key m) input))) tm-coll)
             (do-node-process n-processor :input)
@@ -139,7 +140,7 @@
 
 (defn into-model-map
   [v]
-  (if (cc/failed? v)
+  (if (f/failed? v)
     (hash-map (model-key v) v)
     (hash-map (model-key v)
               (output-key v))))
@@ -154,9 +155,9 @@
   [tm-coll format]
   (cond
     (= :one format)
-    (cc/try-> tm-coll first output-key)
+    (f/try-> tm-coll first output-key)
     (= value-format format)
-    (cc/try-> tm-coll first output-key (get-in [1 0]))
+    (f/try-> tm-coll first output-key (get-in [1 0]))
     :else
     (let [xf (comp (map into-model-map))]
       (into {} xf tm-coll))))
@@ -170,7 +171,7 @@
 (defmethod warp-output-node-process :default
   [handler n-processor format]
   (fn [tm-coll params]
-    (cc/try-> tm-coll
+    (f/try-> tm-coll
               (assoc-result-format format)
               (handler params)
               (do-node-process n-processor :output)
@@ -193,7 +194,7 @@
 
 (defn- not-continue?
   [root-result]
-  (if (or (cc/failed? root-result)
+  (if (or (f/failed? root-result)
           (nil? (first (vals root-result)))
           (empty? (first (vals root-result))))
     true false))
@@ -212,7 +213,7 @@
                           (rf more-tm r-out))]
           (if (not-continue? root-output)
             root-output
-            (cc/try-> root-output
+            (f/try-> root-output
                       (merge-relation-param root params)
                       (r-handler)
                       (merge root-output)
@@ -235,7 +236,7 @@
         ]
 
 
-    (if (cc/failed? tm-coll)
+    (if (f/failed? tm-coll)
       tm-coll
       (proc tm-coll params))))
 

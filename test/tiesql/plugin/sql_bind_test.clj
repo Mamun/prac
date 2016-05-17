@@ -1,9 +1,10 @@
 (ns tiesql.plugin.sql-bind-test
-  (:use [clojure.test])
+  (:use [clojure.test]
+        [dady.fail])
   (:require                                                 ;[tiesql.plugin.sql-bind-impl :refer :all]
     [tiesql.plugin.sql-bind-impl :refer :all]
     ;[tiesql.plugin.sql-util :refer :all]
-    [tiesql.proto :refer :all]
+    [dady.node-proto :refer :all]
     [tiesql.common :refer :all]))
 
 

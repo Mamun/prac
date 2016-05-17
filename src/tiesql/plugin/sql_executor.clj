@@ -2,8 +2,9 @@
   (:require [clojure.set]
             [clojure.core.async :as async :refer [<! >! <!! chan alt! go go-loop onto-chan sliding-buffer]]
             [clojure.java.jdbc :as jdbc]
-            [cljc.common :as cc]
-            [tiesql.proto :refer :all]
+            [dady.common :as cc]
+            [dady.fail :as f]
+            [dady.node-proto :refer :all]
             [tiesql.common :refer :all]
             [clojure.tools.logging :as log]))
 
@@ -51,7 +52,7 @@
     (= true read-only) true
     (= commit-type commit-none-key) true
     (and (= commit-type commit-all-key)
-         (cc/failed? result-coll)) true
+         (f/failed? result-coll)) true
     :else false))
 
 
@@ -130,14 +131,14 @@
                        (- (System/nanoTime)
                           st)) 1000000.0)                   ;;in msecs
             r (if (seq? r) (into [] r) r)]
-        (if (cc/failed? r)
+        (if (f/failed? r)
           r
           (assoc m output-key r
                    exec-time-total-key total
                    exec-time-start-key stm)))
       (catch Exception e
         (log/error e (sql-key m))
-        (-> (cc/fail {query-exception-key (.getMessage e)})
+        (-> (f/fail {query-exception-key (.getMessage e)})
             (merge m))))))
 
 
@@ -153,7 +154,7 @@
           ;; Need to assoc exception here as it returns from here
           (-> {query-exception-key "SQL Execution time out"
                timeout-key         t-v}
-              (cc/fail)
+              (f/fail)
               (merge m)))))))
 
 
@@ -181,7 +182,7 @@
         (transduce conj m-coll))
     SerialNotFailed
     (-> (map #(apply-handler-one (jdbc-handler->chan ds) %))
-        (cc/comp-xf-until)
+        (f/comp-xf-until)
         (transduce conj m-coll))
     commit-all-key
     (do-execute SerialNotFailed ds m-coll)

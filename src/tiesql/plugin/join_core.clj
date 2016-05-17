@@ -1,5 +1,6 @@
 (ns tiesql.plugin.join-core
-  (:require [cljc.common :as cc]
+  (:require [dady.common :as cc]
+            [dady.fail :as f]
             [tiesql.core-util :as cu]
             [tiesql.common :refer :all]))
 
@@ -136,7 +137,7 @@
 (defn do-disjoin
   "Assoc relation key and dis-join relation model "
   [data join-coll]
-  (if (or (cc/failed? data)
+  (if (or (f/failed? data)
           (empty? join-coll))
     data
     (let [join-coll (replace-source-entity-path join-coll data)
