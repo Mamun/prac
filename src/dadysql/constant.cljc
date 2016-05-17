@@ -1,4 +1,4 @@
-(ns dadysql.common
+(ns dadysql.constant
   (:use [dady.common]
         [dady.fail]))
 

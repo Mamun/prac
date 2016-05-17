@@ -1,5 +1,5 @@
 (ns dadysql.core-util
-  (:require [dadysql.common :refer :all]
+  (:require [dadysql.constant :refer :all]
             [dady.node-proto :refer :all]
             [dady.fail :as f]
             [dady.common :as cc]

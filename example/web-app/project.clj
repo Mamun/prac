@@ -77,7 +77,8 @@
              :server-logfile "target/figwheel.log"}
   :doo {:build "test"}
   :profiles {:dev
-             {:dependencies [[figwheel "0.5.0-6"]
+             {:dependencies [;[com.stuartsierra/component "0.3.0" :scope "test"]
+                             [figwheel "0.5.0-6"]
                              [figwheel-sidecar "0.5.0-6"]
                              [com.cemerick/piggieback "0.2.1"]
                              [org.clojure/tools.nrepl "0.2.12"]]

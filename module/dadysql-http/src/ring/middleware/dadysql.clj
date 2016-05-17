@@ -1,7 +1,7 @@
 (ns ring.middleware.dadysql
   (:require [clojure.tools.logging :as log]
             [dady.fail :as f]
-            [dadysql.common :as c]
+            [dadysql.constant :as c]
             [dadysql.middleware :as u]
             [dadysql.http-service :as h]
             [dadysql.jdbc :as tj]))

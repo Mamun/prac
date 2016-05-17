@@ -5,7 +5,8 @@
             [compojure.route :as route]
             [immutant.web :as im]
             [dadysql.jdbc :as tj]
-            [common :as cc])
+            [dady.fail :as f]
+            #_[common :as cc])
   (:import
     [com.mchange.v2.c3p0 ComboPooledDataSource])
   (:gen-class))
@@ -19,7 +20,7 @@
   (when (nil? @ds-atom)
     (reset! ds-atom {:datasource (ComboPooledDataSource.)}))
   (when (nil? @tms-atom)
-    (cc/try->> (tj/read-file "tie.edn.sql")
+    (f/try->> (tj/read-file "tie.edn.sql")
                (tj/db-do @ds-atom [:create-ddl :init-data])
                (tj/validate-dml! @ds-atom)
                (reset! tms-atom))))

@@ -1,5 +1,5 @@
 (ns test-data
-  (:require [dadysql.common :refer :all]
+  (:require [dadysql.constant :refer :all]
             [dadysql.jdbc :refer :all])
   (:import [com.mchange.v2.c3p0 ComboPooledDataSource]))
 

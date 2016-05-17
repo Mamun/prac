@@ -1,7 +1,7 @@
 (ns dadysql.compiler.file-reader
   (:require [clojure.java.io :as io]
             [clojure.tools.reader.edn :as edn]
-            [dadysql.common :refer :all]
+            [dadysql.constant :refer :all]
             [dadysql.compiler.core :as cpl]
             ))
 

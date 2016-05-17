@@ -1,7 +1,7 @@
 (ns walkthrough
   (:require [clojure.java.jdbc :as jdbc]
             [dadysql.jdbc :as t]
-            [dadysql.common :refer :all]
+            [dadysql.constant :refer :all]
             [test-data :as td]
             ))
 

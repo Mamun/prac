@@ -74,6 +74,19 @@
   [node v]
   (-compiler-emit node v))
 
+
+(defn filter-node-processor
+  ""
+  [node-coll]
+  (->> node-coll
+       (filter (fn [v] (or (satisfies? INodeProcessor v)
+                           (satisfies? IParamNodeProcessor v))))
+       (into (empty node-coll))))
+
+
+
+
+
 ;;;; For branch
 
 
@@ -391,3 +404,13 @@
   [parent-node node-path-coll node]
   (let [p (node-path parent-node node-path-coll)]
     (update-in parent-node p (fn [v] (-update-child v node)))))
+
+
+
+;;;;;;;;;;;;;;;;;; Get node from path ;;;;;;;;;;;;;
+
+(defn select-module-node-processor
+  [root-node module-key]
+  (-> (get-node-from-path root-node [module-key])
+      (-childs)
+      (filter-node-processor)))

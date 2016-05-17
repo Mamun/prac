@@ -2,7 +2,7 @@
   (:use [clojure.test])
   (:require [dadysql.core :refer :all]
             [dadysql.plugin.factory :refer :all]
-            [dadysql.common :refer :all]
+            [dadysql.constant :refer :all]
             [dadysql.core-util :as cu]
             ))
 

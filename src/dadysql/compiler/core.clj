@@ -1,5 +1,5 @@
 (ns dadysql.compiler.core
-  (:require [dadysql.common :refer :all]
+  (:require [dadysql.constant :refer :all]
             [dady.common :as cc]
 
             [dady.node-proto :as p]))

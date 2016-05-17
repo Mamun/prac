@@ -1,7 +1,7 @@
 (ns dadysql.plugin.factory
   (:require
-    [dadysql.common :refer :all]
-    [dady.node-proto :refer :all]
+    [dadysql.constant :refer :all]
+    [dady.node-proto :as np]
     [dadysql.plugin.base-impl :as b]
     [dadysql.plugin.common-impl :as c]
     [dadysql.plugin.param-impl :as p]
@@ -28,27 +28,15 @@
 
 
 
-(defn filter-node-processor
-  ""
-  [node-coll]
-  (->> node-coll
-       (filter (fn [v] (or (satisfies? INodeProcessor v)
-                           (satisfies? IParamNodeProcessor v))))
-       (into (empty node-coll))))
 
 
-(defn select-module-node-processor
-  [root-node]
-  (-> (get-node-from-path root-node [module-key])
-      (-childs)
-      (filter-node-processor)))
 
 
 (defn select-node
   "Return all select node "
   [node-coll node-name-coll]
   (let [s (into #{} node-name-coll)
-        r (filter (fn [v] (contains? s (node-name v))) node-coll)]
+        r (filter (fn [v] (contains? s (np/node-name v))) node-coll)]
     (if (empty? r)
       r
       (into (empty node-coll) r))))

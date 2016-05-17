@@ -3,7 +3,7 @@
         [dady.node-proto])
   (:require [dadysql.plugin.validation-impl :refer :all]
             [dady.common :refer :all]
-            [dadysql.common :refer :all]
+            [dadysql.constant :refer :all]
             [schema.core :as s]))
 
 

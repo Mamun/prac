@@ -1,6 +1,6 @@
 (ns dadysql.plugin.validation-impl
   (:use [dady.node-proto])
-  (:require [dadysql.common :refer :all]
+  (:require [dadysql.constant :refer :all]
             [dady.common :as cc]
             [dady.fail :as f]
             [dadysql.plugin.base-impl :as cu]

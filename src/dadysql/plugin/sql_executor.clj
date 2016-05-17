@@ -5,7 +5,7 @@
             [dady.common :as cc]
             [dady.fail :as f]
             [dady.node-proto :refer :all]
-            [dadysql.common :refer :all]
+            [dadysql.constant :refer :all]
             [clojure.tools.logging :as log]))
 
 

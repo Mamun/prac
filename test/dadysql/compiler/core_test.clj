@@ -5,7 +5,7 @@
         [dadysql.plugin.factory :as ci]
     ;   [dadysql.plugin.core :as p]
         [dadysql.core :as c]
-        [dadysql.common]
+        [dadysql.constant]
         [dady.common]
         ))
 

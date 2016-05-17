@@ -5,7 +5,7 @@
     [dadysql.plugin.sql-bind-impl :refer :all]
     ;[dadysql.plugin.sql-util :refer :all]
     [dady.node-proto :refer :all]
-    [dadysql.common :refer :all]))
+    [dadysql.constant :refer :all]))
 
 
 (deftest bind-sql-params-test

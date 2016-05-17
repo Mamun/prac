@@ -4,7 +4,7 @@
   (:require
     [clojure.tools.logging :as log]
     [clojure.java.jdbc :as jdbc]
-    [dadysql.common :as tc]
+    [dadysql.constant :as tc]
     [dadysql.core :as tie]
     [dadysql.compiler.file-reader :as fr]
     [dadysql.plugin.factory :as imp]
@@ -20,7 +20,7 @@
    (-> (fr/read-file file-name pc)
        (assoc-in [tc/global-key tc/file-name-key] file-name)
        (assoc-in [tc/global-key tc/process-context-key]
-                 (imp/select-module-node-processor pc)))))
+                 (c/select-module-node-processor pc tc/module-key)))))
 
 
 (defmulti default-request (fn [t _] t))

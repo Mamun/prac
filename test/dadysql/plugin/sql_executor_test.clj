@@ -2,7 +2,7 @@
   (:use [clojure.test]
         [dady.fail]
         [dadysql.plugin.sql-executor])
-  (:require [dadysql.common :refer :all]
+  (:require [dadysql.constant :refer :all]
             [dady.common :as cc]))
 
 
