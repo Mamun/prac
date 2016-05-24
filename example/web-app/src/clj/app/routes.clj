@@ -6,13 +6,17 @@
             [ring.middleware.logger :refer [wrap-with-logger]]
             [ring.middleware.dadysql :as hs]
             [clojure.tools.logging :as log]
-            [dadysql.middleware :as m]
+    ;  [dadysql.middleware :as m]
             [dadysql.http-service :as h]
             [app.view :as v]
             [app.service :as api]
             [app.state :as s]))
 
-
+(defn select-header [request]
+  (select-keys request [:character-encoding :params :request-method
+                        :content-length :uri :query-params :query-string
+                        :context :remote-addr :path-info :server-name :session :server-port
+                        :form-params :scheme :headers]))
 
 (defroutes
   view-routes
@@ -28,6 +32,7 @@
 
 (defroutes
   api-routes
+  (GET "/postcode" request  (h/ok-response (select-header request)) )
   (GET "/deals" _ (h/http-response (api/load-deals) ) ))
 
 
@@ -36,7 +41,7 @@
   view-routes
   (context "/admin" _ admin-view-routes)
   (context "/api" _ (-> api-routes
-                        (m/warp-default)))
+                        (h/warp-default-middleware)))
   (route/resources "/")
   (route/not-found {:status 200
                     :body   "Not found From app "}))

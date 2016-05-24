@@ -1,63 +1,34 @@
 (ns dadysql.http-service
-  (:require [clojure.tools.logging :as log]
-            [dady.common :as c]
-            [dady.fail :as f]
-            [dady.walk :as w]
+  (:require [dady.fail :as f]
             [dadysql.util :as u]
             [dadysql.jdbc :as tj]
-            [clojure.tools.reader.edn :as edn]))
+            [dadysql.http-middleware :as m]
+            [dadysql.http-request :as req]
+            [dadysql.http-response :as res]))
 
 
-(defn http-response
+
+(defn http-response [v]
+  {:status  200
+   :headers {"Content-Type" "text/html; charset=utf-8"}
+   :body    v})
+
+
+(defn ok-response [v]
+  (-> (vector v nil)
+      (http-response)))
+
+
+(defn error-response [e]
+  (-> (vector nil e)
+      (http-response)))
+
+
+(defn as-response
   [m]
-  (let [w
-        (if (f/failed? m)
-          [nil (into {} m)]
-          [m nil])]
-    {:status  200
-     :headers {"Content-Type" "text/html; charset=utf-8"}
-     :body    w}))
-
-
-(defn filter-nil-value
-  [m]
-  (->> m
-       (filter (comp not nil? val))
-       (into {})))
-
-
-(defn as-keyword-value
-  [m]
-  (into {}
-        (for [[k v] m]
-          [(keyword k) (keyword v)])))
-
-
-
-(defn read-params-string
-  [params]
-  (->> params
-       (reduce (fn [acc [k v]]
-                 (let [v1 (edn/read-string v)]
-                   (if (symbol? v1)
-                     (assoc acc k v)
-                     (assoc acc k v1)))
-                 ) {})))
-
-
-(defn param-keywordize-keys
-  [req]
-  (if (= :string (:input req))
-    (assoc req :params (clojure.walk/keywordize-keys (:params req)))
-    req))
-
-
-(defn response-stringify
-  [req response]
-  (if (= :string (:output req))
-    (mapv (partial w/postwalk-replace-key-with w/keyword->str) response)
-    response))
-
+  (if (f/failed? m)
+    (error-response (into {} m))
+    (ok-response m)))
 
 
 (defn endpoint-type
@@ -70,78 +41,36 @@
     u/url-endpoint))
 
 
-(defmulti request-format (fn [t _] t))
+(defn- warp-pull-handler
+  [ds tms]
+  (fn [ring-request]
+    (let [type (endpoint-type ring-request)
+          req (req/as-request ring-request type)]
+      (as-response
+        (f/try->> req
+                  (tj/pull ds tms)
+                  (res/as-response type req))))))
 
 
-(defmethod request-format u/api-endpoint
-  [_ params]
-  (-> params
-      (update-in [u/dadysql-name] c/as-keyword-batch)
-      (filter-nil-value)))
+(defn- warp-push-handler
+  [ds tms]
+  (fn [ring-request]
+    (let [type (endpoint-type ring-request)
+          req (req/as-request ring-request type)]
+      (as-response
+        (f/try->> req
+                  (tj/push! ds tms))))))
 
 
+(def warp-default-middleware m/warp-default)
 
 
-(defmethod request-format u/url-endpoint
-  [_ params]
-  (let [r-params (dissoc params u/dadysql-name :rformat :pformat :gname)
-        q-name (c/as-keyword-batch (u/dadysql-name params))
-        other (-> params
-                  (select-keys [:gname :rformat :pformat])
-                  (as-keyword-value))]
-    (-> other
-        (assoc :name q-name)
-        (assoc :params r-params)
-        (filter-nil-value))))
+(defn pull [ds tms ring-request]
+  (let [handler (m/warp-default (warp-pull-handler ds tms))]
+    (handler ring-request)))
 
 
-
-(defmulti resposne-format (fn [t _] t))
-
-
-(defmethod resposne-format u/api-endpoint
-  [_ output]
-  output)
-
-
-(defmethod resposne-format u/url-endpoint
-  [_ output]
-  (->> output
-       (w/postwalk-replace-value-with u/as-str)
-       (w/postwalk-replace-key-with w/keyword->str)))
-
-
-(defn is-params-not-nil? [params]
-  (if params
-    params
-    (f/fail "No params is set in http request")))
-
-
-(defn pull-handler
-  [ds tms ring-request]
-  (let [type (endpoint-type ring-request)
-        req (f/try->> ring-request
-                      (:params)
-                      (is-params-not-nil?)
-                      (request-format type)
-                      (param-keywordize-keys))]
-    (http-response
-      (f/try->> req
-                (tj/pull ds tms)
-                (response-stringify req)
-                (resposne-format type)))))
-
-
-(defn push-handler
-  [ds tms ring-request]
-  (let [type (endpoint-type ring-request)]
-    (http-response
-      (f/try->> ring-request
-                (:params)
-                (is-params-not-nil?)
-                (request-format type)
-                (param-keywordize-keys)
-                (tj/push! ds tms)))))
-
-
+(defn push [ds tms ring-request]
+  (let [handler (m/warp-default (warp-push-handler ds tms))]
+    (handler ring-request)))
 

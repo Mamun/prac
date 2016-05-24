@@ -1,7 +1,8 @@
 (ns app.core
   (:use compojure.core)
   (:require [ring.util.response :as resp]
-            [dadysql.middleware :as m]
+            [dadysql.http-middleware :as m]
+            [dadysql.http-service :as ser]
             [ring.middleware.dadysql :as t]
             [ring.middleware.defaults :refer :all]
             [compojure.route :as route]
@@ -31,9 +32,9 @@
 
 (defn api-routes []
   (-> (routes
-        (GET "/" _ (m/ok-response {:a3 3}))
-        (POST "/hello" _ (m/ok-response {:a 7})))
-      (m/warp-default)))
+        (GET "/" _       (ser/ok-response {:a3 3}))
+        (POST "/hello" _ (ser/ok-response {:a 7})))
+      (ser/warp-default-middleware)))
 
 #_(defroutes api-routes
              (GET "/" [] (hs/ok-response {:result "Hello from api called "})))

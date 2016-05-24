@@ -2,7 +2,6 @@
   (:require [clojure.tools.logging :as log]
             [dady.fail :as f]
             [dadysql.constant :as c]
-            [dadysql.middleware :as u]
             [dadysql.http-service :as h]
             [dadysql.jdbc :as tj]))
 
@@ -27,8 +26,6 @@
 
 
 
-
-
 ;ds-atom tms-atom
 (defn warp-dadysql-handler
   "Warper that tries to do with dadysql. It should use next to the ring-handler. If path-in is matched with
@@ -48,24 +45,18 @@
     (let [request-path (or (:path-info req)
                            (:uri req))]
       ;(log/info "---request path " request-path)
-      (cond
-        (= pull-path request-path)
+      (condp = request-path
+        pull-path
         (let [ds (or (:ds req) @ds)
               tms (or (:tms req)
-                      (try! reload-tms tms ds))
-              thandler (-> (partial h/pull-handler ds tms)
-                          (u/warp-default :encoding encoding :log? log?))]
-          (thandler req))
-        (= push-path request-path)
+                      (try! reload-tms tms ds))]
+          (h/pull ds tms req))
+        push-path
         (let [ds (or (:ds req) @ds)
               tms (or (:tms req)
-                      (try! reload-tms tms ds))
-              thandler (-> (partial h/push-handler ds tms)
-                          (u/warp-default :encoding encoding :log? log?))]
-          (thandler req))
-        :else
+                      (try! reload-tms tms ds))]
+          (h/push ds tms req))
         (do
-          ;(log/info "default ----")
           (handler req))))))
 
 

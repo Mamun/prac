@@ -1,22 +1,10 @@
-(ns dadysql.middleware
+(ns dadysql.http-middleware
   (:require [clojure.tools.logging :as log]
             [ring.middleware.params :as p]
             [ring.middleware.multipart-params :as mp]
             [ring.middleware.keyword-params :as kp]
             [ring.middleware.format-params :as fp]
             [ring.middleware.format-response :as fr]))
-
-
-(defn ok-response [v]
-  {:status  200
-   :headers {"Content-Type" "text/html; charset=utf-8"}
-   :body    [v nil]})
-
-
-(defn error-response [e]
-  {:status  200
-   :headers {"Content-Type" "text/html; charset=utf-8"}
-   :body    [nil e]})
 
 
 (defn warp-log-request
