@@ -20,28 +20,29 @@
 
 (defroutes
   view-routes
-  (GET "/" _ (v/index) )
+  (GET "/" _ (v/index))
   (GET "/index" _ (v/index))
   (GET "/contact" _ (v/contact)))
 
 
 (defroutes
   admin-view-routes
-  (GET "/" _ (v/admin-index) ))
+  (GET "/" _ (v/admin-index)))
 
 
-(defroutes
-  api-routes
-  (GET "/postcode" request  (h/ok-response (select-header request)) )
-  (GET "/deals" _           (h/response (api/load-deals) ) ))
+(defn api-routes []
+  (-> (routes
+        (GET "/postcode" request (h/ok-response (select-header request)))
+        (GET "/deals" _ (h/response (api/load-deals))))
+      (h/warp-default)))
+
 
 
 (defroutes
   app-routes
   view-routes
   (context "/admin" _ admin-view-routes)
-  (context "/api" _ (-> api-routes
-                        (h/warp-default)))
+  (context "/api" _ (api-routes))
   (route/resources "/")
   (route/not-found {:status 200
                     :body   "Not found From app "}))
