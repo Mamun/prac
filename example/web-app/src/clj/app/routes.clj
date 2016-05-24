@@ -33,7 +33,7 @@
 (defroutes
   api-routes
   (GET "/postcode" request  (h/ok-response (select-header request)) )
-  (GET "/deals" _ (h/http-response (api/load-deals) ) ))
+  (GET "/deals" _           (h/response (api/load-deals) ) ))
 
 
 (defroutes
@@ -41,7 +41,7 @@
   view-routes
   (context "/admin" _ admin-view-routes)
   (context "/api" _ (-> api-routes
-                        (h/warp-default-middleware)))
+                        (h/warp-default)))
   (route/resources "/")
   (route/not-found {:status 200
                     :body   "Not found From app "}))
