@@ -33,8 +33,7 @@
 (defn as-response [type req res]
   (f/try->> res
             (response-stringify req)
-            (resposne-format type))
-  )
+            (resposne-format type)))
 
 
 

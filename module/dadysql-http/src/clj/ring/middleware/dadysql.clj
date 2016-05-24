@@ -49,13 +49,15 @@
         pull-path
         (let [ds (or (:ds req) @ds)
               tms (or (:tms req)
-                      (try! reload-tms tms ds))]
-          (h/pull ds tms req))
+                      (try! reload-tms tms ds))
+              handler (h/warp-default (partial h/pull ds tms))]
+          (handler req))
         push-path
         (let [ds (or (:ds req) @ds)
               tms (or (:tms req)
-                      (try! reload-tms tms ds))]
-          (h/push ds tms req))
+                      (try! reload-tms tms ds))
+              handler (h/warp-default (partial h/push ds tms))]
+          (handler req))
         (do
           (handler req))))))
 

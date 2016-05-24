@@ -1,7 +1,7 @@
 (ns app.core
   (:use compojure.core)
   (:require [ring.util.response :as resp]
-            [dadysql.http-middleware :as m]
+
             [dadysql.http-service :as ser]
             [ring.middleware.dadysql :as t]
             [ring.middleware.defaults :refer :all]
@@ -32,9 +32,11 @@
 
 (defn api-routes []
   (-> (routes
-        (GET "/" _       (ser/ok-response {:a3 3}))
+        (GET "/" _ (ser/ok-response {:a3 3}))
+        (GET "/1" _ (ser/ok-response {:a3 3}))
+        (GET "/2" req (ser/pull @ds-atom @tms-atom req))
         (POST "/hello" _ (ser/ok-response {:a 7})))
-      (ser/warp-default-middleware)))
+      (ser/warp-default)))
 
 #_(defroutes api-routes
              (GET "/" [] (hs/ok-response {:result "Hello from api called "})))
@@ -42,6 +44,7 @@
 
 (defroutes app-routes
            (GET "/" _ (resp/resource-response "index.html" {:root "public"}))
+
            (context "/api" _ (api-routes))
            (route/resources "/")
            (route/not-found {:status 200 :body "Not found"}))
