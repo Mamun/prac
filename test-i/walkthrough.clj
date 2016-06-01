@@ -3,6 +3,7 @@
             [dadysql.jdbc :as t]
             [dadysql.constant :refer :all]
             [test-data :as td]
+            [clojure.spec :as s]
             ))
 
 
@@ -12,6 +13,9 @@
 
 (comment
 
+
+  #_(s/valid? (s/or :name string?
+                  :id   integer?) :keyowrd)
 
   ;; Create database table and init data
   (do

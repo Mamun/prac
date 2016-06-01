@@ -5,8 +5,8 @@
             :url   "http://www.eclipse.org/legal/epl-v10.html"}
   ;:offline? true
 
-  :dependencies [[org.clojure/clojure "1.8.0"]
-                 ;    [org.clojure/core.async "0.1.346.0-17112a-alpha"]
+  :dependencies  [[org.clojure/clojure "1.9.0-alpha4"]
+                  ;    [org.clojure/core.async "0.1.346.0-17112a-alpha"]
                  [org.clojure/core.async "0.2.374"]
                  [org.clojure/tools.reader "0.9.2"]
                  [org.clojure/tools.logging "0.3.1"]
@@ -31,7 +31,7 @@
                                     [com.h2database/h2 "1.3.154"]
                                     [c3p0/c3p0 "0.9.1.2"]
                                     [ch.qos.logback/logback-classic "1.1.3"]]}
-             :1.8 {:dependencies [[org.clojure/clojure "1.8.0"]]}}
+             }
   )
 
 

@@ -112,7 +112,7 @@
                    param-key       [[:Next_transaction_id param-ref-key :transaction_id]]
                    }]
     (->> sch-value
-         (-compiler-validate app-proc)
+         (-spec-valid? app-proc)
          (-compiler-emit app-proc)
          ;(map-name-with-sql)
          (clojure.pprint/pprint))

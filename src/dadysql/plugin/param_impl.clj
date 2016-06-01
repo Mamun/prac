@@ -45,51 +45,51 @@
 
 (extend-protocol INodeCompiler
   ParamKey
-  (-schema [this]
-    (let [params-pred? (s/pred (partial cu/validate-schema-batch (:ccoll this))
-                               'k-schema-compiler-validate)]
+  (-spec [this]
+    (let [params-pred? (s/pred (partial cu/validate-spec-batch (:ccoll this))
+                               'k-spec-spec-valid?)]
       {(s/optional-key (-node-name this)) params-pred?}))
-  (-compiler-validate [this v]
-    (s/validate (-schema this) v))
+  (-spec-valid? [this v]
+    (s/validate (-spec this) v))
   (-compiler-emit [this w]
     (let [child-g (group-by #(-node-name %) (:ccoll this))]
       (mapv #(-compiler-emit (get-in child-g [(second %) 0]) %) w)))
   ParamRefGenKey
-  (-schema [_] [(s/one s/Keyword "Source Data Model")
+  (-spec [_] [(s/one s/Keyword "Source Data Model")
                 (s/one s/Keyword "Type of params ")
                 (s/one s/Keyword "Refer type ")])
-  (-compiler-validate [this v]
-    (s/validate (-schema this) v))
+  (-spec-valid? [this v]
+    (s/validate (-spec this) v))
   (-compiler-emit [_ w]
     (update-in w [0] cc/as-lower-case-keyword))
   ParamRefFunKey
-  (-schema [_] [(s/one s/Keyword "Source Data Model")
+  (-spec [_] [(s/one s/Keyword "Source Data Model")
                 (s/one s/Keyword "Type of params ")
                 (s/one (s/pred resolve 'resolve-clj) "Any value")
                 (s/one s/Keyword "Refer Keyword ")])
-  (-compiler-validate [this v]
-    (s/validate (-schema this) v))
+  (-spec-valid? [this v]
+    (s/validate (-spec this) v))
   (-compiler-emit [_ w]
     (-> w
         (assoc 2 (resolve (nth w 2)))
         (update-in [0] cc/as-lower-case-keyword)
         (update-in [3] cc/as-lower-case-keyword)))
   ParamRefKey
-  (-schema [_] [(s/one s/Keyword "Source Data Model")
+  (-spec [_] [(s/one s/Keyword "Source Data Model")
                 (s/one s/Keyword "Type of Params ")
                 (s/one s/Keyword "Refer keyword")])
-  (-compiler-validate [this v]
-    (s/validate (-schema this) v))
+  (-spec-valid? [this v]
+    (s/validate (-spec this) v))
   (-compiler-emit [_ w]
     (-> w
         (update-in [0] cc/as-lower-case-keyword)
         (update-in [2] cc/as-lower-case-keyword)))
   ParamRefConKey
-  (-schema [_] [(s/one s/Keyword "Source Data Model")
+  (-spec [_] [(s/one s/Keyword "Source Data Model")
                 (s/one s/Keyword "Type of Param ")
                 (s/one s/Any "Any value")])
-  (-compiler-validate [this v]
-    (s/validate (-schema this) v))
+  (-spec-valid? [this v]
+    (s/validate (-spec this) v))
   (-compiler-emit [_ w]
     (update-in w [0] cc/as-lower-case-keyword)))
 

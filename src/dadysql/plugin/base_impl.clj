@@ -51,7 +51,7 @@
               ) true v)))
 
 
-(defn default-global-schema
+(defn default-global-spec
   []
   {(s/required-key name-key)         s/Keyword
    (s/optional-key tx-prop)          (s/pred check-tx-proc? 'check-tx-proc)
@@ -61,7 +61,7 @@
    (s/optional-key ds-key)           s/Any})
 
 
-(defn validate-schema-batch
+(defn validate-spec-batch
   [node-coll v-coll]
   (let [child-g (group-by-node-name node-coll)]
     (->> v-coll
@@ -73,13 +73,13 @@
                      )) false))))
 
 
-(defn merge-compiler-schema
-  [root-schema node-coll]
+(defn merge-compiler-spec
+  [root-spec node-coll]
   (reduce (fn [acc v]
             (if (satisfies? INodeCompiler v)
-              (merge acc (compiler-schema v))
+              (merge acc (compiler-spec v))
               acc)
-            ) root-schema node-coll))
+            ) root-spec node-coll))
 
 
 (defn compiler-emit-batch
@@ -95,13 +95,13 @@
 
 (extend-protocol INodeCompiler
   ExtendKey
-  (-schema [this]
+  (-spec [this]
     (let [r {(s/optional-key model-key) s/Keyword}]
       {(s/optional-key extend-meta-key)
-       {s/Keyword (merge-compiler-schema r (:coll this))}}))
-  (-compiler-validate [this d-map]
+       {s/Keyword (merge-compiler-spec r (:coll this))}}))
+  (-spec-valid? [this d-map]
 
-    (s/validate (-schema this) d-map))
+    (s/validate (-spec this) d-map))
   (-compiler-emit [this v-map]
     (->> (keys v-map)
          (reduce (fn [acc k]
@@ -109,18 +109,18 @@
                    ) {})))
   ;;Global key
   GlobalKey
-  (-schema [this]
-    (merge-compiler-schema (default-global-schema) (:coll this)))
-  (-compiler-validate [this d-map]
-    (s/validate (-schema this) d-map))
+  (-spec [this]
+    (merge-compiler-spec (default-global-spec) (:coll this)))
+  (-spec-valid? [this d-map]
+    (s/validate (-spec this) d-map))
   (-compiler-emit [this v-map]
     (compiler-emit-batch (:coll this) v-map))
   ;; Module key
   Modulekey
-  (-schema [this]
-    (merge-compiler-schema {} (:coll this)))
-  (-compiler-validate [this v]
-    (s/validate (-schema this) v))
+  (-spec [this]
+    (merge-compiler-spec {} (:coll this)))
+  (-spec-valid? [this v]
+    (s/validate (-spec this) v))
   (-compiler-emit [this v]
     (compiler-emit-batch (:coll this) v)))
 

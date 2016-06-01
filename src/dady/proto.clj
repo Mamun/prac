@@ -20,8 +20,8 @@
 
 (defprotocol INodeCompiler
   (-compiler-emit [this w] "Change value or ")
-  (-schema [this] "Defined schema here")
-  (-compiler-validate [this v] "Validate schema here"))
+  (-spec [this] "Defined schema here")
+  (-spec-valid? [this v] "Validate schema here"))
 
 
 (defprotocol INodeProcessor
@@ -60,14 +60,14 @@
     (f/fail "Node type is not found")))
 
 
-(defn compiler-schema
+(defn compiler-spec
   [node]
-  (-schema node))
+  (-spec node))
 
 
 (defn compiler-validate
   [node v]
-  (-compiler-validate node v))
+  (-spec-valid? node v))
 
 
 (defn compiler-emit

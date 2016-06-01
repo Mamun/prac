@@ -43,7 +43,7 @@
         t-iden (count name-coll)]
     (when-not (= t-sqls t-iden)
       (if (> t-sqls t-iden)
-        (throw (Exception. (format "Identities not found for \" %s \" " (str sqls))))
+        (throw (Exception. (format "Name not found for \" %s \" " (str sqls))))
         (throw (Exception. (format "Sql statement not found for \" %s \" " (str name-coll))))))
     m))
 

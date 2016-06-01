@@ -17,7 +17,7 @@
   (-corder [this] (:corder this)))
 
 
-(defn get-join-schema []
+(defn get-join-spec []
   (let [JoinSingleNTNSchema [(s/one s/Keyword "Join Model ")
                              (s/one s/Keyword "Join Model Id1")
                              (s/one s/Keyword "Join Model Id2")]]
@@ -76,10 +76,10 @@
 
 (extend-protocol INodeCompiler
   JoinKey
-  (-schema [this]
-    {(s/optional-key (-node-name this)) (get-join-schema)})
-  (-compiler-validate [this v]
-    (s/validate (-schema this) v))
+  (-spec [this]
+    {(s/optional-key (-node-name this)) (get-join-spec)})
+  (-spec-valid? [this v]
+    (s/validate (-spec this) v))
   (-compiler-emit [_ j-coll]
     (->> j-coll
          (join-emission-batch)

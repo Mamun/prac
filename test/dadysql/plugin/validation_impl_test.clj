@@ -13,7 +13,7 @@
                        :ccoll  (new-child-coll)}))
 
 
-#_(deftest validation-key-impl-test
+(deftest validation-key-impl-test
     (testing "test validation-key-impl "
       (let [coll {validation-key [[:id validation-contain-key Long "error"]
                                   [:id validation-type-key [] "error"]]

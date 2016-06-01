@@ -36,45 +36,45 @@
 
 (extend-protocol INodeCompiler
   ValidationKey
-  (-schema [this]
-    (let [params-pred? (s/pred (partial cu/validate-schema-batch (:ccoll this))
-                               'k-schema-compiler-validate)]
+  (-spec [this]
+    (let [params-pred? (s/pred (partial cu/validate-spec-batch (:ccoll this))
+                               'k-spec-spec-valid?)]
       {(s/optional-key (-node-name this)) params-pred?}))
-  (-compiler-validate [this v]
-    (s/validate (-schema this) v))
+  (-spec-valid? [this v]
+    (s/validate (-spec this) v))
   (-compiler-emit [this w]
     (let [child-g (group-by #(-node-name %) (:ccoll this))]
       (mapv #(-compiler-emit (get-in child-g [(second %) 0]) %) w)))
   ValidationTypeKey
-  (-schema [_] [(s/one s/Keyword "Source Data Model")
+  (-spec [_] [(s/one s/Keyword "Source Data Model")
                 (s/one s/Keyword "Type of validation ")
                 (s/one resolve-type? "Clojure or Java type")
                 (s/one s/Str "fail message")])
-  (-compiler-validate [this v]
-    (s/validate (-schema this) v))
+  (-spec-valid? [this v]
+    (s/validate (-spec this) v))
   (-compiler-emit [_ ks]
     (-> ks
         (assoc 2 (resolve-type (nth ks 2)))
         (update-in [0] cc/as-lower-case-keyword)))
   ValidationContaionKey
-  (-schema [_] [(s/one s/Keyword "Source Data Model")
+  (-spec [_] [(s/one s/Keyword "Source Data Model")
                 (s/one s/Keyword "Type of validation ")
                 (s/one resolve-type? "Clojure or Java type")
                 (s/one s/Str "fail message")])
-  (-compiler-validate [this v]
-    (s/validate (-schema this) v))
+  (-spec-valid? [this v]
+    (s/validate (-spec this) v))
   (-compiler-emit [_ ks]
     (-> ks
         (assoc 2 (resolve-type (nth ks 2)))
         (update-in [0] cc/as-lower-case-keyword)))
   ValidationRangeKey
-  (-schema [_] [(s/one s/Keyword "Source Data Model")
+  (-spec [_] [(s/one s/Keyword "Source Data Model")
                 (s/one s/Keyword "Type of validation ")
                 (s/one s/Int "Min range value")
                 (s/one s/Int "Max range value")
                 (s/one s/Str "fail message")])
-  (-compiler-validate [this v]
-    (s/validate (-schema this) v))
+  (-spec-valid? [this v]
+    (s/validate (-spec this) v))
   (-compiler-emit [_ ks]
     (-> ks
         (update-in [0] cc/as-lower-case-keyword))))

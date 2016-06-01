@@ -185,10 +185,10 @@
 
 (extend-protocol INodeCompiler
   SqlKey
-  (-schema [this]
+  (-spec [this]
     {(s/required-key (:cname this))
      (s/both s/Str (s/pred not-blank? 'not-blank?))})
-  (-compiler-validate [this v] (s/validate (-schema this) v))
+  (-spec-valid? [this v] (s/validate (-spec this) v))
   (-compiler-emit [_ w]
     (sql-compiler-emit w)))
 
