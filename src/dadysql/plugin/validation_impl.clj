@@ -4,6 +4,7 @@
             [dady.common :as cc]
             [dady.fail :as f]
             [dadysql.plugin.base-impl :as cu]
+            [clojure.spec :as sp]
             [schema.core :as s]))
 
 
@@ -34,47 +35,59 @@
 (def resolve-type? (s/pred resolve-type 'resolve-type))
 
 
+(def validation-type-key-schema [(s/one s/Keyword "Source Data Model")
+                                 (s/one s/Keyword "Type of validation ")
+                                 (s/one resolve-type? "Clojure or Java type")
+                                 (s/one s/Str "fail message")])
+
+
+(def validation-contain-key-schema [(s/one s/Keyword "Source Data Model")
+                                    (s/one s/Keyword "Type of validation ")
+                                    (s/one resolve-type? "Clojure or Java type")
+                                    (s/one s/Str "fail message")])
+
+(def validation-range-key-schema [(s/one s/Keyword "Source Data Model")
+                                  (s/one s/Keyword "Type of validation ")
+                                  (s/one s/Int "Min range value")
+                                  (s/one s/Int "Max range value")
+                                  (s/one s/Str "fail message")])
+
+
+(defn valid? [spec v]
+  (s/validate spec v))
+
+
 (extend-protocol INodeCompiler
   ValidationKey
   (-spec [this]
     (let [params-pred? (s/pred (partial cu/validate-spec-batch (:ccoll this))
                                'k-spec-spec-valid?)]
       {(s/optional-key (-node-name this)) params-pred?}))
-  (-spec-valid? [this v]
-    (s/validate (-spec this) v))
+  (-spec-valid? [this v] (valid? (-spec this) v)
+    #_(s/validate (-spec this) v))
   (-compiler-emit [this w]
     (let [child-g (group-by #(-node-name %) (:ccoll this))]
       (mapv #(-compiler-emit (get-in child-g [(second %) 0]) %) w)))
   ValidationTypeKey
-  (-spec [_] [(s/one s/Keyword "Source Data Model")
-                (s/one s/Keyword "Type of validation ")
-                (s/one resolve-type? "Clojure or Java type")
-                (s/one s/Str "fail message")])
-  (-spec-valid? [this v]
-    (s/validate (-spec this) v))
+  (-spec [_] nil)
+  (-spec-valid? [this v] (valid? validation-type-key-schema v)
+    #_(s/validate validation-type-key-schema v))
   (-compiler-emit [_ ks]
     (-> ks
         (assoc 2 (resolve-type (nth ks 2)))
         (update-in [0] cc/as-lower-case-keyword)))
   ValidationContaionKey
-  (-spec [_] [(s/one s/Keyword "Source Data Model")
-                (s/one s/Keyword "Type of validation ")
-                (s/one resolve-type? "Clojure or Java type")
-                (s/one s/Str "fail message")])
-  (-spec-valid? [this v]
-    (s/validate (-spec this) v))
+  (-spec [_] nil)
+  (-spec-valid? [this v] (valid? validation-contain-key-schema v)
+    #_(s/validate validation-contain-key-schema v))
   (-compiler-emit [_ ks]
     (-> ks
         (assoc 2 (resolve-type (nth ks 2)))
         (update-in [0] cc/as-lower-case-keyword)))
   ValidationRangeKey
-  (-spec [_] [(s/one s/Keyword "Source Data Model")
-                (s/one s/Keyword "Type of validation ")
-                (s/one s/Int "Min range value")
-                (s/one s/Int "Max range value")
-                (s/one s/Str "fail message")])
-  (-spec-valid? [this v]
-    (s/validate (-spec this) v))
+  (-spec [_] nil)
+  (-spec-valid? [this v] (valid? validation-range-key-schema v)
+    #_(s/validate validation-range-key-schema v))
   (-compiler-emit [_ ks]
     (-> ks
         (update-in [0] cc/as-lower-case-keyword))))
@@ -140,8 +153,8 @@
       (if (= v-type (type p-value))
         result
         (f/fail {:msg   e-message
-                  :value p-value
-                  :type  (str (type p-value))}))))
+                 :value p-value
+                 :type  (str (type p-value))}))))
   ValidationContaionKey
   (-lorder [this] (:corder this))
   (-process-type [_] :input)
@@ -161,7 +174,7 @@
 (comment
 
   (let [w {validation-key [[:id validation-type-key Long "error"]]
-           input-key      [{:id 3}]
+           input-key      [{:id 2}]
            sql-key        ["select * from tab " :id]}
         child (new-child-coll)]
     ;(println (get-all-vali-key w))
@@ -169,7 +182,7 @@
       (map->ValidationKey {:cname  validation-key
                            :corder 1
                            :ccoll  child})
-      (-process nil w))
+      (-process w))
     )
 
   )
