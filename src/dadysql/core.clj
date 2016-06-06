@@ -6,8 +6,8 @@
     [dady.fail :as f]
     [dadysql.constant :refer :all]
     [dadysql.core-util :as cu]
-    [dadysql.plugin.join-core :as j]
-    [dadysql.plugin.param-impl :as p]
+    [dadysql.plugin.join.core :as j]
+    [dadysql.plugin.params.core :as p]
     [dady.proto :as c]))
 
 

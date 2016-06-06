@@ -1,4 +1,4 @@
-(ns dadysql.plugin.validation-impl
+(ns dadysql.plugin.validation.core
   (:use [dady.proto])
   (:require [dadysql.constant :refer :all]
             [dady.common :as cc]

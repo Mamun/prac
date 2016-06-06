@@ -1,4 +1,4 @@
-(ns dadysql.plugin.sql-bind-impl
+(ns dadysql.plugin.sql.bind-impl
   (:use [dady.proto])
   (:require [dadysql.constant :refer :all]
             [dady.fail :as f]

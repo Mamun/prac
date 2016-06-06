@@ -1,7 +1,7 @@
-(ns dadysql.plugin.validation-impl-test
+(ns dadysql.plugin.validation.core-test
   (:use [clojure.test]
         [dady.proto])
-  (:require [dadysql.plugin.validation-impl :refer :all]
+  (:require [dadysql.plugin.validation.core :refer :all]
             [dady.fail :refer :all]
             [dadysql.constant :refer :all]
             [schema.core :as s]))

@@ -1,7 +1,7 @@
-(ns dadysql.plugin.join-impl-test
+(ns dadysql.plugin.join.join-impl-test
   (:use [clojure.test])
-  (:require [dadysql.plugin.join-core :refer :all]
-            [dadysql.plugin.join-impl :refer :all]
+  (:require [dadysql.plugin.join.core :refer :all]
+            [dadysql.plugin.join.join-impl :refer :all]
             ))
 
 

@@ -1,4 +1,4 @@
-(ns dadysql.plugin.param-impl
+(ns dadysql.plugin.params.core
   (:use [dady.proto])
   (:require [dadysql.constant :refer :all]
             [dady.common :as cc]

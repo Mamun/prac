@@ -1,4 +1,4 @@
-(ns dadysql.plugin.sql-executor
+(ns dadysql.plugin.sql.sql-executor
   (:require [clojure.set]
             [clojure.core.async :as async :refer [<! >! <!! chan alt! go go-loop onto-chan sliding-buffer]]
             [clojure.java.jdbc :as jdbc]

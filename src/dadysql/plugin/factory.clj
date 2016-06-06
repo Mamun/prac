@@ -4,10 +4,10 @@
     [dady.proto :as np]
     [dadysql.plugin.base-impl :as b]
     [dadysql.plugin.common-impl :as c]
-    [dadysql.plugin.param-impl :as p]
-    [dadysql.plugin.validation-impl :as v]
-    [dadysql.plugin.sql-bind-impl :as sql]
-    [dadysql.plugin.join-impl :as join]))
+    [dadysql.plugin.params.core :as p]
+    [dadysql.plugin.validation.core :as v]
+    [dadysql.plugin.sql.bind-impl :as sql]
+    [dadysql.plugin.join.join-impl :as join]))
 
 
 (defn new-leaf-node-coll

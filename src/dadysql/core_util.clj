@@ -3,7 +3,7 @@
             [dady.proto :refer :all]
             [dady.fail :as f]
             [dady.common :as cc]
-            [dadysql.plugin.join-impl :as j]))
+            [dadysql.plugin.join.join-impl :as j]))
 
 
 (defn validate-name!

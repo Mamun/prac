@@ -3,7 +3,7 @@
         [dady.proto])
   (:require [dadysql.plugin.base-impl :as bi]
             [dadysql.plugin.factory :as c]
-            [dadysql.plugin.param-impl :as p]
+            [dadysql.plugin.params.core :as p]
             [dadysql.constant :refer :all]
             [dady.common :refer :all]))
 

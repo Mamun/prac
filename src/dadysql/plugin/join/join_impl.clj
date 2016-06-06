@@ -1,4 +1,4 @@
-(ns dadysql.plugin.join-impl
+(ns dadysql.plugin.join.join-impl
   (:use [dady.proto])
   (:require [dadysql.constant :refer :all]
             [dady.common :as cc]
