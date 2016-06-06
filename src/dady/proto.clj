@@ -65,7 +65,7 @@
   (-spec node))
 
 
-(defn compiler-validate
+(defn spec-valid?
   [node v]
   (-spec-valid? node v))
 

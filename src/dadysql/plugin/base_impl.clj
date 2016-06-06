@@ -68,7 +68,7 @@
          (reduce (fn [acc k]
                    ;;todo should not be specific
                    (if-let [child-i ((second k) child-g)]
-                     (compiler-validate child-i k)
+                     (spec-valid? child-i k)
                      acc
                      )) false))))
 

@@ -53,7 +53,7 @@
     (let [w (new-child-keys)
           cw (get-node-from-path w [param-ref-con-key])]
       (is (not-empty
-            (compiler-validate cw [:id param-ref-con-key 5])))))
+            (spec-valid? cw [:id param-ref-con-key 5])))))
   (testing "test param-ref-con "
     (let [w (new-child-keys)
           cw (get-node-from-path w [param-ref-con-key])]

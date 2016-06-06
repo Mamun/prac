@@ -53,7 +53,7 @@
       (is (= expected-result
              actual-result)))))
 
-;(validation-compile-test)
+(validation-compile-test)
 
 
 

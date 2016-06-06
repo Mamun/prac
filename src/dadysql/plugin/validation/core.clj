@@ -3,7 +3,6 @@
   (:require [dadysql.constant :refer :all]
             [dady.common :as cc]
             [dady.fail :as f]
-            [dadysql.plugin.base-impl :as cu]
             [clojure.spec :as sp]
             [schema.core :as s]))
 
@@ -32,62 +31,90 @@
       t)))
 
 
-(def resolve-type? (s/pred resolve-type 'resolve-type))
+;(def resolve-type? (s/pred resolve-type 'resolve-type))
 
 
-(def validation-type-key-schema [(s/one s/Keyword "Source Data Model")
-                                 (s/one s/Keyword "Type of validation ")
-                                 (s/one resolve-type? "Clojure or Java type")
-                                 (s/one s/Str "fail message")])
 
 
-(def validation-contain-key-schema [(s/one s/Keyword "Source Data Model")
-                                    (s/one s/Keyword "Type of validation ")
-                                    (s/one resolve-type? "Clojure or Java type")
-                                    (s/one s/Str "fail message")])
+(comment
 
-(def validation-range-key-schema [(s/one s/Keyword "Source Data Model")
-                                  (s/one s/Keyword "Type of validation ")
-                                  (s/one s/Int "Min range value")
-                                  (s/one s/Int "Max range value")
-                                  (s/one s/Str "fail message")])
+
+
+
+  (sp/valid? (sp/tuple keyword? keyword? resolve-type string?) [:a :b 'Integer "sdfsd"])
+  (sp/explain (sp/tuple keyword? keyword? resolve-type string?) [:a :b 'Integer2 "sdfsd"])
+
+  #_(s/validate validation-type-key-schema [:a :b 'Integer "sdfsd"])
+
+
+  (s/validate validation-range-key-schema [:a :b 1 2 "kjj"])
+  (s/validate validation-range-key-schema [:a 2 1 2 "kjj"])
+
+  (sp/valid? (sp/tuple keyword? keyword? integer? integer? string?)
+             [:a :b 1 2 "sfsdf"])
+
+  )
+
 
 
 (defn valid? [spec v]
   (s/validate spec v))
 
 
+(defn do-valid? [spec v]
+  (if (sp/valid? spec v)
+    v
+    (throw (Exception. (sp/explain-str spec v)))))
+
+
+(defn validate-spec-batch
+  [node-coll v-coll]
+  (let [child-g (group-by-node-name node-coll)]
+    (->> v-coll
+         (reduce (fn [acc k]
+                   (if-let [child-i ((second k) child-g)]
+                     (spec-valid? child-i k)
+                     acc
+                     )) false))))
+
+
+;(sp/def ::barch )
+
+
 (extend-protocol INodeCompiler
   ValidationKey
   (-spec [this]
-    (let [params-pred? (s/pred (partial cu/validate-spec-batch (:ccoll this))
+    (let [params-pred? (s/pred (partial validate-spec-batch (:ccoll this))
                                'k-spec-spec-valid?)]
       {(s/optional-key (-node-name this)) params-pred?}))
-  (-spec-valid? [this v] (valid? (-spec this) v)
-    #_(s/validate (-spec this) v))
+  (-spec-valid? [this v]
+    (valid? (-spec this) v))
   (-compiler-emit [this w]
     (let [child-g (group-by #(-node-name %) (:ccoll this))]
       (mapv #(-compiler-emit (get-in child-g [(second %) 0]) %) w)))
   ValidationTypeKey
   (-spec [_] nil)
-  (-spec-valid? [this v] (valid? validation-type-key-schema v)
-    #_(s/validate validation-type-key-schema v))
+  (-spec-valid? [this v]
+    (-> (sp/tuple keyword? keyword? resolve-type string?)
+        (do-valid? v)))
   (-compiler-emit [_ ks]
     (-> ks
         (assoc 2 (resolve-type (nth ks 2)))
         (update-in [0] cc/as-lower-case-keyword)))
   ValidationContaionKey
   (-spec [_] nil)
-  (-spec-valid? [this v] (valid? validation-contain-key-schema v)
-    #_(s/validate validation-contain-key-schema v))
+  (-spec-valid? [this v]
+    (-> (sp/tuple keyword? keyword? resolve-type string?)
+        (do-valid? v)))
   (-compiler-emit [_ ks]
     (-> ks
         (assoc 2 (resolve-type (nth ks 2)))
         (update-in [0] cc/as-lower-case-keyword)))
   ValidationRangeKey
   (-spec [_] nil)
-  (-spec-valid? [this v] (valid? validation-range-key-schema v)
-    #_(s/validate validation-range-key-schema v))
+  (-spec-valid? [this v]
+    (-> (sp/tuple keyword? keyword? integer? integer? string?)
+        (do-valid? v)))
   (-compiler-emit [_ ks]
     (-> ks
         (update-in [0] cc/as-lower-case-keyword))))
@@ -186,3 +213,25 @@
     )
 
   )
+
+
+
+#_(def validation-type-key-schema [(s/one s/Keyword "Source Data Model")
+                                   (s/one s/Keyword "Type of validation ")
+                                   (s/one resolve-type? "Clojure or Java type")
+                                   (s/one s/Str "fail message")])
+
+
+
+
+
+#_(def validation-contain-key-schema [(s/one s/Keyword "Source Data Model")
+                                      (s/one s/Keyword "Type of validation ")
+                                      (s/one resolve-type? "Clojure or Java type")
+                                      (s/one s/Str "fail message")])
+
+#_(def validation-range-key-schema [(s/one s/Keyword "Source Data Model")
+                                    (s/one s/Keyword "Type of validation ")
+                                    (s/one s/Int "Min range value")
+                                    (s/one s/Int "Max range value")
+                                    (s/one s/Str "fail message")])

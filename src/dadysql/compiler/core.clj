@@ -161,7 +161,7 @@
 
 (defn compile-one
   [process-context f-config m]
-  (p/compiler-validate process-context m)
+  (p/spec-valid? process-context m)
   (let [m (p/compiler-emit process-context m)
         f-config (dissoc f-config doc-key :tx-prop file-reload-key reserve-name-key name-key)
         m1 (-> m
@@ -185,7 +185,7 @@
   (if (nil? config)
     (default-config)
     (->> config
-         (p/compiler-validate gpc)
+         (p/spec-valid? gpc)
          (p/compiler-emit gpc)
          (merge (default-config))
          (assoc-join-with-recursive-meta-key))))
