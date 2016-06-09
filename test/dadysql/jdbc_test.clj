@@ -41,18 +41,18 @@
           dml-select-key (get-in w [:get-dept-by-id dml-key])
           3000 (get-in w [:get-dept-by-id timeout-key])
           ["select * from department where id = :id " :id] (get-in w [:get-dept-by-id sql-key])
-          [[:id :type java.lang.Long "Id will be Long "]] (get-in w [:get-dept-by-id validation-key])
+          [[:id :type #'clojure.core/long? "Id will be Long "]] (get-in w [:get-dept-by-id validation-key])
           [[:department :id :1-n :employee :dept_id]] (get-in w [:get-dept-by-id join-key])
 
-          [[:id :type clojure.lang.PersistentVector "Id will be sequence"]
-           [:id :contain java.lang.Long "Id contain will be Long "]]
+          [[:id :type #'clojure.core/vector? "Id will be sequence"]
+           [:id :contain #'clojure.core/long? "Id contain will be Long "]]
           (get-in w [:get-dept-by-ids :validation]))
 
         (are [expected actual]
           (= expected actual)
 
-          [[:id :type clojure.lang.PersistentVector "Id will be sequence"]
-           [:id :contain java.lang.Long "Id contain will be Long "]] (get-in w [:delete-dept :validation])
+          [[:id :type #'clojure.core/vector? "Id will be sequence"]
+           [:id :contain #'clojure.core/long? "Id contain will be Long "]] (get-in w [:delete-dept :validation])
 
           )
 
@@ -82,4 +82,4 @@
 
 
 
-
+(run-tests)

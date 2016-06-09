@@ -24,7 +24,7 @@
 
 
 
-(defn resolve-type [w]
+#_(defn resolve-type [w]
   (let [t (type w)]
     (if (= clojure.lang.Symbol t)
       (resolve w)
@@ -36,24 +36,14 @@
 
 
 
-(comment
 
+(defn get-child-spec [coll-node]
+  (reduce (fn [acc node]
+            (->> acc
+                 (cons (spec node))
+                 (cons (node-name node)))
+            ) (list) coll-node))
 
-
-
-  (sp/valid? (sp/tuple keyword? keyword? resolve-type string?) [:a :b 'Integer "sdfsd"])
-  (sp/explain (sp/tuple keyword? keyword? resolve-type string?) [:a :b 'Integer2 "sdfsd"])
-
-  #_(s/validate validation-type-key-schema [:a :b 'Integer "sdfsd"])
-
-
-  (s/validate validation-range-key-schema [:a :b 1 2 "kjj"])
-  (s/validate validation-range-key-schema [:a 2 1 2 "kjj"])
-
-  (sp/valid? (sp/tuple keyword? keyword? integer? integer? string?)
-             [:a :b 1 2 "sfsdf"])
-
-  )
 
 
 
@@ -62,23 +52,25 @@
 
 
 (defn do-valid? [spec v]
-  (if (sp/valid? spec v)
+  (if (clojure.spec/valid? spec v)
     v
-    (throw (Exception. (sp/explain-str spec v)))))
+    (throw (Exception. (clojure.spec/explain-str spec v)))))
 
 
 (defn validate-spec-batch
   [node-coll v-coll]
-  (let [child-g (group-by-node-name node-coll)]
-    (->> v-coll
-         (reduce (fn [acc k]
-                   (if-let [child-i ((second k) child-g)]
-                     (spec-valid? child-i k)
-                     acc
-                     )) false))))
+  (let [sp (->> (get-child-spec node-coll)
+                (cons 'clojure.spec/alt)
+                (list)
+                (cons 'clojure.spec/*))]
+    (if (clojure.spec/valid? (eval sp) v-coll)
+      true
+      (do
+        (clojure.pprint/pprint (clojure.spec/explain-data (eval sp) v-coll))
+        (throw (Exception. (clojure.spec/explain-data (eval sp) v-coll)))))))
 
 
-;(sp/def ::barch )
+;(clojure.spec/def ::barch )
 
 
 (extend-protocol INodeCompiler
@@ -93,28 +85,22 @@
     (let [child-g (group-by #(-node-name %) (:ccoll this))]
       (mapv #(-compiler-emit (get-in child-g [(second %) 0]) %) w)))
   ValidationTypeKey
-  (-spec [_] nil)
-  (-spec-valid? [this v]
-    (-> (sp/tuple keyword? keyword? resolve-type string?)
-        (do-valid? v)))
+  (-spec [_] '(clojure.spec/tuple keyword? keyword? resolve string?))
+  (-spec-valid? [this v] (do-valid? (-spec this) v))
   (-compiler-emit [_ ks]
     (-> ks
-        (assoc 2 (resolve-type (nth ks 2)))
+        (assoc 2 (resolve (nth ks 2)))
         (update-in [0] cc/as-lower-case-keyword)))
   ValidationContaionKey
-  (-spec [_] nil)
-  (-spec-valid? [this v]
-    (-> (sp/tuple keyword? keyword? resolve-type string?)
-        (do-valid? v)))
+  (-spec [_] '(clojure.spec/tuple keyword? keyword? resolve string?))
+  (-spec-valid? [this v] (do-valid? (-spec this) v))
   (-compiler-emit [_ ks]
     (-> ks
-        (assoc 2 (resolve-type (nth ks 2)))
+        (assoc 2 (resolve (nth ks 2)))
         (update-in [0] cc/as-lower-case-keyword)))
   ValidationRangeKey
-  (-spec [_] nil)
-  (-spec-valid? [this v]
-    (-> (sp/tuple keyword? keyword? integer? integer? string?)
-        (do-valid? v)))
+  (-spec [_] '(clojure.spec/tuple keyword? keyword? integer? integer? string?))
+  (-spec-valid? [this v] (do-valid? (-spec this) v))
   (-compiler-emit [_ ks]
     (-> ks
         (update-in [0] cc/as-lower-case-keyword))))
@@ -177,7 +163,7 @@
          (validation-type-key)))
   (-process [_ result]
     (let [[p-value _ v-type e-message] result]
-      (if (= v-type (type p-value))
+      (if (sp/valid? v-type p-value)
         result
         (f/fail {:msg   e-message
                  :value p-value
@@ -190,7 +176,7 @@
          (validation-contain-key)))
   (-process [_ result]
     (let [[p-value _ v-type e-message] result
-          r (mapv #(= v-type (type %)) p-value)
+          r (mapv #(sp/valid? v-type  %) p-value)
           r (every? true? r)]
       (if r
         result
@@ -205,15 +191,30 @@
            sql-key        ["select * from tab " :id]}
         child (new-child-coll)]
     ;(println (get-all-vali-key w))
-    (->
-      (map->ValidationKey {:cname  validation-key
-                           :corder 1
-                           :ccoll  child})
-      (-process w))
+    (get-child-spec child)
+    #_(->
+        (map->ValidationKey {:cname  validation-key
+                             :corder 1
+                             :ccoll  child})
+        (-process w))
     )
 
   )
 
+
+
+(comment
+
+  (spec (ValidationRangeKey. validation-range-key 2))
+
+  (alt-map {:hello (spec (ValidationRangeKey. validation-range-key 2))
+            :hell2 (spec (ValidationRangeKey. validation-range-key 2))})
+
+
+  (get-child-spec (new-child-coll))
+  (apply concat (seq))
+
+  )
 
 
 #_(def validation-type-key-schema [(s/one s/Keyword "Source Data Model")
@@ -235,3 +236,5 @@
                                     (s/one s/Int "Min range value")
                                     (s/one s/Int "Max range value")
                                     (s/one s/Str "fail message")])
+
+

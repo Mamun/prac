@@ -3,8 +3,7 @@
         [dady.proto])
   (:require [dadysql.plugin.validation.core :refer :all]
             [dady.fail :refer :all]
-            [dadysql.constant :refer :all]
-            [schema.core :as s]))
+            [dadysql.constant :refer :all]))
 
 
 (defn get-proc []
@@ -12,25 +11,36 @@
                        :corder 1
                        :ccoll  (new-child-coll)}))
 
+(deftest validation-key-spec-test
+  (testing "test validation key spec "
+    (let [coll {validation-key [[:id validation-contain-key 'long? "error"]
+                                [:id validation-type-key    'sequential? "error"]]}
+          proc (get-proc)
+          result (spec-valid? proc coll)]
+      (is (= coll result)))))
+
+
+;(validation-key-spec-test)
+
 
 (deftest validation-key-impl-test
   (testing "test validation-key-impl "
-    (let [coll {validation-key [[:id validation-contain-key Long "error"]
-                                [:id validation-type-key [] "error"]]
+    (let [coll {validation-key [[:id validation-contain-key long? "error"]
+                                [:id validation-type-key vector? "error"]]
                 input-key      [{:id 3}]
                 sql-key        ["select * from tab " :id]}
           actul-result (-process (get-proc) coll)]
       (is (failed? actul-result))))
   (testing "test validation-key-process "
-    (let [coll {validation-key [[:id validation-contain-key Long "error"]
-                                [:id validation-type-key [] "error"]]
+    (let [coll {validation-key [[:id validation-contain-key long? "error"]
+                                [:id validation-type-key vector? "error"]]
                 input-key      {:id 3}
                 sql-key        ["select * from tab " :id]}
           actul-result (-process (get-proc) coll)]
       (is (failed? actul-result))))
   (testing "test validation-key-process "
-    (let [coll {validation-key [[:id validation-contain-key Long "error"]
-                                [:id validation-type-key (type []) "error"]]
+    (let [coll {validation-key [[:id validation-contain-key long? "error"]
+                                [:id validation-type-key vector? "error"]]
                 input-key      {:id [1 2]}
                 sql-key        ["select * from tab " :id]}
           actul-result (-process (get-proc) coll)]
@@ -53,7 +63,7 @@
       (is (= expected-result
              actual-result)))))
 
-(validation-compile-test)
+;(validation-compile-test)
 
 
 

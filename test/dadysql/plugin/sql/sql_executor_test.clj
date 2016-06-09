@@ -6,7 +6,7 @@
             [dady.common :as cc]))
 
 
-(deftest warp-map-output-test
+#_(deftest warp-map-output-test
   (testing "test warp-map-output"
     (let [handler (fn [m] (throw (Exception. "Some text")))
           hand (-> handler

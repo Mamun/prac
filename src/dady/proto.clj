@@ -60,7 +60,7 @@
     (f/fail "Node type is not found")))
 
 
-(defn compiler-spec
+(defn spec
   [node]
   (-spec node))
 

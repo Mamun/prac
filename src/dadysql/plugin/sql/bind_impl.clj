@@ -59,8 +59,8 @@
 
 (defn get-place-holder
   [type v]
-  (if (contains? (supers type)
-                 clojure.lang.Sequential)
+  (if (and (sequential? v)
+           (= vector? type ))
     (clojure.string/join ", " (repeat (count v) "?"))
     "?"))
 

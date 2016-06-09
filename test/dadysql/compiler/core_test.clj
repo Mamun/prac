@@ -198,8 +198,8 @@
                                                    [:transaction_id :ref-con 0]]
                                          :timeout 30}
                            :update-dept {:params [[:next_transaction_id :ref-fn-key 'inc :transaction_id]]}
-                           :delete-dept {:validation [[:id :type [] "Id will be sequence"]
-                                                      [:id :contain 'Long "Id contain will be Long "]]}}}]
+                           :delete-dept {:validation [[:id :type 'vector? "Id will be sequence"]
+                                                      [:id :contain 'long? "Id contain will be Long "]]}}}]
 
           actual-result (r/do-compile w (ci/new-root-node))]
       ;(clojure.pprint/pprint actual-result)

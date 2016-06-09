@@ -77,7 +77,7 @@
   [root-spec node-coll]
   (reduce (fn [acc v]
             (if (satisfies? INodeCompiler v)
-              (merge acc (compiler-spec v))
+              (merge acc (spec v))
               acc)
             ) root-spec node-coll))
 
