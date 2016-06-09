@@ -45,14 +45,12 @@
       (is (= actual-result
              expected-result)))))
 
-;(model-param-paths-test)
-
 
 (deftest param-ref-con-test
   (testing "test param-ref-con "
     (let [w (new-child-keys)
           cw (get-node-from-path w [param-ref-con-key])]
-      (is (not-empty
+      (is (true?
             (spec-valid? cw [:id param-ref-con-key 5])))))
   (testing "test param-ref-con "
     (let [w (new-child-keys)

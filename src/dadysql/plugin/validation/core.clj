@@ -7,7 +7,6 @@
             [schema.core :as s]))
 
 
-;(defrecord ValidationKey [cname corder ccoll])
 (defbranch ValidationKey [cname ccoll corder])
 (defleaf ValidationTypeKey [cname corder])
 (defleaf ValidationContaionKey [cname corder])
@@ -23,20 +22,6 @@
           (ValidationTypeKey. validation-type-key 0)))
 
 
-
-#_(defn resolve-type [w]
-  (let [t (type w)]
-    (if (= clojure.lang.Symbol t)
-      (resolve w)
-      t)))
-
-
-;(def resolve-type? (s/pred resolve-type 'resolve-type))
-
-
-
-
-
 (defn get-child-spec [coll-node]
   (reduce (fn [acc node]
             (->> acc
@@ -47,14 +32,13 @@
 
 
 
-(defn valid? [spec v]
-  (s/validate spec v))
-
-
 (defn do-valid? [spec v]
-  (if (clojure.spec/valid? spec v)
-    v
-    (throw (Exception. (clojure.spec/explain-str spec v)))))
+  (if (clojure.spec/valid? (eval spec) v)
+    true
+    (do
+      (clojure.pprint/pprint spec)
+      (clojure.pprint/pprint v)
+      (throw (Exception. (clojure.spec/explain-str (eval spec) v))))))
 
 
 (defn validate-spec-batch
@@ -63,14 +47,9 @@
                 (cons 'clojure.spec/alt)
                 (list)
                 (cons 'clojure.spec/*))]
-    (if (clojure.spec/valid? (eval sp) v-coll)
-      true
-      (do
-        (clojure.pprint/pprint (clojure.spec/explain-data (eval sp) v-coll))
-        (throw (Exception. (clojure.spec/explain-data (eval sp) v-coll)))))))
+    (do-valid? sp v-coll)))
 
-
-;(clojure.spec/def ::barch )
+;(clojure.spec/def ::barch)
 
 
 (extend-protocol INodeCompiler
@@ -80,7 +59,7 @@
                                'k-spec-spec-valid?)]
       {(s/optional-key (-node-name this)) params-pred?}))
   (-spec-valid? [this v]
-    (valid? (-spec this) v))
+    (s/validate (-spec this) v))
   (-compiler-emit [this w]
     (let [child-g (group-by #(-node-name %) (:ccoll this))]
       (mapv #(-compiler-emit (get-in child-g [(second %) 0]) %) w)))

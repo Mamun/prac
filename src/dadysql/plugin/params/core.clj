@@ -4,8 +4,9 @@
             [dady.common :as cc]
             [dady.fail :as f]
             [dadysql.core-util :as ccu]
-            [dadysql.plugin.base-impl :as cu]
+            [clojure.spec :as sp]
             [schema.core :as s]))
+
 
 (defbranch ParamKey [cname ccoll corder])
 (defleaf ParamRefConKey [cname corder])
@@ -14,7 +15,6 @@
 (defleaf ParamRefGenKey [cname corder generator])
 
 ;(extend-as-branch ParamKey :ccoll)
-
 
 
 (defn new-param-key
@@ -33,6 +33,31 @@
           (ParamRefFunKey. param-ref-fn-key 2)
           (ParamRefGenKey. param-ref-gen-key 3 temp-generator)))
 
+(defn get-child-spec [coll-node]
+  (reduce (fn [acc node]
+            (->> acc
+                 (cons (spec node))
+                 (cons (node-name node)))
+            ) (list) coll-node))
+
+
+(defn do-valid? [spec v]
+  (if (clojure.spec/valid? (eval spec) v)
+    true
+    (do
+      (clojure.pprint/pprint spec)
+      (clojure.pprint/pprint v)
+      (throw (Exception. (clojure.spec/explain-str (eval spec) v))))))
+
+
+(defn validate-spec-batch
+  [node-coll v-coll]
+  (let [sp (->> (get-child-spec node-coll)
+                (cons 'clojure.spec/alt)
+                (list)
+                (cons 'clojure.spec/*))]
+    (do-valid? sp v-coll)))
+
 
 (defn assoc-param-ref-gen [root-node generator]
   (let [p [param-key param-ref-gen-key]
@@ -46,7 +71,7 @@
 (extend-protocol INodeCompiler
   ParamKey
   (-spec [this]
-    (let [params-pred? (s/pred (partial cu/validate-spec-batch (:ccoll this))
+    (let [params-pred? (s/pred (partial validate-spec-batch (:ccoll this))
                                'k-spec-spec-valid?)]
       {(s/optional-key (-node-name this)) params-pred?}))
   (-spec-valid? [this v]
@@ -55,44 +80,56 @@
     (let [child-g (group-by #(-node-name %) (:ccoll this))]
       (mapv #(-compiler-emit (get-in child-g [(second %) 0]) %) w)))
   ParamRefGenKey
-  (-spec [_] [(s/one s/Keyword "Source Data Model")
-                (s/one s/Keyword "Type of params ")
-                (s/one s/Keyword "Refer type ")])
+  (-spec [_]
+    '(clojure.spec/tuple keyword? keyword? keyword?))
   (-spec-valid? [this v]
-    (s/validate (-spec this) v))
+    (do-valid? (-spec this) v))
   (-compiler-emit [_ w]
     (update-in w [0] cc/as-lower-case-keyword))
   ParamRefFunKey
-  (-spec [_] [(s/one s/Keyword "Source Data Model")
-                (s/one s/Keyword "Type of params ")
-                (s/one (s/pred resolve 'resolve-clj) "Any value")
-                (s/one s/Keyword "Refer Keyword ")])
+  (-spec [_]
+    '(clojure.spec/tuple keyword? keyword? resolve keyword?))
   (-spec-valid? [this v]
-    (s/validate (-spec this) v))
+    (do-valid? (-spec this) v))
   (-compiler-emit [_ w]
     (-> w
         (assoc 2 (resolve (nth w 2)))
         (update-in [0] cc/as-lower-case-keyword)
         (update-in [3] cc/as-lower-case-keyword)))
   ParamRefKey
-  (-spec [_] [(s/one s/Keyword "Source Data Model")
-                (s/one s/Keyword "Type of Params ")
-                (s/one s/Keyword "Refer keyword")])
+  (-spec [_]
+    '(clojure.spec/tuple keyword? keyword? keyword?))
   (-spec-valid? [this v]
-    (s/validate (-spec this) v))
+    (do-valid? (-spec this) v))
   (-compiler-emit [_ w]
     (-> w
         (update-in [0] cc/as-lower-case-keyword)
         (update-in [2] cc/as-lower-case-keyword)))
   ParamRefConKey
-  (-spec [_] [(s/one s/Keyword "Source Data Model")
-                (s/one s/Keyword "Type of Param ")
-                (s/one s/Any "Any value")])
+  (-spec [_]
+    '(clojure.spec/tuple keyword? keyword? number?))
   (-spec-valid? [this v]
-    (s/validate (-spec this) v))
+    (do-valid? (-spec this) v))
   (-compiler-emit [_ w]
     (update-in w [0] cc/as-lower-case-keyword)))
 
+
+#_[(s/one s/Keyword "Source Data Model")
+   (s/one s/Keyword "Type of params ")
+   (s/one s/Keyword "Refer type ")]
+
+#_[(s/one s/Keyword "Source Data Model")
+   (s/one s/Keyword "Type of params ")
+   (s/one (s/pred resolve 'resolve-clj) "Any value")
+   (s/one s/Keyword "Refer Keyword ")]
+
+#_[(s/one s/Keyword "Source Data Model")
+   (s/one s/Keyword "Type of Params ")
+   (s/one s/Keyword "Refer keyword")]
+
+#_[(s/one s/Keyword "Source Data Model")
+   (s/one s/Keyword "Type of Param ")
+   (s/one s/Any "Any value")]
 
 
 (defn process-batch
@@ -109,6 +146,10 @@
                        (reduced rv)
                        (assoc-in acc-input src rv)))
                    ) input))))
+
+
+;(instance? Object )
+;(clojure.spec/valid?  instance? 0)
 
 
 

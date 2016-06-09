@@ -61,16 +61,7 @@
    (s/optional-key ds-key)           s/Any})
 
 
-(defn validate-spec-batch
-  [node-coll v-coll]
-  (let [child-g (group-by-node-name node-coll)]
-    (->> v-coll
-         (reduce (fn [acc k]
-                   ;;todo should not be specific
-                   (if-let [child-i ((second k) child-g)]
-                     (spec-valid? child-i k)
-                     acc
-                     )) false))))
+
 
 
 (defn merge-compiler-spec
