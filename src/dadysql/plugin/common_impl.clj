@@ -60,50 +60,41 @@
   DocKey
   (-spec [this]
     {(s/optional-key (-node-name this)) s/Str})
-  #_(-spec-valid? [this v] (s/validate (-spec this) v))
   (-compiler-emit [_ v] v)
   TimeoutKey
   (-spec [this]
     {(s/optional-key (-node-name this)) s/Int})
-  #_(-spec-valid? [this v] (s/validate (-spec this) v))
   (-compiler-emit [_ v] v)
   NameKey
   (-spec [this]
     {(s/required-key (-node-name this)) (s/pred resolve-model? 'resolve-model?)})
-  #_(-spec-valid? [this v] (s/validate (-spec this) v))
   (-compiler-emit [_ w]
     (cc/as-sequential w))
   ModelKey
   (-spec [this]
     {(s/optional-key (-node-name this)) (s/pred resolve-model? 'resolve-model?)})
-  #_(-spec-valid? [this v] (s/validate (-spec this) v))
   (-compiler-emit [_ v] v)
   SkipKey
   (-spec [this]
     {(s/optional-key (-node-name this))
      #{(s/enum validation-key column-key join-key)}})
-  #_(-spec-valid? [this v] (s/validate (-spec this) v))
   (-compiler-emit [_ v] v)
   GroupKey
   (-spec [this]
     {(s/optional-key (-node-name this)) s/Keyword})
-  #_(-spec-valid? [this v] (s/validate (-spec this) v))
   (-compiler-emit [_ v] v)
   CommitKey
   (-spec [this]
     {(s/optional-key (-node-name this)) (s/enum commit-all-key commit-any-key commit-none-key)})
-  #_(-spec-valid? [this v] (s/validate (-spec this) v))
   (-compiler-emit [_ v] v)
   ColumnKey
   (-spec [this]
     {(s/optional-key (-node-name this)) {s/Keyword s/Keyword}})
-  #_(-spec-valid? [_ v] v)
   (-compiler-emit [_ v] v)
   ResultKey
   (-spec [this]
     (let [v #{(s/enum result-array-key result-single-key)}]
       {(s/optional-key (-node-name this)) v}))
-  #_(-spec-valid? [this v] (s/validate (-spec this) v))
   (-compiler-emit [_ v] v)
   ;;Extend key
   )

@@ -90,9 +90,6 @@
     (let [r {(s/optional-key model-key) s/Keyword}]
       {(s/optional-key extend-meta-key)
        {s/Keyword (merge-compiler-spec r (:coll this))}}))
-  #_(-spec-valid? [this d-map]
-
-    (s/validate (-spec this) d-map))
   (-compiler-emit [this v-map]
     (->> (keys v-map)
          (reduce (fn [acc k]
@@ -102,16 +99,12 @@
   GlobalKey
   (-spec [this]
     (merge-compiler-spec (default-global-spec) (:coll this)))
-  #_(-spec-valid? [this d-map]
-    (s/validate (-spec this) d-map))
   (-compiler-emit [this v-map]
     (compiler-emit-batch (:coll this) v-map))
   ;; Module key
   Modulekey
   (-spec [this]
     (merge-compiler-spec {} (:coll this)))
-  #_(-spec-valid? [this v]
-    (s/validate (-spec this) v))
   (-compiler-emit [this v]
     (compiler-emit-batch (:coll this) v)))
 

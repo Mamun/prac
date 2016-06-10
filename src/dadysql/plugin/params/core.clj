@@ -74,23 +74,17 @@
     (let [params-pred? (s/pred (partial validate-spec-batch (:ccoll this))
                                'k-spec-spec-valid?)]
       {(s/optional-key (-node-name this)) params-pred?}))
-  #_(-spec-valid? [this v]
-    (s/validate (-spec this) v))
   (-compiler-emit [this w]
     (let [child-g (group-by #(-node-name %) (:ccoll this))]
       (mapv #(-compiler-emit (get-in child-g [(second %) 0]) %) w)))
   ParamRefGenKey
   (-spec [_]
     '(clojure.spec/tuple keyword? keyword? keyword?))
-  #_(-spec-valid? [this v]
-    (do-valid? (-spec this) v))
   (-compiler-emit [_ w]
     (update-in w [0] cc/as-lower-case-keyword))
   ParamRefFunKey
   (-spec [_]
     '(clojure.spec/tuple keyword? keyword? resolve keyword?))
-  #_(-spec-valid? [this v]
-    (do-valid? (-spec this) v))
   (-compiler-emit [_ w]
     (-> w
         (assoc 2 (resolve (nth w 2)))
@@ -99,8 +93,6 @@
   ParamRefKey
   (-spec [_]
     '(clojure.spec/tuple keyword? keyword? keyword?))
-  #_(-spec-valid? [this v]
-    (do-valid? (-spec this) v))
   (-compiler-emit [_ w]
     (-> w
         (update-in [0] cc/as-lower-case-keyword)
@@ -108,8 +100,6 @@
   ParamRefConKey
   (-spec [_]
     '(clojure.spec/tuple keyword? keyword? number?))
-  #_(-spec-valid? [this v]
-    (do-valid? (-spec this) v))
   (-compiler-emit [_ w]
     (update-in w [0] cc/as-lower-case-keyword)))
 
