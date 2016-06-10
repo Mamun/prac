@@ -53,12 +53,12 @@
 
 (defn default-global-spec
   []
-  {(s/required-key name-key)         s/Keyword
-   (s/optional-key tx-prop)          (s/pred check-tx-proc? 'check-tx-proc)
-   (s/optional-key file-name-key)    s/Str
-   (s/optional-key file-reload-key)  boolean
-   (s/optional-key reserve-name-key) #{s/Keyword}
-   (s/optional-key ds-key)           s/Any})
+  `{(schema.core/required-key ~name-key)         schema.core/Keyword
+    (schema.core/optional-key ~tx-prop)          schema.core/Any #_(s/pred check-tx-proc? 'check-tx-proc)
+    (schema.core/optional-key ~file-name-key)    schema.core/Str
+    (schema.core/optional-key ~file-reload-key)  boolean
+    (schema.core/optional-key ~reserve-name-key) #{s/Keyword}
+    (schema.core/optional-key ~ds-key)           schema.core/Any})
 
 
 
@@ -87,9 +87,10 @@
 (extend-protocol INodeCompiler
   ExtendKey
   (-spec [this]
-    (let [r {(s/optional-key model-key) s/Keyword}]
-      {(s/optional-key extend-meta-key)
-       {s/Keyword (merge-compiler-spec r (:coll this))}}))
+    (let [r `{(schema.core/optional-key ~model-key) schema.core/Keyword}
+          w (merge-compiler-spec r (:coll this))]
+      `{(s/optional-key extend-meta-key)
+        {s/Keyword ~w}}))
   (-emit [this v-map]
     (->> (keys v-map)
          (reduce (fn [acc k]

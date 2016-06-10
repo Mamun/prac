@@ -49,7 +49,7 @@
 
 
 
-(defn resolve-model?
+#_(defn resolve-model?
   [v]
   (if (keyword? v)
     true
@@ -59,42 +59,58 @@
 (extend-protocol INodeCompiler
   DocKey
   (-spec [this]
-    {(s/optional-key (-node-name this)) s/Str})
+    `{(schema.core/optional-key ~(-node-name this))
+      schema.core/Str})
   (-emit [_ v] v)
   TimeoutKey
   (-spec [this]
-    {(s/optional-key (-node-name this)) s/Int})
+    `{(schema.core/optional-key ~(-node-name this))
+      schema.core/Int})
   (-emit [_ v] v)
   NameKey
   (-spec [this]
-    {(s/required-key (-node-name this)) (s/pred resolve-model? 'resolve-model?)})
+    `{(schema.core/required-key ~(-node-name this))
+      (schema.core/pred (fn [v#]
+                          (if (keyword? v#)
+                            true
+                            (every? keyword? v#))
+                          ) 'resolve-model?)})
   (-emit [_ w]
     (cc/as-sequential w))
   ModelKey
   (-spec [this]
-    {(s/optional-key (-node-name this)) (s/pred resolve-model? 'resolve-model?)})
+    `{(schema.core/optional-key ~(-node-name this))
+      (schema.core/pred (fn [v#]
+                          (if (keyword? v#)
+                            true
+                            (every? keyword? v#))
+                          ) 'resolve-model?)})
   (-emit [_ v] v)
   SkipKey
   (-spec [this]
-    {(s/optional-key (-node-name this))
-     #{(s/enum validation-key column-key join-key)}})
+    `{(schema.core/optional-key ~(-node-name this))
+     #{(schema.core/enum ~validation-key ~column-key ~join-key)}})
   (-emit [_ v] v)
   GroupKey
   (-spec [this]
-    {(s/optional-key (-node-name this)) s/Keyword})
+          `{(schema.core/optional-key ~(-node-name this))
+            schema.core/Keyword})
   (-emit [_ v] v)
   CommitKey
   (-spec [this]
-    {(s/optional-key (-node-name this)) (s/enum commit-all-key commit-any-key commit-none-key)})
+          `{(schema.core/optional-key ~(-node-name this))
+            (schema.core/enum ~commit-all-key ~commit-any-key ~commit-none-key)})
   (-emit [_ v] v)
   ColumnKey
   (-spec [this]
-    {(s/optional-key (-node-name this)) {s/Keyword s/Keyword}})
+    `{(schema.core/optional-key ~(-node-name this))
+      {s/Keyword s/Keyword}})
   (-emit [_ v] v)
   ResultKey
   (-spec [this]
-    (let [v #{(s/enum result-array-key result-single-key)}]
-      {(s/optional-key (-node-name this)) v}))
+    `{(schema.core/optional-key ~(-node-name this))
+      #{(schema.core/enum ~result-array-key ~result-single-key)}}
+    )
   (-emit [_ v] v)
   ;;Extend key
   )

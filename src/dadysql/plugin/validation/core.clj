@@ -35,27 +35,20 @@
 
 
 
-(defn do-valid? [spec v]
-  (if (clojure.spec/valid? (eval spec) v)
-    true
-    (do
-      (clojure.pprint/pprint spec)
-      (clojure.pprint/pprint v)
-      (throw (Exception. (clojure.spec/explain-str (eval spec) v))))))
+(defn get-validation-key-schema [n coll]
+  (let [s (get-child-spec coll)]
+    `{(schema.core/optional-key ~n)
+      (schema.core/pred (fn [v#] (clojure.spec/valid? (eval '~s) v#))
+                        'k-spec-spec-valid?)}))
 
 
-(defn validate-spec-batch
-  [node-coll v-coll]
-  (do-valid? (get-child-spec node-coll) v-coll))
 
 
 
 (extend-protocol INodeCompiler
   ValidationKey
   (-spec [this]
-    (let [params-pred? (s/pred (partial validate-spec-batch (:ccoll this))
-                               'k-spec-spec-valid?)]
-      {(s/optional-key (-node-name this)) params-pred?}))
+    (get-validation-key-schema (-node-name this) (:ccoll this)))
   (-emit [this w]
     (let [child-g (group-by #(-node-name %) (:ccoll this))]
       (mapv #(-emit (get-in child-g [(second %) 0]) %) w)))
@@ -77,7 +70,8 @@
     (-> ks
         (update-in [0] cc/as-lower-case-keyword))))
 
-
+#_(let [v :hello]
+    `[:check ~v])
 
 (defn get-all-vali-key
   [m]

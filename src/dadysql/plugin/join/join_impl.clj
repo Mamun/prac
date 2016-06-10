@@ -17,16 +17,6 @@
   (-corder [this] (:corder this)))
 
 
-(defn get-join-spec []
-  (let [JoinSingleNTNSchema [(s/one s/Keyword "Join Model ")
-                             (s/one s/Keyword "Join Model Id1")
-                             (s/one s/Keyword "Join Model Id2")]]
-    [[(s/one s/Keyword "Source Data Model")
-      (s/one s/Keyword "Source Model Id")
-      (s/one (s/enum join-1-n-key join-1-1-key join-n-1-key join-n-n-key) "Relationship")
-      (s/one s/Keyword "Dest Model")
-      (s/one s/Keyword "Dest Model Id")
-      (s/optional JoinSingleNTNSchema "JoinSingleNTNSchema")]]))
 
 
 (defn join-emission-batch [j-coll]
@@ -74,12 +64,20 @@
 
 
 
+
+
 (extend-protocol INodeCompiler
   JoinKey
   (-spec [this]
-    {(s/optional-key (-node-name this)) (get-join-spec)})
-  #_(-spec-valid? [this v]
-    (s/validate (-spec this) v))
+    `{(schema.core/optional-key ~(-node-name this))
+      [[(schema.core/one schema.core/Keyword "Source Data Model")
+        (schema.core/one schema.core/Keyword "Source Model Id")
+        (schema.core/one (schema.core/enum ~join-1-n-key ~join-1-1-key ~join-n-1-key ~join-n-n-key) "Relationship")
+        (schema.core/one schema.core/Keyword "Dest Model")
+        (schema.core/one schema.core/Keyword "Dest Model Id")
+        (schema.core/optional [(schema.core/one schema.core/Keyword "Join Model ")
+                     (schema.core/one schema.core/Keyword "Join Model Id1")
+                     (schema.core/one schema.core/Keyword "Join Model Id2")] "JoinSingleNTNSchema")]]})
   (-emit [_ j-coll]
     (->> j-coll
          (join-emission-batch)

@@ -160,7 +160,7 @@
 
 
 (defn valid-spec [spec v]
-  (s/validate spec v))
+  (s/validate (eval spec) v))
 
 
 (defn compile-one

@@ -148,7 +148,7 @@
                      param-key [[:next_transaction_id param-ref-key :transaction_id]]
                      sql-key   "select * from dual; select * from dual"}]
       (->> sch-value
-           (s/validate (spec app-proc))
+           (s/validate (eval (spec app-proc)))
            (-emit app-proc)
            #_(clojure.pprint/pprint)))))
 

@@ -46,7 +46,7 @@
        (cons 'clojure.spec/*)))
 
 
-(defn do-valid? [spec v]
+#_(defn do-valid? [spec v]
   (if (clojure.spec/valid? (eval spec) v)
     true
     (do
@@ -55,7 +55,7 @@
       (throw (Exception. (clojure.spec/explain-str (eval spec) v))))))
 
 
-(defn validate-spec-batch
+#_(defn validate-spec-batch
   [node-coll v-coll]
   (do-valid? (get-child-spec node-coll) v-coll))
 
@@ -68,11 +68,19 @@
       root-node)))
 
 
+(defn get-params-key-schema [n coll]
+  (let [s (get-child-spec coll)]
+    `{(schema.core/optional-key ~n)
+      (schema.core/pred (fn [v#] (clojure.spec/valid? (eval '~s) v#))
+                        'k-spec-spec-valid?)}))
+
+
 
 (extend-protocol INodeCompiler
   ParamKey
   (-spec [this]
-    (let [params-pred? (s/pred (partial validate-spec-batch (:ccoll this))
+    (get-params-key-schema (-node-name this) (:ccoll this))
+    #_(let [params-pred? (s/pred (partial validate-spec-batch (:ccoll this))
                                'k-spec-spec-valid?)]
       {(s/optional-key (-node-name this)) params-pred?}))
   (-emit [this w]

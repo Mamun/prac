@@ -22,8 +22,8 @@
 
 (comment
 
-  (-> (new-root-node)
-      (select-module-node-processor ))
+  (-> (first (new-root-node))
+      (spec))
 
 
   ;todo Need to check here to select process

@@ -79,6 +79,12 @@
   (-> @td/ds
       (t/pull (t/read-file "tie.edn.sql")
               {:name   [:get-dept-by-ids]
+               :params {:id (list 1 2 3)}})
+      (clojure.pprint/pprint))
+
+  (-> @td/ds
+      (t/pull (t/read-file "tie.edn.sql")
+              {:name   [:get-dept-by-ids]
                :params {:id [1 2 112]}})
       (clojure.pprint/pprint))
 

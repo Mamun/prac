@@ -1,10 +1,25 @@
 (ns dadysql.plugin.validation.vspec
-  (:require [clojure.spec :as sp]))
+  (:require [clojure.spec :as sp]
+            [schema.core :as s]))
 
 
 
 
 (comment
+
+
+  (let [v-fn (fn [] true)
+        params-pred? (s/pred v-fn   'k-spec-spec-valid?)
+        schema '{(s/optional-key :hello) (s/pred (fn [v]
+                                                   true
+                                                   )  'k-spec-spec-valid?)}]
+
+    (s/validate (eval schema)  {:hello2 1} )
+    )
+
+
+
+
 
   (let [w1 {:key  '(clojure.spec/tuple keyword?)
             :key2 '(clojure.spec/tuple number?)}
