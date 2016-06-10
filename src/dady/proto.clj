@@ -19,7 +19,7 @@
 
 
 (defprotocol INodeCompiler
-  (-compiler-emit [this w] "Change value or ")
+  (-emit [this w] "Change value or ")
   (-spec [this] "Defined schema here"))
 
 
@@ -66,7 +66,7 @@
 
 (defn compiler-emit
   [node v]
-  (-compiler-emit node v))
+  (-emit node v))
 
 
 (defn filter-node-processor

@@ -80,7 +80,7 @@
     {(s/optional-key (-node-name this)) (get-join-spec)})
   #_(-spec-valid? [this v]
     (s/validate (-spec this) v))
-  (-compiler-emit [_ j-coll]
+  (-emit [_ j-coll]
     (->> j-coll
          (join-emission-batch)
          (map-reverse-join)

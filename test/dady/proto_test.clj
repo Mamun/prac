@@ -139,7 +139,7 @@
 
 ;(update-cell-test)
 
-(deftest cell-compiler-emit-test
+(deftest cell-emit-test
   (testing "cell emit test "
     (let [app-proc (bi/new-module-key-node (c/new-leaf-node-coll))
           sch-value {doc-key   "hello"
@@ -149,7 +149,7 @@
                      sql-key   "select * from dual; select * from dual"}]
       (->> sch-value
            (s/validate (spec app-proc))
-           (-compiler-emit app-proc)
+           (-emit app-proc)
            #_(clojure.pprint/pprint)))))
 
 

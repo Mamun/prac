@@ -90,7 +90,7 @@
     (let [r {(s/optional-key model-key) s/Keyword}]
       {(s/optional-key extend-meta-key)
        {s/Keyword (merge-compiler-spec r (:coll this))}}))
-  (-compiler-emit [this v-map]
+  (-emit [this v-map]
     (->> (keys v-map)
          (reduce (fn [acc k]
                    (assoc acc k (compiler-emit-batch (:coll this) (k v-map)))
@@ -99,12 +99,12 @@
   GlobalKey
   (-spec [this]
     (merge-compiler-spec (default-global-spec) (:coll this)))
-  (-compiler-emit [this v-map]
+  (-emit [this v-map]
     (compiler-emit-batch (:coll this) v-map))
   ;; Module key
   Modulekey
   (-spec [this]
     (merge-compiler-spec {} (:coll this)))
-  (-compiler-emit [this v]
+  (-emit [this v]
     (compiler-emit-batch (:coll this) v)))
 

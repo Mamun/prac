@@ -33,12 +33,17 @@
           (ParamRefFunKey. param-ref-fn-key 2)
           (ParamRefGenKey. param-ref-gen-key 3 temp-generator)))
 
+
 (defn get-child-spec [coll-node]
-  (reduce (fn [acc node]
-            (->> acc
-                 (cons (spec node))
-                 (cons (node-name node)))
-            ) (list) coll-node))
+  (->> coll-node
+       (reduce (fn [acc node]
+                 (->> acc
+                      (cons (spec node))
+                      (cons (node-name node)))
+                 ) (list))
+       (cons 'clojure.spec/alt)
+       (list)
+       (cons 'clojure.spec/*)))
 
 
 (defn do-valid? [spec v]
@@ -52,11 +57,7 @@
 
 (defn validate-spec-batch
   [node-coll v-coll]
-  (let [sp (->> (get-child-spec node-coll)
-                (cons 'clojure.spec/alt)
-                (list)
-                (cons 'clojure.spec/*))]
-    (do-valid? sp v-coll)))
+  (do-valid? (get-child-spec node-coll) v-coll))
 
 
 (defn assoc-param-ref-gen [root-node generator]
@@ -74,18 +75,18 @@
     (let [params-pred? (s/pred (partial validate-spec-batch (:ccoll this))
                                'k-spec-spec-valid?)]
       {(s/optional-key (-node-name this)) params-pred?}))
-  (-compiler-emit [this w]
+  (-emit [this w]
     (let [child-g (group-by #(-node-name %) (:ccoll this))]
-      (mapv #(-compiler-emit (get-in child-g [(second %) 0]) %) w)))
+      (mapv #(-emit (get-in child-g [(second %) 0]) %) w)))
   ParamRefGenKey
   (-spec [_]
     '(clojure.spec/tuple keyword? keyword? keyword?))
-  (-compiler-emit [_ w]
+  (-emit [_ w]
     (update-in w [0] cc/as-lower-case-keyword))
   ParamRefFunKey
   (-spec [_]
     '(clojure.spec/tuple keyword? keyword? resolve keyword?))
-  (-compiler-emit [_ w]
+  (-emit [_ w]
     (-> w
         (assoc 2 (resolve (nth w 2)))
         (update-in [0] cc/as-lower-case-keyword)
@@ -93,14 +94,14 @@
   ParamRefKey
   (-spec [_]
     '(clojure.spec/tuple keyword? keyword? keyword?))
-  (-compiler-emit [_ w]
+  (-emit [_ w]
     (-> w
         (update-in [0] cc/as-lower-case-keyword)
         (update-in [2] cc/as-lower-case-keyword)))
   ParamRefConKey
   (-spec [_]
     '(clojure.spec/tuple keyword? keyword? number?))
-  (-compiler-emit [_ w]
+  (-emit [_ w]
     (update-in w [0] cc/as-lower-case-keyword)))
 
 

@@ -23,12 +23,15 @@
 
 
 (defn get-child-spec [coll-node]
-  (reduce (fn [acc node]
-            (->> acc
-                 (cons (spec node))
-                 (cons (node-name node)))
-            ) (list) coll-node))
-
+  (->> coll-node
+       (reduce (fn [acc node]
+                 (->> acc
+                      (cons (spec node))
+                      (cons (node-name node)))
+                 ) (list))
+       (cons 'clojure.spec/alt)
+       (list)
+       (cons 'clojure.spec/*)))
 
 
 
@@ -43,13 +46,8 @@
 
 (defn validate-spec-batch
   [node-coll v-coll]
-  (let [sp (->> (get-child-spec node-coll)
-                (cons 'clojure.spec/alt)
-                (list)
-                (cons 'clojure.spec/*))]
-    (do-valid? sp v-coll)))
+  (do-valid? (get-child-spec node-coll) v-coll))
 
-;(clojure.spec/def ::barch)
 
 
 (extend-protocol INodeCompiler
@@ -58,24 +56,24 @@
     (let [params-pred? (s/pred (partial validate-spec-batch (:ccoll this))
                                'k-spec-spec-valid?)]
       {(s/optional-key (-node-name this)) params-pred?}))
-  (-compiler-emit [this w]
+  (-emit [this w]
     (let [child-g (group-by #(-node-name %) (:ccoll this))]
-      (mapv #(-compiler-emit (get-in child-g [(second %) 0]) %) w)))
+      (mapv #(-emit (get-in child-g [(second %) 0]) %) w)))
   ValidationTypeKey
   (-spec [_] '(clojure.spec/tuple keyword? keyword? resolve string?))
-  (-compiler-emit [_ ks]
+  (-emit [_ ks]
     (-> ks
         (assoc 2 (resolve (nth ks 2)))
         (update-in [0] cc/as-lower-case-keyword)))
   ValidationContaionKey
   (-spec [_] '(clojure.spec/tuple keyword? keyword? resolve string?))
-  (-compiler-emit [_ ks]
+  (-emit [_ ks]
     (-> ks
         (assoc 2 (resolve (nth ks 2)))
         (update-in [0] cc/as-lower-case-keyword)))
   ValidationRangeKey
   (-spec [_] '(clojure.spec/tuple keyword? keyword? integer? integer? string?))
-  (-compiler-emit [_ ks]
+  (-emit [_ ks]
     (-> ks
         (update-in [0] cc/as-lower-case-keyword))))
 
@@ -150,7 +148,7 @@
          (validation-contain-key)))
   (-process [_ result]
     (let [[p-value _ v-type e-message] result
-          r (mapv #(sp/valid? v-type  %) p-value)
+          r (mapv #(sp/valid? v-type %) p-value)
           r (every? true? r)]
       (if r
         result

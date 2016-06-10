@@ -113,7 +113,7 @@
                    }]
     (->> sch-value
          (s/validate (spec app-proc))
-         (-compiler-emit app-proc)
+         (-emit app-proc)
          ;(map-name-with-sql)
          (clojure.pprint/pprint))
     )

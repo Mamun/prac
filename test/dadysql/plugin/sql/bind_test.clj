@@ -24,49 +24,49 @@
 
 ;(bind-sql-params-test)
 
-(deftest sql-str-compiler-emit-test
+(deftest sql-str-emit-test
   (testing "test sql-emission-single"
     (let [w "select * from dual param = :A and param3 = :b"
-          actual-result (sql-str-compiler-emit w)
+          actual-result (sql-str-emit w)
           expected-result ["select * from dual param = :a and param3 = :b" :a :b]]
       ;     (println actual-result)
       (is (= expected-result
              actual-result))))
   (testing "test sql-emission-single"
     (let [w "select * from dual param = :a-b and param3 = :b-c"
-          actual-result (sql-str-compiler-emit w)
+          actual-result (sql-str-emit w)
           expected-result ["select * from dual param = :a-b and param3 = :b-c" :a-b :b-c]]
       ;     (println actual-result)
       (is (= expected-result
              actual-result))))
   (testing "test sql-emission-single"
     (let [w "select * from dual param# = :param# and param3 = :b-c"
-          actual-result (sql-str-compiler-emit w)
+          actual-result (sql-str-emit w)
           expected-result ["select * from dual param# = :param# and param3 = :b-c" :param# :b-c]]
       ;     (println actual-result)
       (is (= expected-result
              actual-result)))))
 
-;(sql-str-compiler-emit-test)
+;(sql-str-emit-test)
 
 
 ;(re-seq sql-param-regex "param#=:param# and :b-c and :b_c :b|c")
 
 
-(deftest sql-compiler-emit-test
+(deftest sql-emit-test
   (testing "test sql-emission"
     (let [w "select * from dual param = :a and param3 = :b"
           expected-result [{:sql      ["select * from dual param = :a and param3 = :b" :a :b],
                             :dml-type :select,
                             :index    0}]
-          actual-result (sql-compiler-emit w)]
+          actual-result (sql-emit w)]
       (is (= expected-result actual-result))))
   (testing "test sql-emission "
     (let [w "select * from dual param = :ID and param3 = :b"
           expected-result [{:sql      ["select * from dual param = :id and param3 = :b" :id :b],
                             :dml-type :select,
                             :index    0}]
-          actual-result (sql-compiler-emit w)]
+          actual-result (sql-emit w)]
       (is (= expected-result actual-result)))))
 
 
@@ -121,7 +121,7 @@
     (let [sql "select * from where a = :a;seelct * from t where p=:p"
           expect-result [{:sql ["select * from where a = :a" :a] :dml-type :select :index 0}
                          {:sql ["seelct * from t where p=:p" :p] :dml-type :seelct :index 1}]
-          actual-result (sql-compiler-emit sql)]
+          actual-result (sql-emit sql)]
       (is (= actual-result
              expect-result)))))
 

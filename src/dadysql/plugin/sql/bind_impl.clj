@@ -131,7 +131,7 @@
 (def sql-param-regex #"\w*:[\w|\-|#]+")
 
 
-(defn sql-str-compiler-emit
+(defn sql-str-emit
   [sql-str]
   (->> (re-seq sql-param-regex sql-str)
        (transduce (comp (map read-string)) conj)
@@ -144,10 +144,10 @@
                  ) [sql-str])))
 
 
-(defn sql-compiler-emit
+(defn sql-emit
   [sql-str]
   (let [p (comp (filter not-empty)
-                (map sql-str-compiler-emit)
+                (map sql-str-emit)
                 (map (fn [v] {sql-key v
                               dml-key (dml-type v)})))
         sql (clojure.string/split (clojure.string/trim sql-str) #";")]
@@ -189,8 +189,8 @@
     {(s/required-key (:cname this))
      (s/both s/Str (s/pred not-blank? 'not-blank?))})
   #_(-spec-valid? [this v] (s/validate (-spec this) v))
-  (-compiler-emit [_ w]
-    (sql-compiler-emit w)))
+  (-emit [_ w]
+    (sql-emit w)))
 
 
 (defn batch-process [childs m]

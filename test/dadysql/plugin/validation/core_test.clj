@@ -57,7 +57,7 @@
   (testing "test validation-compile"
     (let [v-coll [[:id :type (read-string "Long") " Id contain will be Long"]]
           p (get-proc)
-          actual-result (-compiler-emit
+          actual-result (-emit
                           p
                           v-coll)
           expected-result [[:id :type java.lang.Long " Id contain will be Long"]]]
