@@ -4,7 +4,7 @@
             [dady.common :as cc]
             [dady.fail :as f]
             [clojure.spec :as sp]
-            [schema.core :as s]))
+            #_[schema.core :as s]))
 
 
 (defbranch ValidationKey [cname ccoll corder])

@@ -3,7 +3,7 @@
   (:require [dadysql.constant :refer :all]
             [dady.fail :as f]
             [dady.common :as cc]
-            [schema.core :as s]))
+            #_[schema.core :as s]))
 
 
 (defn validate-input-not-empty!
@@ -181,15 +181,18 @@
 
 
 
-(defn- not-blank? [^String v]
+#_(defn- not-blank? [^String v]
   (not (clojure.string/blank? v)))
 
 
 (extend-protocol INodeCompiler
   SqlKey
   (-spec [this]
-    {(s/required-key (:cname this))
-     (s/both s/Str (s/pred not-blank? 'not-blank?))})
+    `{(schema.core/required-key ~(:cname this))
+      (schema.core/both schema.core/Str
+                        (schema.core/pred (fn [v#]
+                                            (not (clojure.string/blank? v#))
+                                            ) 'not-blank?))})
   #_(-spec-valid? [this v] (s/validate (-spec this) v))
   (-emit [_ w]
     (sql-emit w)))

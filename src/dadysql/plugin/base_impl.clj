@@ -1,6 +1,6 @@
 (ns dadysql.plugin.base-impl
   (:require
-    [schema.core :as s]
+   ; [schema.core :as s]
     [dadysql.constant :refer :all]
     [dady.common :refer :all]
     [dady.proto :refer :all]))
@@ -57,7 +57,7 @@
     (schema.core/optional-key ~tx-prop)          schema.core/Any #_(s/pred check-tx-proc? 'check-tx-proc)
     (schema.core/optional-key ~file-name-key)    schema.core/Str
     (schema.core/optional-key ~file-reload-key)  boolean
-    (schema.core/optional-key ~reserve-name-key) #{s/Keyword}
+    (schema.core/optional-key ~reserve-name-key) #{schema.core/Keyword}
     (schema.core/optional-key ~ds-key)           schema.core/Any})
 
 
@@ -89,8 +89,8 @@
   (-spec [this]
     (let [r `{(schema.core/optional-key ~model-key) schema.core/Keyword}
           w (merge-compiler-spec r (:coll this))]
-      `{(s/optional-key extend-meta-key)
-        {s/Keyword ~w}}))
+      `{(schema.core/optional-key ~extend-meta-key)
+        {schema.core/Keyword ~w}}))
   (-emit [this v-map]
     (->> (keys v-map)
          (reduce (fn [acc k]

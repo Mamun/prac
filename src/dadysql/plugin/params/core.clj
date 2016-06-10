@@ -4,8 +4,8 @@
             [dady.common :as cc]
             [dady.fail :as f]
             [dadysql.core-util :as ccu]
-            [clojure.spec :as sp]
-            [schema.core :as s]))
+            #_[clojure.spec :as sp]
+            #_[schema.core :as s]))
 
 
 (defbranch ParamKey [cname ccoll corder])
@@ -46,19 +46,6 @@
        (cons 'clojure.spec/*)))
 
 
-#_(defn do-valid? [spec v]
-  (if (clojure.spec/valid? (eval spec) v)
-    true
-    (do
-      (clojure.pprint/pprint spec)
-      (clojure.pprint/pprint v)
-      (throw (Exception. (clojure.spec/explain-str (eval spec) v))))))
-
-
-#_(defn validate-spec-batch
-  [node-coll v-coll]
-  (do-valid? (get-child-spec node-coll) v-coll))
-
 
 (defn assoc-param-ref-gen [root-node generator]
   (let [p [param-key param-ref-gen-key]
@@ -79,10 +66,7 @@
 (extend-protocol INodeCompiler
   ParamKey
   (-spec [this]
-    (get-params-key-schema (-node-name this) (:ccoll this))
-    #_(let [params-pred? (s/pred (partial validate-spec-batch (:ccoll this))
-                               'k-spec-spec-valid?)]
-      {(s/optional-key (-node-name this)) params-pred?}))
+    (get-params-key-schema (-node-name this) (:ccoll this)))
   (-emit [this w]
     (let [child-g (group-by #(-node-name %) (:ccoll this))]
       (mapv #(-emit (get-in child-g [(second %) 0]) %) w)))

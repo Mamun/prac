@@ -1,6 +1,5 @@
 (ns dadysql.plugin.common-impl
   (:require
-    [schema.core :as s]
     [dadysql.constant :refer :all]
     [dady.fail :as f]
     [dady.proto :refer :all]
@@ -104,7 +103,7 @@
   ColumnKey
   (-spec [this]
     `{(schema.core/optional-key ~(-node-name this))
-      {s/Keyword s/Keyword}})
+      {schema.core/Keyword schema.core/Keyword}})
   (-emit [_ v] v)
   ResultKey
   (-spec [this]

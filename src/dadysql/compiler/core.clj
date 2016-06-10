@@ -1,7 +1,7 @@
 (ns dadysql.compiler.core
   (:require [dadysql.constant :refer :all]
             [dady.common :as cc]
-            [schema.core :as s]
+            [dadysql.compiler.schema :as cs]
             [dady.proto :as p]))
 
 ;; Need to split it with name and model
@@ -159,13 +159,11 @@
                  ) m)))
 
 
-(defn valid-spec [spec v]
-  (s/validate (eval spec) v))
 
 
 (defn compile-one
   [process-context f-config m]
-  (valid-spec (p/spec process-context ) m)
+  (cs/valid-spec (p/spec process-context ) m)
   ;(clojure.pprint/pprint (p/spec process-context ))
   ;(p/spec-valid? process-context m)
   (let [m (p/compiler-emit process-context m)
@@ -191,7 +189,7 @@
   (if (nil? config)
     (default-config)
     (->> config
-         (valid-spec (p/spec gpc ) )
+         (cs/valid-spec (p/spec gpc ) )
          (p/compiler-emit gpc)
          (merge (default-config))
          (assoc-join-with-recursive-meta-key))))

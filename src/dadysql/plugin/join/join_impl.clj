@@ -2,7 +2,7 @@
   (:use [dady.proto])
   (:require [dadysql.constant :refer :all]
             [dady.common :as cc]
-            [schema.core :as s]))
+            #_[schema.core :as s]))
 
 
 (defrecord JoinKey [cname corder])
