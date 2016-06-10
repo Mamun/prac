@@ -59,8 +59,10 @@
 
 (defn get-place-holder
   [type v]
+  ;(println "----" type)
+  ;(println "----" v)
   (if (and (sequential? v)
-           (= vector? type ))
+           (= #'clojure.core/vector? type ))
     (clojure.string/join ", " (repeat (count v) "?"))
     "?"))
 
