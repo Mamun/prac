@@ -58,28 +58,28 @@
     (let [params-pred? (s/pred (partial validate-spec-batch (:ccoll this))
                                'k-spec-spec-valid?)]
       {(s/optional-key (-node-name this)) params-pred?}))
-  (-spec-valid? [this v]
+  #_(-spec-valid? [this v]
     (s/validate (-spec this) v))
   (-compiler-emit [this w]
     (let [child-g (group-by #(-node-name %) (:ccoll this))]
       (mapv #(-compiler-emit (get-in child-g [(second %) 0]) %) w)))
   ValidationTypeKey
   (-spec [_] '(clojure.spec/tuple keyword? keyword? resolve string?))
-  (-spec-valid? [this v] (do-valid? (-spec this) v))
+  #_(-spec-valid? [this v] (do-valid? (-spec this) v))
   (-compiler-emit [_ ks]
     (-> ks
         (assoc 2 (resolve (nth ks 2)))
         (update-in [0] cc/as-lower-case-keyword)))
   ValidationContaionKey
   (-spec [_] '(clojure.spec/tuple keyword? keyword? resolve string?))
-  (-spec-valid? [this v] (do-valid? (-spec this) v))
+  #_(-spec-valid? [this v] (do-valid? (-spec this) v))
   (-compiler-emit [_ ks]
     (-> ks
         (assoc 2 (resolve (nth ks 2)))
         (update-in [0] cc/as-lower-case-keyword)))
   ValidationRangeKey
   (-spec [_] '(clojure.spec/tuple keyword? keyword? integer? integer? string?))
-  (-spec-valid? [this v] (do-valid? (-spec this) v))
+  #_(-spec-valid? [this v] (do-valid? (-spec this) v))
   (-compiler-emit [_ ks]
     (-> ks
         (update-in [0] cc/as-lower-case-keyword))))

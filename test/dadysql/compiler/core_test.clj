@@ -206,7 +206,7 @@
       (is (not-empty actual-result)))))
 
 
-;(do-compile-test)
+(do-compile-test)
 
 ;(run-tests)
 

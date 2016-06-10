@@ -3,11 +3,13 @@
         [dady.fail])
   (:require
     [dadysql.plugin.factory :as b]
+    [schema.core :as s]
     ;[dady.node-proto :as p]
     [dady.proto :refer :all]
     [dadysql.plugin.params.core :refer :all]
     [dadysql.constant :refer :all]
-    [dady.common :refer :all]))
+    [dady.common :refer :all]
+    [clojure.spec :as sp]))
 
 
 (deftest param-paths-test
@@ -51,7 +53,7 @@
     (let [w (new-child-keys)
           cw (get-node-from-path w [param-ref-con-key])]
       (is (true?
-            (spec-valid? cw [:id param-ref-con-key 5])))))
+            (sp/valid? (eval (spec cw)) [:id param-ref-con-key 5])))))
   (testing "test param-ref-con "
     (let [w (new-child-keys)
           cw (get-node-from-path w [param-ref-con-key])]

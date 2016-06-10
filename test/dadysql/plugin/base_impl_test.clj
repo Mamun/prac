@@ -9,7 +9,7 @@
             [dady.common :refer :all]
             [dadysql.core :as c]
             [dadysql.jdbc :as j]
-            ))
+            [schema.core :as s]))
 
 
 #_(deftest doc-key-test
@@ -112,7 +112,7 @@
                    param-key       [[:Next_transaction_id param-ref-key :transaction_id]]
                    }]
     (->> sch-value
-         (-spec-valid? app-proc)
+         (s/validate (spec app-proc))
          (-compiler-emit app-proc)
          ;(map-name-with-sql)
          (clojure.pprint/pprint))

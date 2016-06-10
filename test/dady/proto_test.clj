@@ -5,6 +5,7 @@
             [dadysql.plugin.factory :as c]
             [dadysql.plugin.params.core :as p]
             [dadysql.constant :refer :all]
+            [schema.core :as s]
             [dady.common :refer :all]))
 
 
@@ -147,7 +148,7 @@
                      param-key [[:next_transaction_id param-ref-key :transaction_id]]
                      sql-key   "select * from dual; select * from dual"}]
       (->> sch-value
-           (-spec-valid? app-proc)
+           (s/validate (spec app-proc))
            (-compiler-emit app-proc)
            #_(clojure.pprint/pprint)))))
 

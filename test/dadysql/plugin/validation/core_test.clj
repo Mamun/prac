@@ -3,6 +3,7 @@
         [dady.proto])
   (:require [dadysql.plugin.validation.core :refer :all]
             [dady.fail :refer :all]
+            [schema.core :as s]
             [dadysql.constant :refer :all]))
 
 
@@ -16,7 +17,7 @@
     (let [coll {validation-key [[:id validation-contain-key 'long? "error"]
                                 [:id validation-type-key    'sequential? "error"]]}
           proc (get-proc)
-          result (spec-valid? proc coll)]
+          result (s/validate (spec proc) coll)]
       (is (= coll result)))))
 
 

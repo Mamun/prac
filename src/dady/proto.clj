@@ -21,7 +21,7 @@
 (defprotocol INodeCompiler
   (-compiler-emit [this w] "Change value or ")
   (-spec [this] "Defined schema here")
-  (-spec-valid? [this v] "Validate schema here"))
+  #_(-spec-valid? [this v] "Validate schema here"))
 
 
 (defprotocol INodeProcessor
@@ -65,7 +65,7 @@
   (-spec node))
 
 
-(defn spec-valid?
+#_(defn spec-valid?
   [node v]
   (-spec-valid? node v))
 

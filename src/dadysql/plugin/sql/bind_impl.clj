@@ -188,7 +188,7 @@
   (-spec [this]
     {(s/required-key (:cname this))
      (s/both s/Str (s/pred not-blank? 'not-blank?))})
-  (-spec-valid? [this v] (s/validate (-spec this) v))
+  #_(-spec-valid? [this v] (s/validate (-spec this) v))
   (-compiler-emit [_ w]
     (sql-compiler-emit w)))
 

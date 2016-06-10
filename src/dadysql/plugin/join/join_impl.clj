@@ -78,7 +78,7 @@
   JoinKey
   (-spec [this]
     {(s/optional-key (-node-name this)) (get-join-spec)})
-  (-spec-valid? [this v]
+  #_(-spec-valid? [this v]
     (s/validate (-spec this) v))
   (-compiler-emit [_ j-coll]
     (->> j-coll
