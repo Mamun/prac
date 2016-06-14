@@ -1,7 +1,6 @@
 (ns dadysql.plugin.base-impl-test
   (:use [clojure.test]
-        [dady.proto]
-        )
+        [dady.proto])
   (:require [dadysql.plugin.common-impl :refer :all]
             [dadysql.plugin.base-impl :refer :all]
             [dadysql.plugin.factory :refer :all]
@@ -20,11 +19,39 @@
   )
 
 
+(deftest module-key-spec-test
+  (testing "testing module key spec "
+    (let [s (spec (get-node-from-path (new-root-node) [module-key]))]
+      (clojure.pprint/pprint s)
+      (is (not (nil? s)))
+      )
+    ))
+
+;(module-key-spec-test)
+
+(deftest config-key-spec-test
+  (testing "testing module key spec "
+    (let [s (spec (get-node-from-path (new-root-node) [global-key]))]
+      ;(clojure.pprint/pprint s)
+      (is (not (nil? s)))
+      )
+    ))
+
+;(config-key-spec-test)
+;
+
+
+
+
+
+
 (comment
 
   (-> (first (new-root-node))
       (spec))
 
+  (-> (get-node-from-path (new-root-node) [module-key])
+      (spec))
 
   ;todo Need to check here to select process
   (let [m (-> (j/read-file "tie.edn.sql")

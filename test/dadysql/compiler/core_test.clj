@@ -192,7 +192,7 @@
              {:doc        "Modify department"
               :name       [:insert-dept :update-dept :delete-dept]
               :model      :department
-              :validation [[:id :type 'Long "Id will be Long"]]
+              :validation [[:id :type 'long? "Id will be Long"]]
               :sql        "insert into department (id, transaction_id, dept_name) values (:id, :transaction_id, :dept_name);update department set dept_name=:dept_name, transaction_id=:next_transaction_id  where transaction_id=:transaction_id and id=:id;delete from department where id in (:id);"
               :extend     {:insert-dept {:params  [[:transaction_id :ref-con 0]
                                                    [:transaction_id :ref-con 0]]
@@ -206,7 +206,7 @@
       (is (not-empty actual-result)))))
 
 
-;(do-compile-test)
+(do-compile-test)
 
 ;(run-tests)
 

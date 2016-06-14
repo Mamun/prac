@@ -2,6 +2,7 @@
   (:require [dadysql.constant :refer :all]
             [dady.common :as cc]
             [dadysql.compiler.schema :as cs]
+            [dadysql.compiler.spec :as s]
             [dady.proto :as p]))
 
 ;; Need to split it with name and model
@@ -163,7 +164,8 @@
 
 (defn compile-one
   [process-context f-config m]
-  (cs/valid-spec (p/spec process-context ) m)
+  ;(cs/valid-spec (p/spec process-context ) m)
+  (s/valid-module? m)
   ;(clojure.pprint/pprint (p/spec process-context ))
   ;(p/spec-valid? process-context m)
   (let [m (p/compiler-emit process-context m)
@@ -189,7 +191,8 @@
   (if (nil? config)
     (default-config)
     (->> config
-         (cs/valid-spec (p/spec gpc ) )
+         (s/valid-global?)
+         #_(cs/valid-spec (p/spec gpc ) )
          (p/compiler-emit gpc)
          (merge (default-config))
          (assoc-join-with-recursive-meta-key))))
