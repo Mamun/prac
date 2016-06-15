@@ -5,13 +5,13 @@
             :url   "http://www.eclipse.org/legal/epl-v10.html"}
   ;:offline? true
 
-  :dependencies  [[org.clojure/clojure "1.9.0-alpha5"]
+  :dependencies  [[org.clojure/clojure "1.9.0-alpha6"]
                   ;    [org.clojure/core.async "0.1.346.0-17112a-alpha"]
-                 [org.clojure/core.async "0.2.374"]
+                 [org.clojure/core.async "0.2.382"]
                  [org.clojure/tools.reader "0.9.2"]
                  [org.clojure/tools.logging "0.3.1"]
                  ;     [org.clojure/core.match "0.3.0-alpha4"]
-                 [prismatic/schema "0.2.2"]
+          ;       [prismatic/schema "0.2.2"]
                  [org.clojure/java.jdbc "0.4.2"]]
 
 

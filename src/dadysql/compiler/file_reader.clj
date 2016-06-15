@@ -17,7 +17,11 @@
           m (clojure.string/split ms #"\*/")
           :when (not (clojure.string/blank? m))]
       (if (.startsWith (clojure.string/triml m) "{")
-        (edn/read-string m)
+        (do
+          ;(println m)
+          (edn/read-string m)
+          #_(eval m))
+        ;
         m))))
 
 
@@ -29,7 +33,7 @@
                 (nil? f) (conj acc v)
                 (string? v) (if (sql-key f)
                               acc
-                              (->> v                        ;(split-sql-params v)
+                              (->> (clojure.string/trim v)
                                    (assoc f sql-key)
                                    (conj r)))
                 :else (conj acc v)))
@@ -42,7 +46,8 @@
   (-> file-name
       (tie-file-reader)
       (map-sql-tag)
-      (cpl/do-compile pc)))
+
+      (cpl/do-compile )))
 
 
 

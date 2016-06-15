@@ -8,7 +8,7 @@
             [dady.common :refer :all]
             [dadysql.core :as c]
             [dadysql.jdbc :as j]
-            [schema.core :as s]))
+            #_[schema.core :as s]))
 
 
 #_(deftest doc-key-test
@@ -19,17 +19,17 @@
   )
 
 
-(deftest module-key-spec-test
+#_(deftest module-key-spec-test
   (testing "testing module key spec "
     (let [s (spec (get-node-from-path (new-root-node) [module-key]))]
-      (clojure.pprint/pprint s)
+      ;(clojure.pprint/pprint s)
       (is (not (nil? s)))
       )
     ))
 
 ;(module-key-spec-test)
 
-(deftest config-key-spec-test
+#_(deftest config-key-spec-test
   (testing "testing module key spec "
     (let [s (spec (get-node-from-path (new-root-node) [global-key]))]
       ;(clojure.pprint/pprint s)

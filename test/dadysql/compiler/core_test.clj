@@ -201,14 +201,40 @@
                            :delete-dept {:validation [[:id :type 'vector? "Id will be sequence"]
                                                       [:id :contain 'long? "Id contain will be Long "]]}}}]
 
-          actual-result (r/do-compile w (ci/new-root-node))]
+          actual-result (r/do-compile w )]
       ;(clojure.pprint/pprint actual-result)
       (is (not-empty actual-result)))))
 
 
-(do-compile-test)
+;(do-compile-test)
 
 ;(run-tests)
+
+
+(deftest do-compile-test2
+  (testing "test do-compile "
+    (let [w [{:name         :_config_
+              :file-reload  true
+              :timeout      3000
+              :reserve-name #{:create-ddl :drop-ddl :init-data}}
+             {:doc        "Modify department"
+              :name       [:insert-dept :update-dept :delete-dept]
+              :model      :department
+              :validation [[:id :type 'long? "Id will be Long"]]
+              :sql        "insert into department (id, transaction_id, dept_name) values (:id, :transaction_id, :dept_name);update department set dept_name=:dept_name, transaction_id=:next_transaction_id  where transaction_id=:transaction_id and id=:id;delete from department where id in (:id);"
+              :extend     {:insert-dept {:params  [[:transaction_id :ref-con 0]
+                                                   [:transaction_id :ref-con 0]]
+                                         :timeout 30}
+                           :update-dept {:params [[:next_transaction_id :ref-fn-key 'inc :transaction_id]]}
+                           :delete-dept {:validation [[:id :type 'vector? "Id will be sequence"]
+                                                      [:id :contain 'long? "Id contain will be Long "]]}}}]
+
+          actual-result (r/do-compile w )]
+      ;(clojure.pprint/pprint actual-result)
+      (is (not-empty actual-result)))))
+
+
+;(do-compile-test2)
 
 
 

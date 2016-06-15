@@ -3,7 +3,7 @@
         [dady.fail])
   (:require
     [dadysql.plugin.factory :as b]
-    [schema.core :as s]
+
     ;[dady.node-proto :as p]
     [dady.proto :refer :all]
     [dadysql.plugin.params.core :refer :all]

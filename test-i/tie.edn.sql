@@ -26,7 +26,7 @@ call next value for seq_meet;
 {:doc "General select statement. Name is used to identify each query, Abstract timeout will override with timeout here  "
  :name  [:get-dept-list :get-dept-by-ids :get-employee-list :get-meeting-list :get-employee-meeting-list]
  :model [:department :department :employee :meeting :employee-meeting]
- :extend1 {:get-dept-by-ids {:validation [[:id :type vector? "Id will be sequence"]
+ :extend {:get-dept-by-ids {:validation [[:id :type vector? "Id will be sequence"]
                                          [:id :contain long? "Id contain will be Long "]]
                                      :result #{:array}}}
  :timeout 5000

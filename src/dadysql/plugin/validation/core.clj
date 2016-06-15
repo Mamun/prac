@@ -129,7 +129,7 @@
          (validation-type-key)))
   (-process [_ result]
     (let [[p-value _ v-type e-message] result]
-      (if (sp/valid? v-type p-value)
+      (if (sp/valid? (eval v-type) p-value)
         result
         (f/fail {:msg   e-message
                  :value p-value
@@ -142,7 +142,7 @@
          (validation-contain-key)))
   (-process [_ result]
     (let [[p-value _ v-type e-message] result
-          r (mapv #(sp/valid? v-type %) p-value)
+          r (mapv #(sp/valid? (eval v-type) %) p-value)
           r (every? true? r)]
       (if r
         result

@@ -24,3 +24,13 @@
       (reset! tms w))
     (println "reading "))
   @tms)
+
+
+(comment
+
+  (->
+    (read-file "tie.edn.sql")
+
+    )
+
+  )

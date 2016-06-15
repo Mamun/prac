@@ -166,10 +166,11 @@
     (->> (group-by second (param-key m))
          (param-ref-fn-key)))
   (-pprocess [_ p-value m]
-    (let [[s _ f k] p-value]
+    (let [[s _ f k] p-value
+          f1 (eval f)]
       (->> (cc/replace-last-in-vector s k)
            (get-in m)
-           (f))))
+           (f1))))
   ParamRefGenKey
   (-porder [this] (:lorder this))
   (-pprocess? [_ m]

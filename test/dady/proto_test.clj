@@ -5,7 +5,7 @@
             [dadysql.plugin.factory :as c]
             [dadysql.plugin.params.core :as p]
             [dadysql.constant :refer :all]
-            [schema.core :as s]
+        ;    [schema.core :as s]
             [dady.common :refer :all]))
 
 
@@ -139,7 +139,7 @@
 
 ;(update-cell-test)
 
-(deftest cell-emit-test
+#_(deftest cell-emit-test
   (testing "cell emit test "
     (let [app-proc (bi/new-module-key-node (c/new-leaf-node-coll))
           sch-value {doc-key   "hello"

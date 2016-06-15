@@ -1,8 +1,10 @@
 (ns dadysql.compiler.core
   (:require [dadysql.constant :refer :all]
             [dady.common :as cc]
-            [dadysql.compiler.schema :as cs]
-            [dadysql.compiler.spec :as s]
+       ;     [dadysql.compiler.schema :as cs]
+            [clojure.spec :as s]
+            [dadysql.compiler.spec :as dcs]
+            [dadysql.compiler.spec-util :as dcsu]
             [dady.proto :as p]))
 
 ;; Need to split it with name and model
@@ -38,6 +40,7 @@
 
 (defn count-sql-and-name!
   [m]
+  ;(clojure.pprint/pprint m)
   (let [sqls (sql-key m)
         name-coll (name-key m)
         t-sqls (count sqls)
@@ -51,6 +54,7 @@
 
 (defn distinct-name!
   [m-coll]
+  ;(clojure.pprint/pprint m-coll)
   (let [i-coll (->> m-coll
                     (map (juxt name-key))
                     (flatten))]
@@ -162,10 +166,10 @@
 
 
 
-(defn compile-one
+#_(defn compile-one
   [process-context f-config m]
   ;(cs/valid-spec (p/spec process-context ) m)
-  (s/valid-module? m)
+  (dcs/valid-module? m)
   ;(clojure.pprint/pprint (p/spec process-context ))
   ;(p/spec-valid? process-context m)
   (let [m (p/compiler-emit process-context m)
@@ -186,23 +190,24 @@
                             (remove-duplicate)))))))
 
 
-(defn compile-one-config
+#_(defn compile-one-config
   [config gpc]
   (if (nil? config)
     (default-config)
     (->> config
-         (s/valid-global?)
-         #_(cs/valid-spec (p/spec gpc ) )
+         (dcs/valid-global?)
+         #_(cs/valid-spec (p/spec gpc))
          (p/compiler-emit gpc)
          (merge (default-config))
          (assoc-join-with-recursive-meta-key))))
+
 
 (defn into-name-map
   [v]
   (hash-map (name-key v) v))
 
 
-(defn do-compile
+#_(defn do-compile
   [coll cpc]
   (let [gpc (p/get-node-from-path cpc [global-key])
         mpc (p/get-node-from-path cpc [module-key])
@@ -221,3 +226,68 @@
     (into {} (map into-name-map) batch-result)))
 
 
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+
+
+(defn do-grouping [coll]
+  (let [{:keys [config others]} (group-by-config-key coll)
+        f-config (or (first config) {})
+        {:keys [reserve others]} (-> (get-in f-config [reserve-name-key])
+                                     (group-by-reserve-key others))]
+    (hash-map :config f-config :reserve reserve :others others)))
+
+
+
+(defn assoc-join-with-extend-key
+  "Assoc join key with model "
+  [tm]
+  (let [v (get-in tm [join-key])
+        v (dcsu/join-emit v)
+        w (merge-with merge v (get-in tm [extend-meta-key]))]
+    (-> tm
+        (dissoc join-key)
+        (assoc extend-meta-key w))))
+
+
+(defn emit-config [config]
+  (->> (merge (default-config) config)
+       (assoc-join-with-extend-key)))
+
+
+(defn compile-one2 [f-config m]
+  (let [f-config (dissoc f-config doc-key :tx-prop file-reload-key reserve-name-key name-key)
+        assoc-group-key (fn [w] (assoc w group-key (group-key m)))
+        m1 (-> m
+               (assoc-join-with-recursive-meta-key)
+               (dissoc doc-key sql-key name-key model-key group-key))
+        m (update-in m [:sql] dcsu/sql-emit)]
+    (->> (select-keys m [name-key model-key sql-key])
+         (count-sql-and-name!)
+         (map-name-model-sql-key)
+         (mapv (combine-key f-config m1))
+         (mapv (fn [w] (->> w
+                            (do-filter-for-skip)
+                            (do-filter-for-dml-type)
+                            (assoc-fnil-model)
+                            (assoc-group-key)
+                            (remove-duplicate)))))))
+
+
+
+(defn do-compile [coll]
+  (if (s/valid? :dadysql.compiler.spec/spec coll)
+    (let [{:keys [config reserve others]} (do-grouping coll)
+          ;_ (clojure.pprint/pprint config )
+
+          f-config (emit-config config)
+          batch-steps (comp
+                        (map #(compile-one2 f-config %))
+                        cat)
+          batch-result (->> (into [config] batch-steps others)
+                            (concat reserve))]
+      (distinct-name! batch-result)
+      (into {} (map into-name-map) batch-result))))

@@ -2,6 +2,7 @@
   (:require [dadysql.constant :refer :all]
             [dady.proto :refer :all]
             [dady.fail :as f]
+            [clojure.set]
             [dady.common :as cc]
             [dadysql.plugin.join.join-impl :as j]))
 

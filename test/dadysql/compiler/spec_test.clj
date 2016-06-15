@@ -1,5 +1,6 @@
 (ns dadysql.compiler.spec-test
   (:use [clojure.test]
+        [dadysql.compiler.core]
         [dadysql.compiler.spec])
   (:require [clojure.spec :as s]
             [dadysql.compiler.file-reader :as f]))
@@ -21,7 +22,7 @@
                    :reserve-name #{:create-ddl :drop-ddl :init-data}}]
 
           r (s/conform :dadysql.compiler.spec/spec w)]
-      (clojure.pprint/pprint (s/explain :dadysql.compiler.spec/spec r))
+      (println (s/explain :dadysql.compiler.spec/spec r))
       (is (not= :clojure.spec/invalid r)))))
 
 
@@ -49,13 +50,13 @@
 
           w [config module]
           r (s/conform :dadysql.compiler.spec/spec w)]
-      (clojure.pprint/pprint r)
+ ;     (clojure.pprint/pprint r)
       ;(clojure.pprint/pprint (as-map r))
       (is (not= :clojure.spec/invalid r)))))
 
 
 
-(do-compile-test)
+;(do-compile-test)
 
 
 
@@ -75,28 +76,43 @@
 
           w [ module]
           r (s/conform :dadysql.compiler.spec/spec w)]
-      (clojure.pprint/pprint r)
+    ;  (clojure.pprint/pprint r)
       ;(clojure.pprint/pprint (as-map r))
       (is (not= :clojure.spec/invalid r)))))
 
 
+;(do-compile-test3)
 
 
 
 
-#_(deftest do-compile-file-test
+
+
+(deftest do-compile-file-test4
   (testing "test do compile file "
-    (let [w (-> "tie.edn.sql" (f/tie-file-reader) (f/map-sql-tag) )
-          r (s/conform :dadysql.compiler.spec/spec w)]
-      (clojure.pprint/pprint r)
-      (clojure.pprint/pprint (as-map r))
-      )))
+    (let [w (-> "tie.edn.sql"
+                (f/tie-file-reader)
+                (f/map-sql-tag)
+                )
+          r (s/conform :dadysql.compiler.spec/spec w)
+          w1 (do-grouping w)
+          config (-> w1
+                (emit-config)
+                (:config))]
+      (is (not-empty config))
+      #_(clojure.pprint/pprint w1)
+      #_(clojure.pprint/pprint config))))
+
+
+
+
+(do-compile-file-test4)
 
 
 
 
 
-(->> "tie.edn.sql"
+#_(->> "tie.edn.sql"
     (f/tie-file-reader)
      (f/map-sql-tag)
      (s/conform :dadysql.compiler.spec/spec )

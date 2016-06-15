@@ -3,7 +3,7 @@
         [dady.proto])
   (:require [dadysql.plugin.validation.core :refer :all]
             [dady.fail :refer :all]
-            [schema.core :as s]
+
             [dadysql.constant :refer :all]))
 
 
@@ -13,7 +13,7 @@
                        :ccoll  (new-child-coll)}))
 
 
-(deftest validation-key-spec-test
+#_(deftest validation-key-spec-test
   (testing "test validation key spec "
     (let [coll {validation-key [[:id validation-contain-key 'long? "error"]
                                 [:id validation-type-key    'sequential? "error"]]}
@@ -64,7 +64,7 @@
 
 
 
-(deftest validation-compile-test
+#_(deftest validation-compile-test
   (testing "test validation-compile"
     (let [v-coll [[:id :type (read-string "Long") " Id contain will be Long"]]
           p (get-proc)
