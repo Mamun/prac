@@ -1,9 +1,14 @@
 (ns dadysql.compiler.spec
-  (:require [clojure.spec :as s]
-            #_[dadysql.constant :as c]))
+  (:use [dadysql.constant])
+  (:require [clojure.spec :as s]))
 
 
 (defn any? [_] true)
+
+(defn resolve? [v]
+  (if (resolve v) true false))
+
+
 
 (s/def ::isolation #{:none :read-committed :read-uncommitted :repeatable-read :serializable})
 (s/def ::read-only? #{true false})
@@ -11,10 +16,6 @@
 (s/def ::file-reload boolean?)
 (s/def ::reserve-name (s/+ keyword?))
 
-(s/def ::join (clojure.spec/*
-                (clojure.spec/alt
-                  :1-* (s/tuple keyword? keyword? #{:1-1 :1-n :n-1} keyword? keyword?)
-                  :n-n (s/tuple keyword? keyword? #(= % :n-n) keyword? keyword? (s/tuple keyword? keyword? keyword?)))))
 
 
 (s/def ::doc string?)
@@ -33,11 +34,23 @@
 
 
 
+(s/def ::1-* (s/tuple keyword? keyword? #{join-1-1-key join-1-n-key join-n-1-key} keyword? keyword?))
+(s/def ::n-n (s/tuple keyword? keyword? #(= % join-n-n-key) keyword? keyword? (s/tuple keyword? keyword? keyword?)))
 
-(s/def ::param-ref-con (clojure.spec/tuple keyword? #(= :ref-con %) any?))
-(s/def ::param-ref (clojure.spec/tuple keyword? #(= :ref-key %) keyword?))
-(s/def ::param-ref-fn (clojure.spec/tuple keyword? #(= :ref-fn-key %) resolve keyword?))
-(s/def ::param-ref-gen (clojure.spec/tuple keyword? #(= :ref-gen %) keyword?))
+(s/def ::join
+  (clojure.spec/*
+    (clojure.spec/alt
+      :1-* ::1-*
+      :n-n ::n-n)))
+
+
+
+(s/def ::param-ref-con (clojure.spec/tuple keyword? #(= param-ref-con-key %) any?))
+(s/def ::param-ref     (clojure.spec/tuple keyword? #(= param-ref-key %) keyword?))
+(s/def ::param-ref-fn  (clojure.spec/tuple keyword? #(= param-ref-fn-key %) resolve? keyword?))
+(s/def ::param-ref-gen (clojure.spec/tuple keyword? #(= param-ref-gen-key %) keyword?))
+
+
 
 
 (s/def ::params
@@ -50,12 +63,18 @@
 
 
 
+(s/def ::vali-type         (clojure.spec/tuple keyword? #(= validation-type-key %) resolve? string?))
+(s/def ::vali-type-contain (clojure.spec/tuple keyword? #(= validation-contain-key %) resolve? string?))
+(s/def ::vali-range        (clojure.spec/tuple keyword? #(= validation-range-key %) integer? integer? string?))
+
+
+
 (s/def ::validation
   (clojure.spec/*
     (clojure.spec/alt
-      :type (clojure.spec/tuple keyword? #(= :type %) resolve string?)
-      :type-contain (clojure.spec/tuple keyword? #(= :contain %) resolve string?)
-      :range (clojure.spec/tuple keyword? #(= :range %) integer? integer? string?))))
+      :type ::vali-type
+      :type-contain ::vali-type-contain
+      :range ::vali-range)))
 
 
 
@@ -74,19 +93,6 @@
 
 
 
-#_(defn valid-module? [v]
-  (if (s/valid? ::module v)
-    v
-    (do (clojure.pprint/pprint v)
-        (throw (s/explain ::module v)))))
-
-
-#_(defn valid-global? [v]
-  (if (s/valid? ::global v)
-    v
-    (do
-      (clojure.pprint/pprint v)
-      (throw (s/explain ::global v)))))
 
 
 
@@ -94,26 +100,6 @@
 
 
 
-
-
-
-(comment
-
-
-
-
-  (map? {:a 3})
-
-
-
-  (let [v [{:a 4} "list b"
-           {:a 5} "list c"]
-        w (s/*
-            (s/or
-
-              :op (s/cat :v map? :sql string?)))]
-    (s/explain w v)
-    (s/conform w v)))
 
 
 

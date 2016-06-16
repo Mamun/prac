@@ -131,6 +131,8 @@
                        (- (System/nanoTime)
                           st)) 1000000.0)                   ;;in msecs
             r (if (seq? r) (into [] r) r)]
+;        (clojure.pprint/pprint r)
+
         (if (f/failed? r)
           r
           (assoc m output-key r

@@ -95,7 +95,9 @@
                 (map sql-str-emit)
                 (map (fn [v] {sql-key v
                               dml-key (dml-type v)})))
-        sql (clojure.string/split (clojure.string/trim sql-str) #";")]
+        sql (-> (clojure.string/trim sql-str)
+                (clojure.string/lower-case)
+                (clojure.string/split  #";"))]
     (->> (transduce p conj [] sql)
          (mapv (fn [i m]
                  (assoc m index i)

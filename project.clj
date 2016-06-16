@@ -28,6 +28,8 @@
                    :dependencies   [[org.clojure/tools.namespace "0.2.11"]
                                     [org.clojure/tools.nrepl "0.2.10"]
 
+                                    [org.clojure/test.check "0.9.0"]
+
                                     [com.h2database/h2 "1.3.154"]
                                     [c3p0/c3p0 "0.9.1.2"]
                                     [ch.qos.logback/logback-classic "1.1.3"]]}

@@ -2,8 +2,7 @@
   (:require [clojure.java.io :as io]
             [clojure.tools.reader.edn :as edn]
             [dadysql.constant :refer :all]
-            [dadysql.compiler.core :as cpl]
-            ))
+            [dadysql.compiler.core :as cpl]))
 
 
 (defn tie-file-reader
@@ -18,10 +17,8 @@
           :when (not (clojure.string/blank? m))]
       (if (.startsWith (clojure.string/triml m) "{")
         (do
-          ;(println m)
-          (edn/read-string m)
-          #_(eval m))
-        ;
+          (edn/read-string
+            (clojure.string/lower-case m)))
         m))))
 
 
@@ -46,8 +43,7 @@
   (-> file-name
       (tie-file-reader)
       (map-sql-tag)
-
-      (cpl/do-compile )))
+      (cpl/do-compile)))
 
 
 

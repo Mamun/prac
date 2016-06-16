@@ -8,7 +8,7 @@
 
 
 
-
+;(integer? 3)
 ;(get-in u/tie-system-v [:tms])
 
 (comment
@@ -64,14 +64,15 @@
   ;; with params
   (-> @td/ds
       (t/pull (t/read-file "tie.edn.sql")
-              :name [:get-dept-by-id]
-              :params {:id 1}
+              {:name   [:get-dept-by-id]
+               :params {:id 9}}
               ;:rformat :map
               )
       (clojure.pprint/pprint))
 
 
-
+  ;(jdbc/query @td/ds "select * from department where id = 1 ")
+  ;(jdbc/execute! @td/ds ["insert into department (id, transaction_id, dept_name) values (9, 0, 'Business' )"])
 
 
   ;; for sequence of params
