@@ -101,7 +101,7 @@
 
 
   (-> (new-root-node)
-      (select-module-node-processor)
+      ;(select-module-node-processor)
       (remove-node [param-key])
       )
 

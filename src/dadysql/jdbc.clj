@@ -19,8 +19,8 @@
   ([file-name pc]
    (-> (fr/read-file file-name pc)
        (assoc-in [tc/global-key tc/file-name-key] file-name)
-       (assoc-in [tc/global-key tc/process-context-key]
-                 (c/select-module-node-processor pc tc/module-key)))))
+       (assoc-in [tc/global-key tc/process-context-key] pc))))
+
 
 
 (defmulti default-request (fn [t _] t))

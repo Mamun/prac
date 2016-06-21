@@ -66,7 +66,7 @@
 
 
 
-(extend-protocol INodeCompiler
+#_(extend-protocol INodeCompiler
   JoinKey
   (-spec [this]
     `{(schema.core/optional-key ~(-node-name this))

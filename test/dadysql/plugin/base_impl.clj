@@ -6,37 +6,20 @@
     [dady.proto :refer :all]))
 
 
-(defbranch ExtendKey [lname coll lorder])
-(defbranch Modulekey [lname coll lorder])
-(defbranch GlobalKey [lname coll lorder])
 
 
-(defn branch?
-  [node]
-  (satisfies? IBranchNode node))
 
-
-(defn childrent
-  [node]
-  (-childs node))
-
-
-(defn new-module-key-node
-  [leaf-node-coll]
-  (Modulekey. module-key leaf-node-coll 0))
-
-
-(defn new-global-key-node
+#_(defn new-global-key-node
   ([leaf-node-coll ]
    (GlobalKey. global-key leaf-node-coll 0)))
 
 
-(defn new-extend-key-node
+#_(defn new-extend-key-node
   ([leaf-node-coll ]
    (ExtendKey. extend-meta-key leaf-node-coll 0)))
 
 
-(defn check-tx-proc?
+#_(defn check-tx-proc?
   [v]
   (let [tt [{:isolation #{:none :read-committed :read-uncommitted :repeatable-read :serializable}}
             {:read-only? #{true false}}]
@@ -51,7 +34,7 @@
               ) true v)))
 
 
-(defn default-global-spec
+#_(defn default-global-spec
   []
   `{(schema.core/required-key ~name-key)         schema.core/Keyword
     (schema.core/optional-key ~tx-prop)          schema.core/Any #_(s/pred check-tx-proc? 'check-tx-proc)
@@ -64,7 +47,7 @@
 
 
 
-(defn merge-compiler-spec
+#_(defn merge-compiler-spec
   [root-spec node-coll]
   (reduce (fn [acc v]
             (if (satisfies? INodeCompiler v)
@@ -73,7 +56,7 @@
             ) root-spec node-coll))
 
 
-(defn compiler-emit-batch
+#_(defn compiler-emit-batch
   [node-coll node-v-m]
   (let [child-g (group-by-node-name node-coll)]
     (->> (keys node-v-m)
@@ -84,7 +67,7 @@
 
 
 
-(extend-protocol INodeCompiler
+#_(extend-protocol INodeCompiler
   ExtendKey
   (-spec [this]
     (let [r `{(schema.core/optional-key ~model-key) schema.core/Keyword}

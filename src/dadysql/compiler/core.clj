@@ -289,4 +289,6 @@
           batch-result (->> (into [config] batch-steps others)
                             (concat reserve))]
       (distinct-name! batch-result)
-      (into {} (map into-name-map) batch-result))))
+      (->> batch-result
+           (dcsu/resolve-compiler)
+           (into {} (map into-name-map) )))))

@@ -49,11 +49,7 @@
 
 
 (deftest param-ref-con-test
-  (testing "test param-ref-con "
-    (let [w (new-child-keys)
-          cw (get-node-from-path w [param-ref-con-key])]
-      (is (true?
-            (sp/valid? (eval (spec cw)) [:id param-ref-con-key 5])))))
+
   (testing "test param-ref-con "
     (let [w (new-child-keys)
           cw (get-node-from-path w [param-ref-con-key])]
@@ -74,7 +70,7 @@
              actual-result))))
   (testing "test param-ref-con "
     (let [context (-> (b/new-root-node)
-                      (select-module-node-processor module-key)
+                      ;(select-module-node-processor module-key)
                       (assoc-param-ref-gen (fn [k v] 5)))
           context (get-node-from-path context [param-key])
           coll [{param-key [[:transaction_id param-ref-con-key 0]],
@@ -108,7 +104,7 @@
              actual-result))))
   (testing "test param-ref-key "
     (let [context (-> (b/new-root-node)
-                      (select-module-node-processor module-key)
+                      ;(select-module-node-processor module-key)
                       (assoc-param-ref-gen (fn [k v] 5)))
           context (get-node-from-path context [param-key])
           ;         _ (clojure.pprint/pprint context)
@@ -141,7 +137,7 @@
              actual-result))))
   (testing "test param-ref-fn-key "
     (let [context (-> (b/new-root-node)
-                      (select-module-node-processor module-key)
+                      ;(select-module-node-processor module-key)
                       (assoc-param-ref-gen (fn [k v] 5)))
           context (get-node-from-path context [param-key])
           coll [{param-key [[:transaction_id param-ref-fn-key inc :id]],
@@ -161,7 +157,7 @@
 (deftest param-impl-test
   (testing "test params-ref-gen-key"
     (let [context (-> (b/new-root-node)
-                      (select-module-node-processor module-key)
+                      ;(select-module-node-processor module-key)
                       (assoc-param-ref-gen (fn [k v] 5)))
           context (get-node-from-path context [param-key])
           coll [{param-key [[:transaction_id param-ref-gen-key :id]],
@@ -177,7 +173,7 @@
              actual-result))))
   (testing "test params-ref-gen-key"
     (let [context (-> (b/new-root-node)
-                      (select-module-node-processor module-key)
+                      ;(select-module-node-processor module-key)
                       (assoc-param-ref-gen (fn [k v] (fail "Not found"))))
           context (get-node-from-path context [param-key])
           coll [{param-key [[:transaction_id param-ref-gen-key :id]],
@@ -196,7 +192,7 @@
 (deftest params-ref-gen-key-test
   (testing "test param-ref-fn-key "
     (let [context (-> (b/new-root-node)
-                      (select-module-node-processor module-key)
+                      ;(select-module-node-processor module-key)
                       (assoc-param-ref-gen (fn [k v] 3)))
           context (get-node-from-path context [param-key])
           coll [{param-key [[:transaction_id param-ref-gen-key :id]],
@@ -211,7 +207,7 @@
                actual-result)))))
   (testing "test params-ref-gen-key"
     (let [context (-> (b/new-root-node)
-                      (select-module-node-processor module-key)
+                      ;(select-module-node-processor module-key)
                       (assoc-param-ref-gen (fn [k v] (fail "Not found"))))
           context (get-node-from-path context [param-key])
           coll [{param-key [[:transaction_id param-ref-gen-key :id]],
@@ -230,7 +226,7 @@
 (deftest do-param-comp-test
   (testing "test do-params-comp  "
     (let [context (-> (b/new-root-node)
-                      (select-module-node-processor module-key)
+                      ;(select-module-node-processor module-key)
                       (assoc-param-ref-gen (fn [k v] 5)))
           context (get-node-from-path context [param-key])
           coll [{param-key [[:transaction_id param-ref-con-key 0]
@@ -248,7 +244,7 @@
              actual-result))))
   (testing "test do-params-comp for empty collection  "
     (let [context (-> (b/new-root-node)
-                      (select-module-node-processor module-key)
+                      ;(select-module-node-processor module-key)
                       (assoc-param-ref-gen (fn [k v] 5)))
           context (get-node-from-path context [param-key])
           coll []

@@ -181,22 +181,6 @@
 
 
 
-#_(defn- not-blank? [^String v]
-  (not (clojure.string/blank? v)))
-
-
-(extend-protocol INodeCompiler
-  SqlKey
-  (-spec [this]
-    `{(schema.core/required-key ~(:cname this))
-      (schema.core/both schema.core/Str
-                        (schema.core/pred (fn [v#]
-                                            (not (clojure.string/blank? v#))
-                                            ) 'not-blank?))})
-  #_(-spec-valid? [this v] (s/validate (-spec this) v))
-  (-emit [_ w]
-    (sql-emit w)))
-
 
 (defn batch-process [childs m]
   (let [p (-> (group-by-node-name childs)
@@ -241,3 +225,22 @@
   (-process? [_ m] (= dml-call-key (dml-key m)))
   (-process [_ m]
     (do-default-proc m)))
+
+
+
+
+#_(defn- not-blank? [^String v]
+    (not (clojure.string/blank? v)))
+
+
+#_(extend-protocol INodeCompiler
+    SqlKey
+    (-spec [this]
+      `{(schema.core/required-key ~(:cname this))
+        (schema.core/both schema.core/Str
+                          (schema.core/pred (fn [v#]
+                                              (not (clojure.string/blank? v#))
+                                              ) 'not-blank?))})
+    #_(-spec-valid? [this v] (s/validate (-spec this) v))
+    (-emit [_ w]
+      (sql-emit w)))

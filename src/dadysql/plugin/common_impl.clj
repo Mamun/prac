@@ -2,8 +2,7 @@
   (:require
     [dadysql.constant :refer :all]
     [dady.fail :as f]
-    [dady.proto :refer :all]
-    [dady.common :as cc]))
+    [dady.proto :refer :all]))
 
 
 
@@ -44,75 +43,6 @@
 
 (defn new-result-key []
   (ResultKey. result-key 10 :output))
-
-
-
-
-#_(defn resolve-model?
-  [v]
-  (if (keyword? v)
-    true
-    (every? keyword? v)))
-
-
-(extend-protocol INodeCompiler
-  DocKey
-  (-spec [this]
-    `{(schema.core/optional-key ~(-node-name this))
-      schema.core/Str})
-  (-emit [_ v] v)
-  TimeoutKey
-  (-spec [this]
-    `{(schema.core/optional-key ~(-node-name this))
-      schema.core/Int})
-  (-emit [_ v] v)
-  NameKey
-  (-spec [this]
-    `{(schema.core/required-key ~(-node-name this))
-      (schema.core/pred (fn [v#]
-                          (if (keyword? v#)
-                            true
-                            (every? keyword? v#))
-                          ) 'resolve-model?)})
-  (-emit [_ w]
-    (cc/as-sequential w))
-  ModelKey
-  (-spec [this]
-    `{(schema.core/optional-key ~(-node-name this))
-      (schema.core/pred (fn [v#]
-                          (if (keyword? v#)
-                            true
-                            (every? keyword? v#))
-                          ) 'resolve-model?)})
-  (-emit [_ v] v)
-  SkipKey
-  (-spec [this]
-    `{(schema.core/optional-key ~(-node-name this))
-     #{(schema.core/enum ~validation-key ~column-key ~join-key)}})
-  (-emit [_ v] v)
-  GroupKey
-  (-spec [this]
-          `{(schema.core/optional-key ~(-node-name this))
-            schema.core/Keyword})
-  (-emit [_ v] v)
-  CommitKey
-  (-spec [this]
-          `{(schema.core/optional-key ~(-node-name this))
-            (schema.core/enum ~commit-all-key ~commit-any-key ~commit-none-key)})
-  (-emit [_ v] v)
-  ColumnKey
-  (-spec [this]
-    `{(schema.core/optional-key ~(-node-name this))
-      {schema.core/Keyword schema.core/Keyword}})
-  (-emit [_ v] v)
-  ResultKey
-  (-spec [this]
-    `{(schema.core/optional-key ~(-node-name this))
-      #{(schema.core/enum ~result-array-key ~result-single-key)}}
-    )
-  (-emit [_ v] v)
-  ;;Extend key
-  )
 
 
 

@@ -1,8 +1,8 @@
 (ns dadysql.plugin.factory
   (:require
     [dadysql.constant :refer :all]
-    [dady.proto :as np]
-    [dadysql.plugin.base-impl :as b]
+    ;[dady.proto :refer :all]
+    ;[dady.proto :as np]
     [dadysql.plugin.common-impl :as c]
     [dadysql.plugin.params.core :as p]
     [dadysql.plugin.validation.core :as v]
@@ -27,9 +27,14 @@
           (join/new-join-key)))
 
 
+(defn new-root-node
+  []
+  (new-leaf-node-coll)
+  #_(new-module-key-node ))
 
 
-(defn select-node
+
+#_(defn select-node
   "Return all select node "
   [node-coll node-name-coll]
   (let [s (into #{} node-name-coll)
@@ -39,27 +44,23 @@
       (into (empty node-coll) r))))
 
 
-(defn new-root-node
-  []
-  (let [leaf-node-coll (new-leaf-node-coll)
-        leaf-name-for-extends [param-key
-                               column-key
-                               timeout-key
-                               validation-key
-                               skip-key
-                               result-key]
-        leaf-node-coll (->> leaf-name-for-extends
-                            (select-node leaf-node-coll)
-                            (b/new-extend-key-node)
-                            (conj leaf-node-coll))
-        leaf-for-global (select-node leaf-node-coll [doc-key
-                                                     param-key
-                                                     column-key
-                                                     validation-key
-                                                     result-key
-                                                     extend-meta-key
-                                                     timeout-key
-                                                     join-key])
-        gpc (b/new-global-key-node leaf-for-global)
-        mpc (b/new-module-key-node leaf-node-coll)]
-    (vector gpc mpc)))
+#_(defbranch ExtendKey [lname coll lorder])
+#_(defbranch Modulekey [lname coll lorder])
+#_(defbranch GlobalKey [lname coll lorder])
+
+
+#_(defn branch?
+  [node]
+  (satisfies? IBranchNode node))
+
+
+#_(defn childrent
+  [node]
+  (-childs node))
+
+
+#_(defn new-module-key-node
+  [leaf-node-coll]
+  (Modulekey. module-key leaf-node-coll 0))
+
+

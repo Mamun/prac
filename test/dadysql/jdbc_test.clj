@@ -23,32 +23,35 @@
              actual-result)))))
 
 
-
+;(var long?)
 
 (deftest read-file-test
 
   (testing "test read file "
     (let [w (read-file "tie.edn.sql")]
       (do
-        (are [expected actual]
-          (= expected actual)
+        (are [e a] (= e a)
           :gen-dept (get-in w [:gen-dept :model]))
 
-        (are [expected actual]
-          (= expected actual)
+       ; (clojure.pprint/pprint (get-in w [:get-dept-by-id validation-key]))
+
+        (are [e a]  (= e a)
           ;get-dept-by-id
           :department (get-in w [:get-dept-by-id model-key])
           dml-select-key (get-in w [:get-dept-by-id dml-key])
           3000 (get-in w [:get-dept-by-id timeout-key])
           ["select * from department where id = :id " :id] (get-in w [:get-dept-by-id sql-key])
-          [[:id :type #'clojure.core/long? "Id will be Long "]] (get-in w [:get-dept-by-id validation-key])
+       ;   [[:id :type (resolve 'long?) "Id will be Long "]] (get-in w [:get-dept-by-id validation-key])
           [[:department :id :1-n :employee :dept_id]] (get-in w [:get-dept-by-id join-key])
 
-          [[:id :type #'clojure.core/vector? "Id will be sequence"]
+          #_[[:id :type #'clojure.core/vector? "Id will be sequence"]
            [:id :contain #'clojure.core/long? "Id contain will be Long "]]
-          (get-in w [:get-dept-by-ids :validation]))
+          ;M(get-in w [:get-dept-by-ids :validation])
+                    )
 
-        (are [expected actual]
+
+
+        #_(are [expected actual]
           (= expected actual)
 
           [[:id :type #'clojure.core/vector? "Id will be sequence"]
@@ -81,5 +84,21 @@
             [:employee-meeting :meeting_id :employee_id]]] (get-in w [:get-meeting-by-id :join]))))))
 
 
+#_(deftest read-file-test2
+  (ts))
 
-(run-tests)
+;(read-file-test)
+
+;(run-tests)
+
+;((resolve 'long?) "sdf")
+
+(deftest check-test
+  (testing "hello "
+    (are [e a]
+      (= e a)
+      [[:id :type (resolve 'long?) "id will be long "]]
+      [[:id :type #'clojure.core/long? "id will be long "]])))
+
+
+;(check-test)

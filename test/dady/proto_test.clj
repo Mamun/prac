@@ -1,7 +1,7 @@
 (ns dady.proto-test
   (:use [clojure.test]
         [dady.proto])
-  (:require [dadysql.plugin.base-impl :as bi]
+  (:require [dadysql.plugin.factory :as bi]
             [dadysql.plugin.factory :as c]
             [dadysql.plugin.params.core :as p]
             [dadysql.constant :refer :all]
@@ -20,11 +20,8 @@
 
 (deftest cell-index-single-test
   (testing "testing path-index-single "
-    (let [impl (c/new-leaf-node-coll)
-          gpc (bi/new-global-key-node impl)
-          mpc (bi/new-module-key-node impl)
-          c [gpc mpc]
-          p (cell-index-single c global-key)]
+    (let [mpc (bi/new-root-node )
+          p   (cell-index-single mpc name-key)]
       (is (= p 0)))))
 
 
@@ -32,25 +29,16 @@
 
 
 (deftest cell-index-batch-test
-  (testing "testing path-index-batch "
-    (let [impl (c/new-leaf-node-coll)
-          gpc (bi/new-global-key-node impl)
-          mpc (bi/new-module-key-node impl)
-          c [gpc mpc]
-          p (node-path c [module-key])]
-      (is (= p [1]))))
+
   (testing "testing path-index-batch 2"
     (let [impl (vector (p/new-param-key 0 (p/new-child-keys)))
-          gpc (bi/new-global-key-node impl)
-          mpc (bi/new-module-key-node impl)
-          c [gpc mpc]
-          p (node-path c [module-key param-key])]
-      (is (= p [1 :coll 0]))))
-  (testing "testing path-index-batch 2"
+          p (node-path impl [ param-key])]
+      (is (= p [0]))))
+  #_(testing "testing path-index-batch 2"
     (let [impl (vector (p/new-param-key 0 (p/new-child-keys)))
-          gpc (bi/new-global-key-node impl)
+
           mpc (bi/new-module-key-node impl)
-          c [gpc mpc]
+          c [ mpc]
           p (node-path c [module-key :param-key1])]
       (is (= p [])))))
 
@@ -82,19 +70,19 @@
 
 
 
-(deftest get-cell-test
+#_(deftest get-cell-test
   (testing "testing path-index-batch 2"
     (let [impl (vector (p/new-param-key 0 (p/new-child-keys)))
-          gpc (bi/new-global-key-node impl)
+
           mpc (bi/new-module-key-node impl)
-          c [gpc mpc]
+          c [ mpc]
           p (get-node-from-path c [module-key param-key])]
       (is (= (node-name p) param-key))))
   (testing "testing path-index-batch 2"
     (let [impl (vector (p/new-param-key 0 (p/new-child-keys)))
-          gpc (bi/new-global-key-node impl)
+
           mpc (bi/new-module-key-node impl)
-          c [gpc mpc]
+          c [mpc]
           p (get-node-from-path c [module-key param-key param-ref-con-key])]
       (is (= (node-name p) param-ref-con-key)))))
 
@@ -103,20 +91,20 @@
 ;(get-path-component-test)
 
 
-(deftest remove-cell-test
+#_(deftest remove-cell-test
   (testing "testing remove-path-component "
     (let [impl (vector (p/new-param-key 0 (p/new-child-keys)))
-          gpc (bi/new-global-key-node impl)
+
           mpc (bi/new-module-key-node impl)
-          c [gpc mpc]
+          c [mpc]
           p (remove-node-from-path c [module-key param-key param-ref-con-key])
           p (get-node-from-path p [module-key param-key param-ref-con-key])]
       (is (nil? p))))
   (testing "testing remove-path-component "
     (let [impl (vector (p/new-param-key 0 (p/new-child-keys)))
-          gpc (bi/new-global-key-node impl)
+
           mpc (bi/new-module-key-node impl)
-          c [gpc mpc]
+          c [mpc]
           p (remove-node-from-path c [module-key param-key])
           p (get-node-from-path p [module-key param-key])]
       (is (nil? p))))
@@ -128,7 +116,7 @@
 
 
 
-(deftest update-cell-test
+#_(deftest update-cell-test
   (testing "testing assoc-path-component "
     (let [impl (c/new-root-node)
           actual-result (update-node-to-path impl [module-key param-key]
@@ -158,7 +146,7 @@
   (testing "testing remove type "
     (let [w (->
               (c/new-root-node)
-              (select-module-node-processor module-key)
+              ;(select-module-node-processor module-key)
               (remove-type :output))
           w (get-child w :column)]
       (is (nil? w)))))

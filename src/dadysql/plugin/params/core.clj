@@ -34,7 +34,7 @@
           (ParamRefGenKey. param-ref-gen-key 3 temp-generator)))
 
 
-(defn get-child-spec [coll-node]
+#_(defn get-child-spec [coll-node]
   (->> coll-node
        (reduce (fn [acc node]
                  (->> acc
@@ -55,7 +55,7 @@
       root-node)))
 
 
-(defn get-params-key-schema [n coll]
+#_(defn get-params-key-schema [n coll]
   (let [s (get-child-spec coll)]
     `{(schema.core/optional-key ~n)
       (schema.core/pred (fn [v#] (clojure.spec/valid? (eval '~s) v#))
@@ -63,7 +63,7 @@
 
 
 
-(extend-protocol INodeCompiler
+#_(extend-protocol INodeCompiler
   ParamKey
   (-spec [this]
     (get-params-key-schema (-node-name this) (:ccoll this)))
@@ -166,11 +166,10 @@
     (->> (group-by second (param-key m))
          (param-ref-fn-key)))
   (-pprocess [_ p-value m]
-    (let [[s _ f k] p-value
-          f1 (eval f)]
+    (let [[s _ f k] p-value]
       (->> (cc/replace-last-in-vector s k)
            (get-in m)
-           (f1))))
+           (f))))
   ParamRefGenKey
   (-porder [this] (:lorder this))
   (-pprocess? [_ m]

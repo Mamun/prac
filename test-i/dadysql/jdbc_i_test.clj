@@ -1,4 +1,4 @@
-(ns dadysql.jdbc-test
+(ns dadysql.jdbc-i-test
   (:use [clojure.test])
   (:require [dadysql.constant :refer :all]
             [dady.common :refer :all]

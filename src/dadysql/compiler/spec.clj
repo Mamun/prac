@@ -11,8 +11,22 @@
 
 
 (s/def ::isolation #{:none :read-committed :read-uncommitted :repeatable-read :serializable})
-(s/def ::read-only? #{true false})
-(s/def ::tx-prop any? #_(s/keys :opt-un [::isolation ::read-only]))
+(s/def ::read-only? boolean?)
+;(s/def ::tx-prop any? #_(s/keys :opt-un [::isolation ::read-only]))
+
+(s/def ::tx-prop (s/cat :ck #{:isolation}
+                         :cv ::isolation
+                         :rk #{:read-only?}
+                         :rv ::read-only?))
+
+(comment
+
+
+  (s/explain ::tx-prop2 [:isolation :none :read-only? false])
+
+
+  )
+
 (s/def ::file-reload boolean?)
 (s/def ::reserve-name (s/+ keyword?))
 
@@ -91,7 +105,12 @@
 
 (s/def ::spec (clojure.spec/* (clojure.spec/alt :module ::module :global ::global)))
 
+(comment
 
+
+  (s/form ::spec)
+
+  )
 
 
 

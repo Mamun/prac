@@ -22,10 +22,10 @@
 
 ;(read-file "tie.edn.sql")
 
-#_(deftest read-file-test
+(deftest read-file-test
     (testing "test read-file "
-      (let [t (read-file "tie.edn.sql" (tie/comp-child-key (new-process-context-impl)))]
-        ;(println t)
+      (let [t (read-file "tie.edn.sql" nil)]
+        ;(clojure.pprint/pprint t)
         (is (not (nil? t))))))
 
 ;(read-file-test)

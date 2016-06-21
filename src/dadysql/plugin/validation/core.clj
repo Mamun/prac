@@ -3,8 +3,7 @@
   (:require [dadysql.constant :refer :all]
             [dady.common :as cc]
             [dady.fail :as f]
-            [clojure.spec :as sp]
-            #_[schema.core :as s]))
+            [clojure.spec :as sp]))
 
 
 (defbranch ValidationKey [cname ccoll corder])
@@ -22,56 +21,6 @@
           (ValidationTypeKey. validation-type-key 0)))
 
 
-(defn get-child-spec [coll-node]
-  (->> coll-node
-       (reduce (fn [acc node]
-                 (->> acc
-                      (cons (spec node))
-                      (cons (node-name node)))
-                 ) (list))
-       (cons 'clojure.spec/alt)
-       (list)
-       (cons 'clojure.spec/*)))
-
-
-
-(defn get-validation-key-schema [n coll]
-  (let [s (get-child-spec coll)]
-    `{(schema.core/optional-key ~n)
-      (schema.core/pred (fn [v#] (clojure.spec/valid? (eval '~s) v#))
-                        'k-spec-spec-valid?)}))
-
-
-
-
-
-(extend-protocol INodeCompiler
-  ValidationKey
-  (-spec [this]
-    (get-validation-key-schema (-node-name this) (:ccoll this)))
-  (-emit [this w]
-    (let [child-g (group-by #(-node-name %) (:ccoll this))]
-      (mapv #(-emit (get-in child-g [(second %) 0]) %) w)))
-  ValidationTypeKey
-  (-spec [_] '(clojure.spec/tuple keyword? keyword? resolve string?))
-  (-emit [_ ks]
-    (-> ks
-        (assoc 2 (resolve (nth ks 2)))
-        (update-in [0] cc/as-lower-case-keyword)))
-  ValidationContaionKey
-  (-spec [_] '(clojure.spec/tuple keyword? keyword? resolve string?))
-  (-emit [_ ks]
-    (-> ks
-        (assoc 2 (resolve (nth ks 2)))
-        (update-in [0] cc/as-lower-case-keyword)))
-  ValidationRangeKey
-  (-spec [_] '(clojure.spec/tuple keyword? keyword? integer? integer? string?))
-  (-emit [_ ks]
-    (-> ks
-        (update-in [0] cc/as-lower-case-keyword))))
-
-#_(let [v :hello]
-    `[:check ~v])
 
 (defn get-all-vali-key
   [m]
@@ -129,7 +78,7 @@
          (validation-type-key)))
   (-process [_ result]
     (let [[p-value _ v-type e-message] result]
-      (if (sp/valid? (eval v-type) p-value)
+      (if (sp/valid? v-type  p-value)
         result
         (f/fail {:msg   e-message
                  :value p-value
@@ -142,7 +91,7 @@
          (validation-contain-key)))
   (-process [_ result]
     (let [[p-value _ v-type e-message] result
-          r (mapv #(sp/valid? (eval v-type) %) p-value)
+          r (mapv #(sp/valid? v-type  %) p-value)
           r (every? true? r)]
       (if r
         result
