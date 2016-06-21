@@ -114,13 +114,13 @@
                :sql    "insert into department (id, transaction_id, dept_name) values (:Id, :transaction_id, :dept_name);call next value for seq_meet;"
                :extend {:insert-dept {:params     [[:transaction_id :ref-con 0]
                                                    [:transaction_id :ref-con 0]]
-                                      :validation [[:id :contain 'long? "Id contain will be Long "]]
+                                      :validation [[:id :contain 'int? "Id contain will be Long "]]
                                       :timeout    30}}}
 
 
             expected-result [{:timeout    30,
                               :params     [[:transaction_id :ref-con 0]],
-                              :validation [[:id :contain 'long? "Id contain will be Long "]],
+                              :validation [[:id :contain 'int? "Id contain will be Long "]],
                               :sql        ["insert into department (id, transaction_id, dept_name) values (:id, :transaction_id, :dept_name)"
                                            :id :transaction_id :dept_name],
                               :dml-type   :insert,
@@ -147,14 +147,14 @@
              {:doc        "Modify department"
               :name       [:insert-dept :update-dept :delete-dept]
               :model      :department
-              :validation [[:id :type 'long? "Id will be Long"]]
+              :validation [[:id :type 'int? "Id will be Long"]]
               :sql        "insert into department (id, transaction_id, dept_name) values (:id, :transaction_id, :dept_name);update department set dept_name=:dept_name, transaction_id=:next_transaction_id  where transaction_id=:transaction_id and id=:id;delete from department where id in (:id);"
               :extend     {:insert-dept {:params  [[:transaction_id :ref-con 0]
                                                    [:transaction_id :ref-con 0]]
                                          :timeout 30}
                            :update-dept {:params [[:next_transaction_id :ref-fn-key 'inc :transaction_id]]}
                            :delete-dept {:validation [[:id :type 'vector? "Id will be sequence"]
-                                                      [:id :contain 'long? "Id contain will be Long "]]}}}]
+                                                      [:id :contain 'int? "Id contain will be Long "]]}}}]
           actual-result (r/do-compile w )]
       (is (not-empty (:insert-dept actual-result)))
       (is (not-empty (:update-dept actual-result)))

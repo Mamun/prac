@@ -15,7 +15,7 @@
 
 #_(deftest validation-key-spec-test
   (testing "test validation key spec "
-    (let [coll {validation-key [[:id validation-contain-key 'long? "error"]
+    (let [coll {validation-key [[:id validation-contain-key 'int? "error"]
                                 [:id validation-type-key    'sequential? "error"]]}
           proc (get-proc)
           result (s/validate (eval (spec proc)) coll)]
@@ -25,7 +25,7 @@
 
 #_(let [spec (spec (get-proc))]
   (clojure.pprint/pprint spec)
-  (s/validate (eval spec) {validation-key [[:id validation-contain-key 'long? "error"]
+  (s/validate (eval spec) {validation-key [[:id validation-contain-key 'int? "error"]
                                            [:id validation-type-key    'sequential? "error"]
                                            ]})
   )
@@ -37,21 +37,21 @@
 
 (deftest validation-key-impl-test
   (testing "test validation-key-impl "
-    (let [coll {validation-key [[:id validation-contain-key long? "error"]
+    (let [coll {validation-key [[:id validation-contain-key int? "error"]
                                 [:id validation-type-key vector? "error"]]
                 input-key      [{:id 3}]
                 sql-key        ["select * from tab " :id]}
           actul-result (-process (get-proc) coll)]
       (is (failed? actul-result))))
   (testing "test validation-key-process "
-    (let [coll {validation-key [[:id validation-contain-key long? "error"]
+    (let [coll {validation-key [[:id validation-contain-key int? "error"]
                                 [:id validation-type-key vector? "error"]]
                 input-key      {:id 3}
                 sql-key        ["select * from tab " :id]}
           actul-result (-process (get-proc) coll)]
       (is (failed? actul-result))))
   (testing "test validation-key-process "
-    (let [coll {validation-key [[:id validation-contain-key long? "error"]
+    (let [coll {validation-key [[:id validation-contain-key int? "error"]
                                 [:id validation-type-key vector? "error"]]
                 input-key      {:id [1 2]}
                 sql-key        ["select * from tab " :id]}

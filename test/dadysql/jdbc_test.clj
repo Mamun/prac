@@ -23,7 +23,7 @@
              actual-result)))))
 
 
-;(var long?)
+;(var int?)
 
 (deftest read-file-test
 
@@ -41,11 +41,11 @@
           dml-select-key (get-in w [:get-dept-by-id dml-key])
           3000 (get-in w [:get-dept-by-id timeout-key])
           ["select * from department where id = :id " :id] (get-in w [:get-dept-by-id sql-key])
-       ;   [[:id :type (resolve 'long?) "Id will be Long "]] (get-in w [:get-dept-by-id validation-key])
+       ;   [[:id :type (resolve 'int?) "Id will be Long "]] (get-in w [:get-dept-by-id validation-key])
           [[:department :id :1-n :employee :dept_id]] (get-in w [:get-dept-by-id join-key])
 
           #_[[:id :type #'clojure.core/vector? "Id will be sequence"]
-           [:id :contain #'clojure.core/long? "Id contain will be Long "]]
+           [:id :contain #'clojure.core/int? "Id contain will be Long "]]
           ;M(get-in w [:get-dept-by-ids :validation])
                     )
 
@@ -55,7 +55,7 @@
           (= expected actual)
 
           [[:id :type #'clojure.core/vector? "Id will be sequence"]
-           [:id :contain #'clojure.core/long? "Id contain will be Long "]] (get-in w [:delete-dept :validation])
+           [:id :contain #'clojure.core/int? "Id contain will be Long "]] (get-in w [:delete-dept :validation])
 
           )
 
@@ -91,14 +91,14 @@
 
 ;(run-tests)
 
-;((resolve 'long?) "sdf")
+;((resolve 'int?) "sdf")
 
 (deftest check-test
   (testing "hello "
     (are [e a]
       (= e a)
-      [[:id :type (resolve 'long?) "id will be long "]]
-      [[:id :type #'clojure.core/long? "id will be long "]])))
+      [[:id :type (resolve 'int?) "id will be long "]]
+      [[:id :type #'clojure.core/int? "id will be long "]])))
 
 
 ;(check-test)

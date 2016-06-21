@@ -1,5 +1,6 @@
 (ns dadysql.compiler.core
   (:require [dadysql.constant :refer :all]
+            [dadysql.compiler.spec]
             [dady.common :as cc]
             [clojure.spec :as s]
             [dadysql.compiler.core-emit :as dcsu]))
@@ -215,7 +216,7 @@
 
 
 ; :dadysql.compiler.spec/spec
-(defn do-compile [coll ]
+(defn do-compile [coll]
   (if-not (s/valid? :dadysql.compiler.spec/spec coll)
     (throw (ex-data (s/explain :dadysql.compiler.spec/spec coll)  ))
     (let [{:keys [config reserve others]} (do-grouping coll)
@@ -229,3 +230,8 @@
       (->> batch-result
            (dcsu/compiler-emit)
            (into {} (map into-name-map) )))))
+
+
+#_(defn file-compile [file-name]
+
+  )

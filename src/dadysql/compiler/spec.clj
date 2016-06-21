@@ -3,7 +3,7 @@
   (:require [clojure.spec :as s]))
 
 
-(defn any? [_] true)
+#_(defn any? [_] true)
 
 (defn resolve? [v]
   (if (resolve v) true false))
@@ -15,17 +15,11 @@
 ;(s/def ::tx-prop any? #_(s/keys :opt-un [::isolation ::read-only]))
 
 (s/def ::tx-prop (s/cat :ck #{:isolation}
-                         :cv ::isolation
-                         :rk #{:read-only?}
-                         :rv ::read-only?))
-
-(comment
+                        :cv ::isolation
+                        :rk #{:read-only?}
+                        :rv ::read-only?))
 
 
-  (s/explain ::tx-prop2 [:isolation :none :read-only? false])
-
-
-  )
 
 (s/def ::file-reload boolean?)
 (s/def ::reserve-name (s/+ keyword?))
@@ -59,7 +53,7 @@
 
 
 
-(s/def ::param-ref-con (clojure.spec/tuple keyword? #(= param-ref-con-key %) any?))
+(s/def ::param-ref-con (clojure.spec/tuple keyword? #(= param-ref-con-key %) :clojure.spec/any))
 (s/def ::param-ref     (clojure.spec/tuple keyword? #(= param-ref-key %) keyword?))
 (s/def ::param-ref-fn  (clojure.spec/tuple keyword? #(= param-ref-fn-key %) resolve? keyword?))
 (s/def ::param-ref-gen (clojure.spec/tuple keyword? #(= param-ref-gen-key %) keyword?))
