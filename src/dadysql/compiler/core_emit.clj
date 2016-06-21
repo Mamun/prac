@@ -1,4 +1,4 @@
-(ns dadysql.compiler.spec-util
+(ns dadysql.compiler.core-emit
   (:use [dadysql.constant])
   (:require [clojure.string :as s]
             [dady.common :as dc]))
@@ -118,31 +118,31 @@
     m))
 
 
-(defn resolve-param [w]
+(defn param-emit [w]
   (condp = (second w)
     param-ref-fn-key (assoc w 2 (resolve (nth w 2)))
     w))
 
-(defn resolve-param-batch [w-coll]
-  (mapv resolve-param w-coll))
+(defn param-emit-batch [w-coll]
+  (mapv param-emit w-coll))
 
 
-(defn resolve-validation [v]
+(defn validation-emit [v]
   (condp = (second v)
     validation-type-key (assoc v 2 (resolve (nth v 2)))
     validation-contain-key (assoc v 2 (resolve (nth v 2)))
     v))
 
 
-(defn resolve-validation-batch [coll]
-  (mapv resolve-validation coll))
+(defn validation-emit-batch [coll]
+  (mapv validation-emit coll))
 
 
-(defn resolve-compiler [m-coll]
+(defn compiler-emit [m-coll]
   (mapv (fn [m]
           (-> m
-              (update-if-contains [validation-key] resolve-validation-batch)
-              (update-if-contains [param-key] resolve-param-batch))
+              (update-if-contains [validation-key] validation-emit-batch)
+              (update-if-contains [param-key] param-emit-batch))
           ) m-coll))
 
 
@@ -152,7 +152,7 @@
   ;(resolve 'inc)
 
   (->> [[:id validation-type-key 'inc :a]]
-       (resolve-validation-batch))
+       (validation-emit-batch))
 
   )
 

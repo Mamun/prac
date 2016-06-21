@@ -24,7 +24,7 @@
 
 (deftest read-file-test
     (testing "test read-file "
-      (let [t (read-file "tie.edn.sql" nil)]
+      (let [t (read-file "tie.edn.sql" )]
         ;(clojure.pprint/pprint t)
         (is (not (nil? t))))))
 

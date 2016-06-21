@@ -1,8 +1,6 @@
 (ns dadysql.plugin.factory
   (:require
     [dadysql.constant :refer :all]
-    ;[dady.proto :refer :all]
-    ;[dady.proto :as np]
     [dadysql.plugin.common-impl :as c]
     [dadysql.plugin.params.core :as p]
     [dadysql.plugin.validation.core :as v]
@@ -10,7 +8,7 @@
     [dadysql.plugin.join.join-impl :as join]))
 
 
-(defn new-leaf-node-coll
+(defn new-root-node
   []
   (vector (c/new-name-key)
           (c/new-doc-key)
@@ -25,12 +23,6 @@
           (v/new-validation-key 10 (v/new-child-coll))
           (sql/new-sql-key 75 (sql/new-childs-key))
           (join/new-join-key)))
-
-
-(defn new-root-node
-  []
-  (new-leaf-node-coll)
-  #_(new-module-key-node ))
 
 
 

@@ -39,11 +39,11 @@
 
 
 (defn read-file
-  [file-name pc]
+  [file-name ]
   (-> file-name
       (tie-file-reader)
       (map-sql-tag)
-      (cpl/do-compile)))
+      (cpl/do-compile )))
 
 
 

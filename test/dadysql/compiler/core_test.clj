@@ -155,7 +155,7 @@
                            :update-dept {:params [[:next_transaction_id :ref-fn-key 'inc :transaction_id]]}
                            :delete-dept {:validation [[:id :type 'vector? "Id will be sequence"]
                                                       [:id :contain 'long? "Id contain will be Long "]]}}}]
-          actual-result (r/do-compile w)]
+          actual-result (r/do-compile w )]
       (is (not-empty (:insert-dept actual-result)))
       (is (not-empty (:update-dept actual-result)))
       (is (not-empty (:delete-dept actual-result)))

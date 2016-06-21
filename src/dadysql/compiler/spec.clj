@@ -105,12 +105,7 @@
 
 (s/def ::spec (clojure.spec/* (clojure.spec/alt :module ::module :global ::global)))
 
-(comment
 
-
-  (s/form ::spec)
-
-  )
 
 
 

@@ -1,11 +1,8 @@
 (ns dadysql.compiler.core
   (:require [dadysql.constant :refer :all]
             [dady.common :as cc]
-    ;     [dadysql.compiler.schema :as cs]
             [clojure.spec :as s]
-            [dadysql.compiler.spec :as dcs]
-            [dadysql.compiler.spec-util :as dcsu]
-            [dady.proto :as p]))
+            [dadysql.compiler.core-emit :as dcsu]))
 
 ;; Need to split it with name and model
 
@@ -165,72 +162,12 @@
 
 
 
-
-#_(defn compile-one
-    [process-context f-config m]
-    ;(cs/valid-spec (p/spec process-context ) m)
-    (dcs/valid-module? m)
-    ;(clojure.pprint/pprint (p/spec process-context ))
-    ;(p/spec-valid? process-context m)
-    (let [m (p/compiler-emit process-context m)
-          f-config (dissoc f-config doc-key :tx-prop file-reload-key reserve-name-key name-key)
-          m1 (-> m
-                 (assoc-join-with-recursive-meta-key)
-                 (dissoc doc-key sql-key name-key model-key group-key))
-          assoc-group-key (fn [w] (assoc w group-key (group-key m)))]
-      (->> (select-keys m [name-key model-key sql-key])
-           (count-sql-and-name!)
-           (map-name-model-sql-key)
-           (mapv (combine-key f-config m1))
-           (mapv (fn [w] (->> w
-                              (do-filter-for-skip)
-                              (do-filter-for-dml-type)
-                              (assoc-fnil-model)
-                              (assoc-group-key)
-                              (remove-duplicate)))))))
-
-
-#_(defn compile-one-config
-    [config gpc]
-    (if (nil? config)
-      (default-config)
-      (->> config
-           (dcs/valid-global?)
-           #_(cs/valid-spec (p/spec gpc))
-           (p/compiler-emit gpc)
-           (merge (default-config))
-           (assoc-join-with-recursive-meta-key))))
-
-
 (defn into-name-map
   [v]
   (hash-map (name-key v) v))
 
 
-#_(defn do-compile
-    [coll cpc]
-    (let [gpc (p/get-node-from-path cpc [global-key])
-          mpc (p/get-node-from-path cpc [module-key])
-
-          {:keys [config others]} (group-by-config-key coll)
-          f-config (-> (first config)
-                       (compile-one-config gpc))
-          {:keys [reserve others]} (-> (get-in f-config [reserve-name-key])
-                                       (group-by-reserve-key others))
-          batch-steps (comp
-                        (map #(compile-one mpc f-config %))
-                        cat)
-          batch-result (->> (into [] batch-steps others)
-                            (concat config reserve))]
-      (distinct-name! batch-result)
-      (into {} (map into-name-map) batch-result)))
-
-
-
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
 
 
 (defn do-grouping [coll]
@@ -277,8 +214,8 @@
                             (remove-duplicate)))))))
 
 
-
-(defn do-compile [coll]
+; :dadysql.compiler.spec/spec
+(defn do-compile [coll ]
   (if-not (s/valid? :dadysql.compiler.spec/spec coll)
     (throw (ex-data (s/explain :dadysql.compiler.spec/spec coll)  ))
     (let [{:keys [config reserve others]} (do-grouping coll)
@@ -290,5 +227,5 @@
                             (concat reserve))]
       (distinct-name! batch-result)
       (->> batch-result
-           (dcsu/resolve-compiler)
+           (dcsu/compiler-emit)
            (into {} (map into-name-map) )))))

@@ -17,7 +17,7 @@
 (defn read-file
   ([file-name] (read-file file-name (imp/new-root-node)))
   ([file-name pc]
-   (-> (fr/read-file file-name pc)
+   (-> (fr/read-file file-name)
        (assoc-in [tc/global-key tc/file-name-key] file-name)
        (assoc-in [tc/global-key tc/process-context-key] pc))))
 

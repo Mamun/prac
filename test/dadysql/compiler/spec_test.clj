@@ -1,7 +1,6 @@
 (ns dadysql.compiler.spec-test
   (:use [clojure.test]
-        [dadysql.compiler.core]
-        [dadysql.compiler.spec])
+        [dadysql.compiler.core])
   (:require [clojure.spec :as s]
             [clojure.spec.gen :as gen]
             [dadysql.compiler.file-reader :as f]))
