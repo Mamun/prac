@@ -9,15 +9,10 @@
   (if (resolve v) true false))
 
 
-
-(s/def ::isolation #{:none :read-committed :read-uncommitted :repeatable-read :serializable})
-(s/def ::read-only? boolean?)
-;(s/def ::tx-prop any? #_(s/keys :opt-un [::isolation ::read-only]))
-
 (s/def ::tx-prop (s/cat :ck #{:isolation}
-                        :cv ::isolation
+                        :cv (s/spec #{:none :read-committed :read-uncommitted :repeatable-read :serializable})
                         :rk #{:read-only?}
-                        :rv ::read-only?))
+                        :rv (s/spec boolean?) ))
 
 
 
