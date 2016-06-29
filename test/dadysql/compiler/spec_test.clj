@@ -37,6 +37,46 @@
 ;(validation-spec-test)
 
 
+(deftest params-spec-test
+  (testing "test params spec "
+    (let [v [[:next_transaction_id :ref-fn-key 'inc :transaction_id]]
+          r (s/conform :dadysql.compiler.spec/params v)]
+      (is (not= :clojure.spec/invalid r))))
+  (testing "test params spec for invalid case "
+    (let [v [[:next_transaction_id :ref-fn-key 'inc "transaction_id"]]
+          r (s/conform :dadysql.compiler.spec/params v)]
+      (is (= :clojure.spec/invalid r)))))
+
+#_(gen/sample (gen/fmap (fn [w]
+                        (into [] (into #{} w)))
+                      (gen/such-that not-empty (s/gen :dadysql.compiler.spec/params))))
+
+;(params-spec-test)
+;
+
+
+(deftest join-spec-test
+  (testing "test join spec"
+    (let [v [[:department :id :1-n :employee :dept_id]
+             [:employee :id :1-1 :employee-detail :employee_id]
+             [:employee :id :n-n :meeting :meeting_id [:employee-meeting :employee_id :meeting_id]]]
+          r (s/conform :dadysql.compiler.spec/join v)]
+      (is (not= :clojure.spec/invalid r))))
+  (testing "test join spec for invalid missing n-n key "
+    (let [v [[:department :id :1-n :employee :dept_id]
+             [:employee :id :1-1 :employee-detail :employee_id]
+             [:employee :id :n-n :meeting :meeting_id [:employee-meeting :employee_id ]]]
+          r (s/conform :dadysql.compiler.spec/join v)]
+      (is (= :clojure.spec/invalid r)))))
+
+#_(gen/sample (gen/fmap (fn [w]
+                        (into [] (into #{} w)))
+                      (gen/such-that not-empty (s/gen :dadysql.compiler.spec/join))))
+
+
+;(join-spec-test)
+
+
 
 (deftest spec-test
   (testing "test spec only global  "
@@ -81,8 +121,7 @@
 
           w [config module]
           r (s/conform :dadysql.compiler.spec/spec w)]
-      (is (not= :clojure.spec/invalid r))))
-  )
+      (is (not= :clojure.spec/invalid r)))))
 
 
 

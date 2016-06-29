@@ -12,46 +12,82 @@
 (s/def ::tx-prop (s/cat :ck #{:isolation}
                         :cv (s/spec #{:none :read-committed :read-uncommitted :repeatable-read :serializable})
                         :rk #{:read-only?}
-                        :rv (s/spec boolean?) ))
+                        :rv (s/spec boolean?)))
 
 
 
 (s/def ::file-reload boolean?)
-(s/def ::reserve-name (s/+ keyword?))
-
+(s/def ::reserve-name (s/with-gen (s/every keyword? :kind set?)
+                                  (fn []
+                                    (s/gen #{#{:create-ddl :drop-ddl :init-data}
+                                             #{:init-data}}))))
 
 
 (s/def ::doc string?)
-(s/def ::timeout integer?)
+(s/def ::timeout pos-int?)
 
-(s/def ::name (s/or :one keyword? :many (s/* keyword?)))
-(s/def ::gname keyword?)
+(s/def ::name (s/with-gen (s/or :one keyword? :many (s/* keyword?))
+                          (fn [] (s/gen #{:get-dept-list :get-dept-by-ids :get-employee-list :get-meeting-list :get-employee-meeting-list}))))
 
-(s/def ::sql (s/and string? #(not (clojure.string/blank? %))))
-(s/def ::model (s/or :one keyword? :many (s/* keyword?)))
-(s/def ::skip (s/coll-of keyword? #{}))
-(s/def ::group keyword?)
+
+(s/def ::sql (s/with-gen (s/and string? #(not (clojure.string/blank? %)))
+                         (fn [] (s/gen #{"select * from department LIMIT :limit OFFSET :offset;\nselect * from department where id in (:id) ;\nselect * from employee LIMIT :limit OFFSET :offset;\nselect * from meeting LIMIT :limit OFFSET :offset;\nselect * from employee_meeting LIMIT :limit OFFSET :offset;\n"
+                                         "select * from employee where id = :id;\nselect d.* from department d, employee e where e.id=:id and d.id = e.dept_id;\nselect ed.* from employee_detail ed where ed.employee_id=:id;\nselect m.*, em.employee_id from meeting m, employee_meeting em where em.employee_id=:id and em.meeting_id = m.meeting_id;\n"
+                                         "select * from meeting where  meeting_id = :id;\nselect e.*, em.employee_id from employee e, employee_meeting em where em.meeting_id = :id and em.employee_id = e.id;\n"
+                                         "insert into department (id, transaction_id, dept_name) values (:id, :transaction_id, :dept_name);\nupdate department set dept_name=:dept_name, transaction_id=:next_transaction_id  where transaction_id=:transaction_id and id=:id;\ndelete from department where id in (:id);\n"}))
+                         ))
+(s/def ::model (s/with-gen (s/or :one keyword? :many (s/* keyword?))
+                           (fn [] (s/gen #{:dept :employee :meeting}))))
+
+(s/def ::skip (s/with-gen (s/every keyword? :kind set?)
+                          (fn [] (s/gen #{#{:join :column}
+                                          #{:join}}))))
+
+(s/def ::group (s/with-gen keyword?
+                           #(s/gen #{:load-dept :load-employee})))
 (s/def ::commit #{:all :any :none})
-(s/def ::column (s/map-of keyword? keyword?))
-(s/def ::result (s/coll-of keyword? #{:array}))
+(s/def ::column (s/with-gen (s/every-kv keyword? keyword?)
+                            (fn [] (s/gen #{{:id :empl_id}
+                                            {:dept_id :id}}))))
 
+(s/def ::result (s/every #{result-array-key result-single-key} :kind set?))
+(s/def ::read-only? boolean?)
 
-
-(s/def ::1-* (s/tuple keyword? keyword? #{join-1-1-key join-1-n-key join-n-1-key} keyword? keyword?))
-(s/def ::n-n (s/tuple keyword? keyword? #(= % join-n-n-key) keyword? keyword? (s/tuple keyword? keyword? keyword?)))
+(s/def ::join-one (s/with-gen (s/tuple keyword? keyword? (s/spec #{join-1-1-key join-1-n-key join-n-1-key}) keyword? keyword?)
+                              (fn []
+                                (s/gen #{[:department :id join-1-n-key :employee :dept_id]
+                                         [:employee :id join-1-1-key :employee-detail :employee_id]}))))
+(s/def ::join-many (s/with-gen (s/tuple keyword? keyword? (s/spec #{join-n-n-key}) keyword? keyword? (s/tuple keyword? keyword? keyword?))
+                               (fn []
+                                 (s/gen #{[:employee :id :n-n :meeting :meeting_id [:employee-meeting :employee_id :meeting_id]]}))))
 
 (s/def ::join
   (clojure.spec/*
     (clojure.spec/alt
-      :1-* ::1-*
-      :n-n ::n-n)))
+      :join-one ::join-one
+      :join-many ::join-many)))
 
 
 
-(s/def ::param-ref-con (clojure.spec/tuple keyword? #(= param-ref-con-key %) :clojure.spec/any))
-(s/def ::param-ref     (clojure.spec/tuple keyword? #(= param-ref-key %) keyword?))
-(s/def ::param-ref-fn  (clojure.spec/tuple keyword? #(= param-ref-fn-key %) resolve? keyword?))
-(s/def ::param-ref-gen (clojure.spec/tuple keyword? #(= param-ref-gen-key %) keyword?))
+
+(s/def ::param-ref-con (s/with-gen (clojure.spec/tuple keyword? #(= param-ref-con-key %) :clojure.spec/any)
+                                   (fn []
+                                     (s/gen #{[:id param-ref-con-key 23]
+                                              [:name param-ref-con-key "Hello"]}))))
+(s/def ::param-ref (s/with-gen (clojure.spec/tuple keyword? #(= param-ref-key %) keyword?)
+                               (fn []
+                                 (s/gen #{[:id param-ref-key :rid]
+                                          [:name param-ref-key :rname]}))))
+(s/def ::param-ref-fn (s/with-gen (clojure.spec/tuple keyword? #(= param-ref-fn-key %) resolve? keyword?)
+                                  (fn []
+                                    (s/gen #{[:id param-ref-fn-key 'inc :rid]
+                                             [:name param-ref-fn-key 'inc :rname]}))))
+
+(s/def ::param-ref-gen (s/with-gen (clojure.spec/tuple keyword? #(= param-ref-gen-key %) keyword?)
+                                   (fn []
+                                     (s/gen #{[:id param-ref-gen-key :gen-id]
+                                              [:name param-ref-gen-key :gen-name]}))))
+
 
 
 
@@ -59,16 +95,22 @@
 (s/def ::params
   (clojure.spec/*
     (clojure.spec/alt
-      :param-ref-con ::param-ref-con
-      :param-ref-fn ::param-ref-fn
-      :param-ref-gen ::param-ref-gen
-      :param-ref ::param-ref)))
+      :ref-con ::param-ref-con
+      :ref-fn-key ::param-ref-fn
+      :ref-gen ::param-ref-gen
+      :ref-key ::param-ref)))
 
 
 
-(s/def ::vali-type         (clojure.spec/tuple keyword? #(= validation-type-key %) resolve? string?))
-(s/def ::vali-type-contain (clojure.spec/tuple keyword? #(= validation-contain-key %) resolve? string?))
-(s/def ::vali-range        (clojure.spec/tuple keyword? #(= validation-range-key %) integer? integer? string?))
+(s/def ::vali-type (s/with-gen (clojure.spec/tuple keyword? #(= validation-type-key %) resolve? string?)
+                               (fn []
+                                 (s/gen #{[:id validation-type-key 'vector? "id witll be vector"]}))))
+(s/def ::vali-type-contain (s/with-gen (clojure.spec/tuple keyword? #(= validation-contain-key %) resolve? string?)
+                                       (fn []
+                                         (s/gen #{[:id validation-contain-key 'int? "id witll be integer"]}))))
+(s/def ::vali-range (s/with-gen (clojure.spec/tuple keyword? #(= validation-range-key %) integer? integer? string?)
+                                (fn []
+                                  (s/gen #{[:id validation-range-key 10 11 "id witll be between 10 and 11"]}))))
 
 
 
@@ -76,7 +118,7 @@
   (clojure.spec/*
     (clojure.spec/alt
       :type ::vali-type
-      :type-contain ::vali-type-contain
+      :contain ::vali-type-contain
       :range ::vali-range)))
 
 
@@ -92,7 +134,7 @@
                         :opt-un [::read-only? ::tx-prop ::file-reload ::reserve-name ::join]))
 
 
-(s/def ::spec (clojure.spec/* (clojure.spec/alt :module ::module :global ::global)))
+(s/def ::spec (clojure.spec/cat :global (s/? ::global) :module (s/* ::module)))
 
 
 

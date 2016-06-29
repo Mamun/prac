@@ -232,6 +232,13 @@
            (into {} (map into-name-map) )))))
 
 
+(s/fdef do-compile
+        :args (s/cat :coll :dadysql.compiler.spec/spec))
+
+
+
+;(s/ #'do-compile)
+
 #_(defn file-compile [file-name]
 
   )

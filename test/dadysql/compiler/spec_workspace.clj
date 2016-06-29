@@ -2,6 +2,7 @@
   (:use [clojure.test]
         [dadysql.compiler.core])
   (:require [clojure.spec :as s]
+            [clojure.spec.test :as st]
             [clojure.spec.gen :as gen]
             [dadysql.compiler.file-reader :as f]))
 
@@ -9,9 +10,52 @@
 
 (comment
 
+
+  ;(ranged-rand -9 9)
+
+
+
+  (st/instrument `do-compile)
+  ;(st/v)
+  (st/test `do-compile)
+
+  ;(s/conform :dadysql.compiler.spec/result2 #{:single} )
+
+
+  (st/test
+    (gen/generate (s/gen :dadysql.compiler.spec/skip))
+
+    )
+
+
+  (s/conform :dadysql.compiler.spec/spec
+    (gen/generate (s/gen :dadysql.compiler.spec/spec)))
+
+
+
+
+  (gen/generate (s/gen :dadysql.compiler.spec/result2))
+
+  (gen/generate (s/gen :dadysql.compiler.spec/result))
+
+
   (gen/generate (s/gen :dadysql.compiler.spec/tx-prop))
 
   (gen/sample (s/gen :dadysql.compiler.spec/tx-prop))
+
+  (gen/sample (s/gen :dadysql.compiler.spec/column))
+
+
+
+  ;;sample for params
+
+
+
+
+
+  (gen/sample (s/gen :dadysql.compiler.spec/join))
+
+  (gen/generate (s/gen :dadysql.compiler.spec/join))
 
 
   (s/valid?
