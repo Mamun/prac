@@ -10,6 +10,7 @@
                  [org.clojure/core.async "0.2.382"]
                  [org.clojure/tools.reader "0.9.2"]
                  [org.clojure/tools.logging "0.3.1"]
+                 [org.clojure/core.match "0.3.0-alpha4"]
                  ;     [org.clojure/core.match "0.3.0-alpha4"]
           ;       [prismatic/schema "0.2.2"]
                  [org.clojure/java.jdbc "0.4.2"]]

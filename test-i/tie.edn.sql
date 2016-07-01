@@ -26,9 +26,9 @@ call next value for seq_meet;
 {:doc "General select statement. Name is used to identify each query, Abstract timeout will override with timeout here  "
  :name  [:get-dept-list :get-dept-by-ids :get-employee-list :get-meeting-list :get-employee-meeting-list]
  :model [:department :department :employee :meeting :employee-meeting]
- :extend {:get-dept-by-ids {:validation [[:id :type vector? "Id will be sequence"]
+ :extend [:get-dept-by-ids {:validation [[:id :type vector? "Id will be sequence"]
                                          [:id :contain int? "Id contain will be Long "]]
-                                     :result #{:array}}}
+                                     :result #{:array}}]
  :timeout 5000
  :result #{:array}
  :params [[:limit :ref-con 10]
@@ -48,10 +48,10 @@ select * from employee_meeting LIMIT :limit OFFSET :offset;
  :name [:get-employee-by-id :get-employee-dept :get-employee-detail :get-employee-meeting]
  :model [:employee :department :employee-detail :employee-meeting]
  :group :load-employee
- :extend {:get-employee-by-id  {:result #{:single}}
+ :extend [:get-employee-by-id  {:result #{:single}}
           :get-employee-dept   {:result #{:single}}
           :get-employee-detail {:result #{:single}}
-          :get-employee-meeting {:result #{:array}}}
+          :get-employee-meeting {:result #{:array}}]
  :validation [[:id :type int? "Id will be Long" ]]
  }*/
 select * from employee where id = :id;
@@ -64,11 +64,11 @@ select m.*, em.employee_id from meeting m, employee_meeting em where em.employee
 {:doc "Get all meeting"
  :name [:get-meeting-by-id :get-employee-for-meeting ]
  :group :load-meeting
- :extend {:get-meeting-by-id {:model :meeting
+ :extend [:get-meeting-by-id {:model :meeting
                               :result #{:single}
                               :validation [[:id :type int? "Id will be sequence"]
                                            [:id :range 10 11 "Id range will be between 10 and 11"]]}
-            :get-employee-for-meeting {:model :employee-meeting}}
+            :get-employee-for-meeting {:model :employee-meeting}]
  }*/
 select * from meeting where  meeting_id = :id;
 select e.*, em.employee_id from employee e, employee_meeting em where em.meeting_id = :id and em.employee_id = e.id;
@@ -81,10 +81,10 @@ select e.*, em.employee_id from employee e, employee_meeting em where em.meeting
  :name  [:get-dept-by-id :get-dept-employee ]
  :model [:department :employee :department]
  :group :load-dept
- :extend {:department {:timeout 2000
+ :extend [:department {:timeout 2000
                       :validation [[ :id :type int? "Id will be Long "]]
                       :result #{:single}}
-         :get-dept-by-id {:timeout 3000}}
+         :get-dept-by-id {:timeout 3000}]
  :timeout 5000
  :validation [[:id :type int? "Id will be Long"]]
  }*/
@@ -98,11 +98,11 @@ select * from employee where dept_id = :id;
 {:doc "Modify department"
  :name [:create-dept :update-dept :delete-dept]
  :model :department
- :extend {:create-dept {:params [[:id :ref-gen :gen-dept]
+ :extend [:create-dept {:params [[:id :ref-gen :gen-dept]
                                 [:transaction_id :ref-con 0]]}
          :update-dept {:params [[:next_transaction_id :ref-fn-key inc :transaction_id]]}
          :delete-dept {:validation [[:id :type vector? "Id will be sequence"]
-                                    [:id :contain int? "Id contain will be Long "]]}}
+                                    [:id :contain int? "Id contain will be Long "]]}]
  :validation [[:id :type int? "Id will be Long"]]
  :commit :all
  }*/
@@ -115,12 +115,12 @@ delete from department where id in (:id);
 {:doc "Modify employee with dept, details and meeting  "
  :name [:create-employee :create-employee-detail ]
  :group :create-employee
- :extend {:create-employee {:model :employee
+ :extend [:create-employee {:model :employee
                             :params [[:transaction_id :ref-con 0]
                                      [:id :ref-gen :gen-dept ]]}
            :create-employee-detail {:model :employee-detail
                                     :params [[:city :ref-con 0]
-                                             [:id :ref-gen :gen-dept ]]}}
+                                             [:id :ref-gen :gen-dept ]]}]
  :validation [[:id :type int? "Id will be Long"]]
  :commit :all
  }*/
@@ -135,9 +135,9 @@ insert into employee_detail (employee_id, street,   city,  state,  country )
 {:doc "Add new meeting"
  :name [:create-meeting :create-employee-meeting ]
  :group :create-meeting
- :extend {:create-meeting {:model :meeting
+ :extend [:create-meeting {:model :meeting
                            :params [[:meeting_id :ref-gen :gen-meet]]}
-          :create-employee-meeting {:model :employee-meeting}}
+          :create-employee-meeting {:model :employee-meeting}]
  :commit :all
  }*/
 insert into meeting (meeting_id, subject) values (:meeting_id, :subject);
@@ -145,9 +145,9 @@ insert into employee_meeting (employee_id, meeting_id) values (:employee_id, :me
 
 /*
 {:doc ""
-:name [:update-employee-dept]
-:extend {:update-employee-dept {:model :employee
-                                :params [[:next_transaction_id :ref-fn-key inc :transaction_id]]}}
+:name :update-employee-dept
+:extend [:update-employee-dept {:model :employee
+                                :params [[:next_transaction_id :ref-fn-key inc :transaction_id]]}]
 }
 */
 update employee set dept_id=:dept_id, transaction_id=:next_transaction_id where transaction_id=:transaction_id and id=:id;

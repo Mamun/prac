@@ -1,6 +1,7 @@
 (ns dadysql.compiler.core-emit
   (:use [dadysql.constant])
   (:require [clojure.string :as s]
+            [clojure.core.match :as m]
             [dady.common :as dc]))
 
 (def as-lower-case-keyword (comp keyword s/lower-case name))
@@ -10,7 +11,8 @@
 
 (defn join-emission-batch [j-coll]
   (mapv (fn [j]
-          (condp = (nth j 2)
+          j
+          #_(condp = (nth j 2)
             :n-n
             (-> j
                 (update-in [0] as-lower-case-keyword)
@@ -30,7 +32,9 @@
 
 (defn map-reverse-join
   [join-coll]
-  (let [f (fn [[s-tab s-id join-key d-tab d-id [r-tab r-id r-id2] :as j]]
+  ;(clojure.pprint/pprint join-coll)
+  (let [join-coll (mapv second join-coll)
+        f (fn [[s-tab s-id join-key d-tab d-id [r-tab r-id r-id2] :as j]]
             (condp = join-key
               join-1-1-key [d-tab d-id join-1-1-key s-tab s-id]
               join-1-n-key [d-tab d-id join-n-1-key s-tab s-id]
@@ -56,7 +60,7 @@
 
 (defn join-emit [j-coll]
   (->> j-coll
-       (join-emission-batch)
+       ;(join-emission-batch)
        (map-reverse-join)
        (group-by-join-src)))
 
@@ -65,7 +69,7 @@
 (defn dml-type
   [v]
   (-> v
-      (first)
+
       (clojure.string/trim)
       (clojure.string/lower-case)
       (clojure.string/split #"\s+")
@@ -107,15 +111,6 @@
 
 ;;;;;;;;;;;;;;;;;;;;;
 
-(defn contains-in?
-  [m ks]
-  (not= ::absent (get-in m ks ::absent)))
-
-(defn update-if-contains
-  [m ks f & args]
-  (if (contains-in? m ks)
-    (apply (partial update-in m ks f) args)
-    m))
 
 
 (defn param-emit [w]
@@ -124,7 +119,9 @@
     w))
 
 (defn param-emit-batch [w-coll]
-  (mapv param-emit w-coll))
+  (->> w-coll
+       (mapv second)
+       (mapv param-emit )))
 
 
 (defn validation-emit [v]
@@ -135,15 +132,24 @@
 
 
 (defn validation-emit-batch [coll]
-  (mapv validation-emit coll))
+  ;(println coll)
+  (->> coll
+       (mapv second)
+       (mapv validation-emit )))
 
 
 (defn compiler-emit [m-coll]
   (mapv (fn [m]
           (-> m
-              (update-if-contains [validation-key] validation-emit-batch)
-              (update-if-contains [param-key] param-emit-batch))
+              (dc/update-if-contains [validation-key] validation-emit-batch)
+              (dc/update-if-contains [param-key] param-emit-batch))
           ) m-coll))
+
+
+(defn compiler-emit2 [m]
+  (-> m
+      (dc/update-if-contains [validation-key] validation-emit-batch)
+      (dc/update-if-contains [param-key] param-emit-batch)))
 
 
 

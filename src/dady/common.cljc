@@ -57,6 +57,15 @@
 
 
 
+(defn contains-in?
+  [m ks]
+  (not= ::absent (get-in m ks ::absent)))
+
+(defn update-if-contains
+  [m ks f & args]
+  (if (contains-in? m ks)
+    (apply (partial update-in m ks f) args)
+    m))
 
 
 

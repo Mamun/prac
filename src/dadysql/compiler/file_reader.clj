@@ -30,7 +30,8 @@
                 (nil? f) (conj acc v)
                 (string? v) (if (sql-key f)
                               acc
-                              (->> (clojure.string/trim v)
+                              (->> (clojure.string/split (clojure.string/trim v) #";")
+                                   (mapv clojure.string/trim)
                                    (assoc f sql-key)
                                    (conj r)))
                 :else (conj acc v)))
@@ -43,6 +44,7 @@
   (-> file-name
       (tie-file-reader)
       (map-sql-tag)
+      (reverse)
       (cpl/do-compile )))
 
 

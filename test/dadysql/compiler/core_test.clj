@@ -3,7 +3,10 @@
         [dadysql.compiler.core :as r]
         [dadysql.core :as c]
         [dadysql.constant]
-        [dady.common]))
+        [dady.common])
+  (:require [clojure.spec :as s]
+            [clojure.spec.gen :as gen])
+  )
 
 
 
@@ -166,14 +169,49 @@
 
 ;(run-tests)
 
+(deftest do-compile2-test
+  (testing "test do-compile "
+    (let [w [{:name         :_config_
+              :file-reload  true
+              :timeout      3000
+              :reserve-name #{:create-ddl :drop-ddl :init-data}}
+             {:doc        "Modify department"
+              :name       [:insert-dept :update-dept :delete-dept]
+              :model      :department
+              :validation [[:id :type 'int? "Id will be Long"]]
+              :sql        "insert into department (id, transaction_id, dept_name) values (:id, :transaction_id, :dept_name);update department set dept_name=:dept_name, transaction_id=:next_transaction_id  where transaction_id=:transaction_id and id=:id;delete from department where id in (:id);"
+              :extend     {:insert-dept {:params  [[:transaction_id :ref-con 0]
+                                                   [:transaction_id :ref-con 0]]
+                                         :timeout 30}
+                           :update-dept {:params [[:next_transaction_id :ref-fn-key 'inc :transaction_id]]}
+                           :delete-dept {:validation [[:id :type 'vector? "Id will be sequence"]
+                                                      [:id :contain 'int? "Id contain will be Long "]]}}}]
+          actual-result (r/do-compile2 w )]
+
+;      (clojure.pprint/pprint (s/conform :dadysql.compiler.spec/spec w))
+
+      (is (not-empty actual-result)))
+
+    ))
+
+
+;(do-compile2-test)
 
 
 
 ;(do-compile-test2)
 
 
+(deftest compilter-test
+  (testing "test do compile file "
+    (let [w (gen/generate (s/gen :dadysql.compiler.spec/spec))
+          actual-result (r/do-compile w)]
+      ; (clojure.pprint/pprint actual-result)
+      (is (not= :clojure.spec/invalid actual-result)))))
 
 
+
+;(compilter-test)
 
 
 

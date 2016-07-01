@@ -1,21 +1,125 @@
 (ns dadysql.compiler.spec-workspace
   (:use [clojure.test]
-        [dadysql.compiler.core])
+        [dadysql.compiler.core-old])
   (:require [clojure.spec :as s]
             [clojure.spec.test :as st]
             [clojure.spec.gen :as gen]
+            [clojure.core.match :as m]
             [dadysql.compiler.file-reader :as f]))
+
+
+
 
 
 
 (comment
 
 
+
+  (s/explain
+    (s/& (s/* boolean?)  #(even? (count %)))
+    ["a" "b"] )
+
+  (s/* string?)
+
+  (s/conform
+    (s/and  #(even? (count %)))
+    ["a" "v" ])
+
+
+  (s/explain
+    (s/& (s/keys* :opt-un [::even]) (fn [m] (not (contains? m :odd))))
+    [:even 4 :odd 5]
+    )
+
+
+  (s/explain
+    (s/and (s/keys* :opt-un [::even]) (fn [m] (not (contains? m :odd))))
+    [:even 4 :odd 5]
+    )
+
+
   ;(ranged-rand -9 9)
+
+  (let [s (s/cat :global (s/? (s/keys :req-un  [:dadysql.compiler.spec/name]))
+                 :module (s/+ (s/keys :req-un [:dadysql.compiler.spec/name
+                                               :dadysql.compiler.spec/sql])))]
+    (->>
+      [{:name :global
+        :tx   [:a]
+        }
+
+       {:name :hello
+        :sql  "select * from hello"}
+       ]
+      (s/explain s)
+      ))
+
+
+  (s/def ::list-name (s/with-gen (s/cat :name :dadysql.compiler.spec/name)
+                                 (fn []
+                                   (s/gen #{:global})
+                                   )))
+
+
+  (gen/generate (s/gen (s/with-gen (s/cat :name :dadysql.compiler.spec/name)
+                                   (fn []
+                                     (s/gen #{[:global]})
+                                     ))))
+
+
+  (gen/generate (s/gen :dadysql.compiler.spec/name))
+
+
+  (s/def ::glo (s/with-gen (s/+ (s/& (s/keys :req-un [:dadysql.compiler.spec/name])
+                                     (s/spec
+                                       (s/and #(= :global (get-in % [:name 1]))
+                                              #(do (println %)
+                                                   (not (contains? % :sql))))
+                                       :gen (fn []
+                                              (s/gen #{ {:name :global}  })
+                                              )
+                                       )))
+                           (fn []
+                             (s/gen #{ {:name :global}  })
+                             )
+                           ))
+
+
+  (gen/generate (s/gen ::glo))
+
+  (let [s (s/cat :global  ::glo #_(s/with-gen
+                                     #_(fn []
+                                       (s/gen #{[{:name :global}]}))
+                                     )
+                 ;   :module
+                 #_(s/+ (s/keys :req-un [:dadysql.compiler.spec/name
+                                               :dadysql.compiler.spec/sql]))
+                 )]
+    (clojure.pprint/pprint (gen/generate (s/gen s)))
+    (->>
+      [{:name :global
+        :tx   [:a]
+
+        }
+
+       #_{:name :global
+        :sql  "select * from hello"}
+       ]
+      (s/explain s)
+      ))
+
+  #_(let [a :1]
+    (println a))
+
+
+  (st/instrument `hello)
+  (st/test `hello)
 
 
 
   (st/instrument `do-compile)
+  (st/unstrument `do-compile)
   ;(st/v)
   (st/test `do-compile)
 
@@ -23,10 +127,10 @@
 
 
   (st/test
-    (gen/generate (s/gen :dadysql.compiler.spec/skip))
+    (gen/generate (s/gen :dadysql.compiler.spec/skip)))
 
-    )
-
+  (clojure.pprint/pprint
+    (s/exercise :dadysql.compiler.spec/spec 1))
 
   (s/conform :dadysql.compiler.spec/spec
     (gen/generate (s/gen :dadysql.compiler.spec/spec)))

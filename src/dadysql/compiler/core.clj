@@ -3,15 +3,11 @@
             [dadysql.compiler.spec]
             [dady.common :as cc]
             [clojure.spec :as s]
-            [dadysql.compiler.core-emit :as dcsu]))
+            [clojure.core.match :as m]
 
-;; Need to split it with name and model
-
-(defn compiler-merge
-  [old new]
-  (cond (map? new) (merge old new)
-        (vector? new) (into (empty old) (concat new old))
-        :else (or new old)))
+            [dadysql.compiler.core-emit :as e]
+            [dady.common :as dc]
+            [dadysql.constant :as c]))
 
 
 (defn default-config
@@ -22,81 +18,152 @@
    :tx-prop        [:isolation :serializable :read-only? true]})
 
 
+(defn do-debug [m]
+  (println m)
+  m
+  )
+
+
 (defn reserve-regex []
   #":_.*")
 
+(defn group-by-reserve-key
+  [r-name-coll coll]
+  (->> coll
+       (group-by (fn [m]
+                   (let [name (get-in m [name-key 1])]
+                     (if (or (re-matches (reserve-regex) (str name))
+                             (contains? r-name-coll name)
+                             (= global-key name))
+                       :reserve
+                       :module))))))
 
-(defn assoc-join-with-recursive-meta-key
+
+(defn do-grouping [coll]
+  (let [{:keys [global module]} coll
+        {:keys [reserve module]} (group-by-reserve-key (get global reserve-name-key) module)]
+    {:global  global
+     :reserve reserve
+     :module  module}))
+
+
+(defn do-validate! [coll]
+  (let [w (s/conform :dadysql.compiler.spec/spec coll)]
+    (if (= w :clojure.spec/invalid)
+      (do
+        (println (s/explain :dadysql.compiler.spec/spec coll))
+        (throw (ex-data (s/explain :dadysql.compiler.spec/spec coll))))
+      w)))
+
+
+(defn join-to-extend-key
   "Assoc join key with model "
   [tm]
   (let [v (get-in tm [join-key])
+        v (e/join-emit v)
         w (merge-with merge v (get-in tm [extend-meta-key]))]
     (-> tm
         (dissoc join-key)
         (assoc extend-meta-key w))))
 
 
-(defn count-sql-and-name!
-  [m]
-  ;(clojure.pprint/pprint m)
-  (let [sqls (sql-key m)
-        name-coll (name-key m)
-        t-sqls (count sqls)
-        t-iden (count name-coll)]
-    (when-not (= t-sqls t-iden)
-      (if (> t-sqls t-iden)
-        (throw (Exception. (format "Name not found for \" %s \" " (str sqls))))
-        (throw (Exception. (format "Sql statement not found for \" %s \" " (str name-coll))))))
-    m))
 
 
-(defn distinct-name!
-  [m-coll]
-  ;(clojure.pprint/pprint m-coll)
-  (let [i-coll (->> m-coll
-                    (map (juxt name-key))
-                    (flatten))]
-    (if-not (apply distinct? i-coll)
-      (let [w (->> (frequencies i-coll)
-                   (filter (fn [[_ v]]
-                             (if (< 1 v) true false)))
-                   (into {}))]
-        (throw (Exception. (str "Found duplicate name " w)))))))
+
+#_(defn get-format [r]
+  (m/match
+    r
+    {:name [:many _] :model [:many _]}
+    :name-many-model-many
+    {:name [:many _] :model [:one _]}
+    :name-many-model-one
+    {:name [:one _] :model [:one _]}
+    :name-one-model-one
+    :else nil))
 
 
-(defn group-by-config-key
-  [coll]
-  (->> coll
-       (group-by #(if (= global-key (name-key %))
-                   :config
-                   :others))))
+(defn map-name-model-sql [m]
+  (m/match
+    m
+
+    {:name [:many _] :model [:many _]}
+    (do
+      (mapv (fn [s n m]
+              {name-key  n
+               sql-key   s
+               dml-key   (e/dml-type s)
+               model-key m})
+            (get-in m [sql-key])
+            (get-in m [name-key 1])
+            (get-in m [model-key 1])))
+
+    {:name [:many _] :model [:one _]}
+    (do
+      ; (println "m o" (map vector (get-in m [name-key 1]) (get-in m [sql-key]) ))
+      (mapv (fn [n s]
+              {name-key  n
+               sql-key   s
+               dml-key   (e/dml-type s)
+               model-key (get-in m [model-key 1])})
+            (get-in m [name-key 1])
+            (get-in m [sql-key])))
+
+    {:name [:one _] :model [:one _]}
+    (do
+      ;(println "o o ")
+      [{name-key  (get-in m [name-key])
+        model-key (get-in m [module-key])
+        dml-key   (e/dml-type (get-in m [sql-key 0]))
+        sql-key   (get-in m [sql-key 0])}])
 
 
-(defn group-by-reserve-key
-  [r-name-coll coll]
-  (->> coll
-       (group-by (fn [m]
-                   (let [name (name-key m)]
-                     (if (or (re-matches (reserve-regex) (str name))
-                             (contains? r-name-coll name)
-                             (= global-key name))
-                       :reserve
-                       :others))))))
+    {:name [:many _]}
+    (do
+      (mapv (fn [n s] {name-key n
+                       dml-key  (e/dml-type s)
+                       sql-key  s})
+            (get-in m [name-key 1])
+            (get-in m [sql-key])))
+
+    {:name [:one _]}
+    [{name-key (get-in m [name-key 1])
+      dml-key  (e/dml-type (get-in m [sql-key 0]))
+      sql-key  (get-in m [sql-key 0])}]
+
+    :else (throw (ex-data (str "does not match " m)))))
 
 
-(def skip-key-for-call [join-key validation-key param-key])
-(def skip-key-for-others [result-key column-key])
+
+(defn merge-select [m1 module-m global-m]
+  (let [n (name-key m1)
+        m (model-key m1)]
+    [(select-keys global-m [param-key validation-key timeout-key])
+     (dissoc module-m name-key model-key sql-key extend-meta-key doc-key)
+     (get-in global-m [extend-meta-key m])
+     (get-in module-m [extend-meta-key m])
+     (get-in global-m [extend-meta-key n])
+     (get-in module-m [extend-meta-key n])
+     m1]))
 
 
-(defn do-filter-for-dml-type
-  [m]
-  (condp = (dml-key m)
-    dml-select-key m
-    dml-call-key (apply dissoc m skip-key-for-call)
-    (apply dissoc m skip-key-for-others)))
+
+(defn compiler-merge
+  [old new]
+  (cond (map? new) (merge old new)
+        (vector? new) (into (empty old) (concat new old))
+        :else (or new old)))
 
 
-(defn do-filter-for-skip
+(defn do-merge [m module global-m]
+  (->> (merge-select m module global-m)
+       ; (do-debug)
+       (remove nil?)
+       (into [])
+       (apply merge-with compiler-merge)))
+
+
+
+(defn do-skip
   [m]
   (->> (into [] (skip-key m))
        (apply dissoc m)))
@@ -109,58 +176,49 @@
     (assoc m model-key (name-key m))))
 
 
-(defn as-map
-  [sql-name sql-model-name sql-m]
-  (let [w (if-not sql-model-name sql-m (assoc sql-m model-key sql-model-name))]
-    (assoc w name-key sql-name)))
 
 
-;(conj [1 2 3] 4)
-(defn combine-key
-  [f-config m]
-  (fn [[sql-name sql-model-name sql-m]]
-    (let [w (as-map sql-name sql-model-name sql-m)
-          p-coll [f-config m]
-
-          w1 (mapv #(get-in % [extend-meta-key sql-name]) p-coll)
-          w1 (apply merge-with compiler-merge (conj w1 w))
-
-          model-k (get w1 model-key)
-          w2 (mapv #(get-in % [extend-meta-key model-k]) p-coll)
-          w2 (apply merge-with compiler-merge (conj w2 w1))
-
-          m (dissoc m extend-meta-key)
-          f-config (dissoc f-config extend-meta-key)]
-      (merge-with compiler-merge f-config m w2))))
+(defn convert-v [m]
+  (->>
+    (map (fn [w]
+           (mapv (fn [[k v]] v) w)
+           ) m)
+    (into {})))
 
 
 
-(defn map-name-model-sql-key
-  [m]
-  (let [model-v (model-key m)
-        sql-model-seq (cond
-                        (sequential? model-v)
-                        model-v
-                        (or
-                          (keyword? model-v)
-                          (string? model-v))
-                        (repeat model-v)
-                        :else
-                        (repeat nil))
-        sql-coll-m (sql-key m)
-        sql-name-seq (name-key m)]
-    (map vector sql-name-seq sql-model-seq sql-coll-m)))
+(defn do-module-compile-one [m global-m]
+  (let [m (dc/update-if-contains m [extend-meta-key] convert-v)
+        model-m (map-name-model-sql (select-keys m [name-key model-key sql-key]))]
+    (reduce (fn [acc v]
+              (->> (do-merge v m global-m)
+                   (do-skip)
+                   (assoc-fnil-model)
+                   (e/compiler-emit2)
+                   (conj acc))
+              ) [] model-m)))
 
 
-(defn remove-duplicate [m]
-  (->> (keys m)
-       (reduce (fn [acc k]
-                 (condp = k
-                   param-key (update-in acc [k] (fn [w] (cc/distinct-with-range 2 w)))
-                   validation-key (update-in acc [k] (fn [w] (cc/distinct-with-range 2 w)))
-                   acc)
-                 ) m)))
 
+(defn do-compile-batch [global-m m-coll]
+  (reduce (fn [acc m]
+            (reduce conj acc (do-module-compile-one m global-m))
+            ) [] m-coll))
+
+
+(defn global-compile [m]
+  (-> m
+      (update-in [name-key] second)
+      (dc/update-if-contains m [extend-meta-key] convert-v)
+      (join-to-extend-key)))
+
+
+(defn reserve-compile [coll]
+  (mapv (fn [m]
+          (-> m
+              (update-in [name-key] second)
+              (update-in [sql-key] (fn [v] (clojure.string/join ";" v))))
+          ) coll))
 
 
 (defn into-name-map
@@ -168,77 +226,54 @@
   (hash-map (name-key v) v))
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-(defn do-grouping [coll]
-  (let [{:keys [config others]} (group-by-config-key coll)
-        f-config (or (first config) {})
-        {:keys [reserve others]} (-> (get-in f-config [reserve-name-key])
-                                     (group-by-reserve-key others))]
-    (hash-map :config f-config :reserve reserve :others others)))
-
-
-
-(defn assoc-join-with-extend-key
-  "Assoc join key with model "
-  [tm]
-  (let [v (get-in tm [join-key])
-        v (dcsu/join-emit v)
-        w (merge-with merge v (get-in tm [extend-meta-key]))]
-    (-> tm
-        (dissoc join-key)
-        (assoc extend-meta-key w))))
-
-
-(defn compile-one-config [config]
-  (->> (merge (default-config) config)
-       (assoc-join-with-extend-key)))
-
-
-(defn compile-one [f-config m]
-  (let [f-config (dissoc f-config doc-key :tx-prop file-reload-key reserve-name-key name-key)
-        assoc-group-key (fn [w] (assoc w group-key (group-key m)))
-        m1 (-> m
-               (assoc-join-with-recursive-meta-key)
-               (dissoc doc-key sql-key name-key model-key group-key))
-        m (update-in m [sql-key] dcsu/sql-emit)]
-    (->> (select-keys m [name-key model-key sql-key])
-         (count-sql-and-name!)
-         (map-name-model-sql-key)
-         (mapv (combine-key f-config m1))
-         (mapv (fn [w] (->> w
-                            (do-filter-for-skip)
-                            (do-filter-for-dml-type)
-                            (assoc-fnil-model)
-                            (assoc-group-key)
-                            (remove-duplicate)))))))
-
-
-; :dadysql.compiler.spec/spec
 (defn do-compile [coll]
-  (if-not (s/valid? :dadysql.compiler.spec/spec coll)
-    (throw (ex-data (s/explain :dadysql.compiler.spec/spec coll)  ))
-    (let [{:keys [config reserve others]} (do-grouping coll)
-          f-config (compile-one-config config)
-          batch-steps (comp
-                        (map #(compile-one f-config %))
-                        cat)
-          batch-result (->> (into [config] batch-steps others)
-                            (concat reserve))]
-      (distinct-name! batch-result)
-      (->> batch-result
-           (dcsu/compiler-emit)
-           (into {} (map into-name-map) )))))
-
-
-(s/fdef do-compile
-        :args (s/cat :coll :dadysql.compiler.spec/spec))
+  (let [{:keys [module global reserve]} (do-grouping (do-validate! coll))
+        global (global-compile global)
+        module (do-compile-batch (select-keys global [extend-meta-key timeout-key]) module)
+        reserve (reserve-compile reserve)]
+    (->> (concat [global] module reserve)
+         (into {} (map into-name-map)))))
 
 
 
-;(s/ #'do-compile)
+(comment
 
-#_(defn file-compile [file-name]
+
+
+
+  (->> (fr/read-file "tie.edn.sql")
+       (do-compile)
+       ;(clojure.pprint/pprint)
+       )
+
+  (->> (fr/read-file "tie.edn2.sql")
+       (do-compile)
+       #_(s/conform :dadysql.compiler.spec/spec))
+
+
+  (let [w (e/sql-emit (fr/read-file "tie.edn.sql"))
+        {:keys [global module]} (s/conform :dadysql.compiler.spec/spec w)]
+    (clojure.pprint/pprint module)
+    (doseq [r1 module]
+      (println
+        (m/match r1
+                 {:name  [:many _]
+                  :model [:many _]} :name-many-model-many
+                 {:name  [:many _]
+                  :model [:one _]} :name-many-model-one
+                 {:name  [:one _]
+                  :model [:one _]} :name-one-model-one
+                 :else nil
+                 ))))
+
+
+
+  (let [v {:name [:many [:insert-dept :update-dept :delete-dept]]}]
+    (m/match v
+             {:name [:many _]} :many
+             {:name [:many _]} :many
+             :else nil))
 
   )
+
+
