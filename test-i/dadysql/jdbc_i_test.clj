@@ -70,15 +70,14 @@
                                          [1 "Hello" 1]
                                          [2 "Hello Friday" 1]],
                        :department      {:id 1, :transaction_id 0, :dept_name "Business"}}}))
-    (is (=  (pull @td/ds @td/tms
-                  {:gname  :load-dept
-                   :params {:id 1}})
+    (is (= (pull @td/ds @td/tms
+                 {:gname  :load-dept
+                  :params {:id 1}})
            {:department
             {:id             1,
              :transaction_id 0,
              :dept_name      "Business",
-             :employee
-                             [{:id             1,
+             :employee       [{:id             1,
                                :transaction_id 0,
                                :firstname      "Abba",
                                :lastname       "Zoma",
@@ -86,6 +85,8 @@
     (is (= (pull @td/ds @td/tms
                  {:gname  :load-employee
                   :params {:id 1}})
+
+
            {:employee
             {:id              1,
              :transaction_id  0,
@@ -164,12 +165,10 @@
     (is (= (push! @td/ds @td/tms
                   {:name   [:update-dept]
                    :params {:department {:dept_name "Call Center Munich 1" :transaction_id 0 :id 1}}})
-           {:department [1]}))
-
-    ))
+           {:department [1]}))))
 
 
-
+;@td/tms
 ;(run-tests)
 
 (deftest validate-dml!-test
@@ -181,3 +180,16 @@
 
 ;(validate-dml!-test)
 ;(run-tests)
+
+
+(comment
+
+  (:delete-dept @td/tms)
+
+  (pull @td/ds @td/tms
+        {:gname  :load-dept
+         :params {:id 1}})
+
+  ;@td/tms
+
+  )

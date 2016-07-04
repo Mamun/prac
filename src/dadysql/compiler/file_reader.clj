@@ -2,7 +2,8 @@
   (:require [clojure.java.io :as io]
             [clojure.tools.reader.edn :as edn]
             [dadysql.constant :refer :all]
-            [dadysql.compiler.core :as cpl]))
+            ;[dadysql.compiler.core :as cpl]
+            ))
 
 
 (defn tie-file-reader
@@ -45,7 +46,7 @@
       (tie-file-reader)
       (map-sql-tag)
       (reverse)
-      (cpl/do-compile )))
+      #_(cpl/do-compile )))
 
 
 

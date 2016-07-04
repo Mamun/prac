@@ -152,7 +152,7 @@
                         :opt-un [::timeout ::read-only? ::tx-prop ::file-reload ::reserve-name ::join]))
 
 
-(s/def ::spec (clojure.spec/cat :global (s/? ::global) :module (s/+ ::module)))
+(s/def ::spec (clojure.spec/cat :global (s/? ::global) :module (s/* ::module)))
 
 
 

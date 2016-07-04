@@ -33,7 +33,7 @@
 (defn map-reverse-join
   [join-coll]
   ;(clojure.pprint/pprint join-coll)
-  (let [join-coll (mapv second join-coll)
+  (let [
         f (fn [[s-tab s-id join-key d-tab d-id [r-tab r-id r-id2] :as j]]
             (condp = join-key
               join-1-1-key [d-tab d-id join-1-1-key s-tab s-id]
@@ -68,6 +68,7 @@
 ;;;;;;;;;;;;;;;;,,Emit sql ;;;;;;
 (defn dml-type
   [v]
+  ;(println v)
   (-> v
 
       (clojure.string/trim)
@@ -108,9 +109,7 @@
                  ) (range)))))
 
 
-
 ;;;;;;;;;;;;;;;;;;;;;
-
 
 
 (defn param-emit [w]
@@ -120,11 +119,11 @@
 
 (defn param-emit-batch [w-coll]
   (->> w-coll
-       (mapv second)
        (mapv param-emit )))
 
 
 (defn validation-emit [v]
+  ;(println "---" v)
   (condp = (second v)
     validation-type-key (assoc v 2 (resolve (nth v 2)))
     validation-contain-key (assoc v 2 (resolve (nth v 2)))
@@ -134,7 +133,7 @@
 (defn validation-emit-batch [coll]
   ;(println coll)
   (->> coll
-       (mapv second)
+       ;(mapv second)
        (mapv validation-emit )))
 
 

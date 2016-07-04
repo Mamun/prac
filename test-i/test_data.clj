@@ -28,6 +28,11 @@
 
 (comment
 
+
+  (get-ds)
+
+  (get-tms)
+
   (->
     (read-file "tie.edn.sql")
 

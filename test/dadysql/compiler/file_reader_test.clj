@@ -13,7 +13,8 @@
   (testing "test map-sql-tag"
     (let [v [{:a 2} "select * from tab;select * from tab3"]
           actual-result (map-sql-tag v)
-          expected-result (list {:a 2 :sql "select * from tab;select * from tab3"
+          expected-result (list {:a 2 :sql ["select * from tab"
+                                            "select * from tab3"]
                                  })]
       (is (= actual-result
              expected-result

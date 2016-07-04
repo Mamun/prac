@@ -6,7 +6,7 @@
     [clojure.java.jdbc :as jdbc]
     [dadysql.constant :as tc]
     [dadysql.core :as tie]
-    [dadysql.compiler.file-reader :as fr]
+    [dadysql.compiler.core :as fr]
     [dadysql.plugin.factory :as imp]
     [dady.proto :as c]
     [dady.fail :as f]

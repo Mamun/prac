@@ -40,7 +40,7 @@
           :department (get-in w [:get-dept-by-id model-key])
           dml-select-key (get-in w [:get-dept-by-id dml-key])
           3000 (get-in w [:get-dept-by-id timeout-key])
-          ["select * from department where id = :id " :id] (get-in w [:get-dept-by-id sql-key])
+          ;["select * from department where id = :id " :id] (get-in w [:get-dept-by-id sql-key])
        ;   [[:id :type (resolve 'int?) "Id will be Long "]] (get-in w [:get-dept-by-id validation-key])
           [[:department :id :1-n :employee :dept_id]] (get-in w [:get-dept-by-id join-key])
 

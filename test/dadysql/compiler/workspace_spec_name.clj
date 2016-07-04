@@ -1,6 +1,6 @@
 (ns dadysql.compiler.workspace-spec-name
   (:use [clojure.test]
-        [dadysql.compiler.core-old])
+        [dadysql.compiler.core])
   (:require [clojure.spec :as s]
             [clojure.spec.test :as st]
             [clojure.spec.gen :as gen]

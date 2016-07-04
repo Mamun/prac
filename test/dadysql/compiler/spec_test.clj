@@ -1,6 +1,6 @@
 (ns dadysql.compiler.spec-test
   (:use [clojure.test]
-        [dadysql.compiler.core-old])
+        [dadysql.compiler.core])
   (:require [clojure.spec :as s]
             [clojure.spec.gen :as gen]
             [dadysql.compiler.file-reader :as f]))
@@ -91,13 +91,15 @@
                   :name       [:insert-dept :update-dept :delete-dept]
                   :model      :department
                   :validation [[:id :type 'int? "Id will be Long"]]
-                  :sql        "insert into department (id, transaction_id, dept_name) values (:id, :transaction_id, :dept_name);update department set dept_name=:dept_name, transaction_id=:next_transaction_id  where transaction_id=:transaction_id and id=:id;delete from department where id in (:id);"
-                  :extend     {:insert-dept {:params  [[:transaction_id :ref-con 0]
+                  :sql        ["insert into department (id, transaction_id, dept_name) values (:id, :transaction_id, :dept_name)"
+                               "update department set dept_name=:dept_name, transaction_id=:next_transaction_id  where transaction_id=:transaction_id and id=:id"
+                               ";delete from department where id in (:id)"]
+                  :extend     [:insert-dept {:params  [[:transaction_id :ref-con 0]
                                                        [:transaction_id :ref-con 0]]
                                              :timeout 30}
                                :update-dept {:params [[:next_transaction_id :ref-fn-key 'inc :transaction_id]]}
                                :delete-dept {:validation [[:id :type 'vector? "Id will be sequence"]
-                                                          [:id :contain 'int? "Id contain will be Long "]]}}}
+                                                          [:id :contain 'int? "Id contain will be Long "]]}]}
 
           w [module]
           r (s/conform :dadysql.compiler.spec/spec w)]
@@ -111,25 +113,30 @@
                   :name       [:insert-dept :update-dept :delete-dept]
                   :model      :department
                   :validation [[:id :type 'int? "Id will be Long"]]
-                  :sql        "insert into department (id, transaction_id, dept_name) values (:id, :transaction_id, :dept_name);update department set dept_name=:dept_name, transaction_id=:next_transaction_id  where transaction_id=:transaction_id and id=:id;delete from department where id in (:id);"
-                  :extend     {:insert-dept {:params  [[:transaction_id :ref-con 0]
+                  :sql        ["insert into department (id, transaction_id, dept_name) values (:id, :transaction_id, :dept_name)"
+                               "update department set dept_name=:dept_name, transaction_id=:next_transaction_id  where transaction_id=:transaction_id and id=:id"
+                               "delete from department where id in (:id)"
+                               ]
+                  :extend     [:insert-dept {:params  [[:transaction_id :ref-con 0]
                                                        [:transaction_id :ref-con 0]]
                                              :timeout 30}
                                :update-dept {:params [[:next_transaction_id :ref-fn-key 'inc :transaction_id]]}
                                :delete-dept {:validation [[:id :type 'vector? "Id will be sequence"]
-                                                          [:id :contain 'int? "Id contain will be Long "]]}}}
+                                                          [:id :contain 'int? "Id contain will be Long "]]}]}
 
           w [config module]
           r (s/conform :dadysql.compiler.spec/spec w)]
       (is (not= :clojure.spec/invalid r)))))
 
 
+;(spec-test)
+
 
 (deftest spec-test2
   (testing "test do compile file "
     (let [w (-> "tie.edn.sql"
-                (f/tie-file-reader)
-                (f/map-sql-tag))
+                (f/read-file)
+                )
           actual-result (s/conform :dadysql.compiler.spec/spec w)]
      ; (clojure.pprint/pprint actual-result)
       (is (not= :clojure.spec/invalid actual-result)))))

@@ -102,7 +102,7 @@ select * from employee where dept_id = :id;
                                 [:transaction_id :ref-con 0]]}
          :update-dept {:params [[:next_transaction_id :ref-fn-key inc :transaction_id]]}
          :delete-dept {:validation [[:id :type vector? "Id will be sequence"]
-                                    [:id :contain int? "Id contain will be Long "]]}]
+                                    [:id :contain int? "Id contain will be int "]]}]
  :validation [[:id :type int? "Id will be Long"]]
  :commit :all
  }*/
