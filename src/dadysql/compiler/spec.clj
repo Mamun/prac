@@ -3,8 +3,6 @@
   (:require [clojure.spec :as s]))
 
 
-#_(defn any? [_] true)
-
 (defn resolve? [v]
   (if (resolve v) true false))
 
@@ -77,8 +75,6 @@
       :join-many ::join-many)))
 
 
-
-
 (s/def ::param-ref-con
   (s/with-gen (clojure.spec/tuple keyword? #(= param-ref-con-key %) :clojure.spec/any)
               (fn []
@@ -100,9 +96,6 @@
               (fn []
                 (s/gen #{[:id param-ref-gen-key :gen-id]
                          [:name param-ref-gen-key :gen-name]}))))
-
-
-
 
 
 (s/def ::params
@@ -138,8 +131,6 @@
       :range ::vali-range)))
 
 
-
-;(s/def ::inher  (s/keys :opt-un [::timeout ::column ::result ::params ::validation]))
 (s/def ::extend (s/* (s/cat
                        :name keyword?
                        :prop (s/keys :opt-un [::timeout ::column ::result ::params ::validation]))))
@@ -152,13 +143,15 @@
                         :opt-un [::timeout ::read-only? ::tx-prop ::file-reload ::reserve-name ::join]))
 
 
-(s/def ::spec (clojure.spec/cat :global (s/? ::global) :module (s/* ::module)))
+(s/def ::compiler-spec (clojure.spec/cat :global (s/? ::global) :module (s/* ::module)))
+
+
 
 
 
 
 #_(defn conform-spec [w]
-  (s/conform ::spec w ))
+  (s/conform ::compiler-spec w))
 
 
 

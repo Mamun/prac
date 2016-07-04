@@ -84,7 +84,7 @@
               :file-reload  true
               :timeout      3000
               :reserve-name #{:create-ddl :drop-ddl :init-data}}]
-          actual-result (s/conform :dadysql.compiler.spec/spec w)]
+          actual-result (s/conform :dadysql.compiler.spec/compiler-spec w)]
       (is (not= :clojure.spec/invalid actual-result))))
   (testing "test do-compile "
     (let [module {:doc        "Modify department"
@@ -102,7 +102,7 @@
                                                           [:id :contain 'int? "Id contain will be Long "]]}]}
 
           w [module]
-          r (s/conform :dadysql.compiler.spec/spec w)]
+          r (s/conform :dadysql.compiler.spec/compiler-spec w)]
       (is (not= :clojure.spec/invalid r))))
   (testing "test do-compile "
     (let [config {:name         :_config_
@@ -125,7 +125,7 @@
                                                           [:id :contain 'int? "Id contain will be Long "]]}]}
 
           w [config module]
-          r (s/conform :dadysql.compiler.spec/spec w)]
+          r (s/conform :dadysql.compiler.spec/compiler-spec w)]
       (is (not= :clojure.spec/invalid r)))))
 
 
@@ -137,7 +137,7 @@
     (let [w (-> "tie.edn.sql"
                 (f/read-file)
                 )
-          actual-result (s/conform :dadysql.compiler.spec/spec w)]
+          actual-result (s/conform :dadysql.compiler.spec/compiler-spec w)]
      ; (clojure.pprint/pprint actual-result)
       (is (not= :clojure.spec/invalid actual-result)))))
 
@@ -162,7 +162,7 @@
 #_(->> "tie.edn.sql"
        (f/tie-file-reader)
        (f/map-sql-tag)
-       (s/conform :dadysql.compiler.spec/spec)
+       (s/conform :dadysql.compiler.spec/compiler-spec)
        (as-map)
        )
 

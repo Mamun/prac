@@ -1,9 +1,7 @@
 (ns dadysql.compiler.file-reader
   (:require [clojure.java.io :as io]
             [clojure.tools.reader.edn :as edn]
-            [dadysql.constant :refer :all]
-            ;[dadysql.compiler.core :as cpl]
-            ))
+            [dadysql.constant :refer :all]))
 
 
 (defn tie-file-reader
@@ -45,8 +43,7 @@
   (-> file-name
       (tie-file-reader)
       (map-sql-tag)
-      (reverse)
-      #_(cpl/do-compile )))
+      (reverse)))
 
 
 

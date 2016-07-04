@@ -2,12 +2,19 @@
   (:require [dadysql.constant :refer :all]
             [dadysql.compiler.spec]
             [dady.common :as cc]
-            [clojure.spec :as s]
-    ;[clojure.core.match :as m]
+            [dadysql.compiler.validation :as v]
             [dadysql.compiler.core-emit :as e]
             [dady.common :as dc]
             [dadysql.constant :as c]
             [dadysql.compiler.file-reader :as fr]))
+
+
+
+(defn do-debug [m]
+  (println m)
+  m
+  )
+
 
 
 (defn default-config
@@ -18,14 +25,19 @@
    :tx-prop        [:isolation :serializable :read-only? true]})
 
 
-(defn do-debug [m]
-  (println m)
-  m
-  )
+
+(defn compiler-merge
+  [old new]
+  (cond (map? new) (merge old new)
+        (vector? new) (into (empty old) (concat new old))
+        :else (or new old)))
+
+
 
 
 (defn reserve-regex []
   #":_.*")
+
 
 
 (defn group-by-reserve-key
@@ -57,12 +69,6 @@
 
 
 
-(defn do-validate! [coll]
-  (let [w (s/conform :dadysql.compiler.spec/spec coll)]
-    (if (= w :clojure.spec/invalid)
-      (do
-        (println (s/explain :dadysql.compiler.spec/spec coll))
-        (throw (ex-info "Compile failed " (s/explain-data :dadysql.compiler.spec/spec coll)))))))
 
 
 (defn join-to-extend-key
@@ -79,7 +85,6 @@
 
 
 (defn map-name-model-sql [m]
-  ;(println m)
   (cond
 
     (and (keyword? (name-key m))
@@ -132,33 +137,22 @@
 
     :else
     (do
-      (throw (ex-data (str "does not match " m))))))
-
-
-
-(defn compiler-merge
-  [old new]
-  (cond (map? new) (merge old new)
-        (vector? new) (into (empty old) (concat new old))
-        :else (or new old)))
-
+      (throw (ex-info "Does not match " m)))))
 
 
 (defn do-merge
   [w module-m f-config]
   (let [name-v (get w name-key)
-        module-extend (extend-meta-key module-m)
-        config-extend (extend-meta-key f-config)
 
         w1 (merge-with compiler-merge
-                       (get-in config-extend [name-v])
-                       (get-in module-extend [name-v])
+                       (get-in f-config [extend-meta-key name-v])
+                       (get-in module-m [extend-meta-key name-v])
                        w)
 
         model-v (get w1 model-key)
         w2 (merge-with compiler-merge
-                       (get-in config-extend [model-v])
-                       (get-in module-extend [model-v])
+                       (get-in f-config [extend-meta-key model-v])
+                       (get-in module-m [extend-meta-key model-v])
                        w1)
 
         module-m (dissoc module-m name-key model-key sql-key extend-meta-key doc-key)
@@ -172,6 +166,18 @@
   [m]
   (->> (into [] (skip-key m))
        (apply dissoc m)))
+
+
+(def skip-key-for-call [join-key validation-key param-key])
+(def skip-key-for-others [result-key column-key])
+
+
+(defn do-filter-for-dml-type
+  [m]
+  (condp = (dml-key m)
+    dml-select-key m
+    dml-call-key (apply dissoc m skip-key-for-call)
+    (apply dissoc m skip-key-for-others)))
 
 
 (defn assoc-default
@@ -207,6 +213,7 @@
                    (assoc-default)
                    ;(do-debug)
                    (do-skip)
+                   (do-filter-for-dml-type)
                    (e/compiler-emit2)
                    (conj acc))
               ) [] model-m)))
@@ -237,13 +244,14 @@
 
 
 (defn do-compile [coll]
-  (do-validate! coll)
+  (v/do-validate! coll)
   (let [{:keys [modules global reserve] :as w} (do-grouping coll)
-        global  (join-to-extend-key global) (compile-one-config global)
+        global (join-to-extend-key global) (compile-one-config global)
         modules (compile-batch (select-keys global [extend-meta-key timeout-key]) modules)
-        reserve (reserve-compile reserve)]
-    (->> (concat [global] modules reserve)
-         (into {} (map into-name-map)))))
+        reserve (reserve-compile reserve)
+        w (concat [global] modules reserve)]
+    (v/distinct-name! w)
+    (into {} (map into-name-map) w)))
 
 
 
@@ -264,11 +272,11 @@
 
   (->> (fr/read-file "tie.edn2.sql")
        (do-compile)
-       #_(s/conform :dadysql.compiler.spec/spec))
+       #_(s/conform :dadysql.compiler.spec/compiler-spec))
 
 
   (let [w (e/sql-emit (fr/read-file "tie.edn.sql"))
-        {:keys [global module]} (s/conform :dadysql.compiler.spec/spec w)]
+        {:keys [global module]} (s/conform :dadysql.compiler.spec/compiler-spec w)]
     (clojure.pprint/pprint module)
     (doseq [r1 module]
       (println
