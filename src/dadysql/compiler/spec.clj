@@ -131,7 +131,24 @@
       :range ::vali-range)))
 
 
-(s/def ::extend (s/* (s/cat
+
+(s/def ::extend (s/every-kv keyword? (s/keys :opt-un [::timeout ::column ::result ::params ::validation])))
+
+
+(comment
+
+  #_(s/explain ::extendv {:a {:timeout 456
+                            :column {:a :b}}} )
+
+
+
+
+
+  )
+
+
+
+#_(s/def ::extend (s/* (s/cat
                        :name keyword?
                        :prop (s/keys :opt-un [::timeout ::column ::result ::params ::validation]))))
 

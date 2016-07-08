@@ -3,6 +3,7 @@
         [dadysql.compiler.core])
   (:require [clojure.spec :as s]
             [clojure.spec.gen :as gen]
+            [clojure.spec.test :as t]
             [dadysql.compiler.file-reader :as f]))
 
 
@@ -48,8 +49,8 @@
       (is (= :clojure.spec/invalid r)))))
 
 #_(gen/sample (gen/fmap (fn [w]
-                        (into [] (into #{} w)))
-                      (gen/such-that not-empty (s/gen :dadysql.compiler.spec/params))))
+                          (into [] (into #{} w)))
+                        (gen/such-that not-empty (s/gen :dadysql.compiler.spec/params))))
 
 ;(params-spec-test)
 ;
@@ -65,13 +66,13 @@
   (testing "test join spec for invalid missing n-n key "
     (let [v [[:department :id :1-n :employee :dept_id]
              [:employee :id :1-1 :employee-detail :employee_id]
-             [:employee :id :n-n :meeting :meeting_id [:employee-meeting :employee_id ]]]
+             [:employee :id :n-n :meeting :meeting_id [:employee-meeting :employee_id]]]
           r (s/conform :dadysql.compiler.spec/join v)]
       (is (= :clojure.spec/invalid r)))))
 
 #_(gen/sample (gen/fmap (fn [w]
-                        (into [] (into #{} w)))
-                      (gen/such-that not-empty (s/gen :dadysql.compiler.spec/join))))
+                          (into [] (into #{} w)))
+                        (gen/such-that not-empty (s/gen :dadysql.compiler.spec/join))))
 
 
 ;(join-spec-test)
@@ -94,12 +95,12 @@
                   :sql        ["insert into department (id, transaction_id, dept_name) values (:id, :transaction_id, :dept_name)"
                                "update department set dept_name=:dept_name, transaction_id=:next_transaction_id  where transaction_id=:transaction_id and id=:id"
                                ";delete from department where id in (:id)"]
-                  :extend     [:insert-dept {:params  [[:transaction_id :ref-con 0]
+                  :extend     {:insert-dept {:params  [[:transaction_id :ref-con 0]
                                                        [:transaction_id :ref-con 0]]
                                              :timeout 30}
                                :update-dept {:params [[:next_transaction_id :ref-fn-key 'inc :transaction_id]]}
                                :delete-dept {:validation [[:id :type 'vector? "Id will be sequence"]
-                                                          [:id :contain 'int? "Id contain will be Long "]]}]}
+                                                          [:id :contain 'int? "Id contain will be Long "]]}}}
 
           w [module]
           r (s/conform :dadysql.compiler.spec/compiler-spec w)]
@@ -117,12 +118,12 @@
                                "update department set dept_name=:dept_name, transaction_id=:next_transaction_id  where transaction_id=:transaction_id and id=:id"
                                "delete from department where id in (:id)"
                                ]
-                  :extend     [:insert-dept {:params  [[:transaction_id :ref-con 0]
+                  :extend     {:insert-dept {:params  [[:transaction_id :ref-con 0]
                                                        [:transaction_id :ref-con 0]]
                                              :timeout 30}
                                :update-dept {:params [[:next_transaction_id :ref-fn-key 'inc :transaction_id]]}
                                :delete-dept {:validation [[:id :type 'vector? "Id will be sequence"]
-                                                          [:id :contain 'int? "Id contain will be Long "]]}]}
+                                                          [:id :contain 'int? "Id contain will be Long "]]}}}
 
           w [config module]
           r (s/conform :dadysql.compiler.spec/compiler-spec w)]
@@ -138,7 +139,7 @@
                 (f/read-file)
                 )
           actual-result (s/conform :dadysql.compiler.spec/compiler-spec w)]
-     ; (clojure.pprint/pprint actual-result)
+      ; (clojure.pprint/pprint actual-result)
       (is (not= :clojure.spec/invalid actual-result)))))
 
 
@@ -157,14 +158,35 @@
 
 
 
+(comment
 
 
-#_(->> "tie.edn.sql"
-       (f/tie-file-reader)
-       (f/map-sql-tag)
-       (s/conform :dadysql.compiler.spec/compiler-spec)
-       (as-map)
-       )
+
+  (gen/sample (gen/fmap (fn [w]
+                            (into [] (into #{} w)))
+                          (gen/such-that not-empty (s/gen :dadysql.compiler.spec/params))))
+
+
+  (gen/sample (gen/fmap (fn [w]
+                            (into [] (into #{} w)))
+                          (gen/such-that not-empty (s/gen :dadysql.compiler.spec/join))))
+
+
+  
+
+
+
+  (->> "tie.edn.sql"
+         (f/read-file)
+         (s/explain :dadysql.compiler.spec/compiler-spec)
+
+         )
+
+
+  (gen/generate (s/gen :dadysql.compiler.spec/compiler-spec))
+
+  )
+
 
 
 #_(do-compile-file-test)

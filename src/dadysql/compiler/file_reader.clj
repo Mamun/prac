@@ -4,7 +4,7 @@
             [dadysql.constant :refer :all]))
 
 
-(defn tie-file-reader
+(defn- tie-file-reader
   [file-name]
   (let [fs (-> file-name
                (io/resource)

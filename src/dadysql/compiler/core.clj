@@ -205,8 +205,7 @@
 
 
 (defn compile-one [m global-m]
-  (let [model-m (map-name-model-sql (select-keys m [name-key model-key sql-key]))
-        m (update-in m [extend-meta-key] #(apply hash-map %))]
+  (let [model-m (map-name-model-sql (select-keys m [name-key model-key sql-key]))]
     (reduce (fn [acc v]
               (->> (do-merge v m global-m)
                    (remove-duplicate)
@@ -246,7 +245,7 @@
 (defn do-compile [coll]
   (v/do-validate! coll)
   (let [{:keys [modules global reserve] :as w} (do-grouping coll)
-        global (join-to-extend-key global) (compile-one-config global)
+        global  (compile-one-config global)
         modules (compile-batch (select-keys global [extend-meta-key timeout-key]) modules)
         reserve (reserve-compile reserve)
         w (concat [global] modules reserve)]

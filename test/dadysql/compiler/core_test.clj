@@ -33,7 +33,7 @@
                            result-key  #{result-array-key}
                            :p          9}
           actual-result (apply merge-with compiler-merge v)]
-      (clojure.pprint/pprint actual-result)
+      ;(clojure.pprint/pprint actual-result)
       (is (= expected-result
              actual-result)))))
 
@@ -87,12 +87,12 @@
              :sql        ["insert into department (id, transaction_id, dept_name) values (:id, :transaction_id, :dept_name)"
                           "update department set dept_name=:dept_name, transaction_id=:next_transaction_id  where transaction_id=:transaction_id and id=:id"
                           "delete from department where id in (:id)"]
-             :extend     [:insert-dept {:params  [[:transaction_id :ref-con 0]
+             :extend     {:insert-dept {:params  [[:transaction_id :ref-con 0]
                                                   [:transaction_id :ref-con 0]]
                                         :timeout 30}
                           :update-dept {:params [[:next_transaction_id :ref-fn-key 'inc :transaction_id]]}
                           :delete-dept {:validation [[:id :type 'vector? "Id will be sequence"]
-                                                     [:id :contain 'long? "Id contain will be Long "]]}]}
+                                                     [:id :contain 'long? "Id contain will be Long "]]}}}
 
           expected-result {:name :insert-dept
                            :sql  ["insert into department (id, transaction_id, dept_name) values (:id, :transaction_id, :dept_name)"
@@ -127,12 +127,12 @@
              :validation [[:id :type 'int? "Id will be Long"]]
              :sql        ["insert into employee (id,  transaction_id,  firstname,  lastname,  dept_id) values (:id, :transaction_id, :firstname, :lastname, :dept_id) "
                           "insert into employee_detail (employee_id, street,   city,  state,  country ) values (:employee_id, :street, :city, :state, :country)"]
-             :extend     [:insert-employee {:model  :employee
+             :extend     {:insert-employee {:model  :employee
                                             :params [[:transaction_id :ref-con 0]
                                                      [:id :ref-gen :gen-dept]]}
                           :insert-employee-detail {:model  :employee-detail
                                                    :params [[:city :ref-con 0]
-                                                            [:id :ref-gen :gen-dept]]}]}
+                                                            [:id :ref-gen :gen-dept]]}}}
           c-result (r/compile-one w config)
           j-key (get-in c-result [0 join-key])
           ]
@@ -198,12 +198,12 @@
                            "update department set dept_name=:dept_name, transaction_id=:next_transaction_id  where transaction_id=:transaction_id and id=:id"
                            "delete from department where id in (:id)"
                            ]
-              :extend     [:insert-dept {:params  [[:transaction_id :ref-con 0]
+              :extend     {:insert-dept {:params  [[:transaction_id :ref-con 0]
                                                    [:transaction_id :ref-con 0]]
                                          :timeout 30}
                            :update-dept {:params [[:next_transaction_id :ref-fn-key 'inc :transaction_id]]}
                            :delete-dept {:validation [[:id :type 'vector? "Id will be sequence"]
-                                                      [:id :contain 'int? "Id contain will be Long "]]}]}]
+                                                      [:id :contain 'int? "Id contain will be Long "]]}}}]
           actual-result (r/do-compile w)]
       (is (not-empty (:insert-dept actual-result)))
       (is (not-empty (:update-dept actual-result)))
@@ -228,12 +228,12 @@
               :sql        ["insert into department (id, transaction_id, dept_name) values (:id, :transaction_id, :dept_name)"
                            "update department set dept_name=:dept_name, transaction_id=:next_transaction_id  where transaction_id=:transaction_id and id=:id"
                            "delete from department where id in (:id)"]
-              :extend     [:insert-dept {:params  [[:transaction_id :ref-con 0]
+              :extend     {:insert-dept {:params  [[:transaction_id :ref-con 0]
                                                    [:transaction_id :ref-con 0]]
                                          :timeout 30}
                            :update-dept {:params [[:next_transaction_id :ref-fn-key 'inc :transaction_id]]}
                            :delete-dept {:validation [[:id :type 'vector? "Id will be sequence"]
-                                                      [:id :contain 'int? "Id contain will be Long "]]}]}]
+                                                      [:id :contain 'int? "Id contain will be Long "]]}}}]
           actual-result (r/do-compile w)]
 
       ;      (clojure.pprint/pprint (s/conform :dadysql.compiler.spec/spec w))
