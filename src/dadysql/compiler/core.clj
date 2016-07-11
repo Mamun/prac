@@ -4,8 +4,7 @@
             [dady.common :as cc]
             [dadysql.compiler.validation :as v]
             [dadysql.compiler.core-emit :as e]
-            [dady.common :as dc]
-            [dadysql.constant :as c]
+            [clojure.tools.reader.edn :as edn]
             [dadysql.compiler.file-reader :as fr]))
 
 
@@ -16,14 +15,12 @@
   )
 
 
-
 (defn default-config
   []
   {file-reload-key true
    timeout-key     1000
    name-key        global-key
    :tx-prop        [:isolation :serializable :read-only? true]})
-
 
 
 (defn compiler-merge
@@ -33,11 +30,8 @@
         :else (or new old)))
 
 
-
-
 (defn reserve-regex []
   #":_.*")
-
 
 
 (defn group-by-reserve-key
@@ -68,9 +62,6 @@
     (hash-map :global f-global :reserve reserve :modules modules)))
 
 
-
-
-
 (defn join-to-extend-key
   "Assoc join key with model "
   [tm]
@@ -82,68 +73,10 @@
         (assoc extend-meta-key w))))
 
 
-
-
-(defn map-name-model-sql [m]
-  (cond
-
-    (and (keyword? (name-key m))
-         (keyword? (model-key m)))
-
-    (do
-      [(-> m
-           (assoc index 0)
-           (update-in [sql-key] first))])
-
-    (and (sequential? (name-key m))
-         (sequential? (model-key m)))
-    (do
-      (mapv (fn [i s n m]
-              {name-key  n
-               index     i
-               sql-key   s
-               model-key m})
-            (range)
-            (get-in m [sql-key])
-            (get-in m [name-key])
-            (get-in m [model-key])))
-
-    (and (sequential? (name-key m))
-         (keyword? (model-key m)))
-
-    (do
-      (mapv (fn [i n s]
-              {index     i
-               name-key  n
-               sql-key   s
-               model-key (get-in m [model-key])})
-            (range)
-            (get-in m [name-key])
-            (get-in m [sql-key])))
-
-    (sequential? (name-key m))
-    (mapv (fn [i s n]
-            {name-key n
-             index    i
-             sql-key  s})
-          (range)
-          (get-in m [sql-key])
-          (get-in m [name-key]))
-
-    (keyword? (name-key m))
-    [(-> m
-         (assoc index 0)
-         (update-in [sql-key] first))]
-
-    :else
-    (do
-      (throw (ex-info "Does not match " m)))))
-
-
 (defn do-merge
   [w module-m f-config]
   (let [name-v (get w name-key)
-
+        ;f-config (select-keys f-config [extend-meta-key timeout-key])
         w1 (merge-with compiler-merge
                        (get-in f-config [extend-meta-key name-v])
                        (get-in module-m [extend-meta-key name-v])
@@ -158,8 +91,6 @@
         module-m (dissoc module-m name-key model-key sql-key extend-meta-key doc-key)
         f-config (select-keys f-config [param-key validation-key timeout-key])]
     (merge-with compiler-merge f-config module-m w2)))
-
-
 
 
 (defn do-skip
@@ -185,8 +116,7 @@
   (if (model-key m)
     (-> m
         (assoc dml-key (e/dml-type (sql-key m)))
-        (update-in [sql-key] e/sql-str-emit)
-        )
+        (update-in [sql-key] e/sql-str-emit))
     (-> m
         (assoc dml-key (e/dml-type (sql-key m)))
         (update-in [sql-key] e/sql-str-emit)
@@ -205,15 +135,15 @@
 
 
 (defn compile-one [m global-m]
-  (let [model-m (map-name-model-sql (select-keys m [name-key model-key sql-key]))]
+  (let [m (edn/read-string (clojure.string/lower-case (str m)))
+        model-m (e/map-name-model-sql (select-keys m [name-key model-key sql-key]))]
     (reduce (fn [acc v]
               (->> (do-merge v m global-m)
                    (remove-duplicate)
                    (assoc-default)
-                   ;(do-debug)
                    (do-skip)
                    (do-filter-for-dml-type)
-                   (e/compiler-emit2)
+                   (e/compiler-emit)
                    (conj acc))
               ) [] model-m)))
 
@@ -243,13 +173,16 @@
 
 
 (defn do-compile [coll]
-  (v/do-validate! coll)
-  (let [{:keys [modules global reserve] :as w} (do-grouping coll)
-        global  (compile-one-config global)
-        modules (compile-batch (select-keys global [extend-meta-key timeout-key]) modules)
+  (v/validate-spec! coll)
+  (v/validate-distinct-name! coll)
+  (v/validate-name-sql! coll)
+  (v/validate-name-model! coll)
+  (v/validate-extend-name! coll)
+  (let [{:keys [modules global reserve]} (do-grouping coll)
+        global (compile-one-config global)
+        modules (compile-batch global modules)
         reserve (reserve-compile reserve)
         w (concat [global] modules reserve)]
-    (v/distinct-name! w)
     (into {} (map into-name-map) w)))
 
 
@@ -260,9 +193,6 @@
 
 
 (comment
-
-
-
 
   (->> (fr/read-file "tie.edn.sql")
        (do-compile)

@@ -14,6 +14,16 @@
 (comment
 
 
+
+
+
+  [[:department :id :1-n :employee :dept_id]
+   [:employee :id :1-1 :employee-detail :employee_id]
+   [:employee :id :n-n :meeting :meeting_id [:employee-meeting :employee_id :meeting_id]]]
+
+
+
+
   #_(s/valid? (s/or :name string?
                   :id   integer?) :keyowrd)
 

@@ -8,19 +8,17 @@
  :join [[:department :id :1-n :employee :dept_id]
         [:employee :id :1-1 :employee-detail :employee_id]
         [:employee :id :n-n :meeting :meeting_id [:employee-meeting :employee_id :meeting_id]]]
-
  }*/
 
 
 /*
 {:doc "General select statement. Name is used to identify each query, Abstract timeout will override with timeout here  "
  :name  [:get-dept-list :get-dept-by-ids :get-employee-list :get-meeting-list :get-employee-meeting-list]
- :model [:department :department :employee :meeting :employee-meeting]
+ :model [:department :department :employee :meeting :employee-meeting ]
  :extend {:get-dept-by-ids {:validation [[:id :type vector? "Id will be sequence"]
                                          [:id :contain int? "Id contain will be Long "]]
                                      :result #{:array}}
-          :get-dept-list {:result #{:array}}
-                                     }
+          :get-dept-list {:result #{:array}}}
  :timeout 5000
  :result #{:array}
  :params [[:limit :ref-con 10]

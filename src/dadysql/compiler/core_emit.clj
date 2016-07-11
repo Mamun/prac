@@ -1,40 +1,79 @@
 (ns dadysql.compiler.core-emit
   (:use [dadysql.constant])
   (:require [clojure.string :as s]
-            [clojure.core.match :as m]
             [dady.common :as dc]))
+
+;;;;;;;;;;;;;;;;;;;
+
+
+
+(defn map-name-model-sql [m]
+  (cond
+
+    (and (keyword? (name-key m))
+         (keyword? (model-key m)))
+    (do
+      [(-> m
+           (assoc index 0)
+           (update-in [sql-key] first))])
+
+    (and (sequential? (name-key m))
+         (sequential? (model-key m)))
+    (do
+      (mapv (fn [i s n m]
+              {name-key  n
+               index     i
+               sql-key   s
+               model-key m})
+            (range)
+            (get-in m [sql-key])
+            (get-in m [name-key])
+            (get-in m [model-key])))
+
+    (and (sequential? (name-key m))
+         (keyword? (model-key m)))
+    (do
+      (mapv (fn [i n s]
+              {index     i
+               name-key  n
+               sql-key   s
+               model-key (get-in m [model-key])})
+            (range)
+            (get-in m [name-key])
+            (get-in m [sql-key])))
+
+    (sequential? (name-key m))
+    (mapv (fn [i s n]
+            {name-key n
+             index    i
+             sql-key  s})
+          (range)
+          (get-in m [sql-key])
+          (get-in m [name-key]))
+
+    (keyword? (name-key m))
+    [(-> m
+         (assoc index 0)
+         (update-in [sql-key] first))]
+
+    :else
+    (do
+      (throw (ex-info "Does not match " m)))))
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;
+
+
 
 (def as-lower-case-keyword (comp keyword s/lower-case name))
 
 
 ;;;;;;;;;;;;;;;;,Join emit ;
 
-(defn join-emission-batch [j-coll]
-  (mapv (fn [j]
-          j
-          #_(condp = (nth j 2)
-            :n-n
-            (-> j
-                (update-in [0] as-lower-case-keyword)
-                (update-in [1] as-lower-case-keyword)
-                (update-in [3] as-lower-case-keyword)
-                (update-in [4] as-lower-case-keyword)
-                (update-in [5 1] as-lower-case-keyword)
-                (update-in [5 2] as-lower-case-keyword))
-            (-> j
-                (update-in [0] as-lower-case-keyword)
-                (update-in [1] as-lower-case-keyword)
-                (update-in [3] as-lower-case-keyword)
-                (update-in [4] as-lower-case-keyword)))
-          ) j-coll))
-
-
-
 (defn map-reverse-join
   [join-coll]
-  ;(clojure.pprint/pprint join-coll)
-  (let [
-        f (fn [[s-tab s-id join-key d-tab d-id [r-tab r-id r-id2] :as j]]
+  (let [f (fn [[s-tab s-id join-key d-tab d-id [r-tab r-id r-id2] :as j]]
             (condp = join-key
               join-1-1-key [d-tab d-id join-1-1-key s-tab s-id]
               join-1-n-key [d-tab d-id join-n-1-key s-tab s-id]
@@ -117,9 +156,7 @@
     param-ref-fn-key (assoc w 2 (resolve (nth w 2)))
     w))
 
-(defn param-emit-batch [w-coll]
-  (->> w-coll
-       (mapv param-emit )))
+
 
 
 (defn validation-emit [v]
@@ -130,25 +167,18 @@
     v))
 
 
-(defn validation-emit-batch [coll]
-  ;(println coll)
-  (->> coll
-       ;(mapv second)
-       (mapv validation-emit )))
+#_(defn validation-emit-batch [coll]
+    ;(println coll)
+    (->> coll
+         ;(mapv second)
+         (mapv validation-emit)))
 
 
-(defn compiler-emit [m-coll]
-  (mapv (fn [m]
-          (-> m
-              (dc/update-if-contains [validation-key] validation-emit-batch)
-              (dc/update-if-contains [param-key] param-emit-batch))
-          ) m-coll))
 
-
-(defn compiler-emit2 [m]
+(defn compiler-emit [m]
   (-> m
-      (dc/update-if-contains [validation-key] validation-emit-batch)
-      (dc/update-if-contains [param-key] param-emit-batch)))
+      (dc/update-if-contains [validation-key] #(mapv validation-emit %))
+      (dc/update-if-contains [param-key] #(mapv param-emit %))))
 
 
 

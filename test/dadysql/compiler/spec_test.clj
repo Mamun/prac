@@ -168,11 +168,16 @@
 
 
   (gen/sample (gen/fmap (fn [w]
+                          (into [] (into #{} w)))
+                        (gen/such-that not-empty (s/gen :dadysql.compiler.spec/validation))))
+
+
+  (gen/sample (gen/fmap (fn [w]
                             (into [] (into #{} w)))
                           (gen/such-that not-empty (s/gen :dadysql.compiler.spec/join))))
 
 
-  
+
 
 
 
@@ -181,6 +186,11 @@
          (s/explain :dadysql.compiler.spec/compiler-spec)
 
          )
+
+
+  (gen/generate (s/gen :dadysql.compiler.spec/extend) )
+
+
 
 
   (gen/generate (s/gen :dadysql.compiler.spec/compiler-spec))

@@ -23,8 +23,21 @@
 (s/def ::timeout pos-int?)
 
 (s/def ::name
-  (s/with-gen (s/or :one keyword? :many (s/* keyword?))
+  (s/with-gen (s/or :one keyword? :many (s/coll-of keyword? :kind vector? :distinct true))
               (fn [] (s/gen #{global-key :get-dept-list :get-dept-by-ids :get-employee-list :get-meeting-list :get-employee-meeting-list}))))
+
+
+(comment
+
+  (s/conform ::name :a )
+
+
+  (s/explain ::name  [:a :b :b] )
+
+  ;(s/conform ::name (list :a :b ))
+
+  )
+
 
 
 (s/def ::sql
@@ -35,7 +48,7 @@
                               "insert into department (id, transaction_id, dept_name) values (:id, :transaction_id, :dept_name);\nupdate department set dept_name=:dept_name, transaction_id=:next_transaction_id  where transaction_id=:transaction_id and id=:id;\ndelete from department where id in (:id);\n"}))))
 
 (s/def ::model
-  (s/with-gen (s/or :one keyword? :many (s/* keyword?))
+  (s/with-gen (s/or :one keyword? :many (s/coll-of keyword? :kind vector? ))
               (fn [] (s/gen #{:dept :employee :meeting}))))
 
 (s/def ::skip
@@ -53,6 +66,7 @@
   (s/with-gen (s/every-kv keyword? keyword?)
               (fn [] (s/gen #{{:id :empl_id}
                               {:dept_id :id}}))))
+
 
 (s/def ::result (s/every #{result-array-key result-single-key} :kind set?))
 (s/def ::read-only? boolean?)
@@ -132,10 +146,22 @@
 
 
 
-(s/def ::extend (s/every-kv keyword? (s/keys :opt-un [::timeout ::column ::result ::params ::validation])))
+(s/def ::extend
+  (s/with-gen
+    (s/every-kv keyword? (s/keys :opt-un [::timeout ::column ::result ::params ::validation]))
+    (fn []
+      (s/gen #{{:get-meeting-by-id {:model :meeting
+                                    :result #{:single}
+                                    :validation [[:id :type 'int? "Id will be sequence"]
+                                                 [:id :range 10 11 "Id range will be between 10 and 11"]]}}
+               {:get-employee-for-meeting {:model :employee-meeting}}}))))
+
+
 
 
 (comment
+
+
 
   #_(s/explain ::extendv {:a {:timeout 456
                             :column {:a :b}}} )

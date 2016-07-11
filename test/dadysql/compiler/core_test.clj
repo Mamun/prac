@@ -46,32 +46,6 @@
 
 ;(apply-compile-test)
 
-(deftest map-name-model-sql-test
-  (testing "test name map sql "
-    (let [w {:name  [:gen-dept :gen-empl :gen-meet],
-             :model [:dept :empl :meet]
-             :sql
-                    ["call next value for seq_dept"
-                     "call next value for seq_empl"
-                     "call next value for seq_meet"]}
-          actual-result (map-name-model-sql w)]
-      (is (not-empty actual-result))))
-
-  (testing "test name map sql "
-    (let [w {:name [:gen-dept :gen-empl :gen-meet],
-             :sql
-                   ["call next value for seq_dept"
-                    "call next value for seq_empl"
-                    "call next value for seq_meet"]}
-          actual-result (map-name-model-sql w)]
-      (is (not-empty actual-result))))
-
-  (testing "test name map sql "
-    (let [w {:name :gen-dept,
-             :sql  ["select * from dual "]
-             }
-          actual-result (map-name-model-sql w)]
-      (is (not-empty actual-result)))))
 
 
 ;(map-name-model-sql-test)
@@ -141,6 +115,32 @@
       #_(-> (r/compile-one pc config w)
             (clojure.pprint/pprint))
       )))
+
+
+
+#_(let [config (r/default-config)
+      w {:doc        "Modify department"
+         :name       [:insert-dept :update-dept :delete-dept]
+         :model      :department
+         :validation [[:id :Type 'long? "Id will be Long"]]
+         :sql        ["insert into department (id, transaction_id, dept_name) values (:id, :transaction_id, :dept_name)"
+                      "update department set dept_name=:dept_name, transaction_id=:next_transaction_id  where transaction_id=:transaction_id and id=:id"
+                      "delete from department where id in (:id)"]
+         :extend     {:insert-dept {:params  [[:transaction_id :ref-con 0]
+                                              [:transaction_id :ref-con 0]]
+                                    :timeout 30}
+                      :update-dept {:params [[:next_transaction_id :ref-fn-key 'inc :transaction_id]]}
+                      :delete-dept {:validation [[:id :type 'vector? "Id will be sequence"]
+                                                 [:id :contain 'long? "Id contain will be Long "]]}}}
+
+
+      actual-result (->> (r/compile-one w config)
+
+
+                         )]
+  (clojure.pprint/pprint actual-result)
+  )
+
 
 
 ;(compile-one-test)
@@ -222,7 +222,7 @@
               :timeout      3000
               :reserve-name #{:create-ddl :drop-ddl :init-data}}
              {:doc        "Modify department"
-              :name       [:insert-dept :update-dept :delete-dept]
+              :name       [:insert-dept :update-dept :delete-dept ]
               :model      :department
               :validation [[:id :type 'int? "Id will be Long"]]
               :sql        ["insert into department (id, transaction_id, dept_name) values (:id, :transaction_id, :dept_name)"
@@ -257,5 +257,22 @@
 
 ;(compilter-test)
 
+
+
+(deftest do-compile4-test
+  (testing "test do -compile"
+    (let [w (r/read-file "tie.edn2.sql" )]
+      (clojure.pprint/pprint w)
+      )
+    ))
+
+
+(comment
+
+  (do
+    (do-compile4-test)
+    nil)
+
+  )
 
 
