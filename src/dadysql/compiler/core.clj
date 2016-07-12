@@ -178,6 +178,7 @@
         global (compile-one-config global)
         modules (compile-batch global modules)
         reserve (reserve-compile reserve)
+        global (dissoc global extend-meta-key)
         w (concat [global] modules reserve)]
     (into {} (map into-name-map) w)))
 

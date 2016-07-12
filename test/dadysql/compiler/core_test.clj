@@ -41,39 +41,25 @@
 
 ;(apply-compile-test)
 
-
+;(resolve 'long?)
 
 ;(map-name-model-sql-test)
+
+(declare compile-one-data)
+(declare compile-one-expected-result)
+
+
 
 
 (deftest compile-one-test
   (testing "test compile-one "
     (let [config (r/default-config)
-          w {:doc        "Modify department"
-             :name       [:insert-dept :update-dept :delete-dept]
-             :model      :department
-             :validation [[:id :type 'long? "Id will be Long"]]
-             :sql        ["insert into department (id, transaction_id, dept_name) values (:id, :transaction_id, :dept_name)"
-                          "update department set dept_name=:dept_name, transaction_id=:next_transaction_id  where transaction_id=:transaction_id and id=:id"
-                          "delete from department where id in (:id)"]
-             :extend     {:insert-dept {:params  [[:transaction_id :ref-con 0]
-                                                  [:transaction_id :ref-con 0]]
-                                        :timeout 30}
-                          :update-dept {:params [[:next_transaction_id :ref-fn-key 'inc :transaction_id]]}
-                          :delete-dept {:validation [[:id :type 'vector? "Id will be sequence"]
-                                                     [:id :contain 'long? "Id contain will be Long "]]}}}
 
-          expected-result {:name :insert-dept
-                           :sql  ["insert into department (id, transaction_id, dept_name) values (:id, :transaction_id, :dept_name)"
-                                  :id
-                                  :transaction_id
-                                  :dept_name]}
-          actual-result (->> (r/compile-one w config)
-                             (map #(select-keys %1 [:name :sql]))
-                             (doall)
-                             (first))]
+
+          actual-result (r/compile-one compile-one-data config)]
+
       (is (= actual-result
-             expected-result))))
+             compile-one-expected-result))))
   (testing "test compile-one"
     (let [config (r/default-config)
           w {:doc  "Modify department"
@@ -83,99 +69,32 @@
                     "call next value for seq_meet"]}
           actual-result (->> (compile-one w config))]
       (is (not (empty? actual-result)))))
-  (testing "test compile-one with config join "
-    (let [config (-> (r/default-config)
-                     (assoc join-key [[:department :id :1-n :employee :dept_id]
-                                      [:employee :id :1-1 :employee-detail :employee_id]
-                                      [:employee :id :n-n :meeting :meeting_id [:employee-meeting :employee_id :meeting_id]]])
-                     (r/compile-one-config))
-          ;_ (clojure.pprint/pprint config)
-
-          w {:doc        "Modify department"
-             :name       [:insert-employee :insert-employee-detail]
-             :validation [[:id :type 'int? "Id will be Long"]]
-             :sql        ["insert into employee (id,  transaction_id,  firstname,  lastname,  dept_id) values (:id, :transaction_id, :firstname, :lastname, :dept_id) "
-                          "insert into employee_detail (employee_id, street,   city,  state,  country ) values (:employee_id, :street, :city, :state, :country)"]
-             :extend     {:insert-employee        {:model  :employee
-                                                   :params [[:transaction_id :ref-con 0]
-                                                            [:id :ref-gen :gen-dept]]}
-                          :insert-employee-detail {:model  :employee-detail
-                                                   :params [[:city :ref-con 0]
-                                                            [:id :ref-gen :gen-dept]]}}}
-          c-result (r/compile-one w config)
-          j-key (get-in c-result [0 join-key])
-          ]
-      ;(clojure.pprint/pprint c-result)
-      (is (not (empty? j-key)))
-      #_(-> (r/compile-one pc config w)
-            (clojure.pprint/pprint))
-      )))
+  )
 
 
 
 ;(compile-one-test)
 
 
+(declare do-compile-input-data)
+(declare do-compile-expected-result)
+
+
 (deftest do-compile-test
   (testing "test do-compile "
-    (let [w [{:name         :_global_
-              :doc          "Abstract configuration, timeout will be used to all sql statement if it is not defined of it owns."
-              :file-reload  true
-              :timeout      1000
-              :reserve-name #{:create-ddl :drop-ddl :init-data}
-              :tx-prop      [:isolation :serializable :read-only? true]
-              :join         [[:department :id :1-n :employee :dept_id]
-                             [:employee :id :1-1 :employee-detail :employee_id]
-                             [:employee :id :n-n :meeting :meeting_id [:employee-meeting :employee_id :meeting_id]]]}
-             {:doc     "General select statement. Name is used to identify each query, Abstract timeout will override with timeout here  "
-              :name    [:get-dept-list :get-dept-by-ids :get-employee-list :get-meeting-list :get-employee-meeting-list]
-              :model   [:department :department :employee :meeting :employee-meeting]
-              :extend  {:get-dept-by-ids {:validation [[:id :type 'vector? "Id will be sequence"]
-                                                       [:id :contain 'int? "Id contain will be Long "]]
-                                          :result     #{:array}}
-                        :get-dept-list   {:result #{:array}}}
-              :timeout 5000
-              :result  #{:array}
-              :params  [[:limit :ref-con 10]
-                        [:offset :ref-con 0]]
-              :skip    #{:join}
-              :sql     ["select * from department LIMIT :limit OFFSET :offset"
-                        "select * from department where id in (:id) "
-                        "select * from employee LIMIT :limit OFFSET :offset"
-                        "select * from meeting LIMIT :limit OFFSET :offset"
-                        "select * from employee_meeting LIMIT :limit OFFSET :offset"]}]
-          actual-result (r/do-compile w)]
-      (is (not-empty actual-result)))))
+    (let [actual-result (r/do-compile do-compile-input-data)]
+      ; (clojure.pprint/pprint actual-result)
+      (is (not-empty actual-result))
+      (is (= do-compile-expected-result actual-result))
+      (is (not-empty (:get-dept-list actual-result)))
+      (is (not-empty (:get-dept-by-ids actual-result)))
+      (is (not-empty (:get-employee-list actual-result))))))
 
 
 
-(do-compile-test)
+;(do-compile-test)
 
-(deftest do-compile-test2
-  (testing "test do-compile with inner details "
-    (let [w [{:name         :_config_
-              :file-reload  true
-              :timeout      3000
-              :reserve-name #{:create-ddl :drop-ddl :init-data}}
-             {:doc        "Modify department"
-              :name       [:insert-dept :update-dept :delete-dept]
-              :model      :department
-              :validation [[:id :type 'int? "Id will be Long"]]
-              :sql        ["insert into department (id, transaction_id, dept_name) values (:id, :transaction_id, :dept_name)"
-                           "update department set dept_name=:dept_name, transaction_id=:next_transaction_id  where transaction_id=:transaction_id and id=:id"
-                           "delete from department where id in (:id)"
-                           ]
-              :extend     {:insert-dept {:params  [[:transaction_id :ref-con 0]
-                                                   [:transaction_id :ref-con 0]]
-                                         :timeout 30}
-                           :update-dept {:params [[:next_transaction_id :ref-fn-key 'inc :transaction_id]]}
-                           :delete-dept {:validation [[:id :type 'vector? "Id will be sequence"]
-                                                      [:id :contain 'int? "Id contain will be Long "]]}}}]
-          actual-result (r/do-compile w)]
-      (is (not-empty (:insert-dept actual-result)))
-      (is (not-empty (:update-dept actual-result)))
-      (is (not-empty (:delete-dept actual-result)))
-      (is (not-empty actual-result)))))
+
 
 
 ;(do-compile-test)
@@ -201,10 +120,10 @@
 
 
 
-(deftest do-compile4-test
+#_(deftest do-compile4-test
   (testing "test do -compile"
     (let [w (r/read-file "tie.edn2.sql")]
-      (clojure.pprint/pprint w)
+      ;(clojure.pprint/pprint w)
       )
     ))
 
@@ -218,3 +137,168 @@
   )
 
 
+
+
+(def compile-one-data
+  {:doc        "Modify department"
+   :name       [:insert-dept :update-dept :delete-dept]
+   :model      :department
+   :validation [[:id :type 'int? "Id will be Long"]]
+   :sql        ["insert into department (id, transaction_id, dept_name) values (:id, :transaction_id, :dept_name)"
+                "update department set dept_name=:dept_name, transaction_id=:next_transaction_id  where transaction_id=:transaction_id and id=:id"
+                "delete from department where id in (:id)"]
+   :extend     {:insert-dept {:params  [[:transaction_id :ref-con 0]
+                                        [:transaction_id :ref-con 0]]
+                              :timeout 30}
+                :update-dept {:params [[:next_transaction_id :ref-fn-key 'inc :transaction_id]]}
+                :delete-dept {:validation [[:id :type 'vector? "Id will be sequence"]
+                                           [:id :contain 'int? "Id contain will be Long "]]}}}
+  )
+
+
+(def compile-one-expected-result
+  [{:timeout    30,
+    :validation [[:id :type #'clojure.core/int? "id will be long"]],
+    :params     [[:transaction_id :ref-con 0]],
+    :index      0,
+    :name       :insert-dept,
+    :sql
+                ["insert into department (id, transaction_id, dept_name) values (:id, :transaction_id, :dept_name)"
+                 :id
+                 :transaction_id
+                 :dept_name],
+    :model      :department,
+    :dml-type   :insert}
+   {:timeout    1000,
+    :validation [[:id :type #'clojure.core/int? "id will be long"]],
+    :params
+                [[:next_transaction_id
+                  :ref-fn-key
+                  #'clojure.core/inc
+                  :transaction_id]],
+    :index      1,
+    :name       :update-dept,
+    :sql
+                ["update department set dept_name=:dept_name, transaction_id=:next_transaction_id  where transaction_id=:transaction_id and id=:id"
+                 :dept_name
+                 :next_transaction_id
+                 :transaction_id
+                 :id],
+    :model      :department,
+    :dml-type   :update}
+   {:timeout  1000,
+    :validation
+              [[:id :type #'clojure.core/vector? "id will be sequence"]
+               [:id :contain #'clojure.core/int? "id contain will be long "]],
+    :index    2,
+    :name     :delete-dept,
+    :sql      ["delete from department where id in (:id)" :id],
+    :model    :department,
+    :dml-type :delete}]
+
+  )
+
+
+
+
+(def do-compile-input-data
+  [{:name         :_global_
+    :doc          "global."
+    :file-reload  true
+    :timeout      1000
+    :reserve-name #{:create-ddl :drop-ddl :init-data}
+    :tx-prop      [:isolation :serializable :read-only? true]
+    :join         [[:department :id :1-n :employee :dept_id]
+                   [:employee :id :1-1 :employee-detail :employee_id]
+                   [:employee :id :n-n :meeting :meeting_id [:employee-meeting :employee_id :meeting_id]]]}
+   {:doc     "spec"
+    :name    [:get-dept-list :get-dept-by-ids :get-employee-list :get-meeting-list :get-employee-meeting-list]
+    :model   [:department :department :employee :meeting :employee-meeting]
+    :extend  {:get-dept-by-ids {:validation [[:id :type 'vector? "Id will be sequence"]
+                                             [:id :contain 'int? "Id contain will be Long "]]
+                                :result     #{:array}}
+              :get-dept-list   {:result #{:array}}}
+    :timeout 5000
+    :result  #{:array}
+    :params  [[:limit :ref-con 10]
+              [:offset :ref-con 0]]
+    :sql     ["select * from department LIMIT :limit OFFSET :offset"
+              "select * from department where id in (:id) "
+              "select * from employee LIMIT :limit OFFSET :offset"
+              "select * from meeting LIMIT :limit OFFSET :offset"
+              "select * from employee_meeting LIMIT :limit OFFSET :offset"]}])
+
+
+
+(def do-compile-expected-result
+  {:_global_
+   {:name         :_global_,
+    :doc          "global.",
+    :file-reload  true,
+    :timeout      1000,
+    :reserve-name #{:create-ddl :init-data :drop-ddl},
+    :tx-prop      [:isolation :serializable :read-only? true]},
+   :get-dept-list
+   {:timeout  5000,
+    :result   #{:array},
+    :params   [[:limit :ref-con 10] [:offset :ref-con 0]],
+    :join     [[:department :id :1-n :employee :dept_id]],
+    :name     :get-dept-list,
+    :index    0,
+    :sql
+              ["select * from department limit :limit offset :offset"
+               :limit
+               :offset],
+    :model    :department,
+    :dml-type :select},
+   :get-dept-by-ids
+   {:index    1,
+    :name     :get-dept-by-ids,
+    :params   [[:limit :ref-con 10] [:offset :ref-con 0]],
+    :sql      ["select * from department where id in (:id) " :id],
+    :result   #{:array},
+    :timeout  5000,
+    :validation
+              [[:id :type #'clojure.core/vector? "id will be sequence"]
+               [:id :contain #'clojure.core/int? "id contain will be long "]],
+    :dml-type :select,
+    :join     [[:department :id :1-n :employee :dept_id]],
+    :model    :department},
+   :get-employee-list
+   {:timeout  5000,
+    :result   #{:array},
+    :params   [[:limit :ref-con 10] [:offset :ref-con 0]],
+    :join     [[:employee :id :1-1 :employee-detail :employee_id]
+               [:employee :id :n-n :meeting :meeting_id [:employee-meeting :employee_id :meeting_id]]
+               [:employee :dept_id :n-1 :department :id]],
+    :name     :get-employee-list,
+    :index    2,
+    :sql
+              ["select * from employee limit :limit offset :offset"
+               :limit
+               :offset],
+    :model    :employee,
+    :dml-type :select},
+   :get-meeting-list
+   {:timeout  5000,
+    :result   #{:array},
+    :params   [[:limit :ref-con 10] [:offset :ref-con 0]],
+    :join     [[:meeting :meeting_id :n-n :employee :id [:employee-meeting :meeting_id :employee_id]]],
+    :name     :get-meeting-list,
+    :index    3,
+    :sql
+              ["select * from meeting limit :limit offset :offset" :limit :offset],
+    :model    :meeting,
+    :dml-type :select},
+   :get-employee-meeting-list
+   {:timeout  5000,
+    :result   #{:array},
+    :params   [[:limit :ref-con 10] [:offset :ref-con 0]],
+    :name     :get-employee-meeting-list,
+    :index    4,
+    :sql
+              ["select * from employee_meeting limit :limit offset :offset"
+               :limit
+               :offset],
+    :model    :employee-meeting,
+    :dml-type :select}})

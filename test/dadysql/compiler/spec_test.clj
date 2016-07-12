@@ -158,17 +158,49 @@
 
 
 
-(comment
+#_(comment
 
-  (let [reqs {:a (gen/gen-for-pred number?)
-              :b (gen/gen-for-pred ratio?)}
-        opts {:c (gen/gen-for-pred string?)}]
-    (gen/generate (gen/bind (choose 0 (count opts))
-                    #(let [args (concat (seq reqs) (shuffle (seq opts)))]
-                      (->> args
-                           (take (+ % (count reqs)))
-                           (mapcat identity)
-                           (apply hash-map))))))
+
+  (gen/generate (s/gen :dadysql.compiler.spec/validation))
+
+
+  (gen/generate (s/gen :dadysql.compiler.spec/extend))
+
+  (gen/generate (s/gen :dadysql.compiler.spec/module))
+
+  (gen/generate (s/gen :dadysql.compiler.spec/global))
+
+  (gen/generate  (s/gen :dadysql.compiler.spec/compiler-input-spec))
+
+
+  (gen/sample
+    (gen/bind (s/gen :dadysql.compiler.spec/vali-type2)
+              (fn [v]
+                (println v)
+                {:a v}
+
+                (s/gen int?)
+                )))
+
+
+
+  (gen/sample
+    (gen/bind (s/gen :dadysql.compiler.spec/params)
+              (fn [v]
+                (println v)
+                {:a v}
+
+                (s/gen int?)
+              )))
+
+
+
+  
+
+    (s/gen :dadysql.compiler.spec/params)
+
+
+
 
   (gen/generate
     (gen/bind (s/gen :dadysql.compiler.spec/params) (fn [v]

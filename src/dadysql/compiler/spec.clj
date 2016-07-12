@@ -59,21 +59,26 @@
 (s/def ::read-only? boolean?)
 
 (s/def ::join-one
-  (s/with-gen (s/tuple keyword? keyword? (s/spec #{join-1-1-key join-1-n-key join-n-1-key}) keyword? keyword?)
-              (fn []
-                (s/gen #{[:department :id join-1-n-key :employee :dept_id]
-                         [:employee :id join-1-1-key :employee-detail :employee_id]}))))
+  (s/tuple keyword? keyword? (s/spec #{join-1-1-key join-1-n-key join-n-1-key}) keyword? keyword?)
+  )
 
 (s/def ::join-many
-  (s/with-gen (s/tuple keyword? keyword? (s/spec #{join-n-n-key}) keyword? keyword? (s/tuple keyword? keyword? keyword?))
-              (fn []
-                (s/gen #{[:employee :id :n-n :meeting :meeting_id [:employee-meeting :employee_id :meeting_id]]}))))
+  (s/tuple keyword? keyword? (s/spec #{join-n-n-key}) keyword? keyword? (s/tuple keyword? keyword? keyword?))
+)
 
 (s/def ::join
-  (clojure.spec/*
-    (clojure.spec/alt
-      :join-one ::join-one
-      :join-many ::join-many)))
+  (s/with-gen
+    (clojure.spec/*
+      (clojure.spec/alt
+        :join-one ::join-one
+        :join-many ::join-many))
+    (fn []
+      (s/gen
+        #{[[:department :id join-1-n-key :employee :dept_id]
+           [:employee :id join-1-1-key :employee-detail :employee_id]
+           [:employee :id :n-n :meeting :meeting_id [:employee-meeting :employee_id :meeting_id]]]
+          }))
+    ))
 
 
 (s/def ::param-ref-con
@@ -110,26 +115,34 @@
 
 
 (s/def ::vali-type
-  (s/with-gen (clojure.spec/tuple keyword? #(= validation-type-key %) resolve? string?)
-              (fn []
-                (s/gen #{[:id validation-type-key 'vector? "id witll be vector"]}))))
+  (clojure.spec/tuple keyword? #(= validation-type-key %) resolve? string?))
+
+
 (s/def ::vali-type-contain
-  (s/with-gen (clojure.spec/tuple keyword? #(= validation-contain-key %) resolve? string?)
-              (fn []
-                (s/gen #{[:id validation-contain-key 'int? "id witll be integer"]}))))
+  (clojure.spec/tuple keyword? #(= validation-contain-key %) resolve? string?))
+
 (s/def ::vali-range
-  (s/with-gen (clojure.spec/tuple keyword? #(= validation-range-key %) integer? integer? string?)
-              (fn []
-                (s/gen #{[:id validation-range-key 10 11 "id witll be between 10 and 11"]}))))
+  (clojure.spec/tuple keyword? #(= validation-range-key %) integer? integer? string?))
 
 
 
 (s/def ::validation
-  (clojure.spec/*
-    (clojure.spec/alt
-      :type ::vali-type
-      :contain ::vali-type-contain
-      :range ::vali-range)))
+  (s/with-gen
+    (clojure.spec/*
+      (clojure.spec/alt
+        :type ::vali-type
+        :contain ::vali-type-contain
+        :range ::vali-range))
+    (fn []
+      (s/gen #{[[:id validation-type-key 'vector? "id witll be vector"]
+                [:id validation-contain-key 'int? "id witll be integer"]
+                [:id validation-range-key 10 11 "id witll be between 10 and 11"]]
+
+               [[:id validation-type-key 'vector? "id witll be vector"]
+                [:id validation-contain-key 'int? "id witll be integer"]
+                ]})
+      )
+    ))
 
 
 
