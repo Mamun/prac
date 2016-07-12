@@ -5,28 +5,26 @@
         [dadysql.constant]
         [dady.common])
   (:require [clojure.spec :as s]
-            [clojure.spec.gen :as gen])
-  )
+            [clojure.spec.gen :as gen]))
 
 
 
 (deftest compiler-merge-test
   (testing "test compiler-merge "
-    (let [v [{param-key   [[1 2 3]]
-              column-key  {:p 1}
-              timeout-key 4
-              result-key  #{result-single-key}
-              validation-key [[:id :type 'int? "id will be long"]] }
+    (let [v [{param-key      [[1 2 3]]
+              column-key     {:p 1}
+              timeout-key    4
+              result-key     #{result-single-key}
+              validation-key [[:id :type 'int? "id will be long"]]}
              {param-key   [[8 9 0]]
               timeout-key 6}
-             {param-key  [[5 6 7]]
-              column-key {:p  4
-                          :p1 :p}
-              :p         9
-              result-key #{result-array-key}
+             {param-key      [[5 6 7]]
+              column-key     {:p  4
+                              :p1 :p}
+              :p             9
+              result-key     #{result-array-key}
               validation-key [[:id :type 'vector? "id will be sequence"]
-                              [:id :contain 'int? "id contain will be int "]]
-              }]
+                              [:id :contain 'int? "id contain will be int "]]}]
           expected-result {param-key   [[5 6 7] [8 9 0] [1 2 3]],
                            column-key  {:p 4, :p1 :p}
                            timeout-key 6
@@ -39,9 +37,6 @@
 
 
 ;(compiler-merge-test)
-
-(comment
-  )
 
 
 ;(apply-compile-test)
@@ -101,9 +96,9 @@
              :validation [[:id :type 'int? "Id will be Long"]]
              :sql        ["insert into employee (id,  transaction_id,  firstname,  lastname,  dept_id) values (:id, :transaction_id, :firstname, :lastname, :dept_id) "
                           "insert into employee_detail (employee_id, street,   city,  state,  country ) values (:employee_id, :street, :city, :state, :country)"]
-             :extend     {:insert-employee {:model  :employee
-                                            :params [[:transaction_id :ref-con 0]
-                                                     [:id :ref-gen :gen-dept]]}
+             :extend     {:insert-employee        {:model  :employee
+                                                   :params [[:transaction_id :ref-con 0]
+                                                            [:id :ref-gen :gen-dept]]}
                           :insert-employee-detail {:model  :employee-detail
                                                    :params [[:city :ref-con 0]
                                                             [:id :ref-gen :gen-dept]]}}}
@@ -118,74 +113,46 @@
 
 
 
-#_(let [config (r/default-config)
-      w {:doc        "Modify department"
-         :name       [:insert-dept :update-dept :delete-dept]
-         :model      :department
-         :validation [[:id :Type 'long? "Id will be Long"]]
-         :sql        ["insert into department (id, transaction_id, dept_name) values (:id, :transaction_id, :dept_name)"
-                      "update department set dept_name=:dept_name, transaction_id=:next_transaction_id  where transaction_id=:transaction_id and id=:id"
-                      "delete from department where id in (:id)"]
-         :extend     {:insert-dept {:params  [[:transaction_id :ref-con 0]
-                                              [:transaction_id :ref-con 0]]
-                                    :timeout 30}
-                      :update-dept {:params [[:next_transaction_id :ref-fn-key 'inc :transaction_id]]}
-                      :delete-dept {:validation [[:id :type 'vector? "Id will be sequence"]
-                                                 [:id :contain 'long? "Id contain will be Long "]]}}}
-
-
-      actual-result (->> (r/compile-one w config)
-
-
-                         )]
-  (clojure.pprint/pprint actual-result)
-  )
-
-
-
 ;(compile-one-test)
-
-#_(deftest compile-one-test3
-    (testing "test compile-one with Upper case  "
-      (let [config (r/default-config)
-            w {:doc    "Modify department"
-               :name   [:insert-dept :update-dept]
-               :sql    ["insert into department (id, transaction_id, dept_name) values (:Id, :transaction_id, :dept_name)"
-                        "call next value for seq_meet"]
-               :extend [:insert-dept {:params     [[:transaction_id :ref-con 0]
-                                                   [:transaction_id :ref-con 0]]
-                                      :validation [[:id :contain 'int? "Id contain will be Long "]]
-                                      :timeout    30}]}
-            expected-result [{:timeout    30,
-                              :params     [[:transaction_id :ref-con 0]],
-                              :validation [[:id :contain #'clojure.core/int? "Id contain will be Long "]],
-                              :sql        ["insert into department (id, transaction_id, dept_name) values (:id, :transaction_id, :dept_name)"
-                                           :id :transaction_id :dept_name],
-                              :dml-type   :insert,
-                              :index      0,
-                              :name       :insert-dept,
-                              :model      :insert-dept,
-                              :group      nil}
-                             {:timeout  1000,
-                              :sql      ["call next value for seq_meet"],
-                              :dml-type :call,
-                              :index    1, :name :update-dept,
-                              :model    :update-dept,
-                              :group    nil}]
-            actual-result (r/compile-one w config)]
-
-
-
-        (is (= (select-keys (get-in actual-result [0]) [sql-key timeout-key])
-               (select-keys (get-in expected-result [0]) [sql-key timeout-key]))))))
-
-
-;(compile-one-test3)
-
 
 
 (deftest do-compile-test
   (testing "test do-compile "
+    (let [w [{:name         :_global_
+              :doc          "Abstract configuration, timeout will be used to all sql statement if it is not defined of it owns."
+              :file-reload  true
+              :timeout      1000
+              :reserve-name #{:create-ddl :drop-ddl :init-data}
+              :tx-prop      [:isolation :serializable :read-only? true]
+              :join         [[:department :id :1-n :employee :dept_id]
+                             [:employee :id :1-1 :employee-detail :employee_id]
+                             [:employee :id :n-n :meeting :meeting_id [:employee-meeting :employee_id :meeting_id]]]}
+             {:doc     "General select statement. Name is used to identify each query, Abstract timeout will override with timeout here  "
+              :name    [:get-dept-list :get-dept-by-ids :get-employee-list :get-meeting-list :get-employee-meeting-list]
+              :model   [:department :department :employee :meeting :employee-meeting]
+              :extend  {:get-dept-by-ids {:validation [[:id :type 'vector? "Id will be sequence"]
+                                                       [:id :contain 'int? "Id contain will be Long "]]
+                                          :result     #{:array}}
+                        :get-dept-list   {:result #{:array}}}
+              :timeout 5000
+              :result  #{:array}
+              :params  [[:limit :ref-con 10]
+                        [:offset :ref-con 0]]
+              :skip    #{:join}
+              :sql     ["select * from department LIMIT :limit OFFSET :offset"
+                        "select * from department where id in (:id) "
+                        "select * from employee LIMIT :limit OFFSET :offset"
+                        "select * from meeting LIMIT :limit OFFSET :offset"
+                        "select * from employee_meeting LIMIT :limit OFFSET :offset"]}]
+          actual-result (r/do-compile w)]
+      (is (not-empty actual-result)))))
+
+
+
+(do-compile-test)
+
+(deftest do-compile-test2
+  (testing "test do-compile with inner details "
     (let [w [{:name         :_config_
               :file-reload  true
               :timeout      3000
@@ -215,32 +182,7 @@
 
 ;(run-tests)
 
-(deftest do-compile2-test
-  (testing "test do-compile "
-    (let [w [{:name         :_config_
-              :file-reload  true
-              :timeout      3000
-              :reserve-name #{:create-ddl :drop-ddl :init-data}}
-             {:doc        "Modify department"
-              :name       [:insert-dept :update-dept :delete-dept ]
-              :model      :department
-              :validation [[:id :type 'int? "Id will be Long"]]
-              :sql        ["insert into department (id, transaction_id, dept_name) values (:id, :transaction_id, :dept_name)"
-                           "update department set dept_name=:dept_name, transaction_id=:next_transaction_id  where transaction_id=:transaction_id and id=:id"
-                           "delete from department where id in (:id)"]
-              :extend     {:insert-dept {:params  [[:transaction_id :ref-con 0]
-                                                   [:transaction_id :ref-con 0]]
-                                         :timeout 30}
-                           :update-dept {:params [[:next_transaction_id :ref-fn-key 'inc :transaction_id]]}
-                           :delete-dept {:validation [[:id :type 'vector? "Id will be sequence"]
-                                                      [:id :contain 'int? "Id contain will be Long "]]}}}]
-          actual-result (r/do-compile w)]
 
-      ;      (clojure.pprint/pprint (s/conform :dadysql.compiler.spec/spec w))
-
-      (is (not-empty actual-result)))
-
-    ))
 
 
 ;(do-compile2-test)
@@ -261,7 +203,7 @@
 
 (deftest do-compile4-test
   (testing "test do -compile"
-    (let [w (r/read-file "tie.edn2.sql" )]
+    (let [w (r/read-file "tie.edn2.sql")]
       (clojure.pprint/pprint w)
       )
     ))

@@ -85,7 +85,7 @@
               :file-reload  true
               :timeout      3000
               :reserve-name #{:create-ddl :drop-ddl :init-data}}]
-          actual-result (s/conform :dadysql.compiler.spec/compiler-spec w)]
+          actual-result (s/conform :dadysql.compiler.spec/compiler-input-spec w)]
       (is (not= :clojure.spec/invalid actual-result))))
   (testing "test do-compile "
     (let [module {:doc        "Modify department"
@@ -103,7 +103,7 @@
                                                           [:id :contain 'int? "Id contain will be Long "]]}}}
 
           w [module]
-          r (s/conform :dadysql.compiler.spec/compiler-spec w)]
+          r (s/conform :dadysql.compiler.spec/compiler-input-spec w)]
       (is (not= :clojure.spec/invalid r))))
   (testing "test do-compile "
     (let [config {:name         :_config_
@@ -126,7 +126,7 @@
                                                           [:id :contain 'int? "Id contain will be Long "]]}}}
 
           w [config module]
-          r (s/conform :dadysql.compiler.spec/compiler-spec w)]
+          r (s/conform :dadysql.compiler.spec/compiler-input-spec w)]
       (is (not= :clojure.spec/invalid r)))))
 
 
@@ -138,7 +138,7 @@
     (let [w (-> "tie.edn.sql"
                 (f/read-file)
                 )
-          actual-result (s/conform :dadysql.compiler.spec/compiler-spec w)]
+          actual-result (s/conform :dadysql.compiler.spec/compiler-input-spec w)]
       ; (clojure.pprint/pprint actual-result)
       (is (not= :clojure.spec/invalid actual-result)))))
 
@@ -160,7 +160,21 @@
 
 (comment
 
+  (let [reqs {:a (gen/gen-for-pred number?)
+              :b (gen/gen-for-pred ratio?)}
+        opts {:c (gen/gen-for-pred string?)}]
+    (gen/generate (gen/bind (choose 0 (count opts))
+                    #(let [args (concat (seq reqs) (shuffle (seq opts)))]
+                      (->> args
+                           (take (+ % (count reqs)))
+                           (mapcat identity)
+                           (apply hash-map))))))
 
+  (gen/generate
+    (gen/bind (s/gen :dadysql.compiler.spec/params) (fn [v]
+                                                      (println v)
+                                                      [:a]
+                                                      )))
 
   (gen/sample (gen/fmap (fn [w]
                             (into [] (into #{} w)))
@@ -183,7 +197,7 @@
 
   (->> "tie.edn.sql"
          (f/read-file)
-         (s/explain :dadysql.compiler.spec/compiler-spec)
+         (s/explain :dadysql.compiler.spec/compiler-input-spec)
 
          )
 
@@ -193,7 +207,7 @@
 
 
 
-  (gen/generate (s/gen :dadysql.compiler.spec/compiler-spec))
+  (gen/generate (s/gen :dadysql.compiler.spec/compiler-input-spec))
 
   )
 

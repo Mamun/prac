@@ -2,8 +2,8 @@
   (:require [dadysql.constant :refer :all]
             [dadysql.compiler.spec]
             [dady.common :as cc]
-            [dadysql.compiler.validation :as v]
-            [dadysql.compiler.core-emit :as e]
+
+            [dadysql.compiler.util :as u]
             [clojure.tools.reader.edn :as edn]
             [dadysql.compiler.file-reader :as fr]))
 
@@ -62,21 +62,9 @@
     (hash-map :global f-global :reserve reserve :modules modules)))
 
 
-(defn join-to-extend-key
-  "Assoc join key with model "
-  [tm]
-  (let [v (get-in tm [join-key])
-        v (e/join-emit v)
-        w (merge-with merge v (get-in tm [extend-meta-key]))]
-    (-> tm
-        (dissoc join-key)
-        (assoc extend-meta-key w))))
-
-
 (defn do-merge
   [w module-m f-config]
   (let [name-v (get w name-key)
-        ;f-config (select-keys f-config [extend-meta-key timeout-key])
         w1 (merge-with compiler-merge
                        (get-in f-config [extend-meta-key name-v])
                        (get-in module-m [extend-meta-key name-v])
@@ -103,7 +91,7 @@
 (def skip-key-for-others [result-key column-key])
 
 
-(defn do-filter-for-dml-type
+(defn do-skip-for-dml-type
   [m]
   (condp = (dml-key m)
     dml-select-key m
@@ -111,16 +99,11 @@
     (apply dissoc m skip-key-for-others)))
 
 
-(defn assoc-default
+(defn do-merge-default
   [m]
   (if (model-key m)
-    (-> m
-        (assoc dml-key (e/dml-type (sql-key m)))
-        (update-in [sql-key] e/sql-str-emit))
-    (-> m
-        (assoc dml-key (e/dml-type (sql-key m)))
-        (update-in [sql-key] e/sql-str-emit)
-        (assoc model-key (name-key m)))))
+    m
+    (assoc m model-key (name-key m))))
 
 
 (defn remove-duplicate [m]
@@ -133,17 +116,25 @@
                  ) m)))
 
 
+(defn compiler-emit [m]
+  (-> m
+      (assoc dml-key (u/dml-type (sql-key m)))
+      (update-in [sql-key] u/sql-str-emit)
+      (cc/update-if-contains [validation-key] #(mapv u/validation-emit %))
+      (cc/update-if-contains [param-key] #(mapv u/param-emit %))))
+
+
 
 (defn compile-one [m global-m]
   (let [m (edn/read-string (clojure.string/lower-case (str m)))
-        model-m (e/map-name-model-sql (select-keys m [name-key model-key sql-key]))]
+        model-m (u/map-name-model-sql (select-keys m [name-key model-key sql-key]))]
     (reduce (fn [acc v]
               (->> (do-merge v m global-m)
                    (remove-duplicate)
-                   (assoc-default)
+                   (do-merge-default)
+                   (compiler-emit)
                    (do-skip)
-                   (do-filter-for-dml-type)
-                   (e/compiler-emit)
+                   (do-skip-for-dml-type)
                    (conj acc))
               ) [] model-m)))
 
@@ -155,9 +146,13 @@
             ) [] m-coll))
 
 
-(defn compile-one-config [m]
-  (-> m
-      (join-to-extend-key)))
+(defn compile-one-config [tm]
+  (let [v (get-in tm [join-key])
+        v (u/join-emit v)
+        w (merge-with merge v (get-in tm [extend-meta-key]))]
+    (-> tm
+        (dissoc join-key)
+        (assoc extend-meta-key w))))
 
 
 (defn reserve-compile [coll]
@@ -173,11 +168,12 @@
 
 
 (defn do-compile [coll]
-  (v/validate-spec! coll)
-  (v/validate-distinct-name! coll)
-  (v/validate-name-sql! coll)
-  (v/validate-name-model! coll)
-  (v/validate-extend-name! coll)
+  (u/validate-input-spec! coll)
+  (u/validate-distinct-name! coll)
+  (u/validate-name-sql! coll)
+  (u/validate-name-model! coll)
+  (u/validate-extend-key! coll)
+  (u/validate-join-key! coll)
   (let [{:keys [modules global reserve]} (do-grouping coll)
         global (compile-one-config global)
         modules (compile-batch global modules)
@@ -201,23 +197,10 @@
 
   (->> (fr/read-file "tie.edn2.sql")
        (do-compile)
-       #_(s/conform :dadysql.compiler.spec/compiler-spec))
+       #_(s/conform :dadysql.compiler.spec/compiler-input-spec))
 
 
-  (let [w (e/sql-emit (fr/read-file "tie.edn.sql"))
-        {:keys [global module]} (s/conform :dadysql.compiler.spec/compiler-spec w)]
-    (clojure.pprint/pprint module)
-    (doseq [r1 module]
-      (println
-        (m/match r1
-                 {:name  [:many _]
-                  :model [:many _]} :name-many-model-many
-                 {:name  [:many _]
-                  :model [:one _]} :name-many-model-one
-                 {:name  [:one _]
-                  :model [:one _]} :name-one-model-one
-                 :else nil
-                 ))))
+
 
 
 

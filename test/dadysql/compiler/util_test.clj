@@ -1,9 +1,9 @@
-(ns dadysql.compiler.core-emit-test
+(ns dadysql.compiler.util-test
   (:use [clojure.test]
         [dadysql.compiler.core :as r]
         [dadysql.core :as c]
         [dadysql.constant]
-        [dadysql.compiler.core-emit])
+        [dadysql.compiler.util])
   (:require [clojure.spec :as s]
             [clojure.spec.gen :as gen]))
 

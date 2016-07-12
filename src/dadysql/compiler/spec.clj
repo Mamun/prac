@@ -27,28 +27,15 @@
               (fn [] (s/gen #{global-key :get-dept-list :get-dept-by-ids :get-employee-list :get-meeting-list :get-employee-meeting-list}))))
 
 
-(comment
-
-  (s/conform ::name :a )
-
-
-  (s/explain ::name  [:a :b :b] )
-
-  ;(s/conform ::name (list :a :b ))
-
-  )
-
-
-
 (s/def ::sql
-  (s/with-gen (s/every string? :kind vector? )
+  (s/with-gen (s/every string? :kind vector?)
               (fn [] (s/gen #{"select * from department LIMIT :limit OFFSET :offset;\nselect * from department where id in (:id) ;\nselect * from employee LIMIT :limit OFFSET :offset;\nselect * from meeting LIMIT :limit OFFSET :offset;\nselect * from employee_meeting LIMIT :limit OFFSET :offset;\n"
                               "select * from employee where id = :id;\nselect d.* from department d, employee e where e.id=:id and d.id = e.dept_id;\nselect ed.* from employee_detail ed where ed.employee_id=:id;\nselect m.*, em.employee_id from meeting m, employee_meeting em where em.employee_id=:id and em.meeting_id = m.meeting_id;\n"
                               "select * from meeting where  meeting_id = :id;\nselect e.*, em.employee_id from employee e, employee_meeting em where em.meeting_id = :id and em.employee_id = e.id;\n"
                               "insert into department (id, transaction_id, dept_name) values (:id, :transaction_id, :dept_name);\nupdate department set dept_name=:dept_name, transaction_id=:next_transaction_id  where transaction_id=:transaction_id and id=:id;\ndelete from department where id in (:id);\n"}))))
 
 (s/def ::model
-  (s/with-gen (s/or :one keyword? :many (s/coll-of keyword? :kind vector? ))
+  (s/with-gen (s/or :one keyword? :many (s/coll-of keyword? :kind vector?))
               (fn [] (s/gen #{:dept :employee :meeting}))))
 
 (s/def ::skip
@@ -90,7 +77,7 @@
 
 
 (s/def ::param-ref-con
-  (s/with-gen (clojure.spec/tuple keyword? #(= param-ref-con-key %) :clojure.spec/any)
+  (s/with-gen (clojure.spec/tuple keyword? #(= param-ref-con-key %) any?)
               (fn []
                 (s/gen #{[:id param-ref-con-key 23]
                          [:name param-ref-con-key "Hello"]}))))
@@ -150,33 +137,13 @@
   (s/with-gen
     (s/every-kv keyword? (s/keys :opt-un [::timeout ::column ::result ::params ::validation]))
     (fn []
-      (s/gen #{{:get-meeting-by-id {:model :meeting
-                                    :result #{:single}
+      (s/gen #{{:get-meeting-by-id {:model      :meeting
+                                    :result     #{:single}
                                     :validation [[:id :type 'int? "Id will be sequence"]
                                                  [:id :range 10 11 "Id range will be between 10 and 11"]]}}
                {:get-employee-for-meeting {:model :employee-meeting}}}))))
 
 
-
-
-(comment
-
-
-
-  #_(s/explain ::extendv {:a {:timeout 456
-                            :column {:a :b}}} )
-
-
-
-
-
-  )
-
-
-
-#_(s/def ::extend (s/* (s/cat
-                       :name keyword?
-                       :prop (s/keys :opt-un [::timeout ::column ::result ::params ::validation]))))
 
 (s/def ::module (s/keys :req-un [::name ::sql]
                         :opt-un [::timeout ::model ::skip ::group ::commit ::column ::result ::params ::validation ::extend]))
@@ -186,28 +153,22 @@
                         :opt-un [::timeout ::read-only? ::tx-prop ::file-reload ::reserve-name ::join]))
 
 
-(s/def ::compiler-spec (clojure.spec/cat :global (s/? ::global) :module (s/* ::module)))
+(s/def ::compiler-input-spec (clojure.spec/cat :global (s/? ::global) :module (s/* ::module)))
 
 
 
 
+(comment
 
+  (require :reload 'clojure.spec.gen)
+  (in-ns 'clojure.spec.gen)
 
-#_(defn conform-spec [w]
-  (s/conform ::compiler-spec w))
+  ;; combinators, see call to lazy-combinators above for complete list
 
+  (generate (gen ::param-ref))
 
+  )
 
-
-#_(s/def ::comp (clojure.spec/tuple keyword? number?))
-#_(s/def ::level (clojure.spec/* (clojure.spec/alt :l ::comp)))
-
-#_(s/def ::extend (s/keys :opt-un [::level]))
-#_(s/def ::model  (s/keys :opt-un [::level ::extend]))
-
-
-#_(s/conform ::model {:level  [[:hello 1]]
-                    :extend {:a {:level [[:hello ""]]}}})
 
 
 
