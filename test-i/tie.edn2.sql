@@ -13,11 +13,9 @@
 
 /*
 {:doc "General select statement. Name is used to identify each query, Abstract timeout will override with timeout here  "
- :name  [:get-dept-list :get-dept-by-ids :get-employee-list :get-meeting-list :get-employee-meeting-list]
- :model [:department :department :employee :meeting :employee-meeting ]
- :extend {:get-dept-by-ids {:validation [[:id :type vector? "Id will be sequence"]
-                                         [:id :contain int? "Id contain will be Long "]]
-                                     :result #{:array}}
+ :name  [:get-dept-list :get-dept-by-ids :get-employee-list :get-meeting-list :get-employee-meeting-list :get-dept-by-id]
+ :model [:department :department :employee :meeting :employee-meeting :department]
+ :extend {:get-dept-by-id {:validation :tie-edn2/get-dept-by-id}
           :get-dept-list {:result #{:array}}}
  :timeout 5000
  :result #{:array}
@@ -30,3 +28,4 @@ select * from department where id in (:id) ;
 select * from employee LIMIT :limit OFFSET :offset;
 select * from meeting LIMIT :limit OFFSET :offset;
 select * from employee_meeting LIMIT :limit OFFSET :offset;
+select * from department where id = :id ;

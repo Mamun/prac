@@ -1,5 +1,6 @@
 (ns dadysql.compiler.spec-test
   (:use [clojure.test]
+        [dadysql.compiler.test-data]
         [dadysql.compiler.core])
   (:require [clojure.spec :as s]
             [clojure.spec.gen :as gen]
@@ -80,54 +81,17 @@
 
 
 (deftest spec-test
-  (testing "test spec only global  "
-    (let [w [{:name         :_global_
-              :file-reload  true
-              :timeout      3000
-              :reserve-name #{:create-ddl :drop-ddl :init-data}}]
-          actual-result (s/conform :dadysql.compiler.spec/compiler-input-spec w)]
-      (is (not= :clojure.spec/invalid actual-result))))
   (testing "test do-compile "
-    (let [module {:doc        "Modify department"
-                  :name       [:insert-dept :update-dept :delete-dept]
-                  :model      :department
-                  :validation [[:id :type 'int? "Id will be Long"]]
-                  :sql        ["insert into department (id, transaction_id, dept_name) values (:id, :transaction_id, :dept_name)"
-                               "update department set dept_name=:dept_name, transaction_id=:next_transaction_id  where transaction_id=:transaction_id and id=:id"
-                               ";delete from department where id in (:id)"]
-                  :extend     {:insert-dept {:params  [[:transaction_id :ref-con 0]
-                                                       [:transaction_id :ref-con 0]]
-                                             :timeout 30}
-                               :update-dept {:params [[:next_transaction_id :ref-fn-key 'inc :transaction_id]]}
-                               :delete-dept {:validation [[:id :type 'vector? "Id will be sequence"]
-                                                          [:id :contain 'int? "Id contain will be Long "]]}}}
-
-          w [module]
-          r (s/conform :dadysql.compiler.spec/compiler-input-spec w)]
-      (is (not= :clojure.spec/invalid r))))
-  (testing "test do-compile "
-    (let [config {:name         :_config_
-                  :file-reload  true
-                  :timeout      3000
-                  :reserve-name #{:create-ddl :drop-ddl :init-data}}
-          module {:doc        "Modify department"
-                  :name       [:insert-dept :update-dept :delete-dept]
-                  :model      :department
-                  :validation [[:id :type 'int? "Id will be Long"]]
-                  :sql        ["insert into department (id, transaction_id, dept_name) values (:id, :transaction_id, :dept_name)"
-                               "update department set dept_name=:dept_name, transaction_id=:next_transaction_id  where transaction_id=:transaction_id and id=:id"
-                               "delete from department where id in (:id)"
-                               ]
-                  :extend     {:insert-dept {:params  [[:transaction_id :ref-con 0]
-                                                       [:transaction_id :ref-con 0]]
-                                             :timeout 30}
-                               :update-dept {:params [[:next_transaction_id :ref-fn-key 'inc :transaction_id]]}
-                               :delete-dept {:validation [[:id :type 'vector? "Id will be sequence"]
-                                                          [:id :contain 'int? "Id contain will be Long "]]}}}
-
-          w [config module]
-          r (s/conform :dadysql.compiler.spec/compiler-input-spec w)]
+    (let [r (s/conform :dadysql.compiler.spec/compiler-input-spec do-compile-input-data)]
       (is (not= :clojure.spec/invalid r)))))
+
+
+(comment
+
+  ;(s/conform :tie-edn/get-dept-by-id {:id "asdf"})
+
+  (s/valid? :dadysql.compiler.spec/compiler-input-spec do-compile-input-data2)
+  )
 
 
 ;(spec-test)

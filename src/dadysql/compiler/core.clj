@@ -2,10 +2,11 @@
   (:require [dadysql.constant :refer :all]
             [dadysql.compiler.spec]
             [dady.common :as cc]
-
             [dadysql.compiler.util :as u]
+    ;[tie.ed]
             [clojure.tools.reader.edn :as edn]
-            [dadysql.compiler.file-reader :as fr]))
+            [dadysql.compiler.file-reader :as fr]
+            [clojure.spec :as s]))
 
 
 
@@ -111,7 +112,7 @@
        (reduce (fn [acc k]
                  (condp = k
                    param-key (update-in acc [k] (fn [w] (cc/distinct-with-range 2 w)))
-                   validation-key (update-in acc [k] (fn [w] (cc/distinct-with-range 2 w)))
+                   ;validation-key (update-in acc [k] (fn [w] (cc/distinct-with-range 2 w)))
                    acc)
                  ) m)))
 
@@ -120,7 +121,7 @@
   (-> m
       (assoc dml-key (u/dml-type (sql-key m)))
       (update-in [sql-key] u/sql-str-emit)
-      (cc/update-if-contains [validation-key] #(mapv u/validation-emit %))
+      ;(cc/update-if-contains [validation-key] #(mapv u/validation-emit %))
       (cc/update-if-contains [param-key] #(mapv u/param-emit %))))
 
 
@@ -167,19 +168,69 @@
   (hash-map (name-key v) v))
 
 
+
+
+(defn load-validtion-ns-file [coll]
+  ;(println "---a" coll)
+  (let [w1 (remove nil? (map validation-key coll))
+        w (doall (map namespace w1))]
+    ;(println w)
+    ;(require w)
+    (doseq [r w]
+      (require :reload r))
+    ;(println "--w namespace " w)
+    (doseq [r w1]
+      (if (nil? (s/get-spec r))
+        (throw (ex-info "spec not found " {:spec r}))))))
+
+(comment
+
+
+  (s/registry)
+
+  ;'tie-edn
+  ;`
+
+  (let [w1 (mapv namespace (list :tie-edn1/hello))]
+    (println `(quote ~w1))
+    (require `(quote ~w1) )
+    #_(doseq [w w1]
+      (require (list w) :reload )
+      ;(println `'~w)
+      ;(println w)
+      )
+    )
+
+
+  (require '[tie-edn] :reload )
+
+
+  (require '(tie-edn4))
+
+  (require :reload (quote tie-edn2))
+
+  ;(s/registry)
+
+  )
+
+
 (defn do-compile [coll]
+  ;(load-spec-file)
   (u/validate-input-spec! coll)
   (u/validate-distinct-name! coll)
   (u/validate-name-sql! coll)
   (u/validate-name-model! coll)
   (u/validate-extend-key! coll)
   (u/validate-join-key! coll)
+
+  ;(load )
   (let [{:keys [modules global reserve]} (do-grouping coll)
         global (compile-one-config global)
         modules (compile-batch global modules)
         reserve (reserve-compile reserve)
         global (dissoc global extend-meta-key)
         w (concat [global] modules reserve)]
+    (load-validtion-ns-file w )
     (into {} (map into-name-map) w)))
 
 
@@ -190,8 +241,10 @@
 
 
 (comment
+  ;(require )
 
-  (->> (fr/read-file "tie.edn.sql")
+
+  (->> (fr/read-file "tie.edn2.sql")
        (do-compile)
        ;(clojure.pprint/pprint)
        )

@@ -79,12 +79,12 @@ select e.*, em.employee_id from employee e, employee_meeting em where em.meeting
 /*
 {:doc " General select statement with extend. "
  :name  [:get-dept-by-id :get-dept-employee ]
- :model [:department :employee :department]
+ :model [:department :employee ]
  :group :load-dept
- :extend {:department {:timeout 2000
+ :extend {:get-dept-by-id {:timeout 2000
                       :validation [[ :id :type int? "Id will be Long "]]
                       :result #{:single}}
-         :get-dept-by-id {:timeout 3000}}
+         }
  :timeout 5000
  :validation [[:id :type int? "Id will be Long"]]
  }*/

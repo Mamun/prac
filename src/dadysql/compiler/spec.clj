@@ -59,12 +59,10 @@
 (s/def ::read-only? boolean?)
 
 (s/def ::join-one
-  (s/tuple keyword? keyword? (s/spec #{join-1-1-key join-1-n-key join-n-1-key}) keyword? keyword?)
-  )
+  (s/tuple keyword? keyword? (s/spec #{join-1-1-key join-1-n-key join-n-1-key}) keyword? keyword?))
 
 (s/def ::join-many
-  (s/tuple keyword? keyword? (s/spec #{join-n-n-key}) keyword? keyword? (s/tuple keyword? keyword? keyword?))
-)
+  (s/tuple keyword? keyword? (s/spec #{join-n-n-key}) keyword? keyword? (s/tuple keyword? keyword? keyword?)))
 
 (s/def ::join
   (s/with-gen
@@ -124,10 +122,7 @@
 (s/def ::vali-range
   (clojure.spec/tuple keyword? #(= validation-range-key %) integer? integer? string?))
 
-
-
-(s/def ::validation
-  (s/with-gen
+#_(s/with-gen
     (clojure.spec/*
       (clojure.spec/alt
         :type ::vali-type
@@ -140,26 +135,43 @@
 
                [[:id validation-type-key 'vector? "id witll be vector"]
                 [:id validation-contain-key 'int? "id witll be integer"]
-                ]})
-      )
-    ))
+                ]})))
 
+
+(defn ns-keyword? [v]
+  (clojure.string/includes? v "/")  )
+
+
+(comment
+  (ns-keyword? :av)
+  (ns-keyword? :acom/v)
+  )
+
+(s/def ::validation (s/and keyword? ns-keyword?))
+
+
+
+(s/def ::common (s/keys :opt-un [::timeout ::column ::result ::params ::validation]))
 
 
 (s/def ::extend
-  (s/with-gen
-    (s/every-kv keyword? (s/keys :opt-un [::timeout ::column ::result ::params ::validation]))
+  (s/every-kv keyword? (s/merge (s/keys :opt-un [::model]) ::common)))
+
+
+#_(s/with-gen
+    (s/every-kv keyword? (s/merge (s/keys :opt-un [::model]) ::common))
     (fn []
       (s/gen #{{:get-meeting-by-id {:model      :meeting
                                     :result     #{:single}
                                     :validation [[:id :type 'int? "Id will be sequence"]
                                                  [:id :range 10 11 "Id range will be between 10 and 11"]]}}
-               {:get-employee-for-meeting {:model :employee-meeting}}}))))
+               {:get-employee-for-meeting {:model :employee-meeting}}})))
 
 
-
-(s/def ::module (s/keys :req-un [::name ::sql]
-                        :opt-un [::timeout ::model ::skip ::group ::commit ::column ::result ::params ::validation ::extend]))
+(s/def ::module (s/merge
+                  ::common
+                  (s/keys :req-un [::name ::sql]
+                          :opt-un [::model ::skip ::group ::commit ::extend])))
 
 
 (s/def ::global (s/keys :req-un [::name]
@@ -172,6 +184,33 @@
 
 
 (comment
+
+
+  ;;backend core part come as lib
+  (s/def ::person-spec (s/keys ::req-un [::id ::fname ::lname]))
+
+  ;;web side
+  (s/def ::person-ui-spec (s/merge (s/keys ::req-un [::channel])
+                                   ::person-spec
+                                   ) )
+
+
+
+
+  (s/merge (s/keys ::req-un [:dob]))
+
+
+
+
+  (s/form (s/spec boolean?))
+
+  ;(s/form one? )
+
+  ;(s/form (s/spec int?))
+
+  (s/form ::extend)
+
+  (s/form ::module)
 
   (require :reload 'clojure.spec.gen)
   (in-ns 'clojure.spec.gen)

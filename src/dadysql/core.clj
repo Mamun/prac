@@ -2,6 +2,7 @@
 ;;
 (ns dadysql.core
   (:require
+    [clojure.spec :as s]
     [dady.common :as cc]
     [dady.fail :as f]
     [dadysql.constant :refer :all]
@@ -78,7 +79,7 @@
         (-> (apply comp (c/as-xf-process :output n-processor))
             (transduce conj tm-coll))
         :input
-        (let [p (->> (c/remove-child n-processor param-key)
+        (let [p (->> (c/remove-child (c/remove-child n-processor validation-key) param-key)
                      (c/as-xf-process :input)
                      (apply f/comp-xf-until))]
           (transduce p conj tm-coll))
@@ -87,6 +88,22 @@
             (c/node-process tm-coll))
         tm-coll))))
 
+
+(defn apply-validation! [tm-coll]
+  (reduce (fn [acc v]
+            (if-let [vali (validation-key v)]
+              (if (s/valid? vali (input-key v))
+                (conj acc v)
+                (reduced (f/fail (s/explain-data vali (input-key v))))
+                ;(println "apply validation is called" vali (input-key v))
+                )
+              (conj acc v)
+              )
+            ) (empty tm-coll) tm-coll )
+
+
+
+  )
 
 
 (defmulti warp-input-node-process (fn [_ _ fmt] fmt))
@@ -101,6 +118,7 @@
         input
         (-> (mapv (fn [m] (assoc m input-key input)) tm-coll)
             (do-node-process n-processor :input)
+            (apply-validation!)
             (handler input))))))
 
 
@@ -115,6 +133,7 @@
         input
         (-> (mapv (fn [m] (assoc m input-key ((model-key m) input))) tm-coll)
             (do-node-process n-processor :input)
+            (apply-validation!)
             (handler input))))))
 
 

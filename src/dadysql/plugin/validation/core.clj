@@ -7,6 +7,10 @@
 
 
 (defbranch ValidationKey [cname ccoll corder])
+
+(defbranch ValidationKeyN [cname corder])
+
+
 (defleaf ValidationTypeKey [cname corder])
 (defleaf ValidationContaionKey [cname corder])
 (defleaf ValidationRangeKey [cname corder])

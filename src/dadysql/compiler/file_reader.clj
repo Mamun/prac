@@ -1,5 +1,6 @@
 (ns dadysql.compiler.file-reader
   (:require [clojure.java.io :as io]
+            [clojure.spec :as s]
             [clojure.tools.reader.edn :as edn]
             [dadysql.constant :refer :all]))
 
@@ -47,3 +48,13 @@
 
 
 
+(comment
+
+
+  (require '[tie_edn])
+
+
+
+  (load "./tie_edn.clj")
+
+  )

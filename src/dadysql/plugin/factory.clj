@@ -20,7 +20,7 @@
           (c/new-column-key)
           (c/new-result-key)
           (p/new-param-key 5 (p/new-child-keys))
-          (v/new-validation-key 10 (v/new-child-coll))
+          ;(v/new-validation-key 10 (v/new-child-coll))
           (sql/new-sql-key 75 (sql/new-childs-key))
           (join/new-join-key)))
 

@@ -93,6 +93,11 @@
   )
 
 
+(defn validation-ns [coll]
+  (remove nil? (map validation-key coll))
+  )
+
+
 
 
 (comment

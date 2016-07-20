@@ -1,4 +1,4 @@
-(ns dadysql.compiler.workspace-spec-name
+(ns dadysql.compiler.spec-workspace
   (:use [clojure.test]
         [dadysql.compiler.core])
   (:require [clojure.spec :as s]
@@ -7,7 +7,39 @@
             [dadysql.compiler.file-reader :as f]))
 
 
+
+(defn adder
+  "Do add with 1"
+  [x] (+ 1 x))
+
+(s/fdef adder
+        :args (s/cat :x number?)
+        :ret number?)
+
+
+
+
+
+
+
 (comment
+
+
+  (adder "asfasd")
+
+
+
+  (st/check `adder )
+
+
+
+  (clojure.repl/doc adder)
+
+  (clojure.spec.test/instrument 'adder)
+
+
+
+
 
   (s/def ::fname string?)
   (s/def ::lname string?)

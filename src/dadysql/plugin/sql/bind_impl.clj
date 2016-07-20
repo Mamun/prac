@@ -76,7 +76,8 @@
   [tm]
   (let [[sql-str & sql-params] (sql-key tm)
         input (input-key tm)
-        validation (validation-key tm)
+        ;todo Need to find type using sql str
+        validation nil ; (validation-key tm)
         rf (fn [sql-coll p-key]
              (let [p-value (cc/as-sequential (p-key input))
                    w (-> (get-vali-type validation p-key)

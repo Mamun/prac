@@ -50,7 +50,7 @@
   ;; Simple pull
   (-> @td/ds
       (t/pull (t/read-file "tie.edn.sql")
-              :name :get-dept-list))
+              {:name :get-dept-list}) )
 
 
   ;;With model name when name as vector
@@ -73,9 +73,9 @@
 
   ;; with params
   (-> @td/ds
-      (t/pull (t/read-file "tie.edn.sql")
+      (t/pull (t/read-file "tie.edn2.sql")
               {:name   [:get-dept-by-id]
-               :params {:id 9}}
+               :params {:id "sdf"}}
               ;:rformat :map
               )
       (clojure.pprint/pprint))
