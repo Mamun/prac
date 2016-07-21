@@ -16,7 +16,7 @@
               column-key     {:p 1}
               timeout-key    4
               result-key     #{result-single-key}
-              validation-key [[:id :type 'int? "id will be long"]]}
+              param-spec-key :a/b}
              {param-key   [[8 9 0]]
               timeout-key 6}
              {param-key      [[5 6 7]]
@@ -24,41 +24,26 @@
                               :p1 :p}
               :p             9
               result-key     #{result-array-key}
-              validation-key [[:id :type 'vector? "id will be sequence"]
-                              [:id :contain 'int? "id contain will be int "]]}]
+              param-spec-key :a/b}]
           expected-result {param-key   [[5 6 7] [8 9 0] [1 2 3]],
                            column-key  {:p 4, :p1 :p}
                            timeout-key 6
                            result-key  #{result-array-key}
+                           param-spec-key :a/b
                            :p          9}
           actual-result (apply merge-with compiler-merge v)]
       ;(clojure.pprint/pprint actual-result)
-      (is (= expected-result
-             actual-result)))))
+      (is (= actual-result
+             expected-result
+             )))))
 
 
 ;(compiler-merge-test)
 
-
-;(apply-compile-test)
-
-;(resolve 'long?)
-
-;(map-name-model-sql-test)
-
-;(declare compile-one-data)
-;(declare compile-one-expected-result)
-
-
-
-
 (deftest compile-one-test
   (testing "test compile-one "
     (let [config (r/default-config)
-
-
           actual-result (r/compile-one compile-one-data config)]
-
       (is (= actual-result
              compile-one-expected-result))))
   (testing "test compile-one"
@@ -69,12 +54,11 @@
                     "call next value for seq_empl"
                     "call next value for seq_meet"]}
           actual-result (->> (compile-one w config))]
-      (is (not (empty? actual-result)))))
-  )
-
+      (is (not (empty? actual-result))))))
 
 
 ;(compile-one-test)
+
 
 
 ;(declare do-compile-input-data)

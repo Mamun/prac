@@ -112,14 +112,14 @@
 
 
 
-(s/def ::vali-type
+#_(s/def ::vali-type
   (clojure.spec/tuple keyword? #(= validation-type-key %) resolve? string?))
 
 
-(s/def ::vali-type-contain
+#_(s/def ::vali-type-contain
   (clojure.spec/tuple keyword? #(= validation-contain-key %) resolve? string?))
 
-(s/def ::vali-range
+#_(s/def ::vali-range
   (clojure.spec/tuple keyword? #(= validation-range-key %) integer? integer? string?))
 
 #_(s/with-gen
@@ -147,11 +147,11 @@
   (ns-keyword? :acom/v)
   )
 
-(s/def ::validation (s/and keyword? ns-keyword?))
+(s/def ::param-spec (s/and keyword? ns-keyword?))
 
 
 
-(s/def ::common (s/keys :opt-un [::timeout ::column ::result ::params ::validation]))
+(s/def ::common (s/keys :opt-un [::timeout ::column ::result ::params ::param-spec]))
 
 
 (s/def ::extend

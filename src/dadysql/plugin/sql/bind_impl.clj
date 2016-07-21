@@ -46,7 +46,7 @@
       m)))
 
 
-(defn get-vali-type
+#_(defn get-vali-type
   [coll id]
   (->> coll
        (filter #(and
@@ -80,7 +80,7 @@
         validation nil ; (validation-key tm)
         rf (fn [sql-coll p-key]
              (let [p-value (cc/as-sequential (p-key input))
-                   w (-> (get-vali-type validation p-key)
+                   w (-> nil
                          (get-place-holder p-value)
                          (update-sql-str (first sql-coll) p-key))
                    q-str (assoc sql-coll 0 w)]

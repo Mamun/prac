@@ -94,7 +94,7 @@
 
 
 (defn validation-ns [coll]
-  (remove nil? (map validation-key coll))
+  (remove nil? (map param-spec-key coll))
   )
 
 
@@ -291,7 +291,7 @@
 
 
 
-(defn validation-emit [v]
+#_(defn validation-emit [v]
   (condp = (second v)
     validation-type-key (assoc v 2 (resolve (nth v 2)))
     validation-contain-key (assoc v 2 (resolve (nth v 2)))

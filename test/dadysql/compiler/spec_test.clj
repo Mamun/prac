@@ -32,7 +32,7 @@
   (testing "test validation spec "
     (let [v [[:id :type 'vector? "Id will be sequence"]
              [:id :contain 'int? "Id contain will be Long "]]
-          r (s/conform :dadysql.compiler.spec/validation v)]
+          r (s/conform :dadysql.compiler.spec/param-spec v)]
       (is (not= :clojure.spec/invalid r)))))
 
 
@@ -125,7 +125,7 @@
 #_(comment
 
 
-  (gen/generate (s/gen :dadysql.compiler.spec/validation))
+  (gen/generate (s/gen :dadysql.compiler.spec/param-spec))
 
 
   (gen/generate (s/gen :dadysql.compiler.spec/extend))
@@ -179,7 +179,7 @@
 
   (gen/sample (gen/fmap (fn [w]
                           (into [] (into #{} w)))
-                        (gen/such-that not-empty (s/gen :dadysql.compiler.spec/validation))))
+                        (gen/such-that not-empty (s/gen :dadysql.compiler.spec/param-spec))))
 
 
   (gen/sample (gen/fmap (fn [w]

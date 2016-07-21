@@ -46,6 +46,7 @@
                        :reserve
                        :modules))))))
 
+;(s/valid? (s/every integer?) [1 2 3])
 
 (defn group-by-config-key
   [coll]
@@ -78,7 +79,7 @@
                        w1)
 
         module-m (dissoc module-m name-key model-key sql-key extend-meta-key doc-key)
-        f-config (select-keys f-config [param-key validation-key timeout-key])]
+        f-config (select-keys f-config [param-key param-spec-key timeout-key])]
     (merge-with compiler-merge f-config module-m w2)))
 
 
@@ -88,7 +89,7 @@
        (apply dissoc m)))
 
 
-(def skip-key-for-call [join-key validation-key param-key])
+(def skip-key-for-call [join-key param-spec-key param-key])
 (def skip-key-for-others [result-key column-key])
 
 
@@ -168,69 +169,30 @@
   (hash-map (name-key v) v))
 
 
-
-
-(defn load-validtion-ns-file [coll]
-  ;(println "---a" coll)
-  (let [w1 (remove nil? (map validation-key coll))
-        w (doall (map namespace w1))]
-    ;(println w)
-    ;(require w)
-    (doseq [r w]
-      (require :reload r))
-    ;(println "--w namespace " w)
+(defn load-validtion-spec [coll]
+  (let [w1 (remove nil? (map param-spec-key coll))]
+    (doseq [w (map namespace w1)]
+      (require (symbol w) :reload))
     (doseq [r w1]
       (if (nil? (s/get-spec r))
-        (throw (ex-info "spec not found " {:spec r}))))))
+        (throw (ex-info "Spec not found " {:spec r}))))))
 
-(comment
-
-
-  (s/registry)
-
-  ;'tie-edn
-  ;`
-
-  (let [w1 (mapv namespace (list :tie-edn1/hello))]
-    (println `(quote ~w1))
-    (require `(quote ~w1) )
-    #_(doseq [w w1]
-      (require (list w) :reload )
-      ;(println `'~w)
-      ;(println w)
-      )
-    )
-
-
-  (require '[tie-edn] :reload )
-
-
-  (require '(tie-edn4))
-
-  (require :reload (quote tie-edn2))
-
-  ;(s/registry)
-
-  )
 
 
 (defn do-compile [coll]
-  ;(load-spec-file)
   (u/validate-input-spec! coll)
   (u/validate-distinct-name! coll)
   (u/validate-name-sql! coll)
   (u/validate-name-model! coll)
   (u/validate-extend-key! coll)
   (u/validate-join-key! coll)
-
-  ;(load )
   (let [{:keys [modules global reserve]} (do-grouping coll)
         global (compile-one-config global)
         modules (compile-batch global modules)
         reserve (reserve-compile reserve)
         global (dissoc global extend-meta-key)
         w (concat [global] modules reserve)]
-    (load-validtion-ns-file w )
+    (load-validtion-spec w)
     (into {} (map into-name-map) w)))
 
 
@@ -267,3 +229,48 @@
   )
 
 
+(comment
+
+
+
+
+  (s/registry)
+
+  ;(add-quote Hello)
+
+  ;'tie-edn
+  ;`
+
+  (let [w1 (mapv namespace (list :tie-edn1/hello))]
+    (doseq [w w1]
+      (require (symbol w) :reload)))
+
+
+
+
+
+  (println (quote [a]))
+
+
+
+  (let [v (mapv namespace (list :a/b))
+        w (list 'quote v)]
+    (println (eval w)))
+
+
+
+  ;(println ''a)
+
+
+
+
+
+
+
+
+
+
+
+  ;(s/registry)
+
+  )

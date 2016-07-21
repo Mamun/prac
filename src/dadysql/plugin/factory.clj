@@ -3,7 +3,7 @@
     [dadysql.constant :refer :all]
     [dadysql.plugin.common-impl :as c]
     [dadysql.plugin.params.core :as p]
-    [dadysql.plugin.validation.core :as v]
+    ;[dadysql.plugin.validation.core :as v]
     [dadysql.plugin.sql.bind-impl :as sql]
     [dadysql.plugin.join.join-impl :as join]))
 

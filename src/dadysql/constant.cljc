@@ -50,17 +50,17 @@
 ;(def out-type :output-type)
 
 
-(defonce param-key :params)
+(defonce param-key :param)
 (defonce param-ref-con-key :ref-con)
 (defonce param-ref-key :ref-key)
 (defonce param-ref-fn-key :ref-fn-key)
 (defonce param-ref-gen-key :ref-gen)
 
 
-(defonce validation-key :validation)
-(defonce validation-type-key :type)
-(defonce validation-range-key :range)
-(defonce validation-contain-key :contain)
+(defonce param-spec-key :param-spec)
+#_(defonce validation-type-key :type)
+#_(defonce validation-range-key :range)
+#_(defonce validation-contain-key :contain)
 
 
 (defonce join-key :join)

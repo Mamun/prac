@@ -6,6 +6,9 @@
 
 (s/def ::get-dept-by-id (s/keys :req-un [::id]))
 
+(s/def ::get-dept-by-ids (s/every int?))
+
+(s/def ::int int?)
 
 
 (comment

@@ -1,27 +1,27 @@
-(ns dadysql.compiler.test-data)
+(ns dadysql.compiler.test-data
+  (:require [clojure.spec :as s]))
 
 
 (def compile-one-data
   {:doc        "Modify department"
    :name       [:insert-dept :update-dept :delete-dept]
    :model      :department
-   :validation [[:id :type 'int? "Id will be Long"]]
+   :param-spec :tie-edn2/get-dept-by-id
    :sql        ["insert into department (id, transaction_id, dept_name) values (:id, :transaction_id, :dept_name)"
                 "update department set dept_name=:dept_name, transaction_id=:next_transaction_id  where transaction_id=:transaction_id and id=:id"
                 "delete from department where id in (:id)"]
-   :extend     {:insert-dept {:params  [[:transaction_id :ref-con 0]
+   :extend     {:insert-dept {:param  [[:transaction_id :ref-con 0]
                                         [:transaction_id :ref-con 0]]
                               :timeout 30}
-                :update-dept {:params [[:next_transaction_id :ref-fn-key 'inc :transaction_id]]}
-                :delete-dept {:validation [[:id :type 'vector? "Id will be sequence"]
-                                           [:id :contain 'int? "Id contain will be Long "]]}}}
+                :update-dept {:param [[:next_transaction_id :ref-fn-key 'inc :transaction_id]]}
+                :delete-dept {:param-spec :tie-edn2/get-dept-by-id}}}
   )
 
 
 (def compile-one-expected-result
   [{:timeout    30,
-    :validation [[:id :type #'clojure.core/int? "id will be long"]],
-    :params     [[:transaction_id :ref-con 0]],
+    :param-spec :tie-edn2/get-dept-by-id,
+    :param     [[:transaction_id :ref-con 0]],
     :index      0,
     :name       :insert-dept,
     :sql
@@ -32,8 +32,8 @@
     :model      :department,
     :dml-type   :insert}
    {:timeout    1000,
-    :validation [[:id :type #'clojure.core/int? "id will be long"]],
-    :params
+    :param-spec :tie-edn2/get-dept-by-id,
+    :param
                 [[:next_transaction_id
                   :ref-fn-key
                   #'clojure.core/inc
@@ -49,9 +49,7 @@
     :model      :department,
     :dml-type   :update}
    {:timeout  1000,
-    :validation
-              [[:id :type #'clojure.core/vector? "id will be sequence"]
-               [:id :contain #'clojure.core/int? "id contain will be long "]],
+    :param-spec :tie-edn2/get-dept-by-id,
     :index    2,
     :name     :delete-dept,
     :sql      ["delete from department where id in (:id)" :id],
@@ -60,6 +58,8 @@
 
   )
 
+
+;(s/spec? integer?)
 
 
 
@@ -76,13 +76,12 @@
    {:doc     "spec"
     :name    [:get-dept-list :get-dept-by-ids :get-employee-list :get-meeting-list :get-employee-meeting-list]
     :model   [:department :department :employee :meeting :employee-meeting]
-    :extend  {:get-dept-by-ids {:validation [[:id :type 'vector? "Id will be sequence"]
-                                             [:id :contain 'int? "Id contain will be Long "]]
+    :extend  {:get-dept-by-ids {:param-spec :tie-edn2/get-dept-by-id
                                 :result     #{:array}}
               :get-dept-list   {:result #{:array}}}
     :timeout 5000
     :result  #{:array}
-    :params  [[:limit :ref-con 10]
+    :param  [[:limit :ref-con 10]
               [:offset :ref-con 0]]
     :sql     ["select * from department LIMIT :limit OFFSET :offset"
               "select * from department where id in (:id) "
@@ -103,7 +102,7 @@
    :get-dept-list
    {:timeout  5000,
     :result   #{:array},
-    :params   [[:limit :ref-con 10] [:offset :ref-con 0]],
+    :param   [[:limit :ref-con 10] [:offset :ref-con 0]],
     :join     [[:department :id :1-n :employee :dept_id]],
     :name     :get-dept-list,
     :index    0,
@@ -116,20 +115,18 @@
    :get-dept-by-ids
    {:index    1,
     :name     :get-dept-by-ids,
-    :params   [[:limit :ref-con 10] [:offset :ref-con 0]],
+    :param   [[:limit :ref-con 10] [:offset :ref-con 0]],
     :sql      ["select * from department where id in (:id) " :id],
     :result   #{:array},
     :timeout  5000,
-    :validation
-              [[:id :type #'clojure.core/vector? "id will be sequence"]
-               [:id :contain #'clojure.core/int? "id contain will be long "]],
+    :param-spec :tie-edn2/get-dept-by-id,
     :dml-type :select,
     :join     [[:department :id :1-n :employee :dept_id]],
     :model    :department},
    :get-employee-list
    {:timeout  5000,
     :result   #{:array},
-    :params   [[:limit :ref-con 10] [:offset :ref-con 0]],
+    :param   [[:limit :ref-con 10] [:offset :ref-con 0]],
     :join     [[:employee :id :1-1 :employee-detail :employee_id]
                [:employee :id :n-n :meeting :meeting_id [:employee-meeting :employee_id :meeting_id]]
                [:employee :dept_id :n-1 :department :id]],
@@ -144,7 +141,7 @@
    :get-meeting-list
    {:timeout  5000,
     :result   #{:array},
-    :params   [[:limit :ref-con 10] [:offset :ref-con 0]],
+    :param   [[:limit :ref-con 10] [:offset :ref-con 0]],
     :join     [[:meeting :meeting_id :n-n :employee :id [:employee-meeting :meeting_id :employee_id]]],
     :name     :get-meeting-list,
     :index    3,
@@ -155,7 +152,7 @@
    :get-employee-meeting-list
    {:timeout  5000,
     :result   #{:array},
-    :params   [[:limit :ref-con 10] [:offset :ref-con 0]],
+    :param   [[:limit :ref-con 10] [:offset :ref-con 0]],
     :name     :get-employee-meeting-list,
     :index    4,
     :sql
@@ -181,13 +178,13 @@
    {:doc     "spec"
     :name    [:get-dept-list :get-dept-by-ids :get-employee-list :get-meeting-list :get-employee-meeting-list]
     :model   [:department :department :employee :meeting :employee-meeting]
-    :extend  {:get-dept-by-ids {:validation :tie-edn/get-dept-by-id
+    :extend  {:get-dept-by-ids {:param-spec :tie-edn/get-dept-by-id
                                 :result     #{:array}}
               :get-dept-list   {:result #{:array}}}
     :timeout 5000
     :result  #{:array}
-    :validation :tie-edn/get-dept-by-id2
-    :params  [[:limit :ref-con 10]
+    :param-spec :tie-edn/get-dept-by-id2
+    :param  [[:limit :ref-con 10]
               [:offset :ref-con 0]]
     :sql     ["select * from department LIMIT :limit OFFSET :offset"
               "select * from department where id in (:id) "

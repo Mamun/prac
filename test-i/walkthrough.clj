@@ -17,9 +17,6 @@
 
 
 
-  [[:department :id :1-n :employee :dept_id]
-   [:employee :id :1-1 :employee-detail :employee_id]
-   [:employee :id :n-n :meeting :meeting_id [:employee-meeting :employee_id :meeting_id]]]
 
 
 
@@ -31,7 +28,7 @@
   (do
     (td/get-ds)
     (-> @td/ds
-        (t/db-do  [:create-ddl :init-data] (t/read-file "tie.edn.sql"))))
+        (t/db-do  [:create-ddl :init-data] (t/read-file "tie.edn2.sql"))))
 
 
   (-> @td/ds
