@@ -4,7 +4,7 @@
   (:require [dadysql.plugin.factory :as bi]
             [dadysql.plugin.factory :as c]
             [dadysql.plugin.params.core :as p]
-            [dadysql.constant :refer :all]
+            [dadysql.core :refer :all]
         ;    [schema.core :as s]
             [dady.common :refer :all]))
 

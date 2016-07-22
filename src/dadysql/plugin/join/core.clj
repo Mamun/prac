@@ -2,7 +2,7 @@
   (:require [dady.common :as cc]
             [dady.fail :as f]
             [dadysql.core-util :as cu]
-            [dadysql.constant :refer :all]))
+            [dadysql.core :refer :all]))
 
 
 (defn get-source-relational-key-value

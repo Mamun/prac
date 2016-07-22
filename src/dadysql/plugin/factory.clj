@@ -1,6 +1,6 @@
 (ns dadysql.plugin.factory
   (:require
-    [dadysql.constant :refer :all]
+    [dadysql.core :refer :all]
     [dadysql.plugin.common-impl :as c]
     [dadysql.plugin.params.core :as p]
     ;[dadysql.plugin.validation.core :as v]

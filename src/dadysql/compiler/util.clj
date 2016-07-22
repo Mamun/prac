@@ -1,16 +1,16 @@
 (ns dadysql.compiler.util
-  (:use [dadysql.constant])
+  (:use [dadysql.core])
   (:require [clojure.spec :as s]
             [clojure.string]
             [dady.common :as dc]))
 
 
 (defn validate-input-spec! [coll]
-  (let [w (s/conform :dadysql.compiler.spec/compiler-input-spec coll)]
+  (let [w (s/conform :dadysql.core/compiler-input-spec coll)]
     (if (= w :clojure.spec/invalid)
       (do
-        (println (s/explain :dadysql.compiler.spec/compiler-input-spec coll))
-        (throw (ex-info "Compile failed " (s/explain-data :dadysql.compiler.spec/compiler-input-spec coll)))))))
+        (println (s/explain :dadysql.core/compiler-input-spec coll))
+        (throw (ex-info "Compile failed " (s/explain-data :dadysql.core/compiler-input-spec coll)))))))
 
 
 (defn validate-distinct-name! [coll]

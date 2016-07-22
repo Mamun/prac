@@ -1,5 +1,5 @@
 (ns dadysql.core-util
-  (:require [dadysql.constant :refer :all]
+  (:require [dadysql.core :refer :all]
             [dady.proto :refer :all]
             [dady.fail :as f]
             [clojure.set]

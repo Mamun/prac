@@ -1,6 +1,6 @@
 (ns dadysql.plugin.params.core
   (:use [dady.proto])
-  (:require [dadysql.constant :refer :all]
+  (:require [dadysql.core :refer :all]
             [dady.common :as cc]
             [dady.fail :as f]
             [dadysql.core-util :as ccu]

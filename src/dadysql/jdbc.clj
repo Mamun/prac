@@ -4,8 +4,8 @@
   (:require
     [clojure.tools.logging :as log]
     [clojure.java.jdbc :as jdbc]
-    [dadysql.constant :as tc]
-    [dadysql.core :as tie]
+    [dadysql.core :as tc]
+    [dadysql.core2 :as tie]
     [dadysql.compiler.core :as fr]
     [dadysql.plugin.factory :as imp]
     [dady.proto :as c]

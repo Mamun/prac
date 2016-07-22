@@ -1,6 +1,6 @@
 (ns dadysql.plugin.sql.bind-impl
   (:use [dady.proto])
-  (:require [dadysql.constant :refer :all]
+  (:require [dadysql.core :refer :all]
             [dady.fail :as f]
             [dady.common :as cc]
             #_[schema.core :as s]))

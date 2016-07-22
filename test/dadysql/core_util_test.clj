@@ -1,7 +1,7 @@
 (ns dadysql.core-util-test
   (:use [clojure.test]
         [dadysql.core-util])
-  (:require [dadysql.constant :refer :all]
+  (:require [dadysql.core :refer :all]
             [dady.common :refer :all]
             [dady.fail :refer :all]
             ))

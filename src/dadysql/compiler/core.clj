@@ -1,9 +1,8 @@
 (ns dadysql.compiler.core
-  (:require [dadysql.constant :refer :all]
-            [dadysql.compiler.spec]
+  (:require [dadysql.core :refer :all]
+            [dadysql.core]
             [dady.common :as cc]
             [dadysql.compiler.util :as u]
-    ;[tie.ed]
             [clojure.tools.reader.edn :as edn]
             [dadysql.compiler.file-reader :as fr]
             [clojure.spec :as s]))
@@ -113,7 +112,6 @@
        (reduce (fn [acc k]
                  (condp = k
                    param-key (update-in acc [k] (fn [w] (cc/distinct-with-range 2 w)))
-                   ;validation-key (update-in acc [k] (fn [w] (cc/distinct-with-range 2 w)))
                    acc)
                  ) m)))
 
@@ -122,7 +120,6 @@
   (-> m
       (assoc dml-key (u/dml-type (sql-key m)))
       (update-in [sql-key] u/sql-str-emit)
-      ;(cc/update-if-contains [validation-key] #(mapv u/validation-emit %))
       (cc/update-if-contains [param-key] #(mapv u/param-emit %))))
 
 
@@ -169,14 +166,6 @@
   (hash-map (name-key v) v))
 
 
-(defn resolve-param-spec [coll]
-  (mapv (fn [w]
-          (cc/update-if-contains w [param-spec-key] (fn [v]
-                                                      (if-not (keyword? v)
-                                                        (resolve v)
-                                                        v)))
-          ) coll ))
-
 
 (defn load-param-spec [coll]
   (let [w1 (filter keyword? (map param-spec-key coll))]
@@ -200,9 +189,7 @@
         modules (compile-batch global modules)
         reserve (reserve-compile reserve)
         global (dissoc global extend-meta-key)
-        w (concat [global] modules reserve)
-        ;w (resolve-param-spec w)
-        ]
+        w (concat [global] modules reserve)]
     (load-param-spec w)
     (into {} (map into-name-map) w)))
 

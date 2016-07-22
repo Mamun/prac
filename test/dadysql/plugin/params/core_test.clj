@@ -7,7 +7,7 @@
     ;[dady.node-proto :as p]
     [dady.proto :refer :all]
     [dadysql.plugin.params.core :refer :all]
-    [dadysql.constant :refer :all]
+    [dadysql.core :refer :all]
     [dady.common :refer :all]
     [clojure.spec :as sp]))
 

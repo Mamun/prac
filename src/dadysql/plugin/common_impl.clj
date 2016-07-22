@@ -1,6 +1,6 @@
 (ns dadysql.plugin.common-impl
   (:require
-    [dadysql.constant :refer :all]
+    [dadysql.core :refer :all]
     [dady.fail :as f]
     [dady.proto :refer :all]))
 

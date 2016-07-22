@@ -2,7 +2,7 @@
   (:require [clojure.java.io :as io]
             [clojure.spec :as s]
             [clojure.tools.reader.edn :as edn]
-            [dadysql.constant :refer :all]))
+            [dadysql.core :refer :all]))
 
 
 (defn- tie-file-reader

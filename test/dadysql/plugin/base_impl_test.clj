@@ -4,9 +4,9 @@
   (:require [dadysql.plugin.common-impl :refer :all]
             [dadysql.plugin.base-impl :refer :all]
             [dadysql.plugin.factory :refer :all]
-            [dadysql.constant :refer :all]
+            [dadysql.core :refer :all]
             [dady.common :refer :all]
-            [dadysql.core :as c]
+            [dadysql.core2 :as c]
             [dadysql.jdbc :as j]
             #_[schema.core :as s]))
 

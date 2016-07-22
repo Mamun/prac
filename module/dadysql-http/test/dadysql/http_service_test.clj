@@ -1,6 +1,6 @@
 (ns dadysql.http-service-test
   (:use [clojure.test])
-  (:require [dadysql.constant :refer :all]
+  (:require [dadysql.core :refer :all]
             [dady.common :refer :all]
             [dadysql.http-service :refer :all]
             [test-data :as td]

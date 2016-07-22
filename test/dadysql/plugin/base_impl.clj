@@ -1,7 +1,7 @@
 (ns dadysql.plugin.base-impl
   (:require
    ; [schema.core :as s]
-    [dadysql.constant :refer :all]
+    [dadysql.core :refer :all]
     [dady.common :refer :all]
     [dady.proto :refer :all]))
 

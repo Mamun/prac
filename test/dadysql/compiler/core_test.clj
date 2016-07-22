@@ -1,8 +1,8 @@
 (ns dadysql.compiler.core-test
   (:use [clojure.test]
         [dadysql.compiler.core :as r]
-        [dadysql.core :as c]
-        [dadysql.constant]
+        [dadysql.core2 :as c]
+        [dadysql.core]
         [dady.common]
         [dadysql.compiler.test-data])
   (:require [clojure.spec :as s]

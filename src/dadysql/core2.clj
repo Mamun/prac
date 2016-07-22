@@ -1,11 +1,11 @@
 ;; Expose as API
 ;;
-(ns dadysql.core
+(ns dadysql.core2
   (:require
     [clojure.spec :as s]
     [dady.common :as cc]
     [dady.fail :as f]
-    [dadysql.constant :refer :all]
+    [dadysql.core :refer :all]
     [dadysql.core-util :as cu]
     [dadysql.plugin.join.core :as j]
     [dadysql.plugin.params.core :as p]
