@@ -28,15 +28,6 @@
 
 ;(tx-prop-spec-test)
 
-(deftest validation-spec-test
-  (testing "test validation spec "
-    (let [v [[:id :type 'vector? "Id will be sequence"]
-             [:id :contain 'int? "Id contain will be Long "]]
-          r (s/conform :dadysql.compiler.spec/param-spec v)]
-      (is (not= :clojure.spec/invalid r)))))
-
-
-;(validation-spec-test)
 
 
 (deftest params-spec-test

@@ -112,42 +112,33 @@
 
 
 
-#_(s/def ::vali-type
-  (clojure.spec/tuple keyword? #(= validation-type-key %) resolve? string?))
-
-
-#_(s/def ::vali-type-contain
-  (clojure.spec/tuple keyword? #(= validation-contain-key %) resolve? string?))
-
-#_(s/def ::vali-range
-  (clojure.spec/tuple keyword? #(= validation-range-key %) integer? integer? string?))
-
-#_(s/with-gen
-    (clojure.spec/*
-      (clojure.spec/alt
-        :type ::vali-type
-        :contain ::vali-type-contain
-        :range ::vali-range))
-    (fn []
-      (s/gen #{[[:id validation-type-key 'vector? "id witll be vector"]
-                [:id validation-contain-key 'int? "id witll be integer"]
-                [:id validation-range-key 10 11 "id witll be between 10 and 11"]]
-
-               [[:id validation-type-key 'vector? "id witll be vector"]
-                [:id validation-contain-key 'int? "id witll be integer"]
-                ]})))
-
-
 (defn ns-keyword? [v]
   (clojure.string/includes? v "/")  )
 
 
-(comment
-  (ns-keyword? :av)
-  (ns-keyword? :acom/v)
+#_(defn resolve? [v]
   )
 
-(s/def ::param-spec (s/and keyword? ns-keyword?))
+#_(comment
+  (ns-keyword? :av)
+  (ns-keyword? :acom/v)
+
+  ;(s/regex? s/*)
+  (s/spec? int?)
+
+  (s/regex? int?)
+
+  integer?
+
+  number?
+
+
+
+  )
+
+
+(s/def ::param-spec (s/and keyword? ns-keyword?)#_(s/or :key
+                          :res resolve?))
 
 
 

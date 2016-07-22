@@ -8,10 +8,14 @@
 
 (s/def ::get-dept-by-ids (s/every int?))
 
-(s/def ::int int?)
+(s/def ::int-id (s/keys :req-un [::id] ) )
 
 
 (comment
+
+  ;(resolve 'int1?)
+
+  (s/conform ::int "asdfsd")
 
   (s/conform ::get-dept-by-id {:id 2})
 

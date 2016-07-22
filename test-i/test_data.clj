@@ -26,8 +26,18 @@
   @tms)
 
 
+(defn init-tms
+  []
+  (let [w (read-file "tie.edn.sql")]
+    (db-do (get-ds) [:create-ddl :init-data] w)
+    (reset! tms w))
+  )
+
+
 (comment
 
+
+  ;(init-tms)
 
   (get-ds)
 

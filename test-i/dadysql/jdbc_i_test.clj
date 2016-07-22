@@ -15,34 +15,34 @@
 
 (deftest pull-test
   (testing "test pull for sequence "
-    (let [v (pull @td/ds @td/tms {:name [:gen-dept]})]
+    (let [v (pull (td/get-ds) (td/get-tms) {:name [:gen-dept]})]
       (is (not (nil? v)))))
 
   (testing "testing pull "
 
-    (is (= (pull @td/ds @td/tms
+    (is (= (pull (td/get-ds) (td/get-tms)
                  {:name   :get-dept-by-id
                   :params {:id 1}})
            {:id 1, :transaction_id 0, :dept_name "Business"}))
 
-    (is (= (pull @td/ds @td/tms
+    (is (= (pull (td/get-ds) (td/get-tms)
                  {:name   [:get-dept-by-id]
                   :params {:id 1}})
            {:department {:id 1, :transaction_id 0, :dept_name "Business"}}))
 
-    (is (= (pull @td/ds @td/tms {:name [:get-dept-list]})
+    (is (= (pull (td/get-ds) (td/get-tms) {:name [:get-dept-list]})
            {:department [[:id :transaction_id :dept_name]
                          [1 0 "Business"]
                          [2 0 "Marketing"]
                          [3 0 "HR"]]}))
 
-    (is (= (pull @td/ds @td/tms {:name :get-dept-list})
+    (is (= (pull (td/get-ds) (td/get-tms) {:name :get-dept-list})
            [[:id :transaction_id :dept_name]
             [1 0 "Business"]
             [2 0 "Marketing"]
             [3 0 "HR"]]))
 
-    (is (= (pull @td/ds @td/tms
+    (is (= (pull (td/get-ds) (td/get-tms)
                  {:name   [:get-employee-by-id :get-employee-dept]
                   :params {:id 1}})
            {:employee
@@ -53,7 +53,7 @@
              :dept_id        1,
              :department     {:id 1, :transaction_id 0, :dept_name "Business"}}}))
 
-    (is (= (pull @td/ds @td/tms
+    (is (= (pull (td/get-ds) (td/get-tms)
                  {:name   [:get-employee-by-id :get-employee-dept :get-employee-detail :get-employee-meeting]
                   :params {:id 1}})
            {:employee {:id              1,
@@ -70,7 +70,7 @@
                                          [1 "Hello" 1]
                                          [2 "Hello Friday" 1]],
                        :department      {:id 1, :transaction_id 0, :dept_name "Business"}}}))
-    (is (= (pull @td/ds @td/tms
+    (is (= (pull (td/get-ds) (td/get-tms)
                  {:gname  :load-dept
                   :params {:id 1}})
            {:department
@@ -82,7 +82,7 @@
                                :firstname      "Abba",
                                :lastname       "Zoma",
                                :dept_id        1}]}}))
-    (is (= (pull @td/ds @td/tms
+    (is (= (pull (td/get-ds) (td/get-tms)
                  {:gname  :load-employee
                   :params {:id 1}})
 
@@ -154,7 +154,7 @@
 
     (is (= (push! @td/ds @td/tms
                   {:name   [:delete-dept]
-                   :params {:department {:id [1]}}})
+                   :params {:department {:id 1 }}})
            {:department [1]}))
 
     (is (= (push! @td/ds @td/tms

@@ -51,7 +51,7 @@ select * from employee_meeting LIMIT :limit OFFSET :offset;
           :get-employee-dept   {:result #{:single}}
           :get-employee-detail {:result #{:single}}
           :get-employee-meeting {:result #{:array}}}
- :param-spec :tie-edn/int
+ :param-spec :tie-edn/int-id
  }*/
 select * from employee where id = :id;
 select d.* from department d, employee e where e.id=:id and d.id = e.dept_id;
@@ -80,11 +80,11 @@ select e.*, em.employee_id from employee e, employee_meeting em where em.meeting
  :model [:department :employee ]
  :group :load-dept
  :extend {:get-dept-by-id {:timeout 2000
-                      :param-spec :tie-edn/int
+                      :param-spec :tie-edn/int-id
                       :result #{:single}}
          }
  :timeout 5000
- :param-spec :tie-edn/int
+ :param-spec :tie-edn/int-id
  }*/
 select * from department where id = :id ;
 select * from employee where dept_id = :id;
@@ -100,7 +100,7 @@ select * from employee where dept_id = :id;
                                 [:transaction_id :ref-con 0]]}
          :update-dept {:param [[:next_transaction_id :ref-fn-key inc :transaction_id]]}
          }
- :param-spec :tie-edn/int
+ :param-spec :tie-edn/int-id
  :commit :all
  }*/
 insert into department (id, transaction_id, dept_name) values (:id, :transaction_id, :dept_name);
@@ -117,8 +117,7 @@ delete from department where id in (:id);
                                      [:id :ref-gen :gen-dept ]]}
            :create-employee-detail {:model :employee-detail
                                     :param [[:city :ref-con 0]
-                                             [:id :ref-gen :gen-dept ]]}}
- :param-spec :tie-edn/int
+                                            [:id :ref-gen :gen-dept ]]}}
  :commit :all
  }*/
 insert into employee (id,  transaction_id,  firstname,  lastname,  dept_id)

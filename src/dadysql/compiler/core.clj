@@ -169,8 +169,17 @@
   (hash-map (name-key v) v))
 
 
-(defn load-validtion-spec [coll]
-  (let [w1 (remove nil? (map param-spec-key coll))]
+(defn resolve-param-spec [coll]
+  (mapv (fn [w]
+          (cc/update-if-contains w [param-spec-key] (fn [v]
+                                                      (if-not (keyword? v)
+                                                        (resolve v)
+                                                        v)))
+          ) coll ))
+
+
+(defn load-param-spec [coll]
+  (let [w1 (filter keyword? (map param-spec-key coll))]
     (doseq [w (map namespace w1)]
       (require (symbol w) :reload))
     (doseq [r w1]
@@ -191,8 +200,10 @@
         modules (compile-batch global modules)
         reserve (reserve-compile reserve)
         global (dissoc global extend-meta-key)
-        w (concat [global] modules reserve)]
-    (load-validtion-spec w)
+        w (concat [global] modules reserve)
+        ;w (resolve-param-spec w)
+        ]
+    (load-param-spec w)
     (into {} (map into-name-map) w)))
 
 
@@ -231,6 +242,7 @@
 
 (comment
 
+  ;(filter odd? [ 1 2 3])
 
 
 
