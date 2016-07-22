@@ -14,7 +14,7 @@
 
 
 (defn validate-distinct-name! [coll]
-  (let [i-coll (flatten (mapv name-key coll))]
+  (let [i-coll (flatten (mapv :dadysql.core/name coll))]
     (if-not (apply distinct? i-coll)
       (let [w (->> (frequencies i-coll)
                    (filter (fn [[_ v]]
@@ -24,7 +24,7 @@
 
 
 (defn validate-name-model! [coll]
-  (let [i-coll (->> (mapv (juxt name-key model-key) coll)
+  (let [i-coll (->> (mapv (juxt :dadysql.core/name :dadaysql.core/model) coll)
                     (filter (fn [v] (every? vector? v))))]
     (doseq [[name-coll model-coll] i-coll]
       (let [t-iden (count name-coll)
@@ -36,7 +36,7 @@
 
 
 (defn validate-name-sql! [coll]
-  (let [i-coll (->> (mapv (juxt name-key sql-key) coll)
+  (let [i-coll (->> (mapv (juxt :dadysql.core/name :dadysql.core/sql) coll)
                     (filter (fn [v] (every? vector? v))))]
     (doseq [[name-coll sql-coll] i-coll]
       (let [t-iden (count name-coll)
@@ -48,7 +48,7 @@
 
 
 (defn validate-extend-key! [coll]
-  (let [i-coll (->> (mapv (juxt name-key extend-meta-key) coll)
+  (let [i-coll (->> (mapv (juxt :dadysql.core/name extend-meta-key) coll)
                     (mapv (fn [[n e]]
                             (let [n (if (vector? n)
                                       (into #{} n)
@@ -85,7 +85,7 @@
 
 
 (defn validate-join-key! [coll]
-  (let [i-coll (->> (mapv (juxt join-key model-key) coll)
+  (let [i-coll (->> (mapv (juxt :dadysql.core/join :dadaysql.core/model) coll)
 
                     )]
     (println i-coll)
@@ -94,7 +94,7 @@
 
 
 (defn validation-ns [coll]
-  (remove nil? (map param-spec-key coll))
+  (remove nil? (map :dadysql.core/param-spec coll))
   )
 
 
@@ -140,53 +140,54 @@
 
 
 (defn map-name-model-sql [m]
+  ;(clojure.pprint/pprint m )
   (cond
 
-    (and (keyword? (name-key m))
-         (keyword? (model-key m)))
+    (and (keyword? (:dadysql.core/name m))
+         (keyword? (:dadaysql.core/model m)))
     (do
       [(-> m
-           (assoc index 0)
-           (update-in [sql-key] first))])
+           (assoc :dadysql.core/index 0)
+           (update-in [:dadysql.core/sql] first))])
 
-    (and (sequential? (name-key m))
-         (sequential? (model-key m)))
+    (and (sequential? (:dadysql.core/name m))
+         (sequential? (:dadaysql.core/model m)))
     (do
       (mapv (fn [i s n m]
-              {name-key  n
-               index     i
-               sql-key   s
-               model-key m})
+              {:dadysql.core/name  n
+               :dadysql.core/index     i
+               :dadysql.core/sql   s
+               :dadaysql.core/model m})
             (range)
-            (get-in m [sql-key])
-            (get-in m [name-key])
-            (get-in m [model-key])))
+            (get-in m [:dadysql.core/sql])
+            (get-in m [:dadysql.core/name])
+            (get-in m [:dadaysql.core/model])))
 
-    (and (sequential? (name-key m))
-         (keyword? (model-key m)))
+    (and (sequential? (:dadysql.core/name m))
+         (keyword? (:dadaysql.core/model m)))
     (do
       (mapv (fn [i n s]
-              {index     i
-               name-key  n
-               sql-key   s
-               model-key (get-in m [model-key])})
+              {:dadysql.core/index     i
+               :dadysql.core/name  n
+               :dadysql.core/sql   s
+               :dadaysql.core/model (get-in m [:dadaysql.core/model])})
             (range)
-            (get-in m [name-key])
-            (get-in m [sql-key])))
+            (get-in m [:dadysql.core/name])
+            (get-in m [:dadysql.core/sql])))
 
-    (sequential? (name-key m))
+    (sequential? (:dadysql.core/name m))
     (mapv (fn [i s n]
-            {name-key n
-             index    i
-             sql-key  s})
+            {:dadysql.core/name n
+             :dadysql.core/index    i
+             :dadysql.core/sql  s})
           (range)
-          (get-in m [sql-key])
-          (get-in m [name-key]))
+          (get-in m [:dadysql.core/sql])
+          (get-in m [:dadysql.core/name]))
 
-    (keyword? (name-key m))
+    (keyword? (:dadysql.core/name m))
     [(-> m
-         (assoc index 0)
-         (update-in [sql-key] first))]
+         (assoc :dadysql.core/index 0)
+         (update-in [:dadysql.core/sql] first))]
 
     :else
     (do
@@ -269,7 +270,7 @@
     [sql-str]
     (let [p (comp (filter not-empty)
                   (map sql-str-emit)
-                  (map (fn [v] {sql-key v
+                  (map (fn [v] {:dadysql.core/sql v
                                 dml-key (dml-type v)})))
           sql (-> (clojure.string/trim sql-str)
                   (clojure.string/lower-case)

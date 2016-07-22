@@ -18,7 +18,7 @@
   ([file-name] (read-file file-name (imp/new-root-node)))
   ([file-name pc]
    (-> (fr/read-file file-name)
-       (assoc-in [tc/global-key tc/file-name-key] file-name)
+       (assoc-in [tc/global-key :dadysql.core/file-name ] file-name)
        (assoc-in [tc/global-key tc/process-context-key] pc))))
 
 
@@ -115,7 +115,7 @@
     (try
       (let [tm-coll (vals (tie/select-name tms name-coll))]
         (doseq [m tm-coll]
-          (when-let [sql (get-in m [tc/sql-key])]
+          (when-let [sql (get-in m [:dadysql.core/sql])]
                    (log/info "db do with " sql)
             (jdbc/db-do-commands ds  sql))))
       (catch Exception e
@@ -130,7 +130,7 @@
 
 
 (defn has-dml-type? [m-map]
-  (let [dml (tc/dml-key m-map)]
+  (let [dml (:dadysql.core/dml-key m-map)]
     (or
       (= tc/dml-update-key dml)
       (= tc/dml-call-key dml)
@@ -142,7 +142,7 @@
 (defn get-dml
   [tms]
   (let [p (comp (filter has-dml-type?)
-                (map tc/sql-key)
+                (map :dadysql.core/sql)
                 (filter (fn [v] (if (< 1 (count v))
                                   true false)))
                 (map first)
@@ -179,7 +179,7 @@
 
 (defn- execution-log
   [tm-coll]
-  (let [v (mapv #(select-keys % [tc/sql-key tc/exec-time-total-key tc/exec-time-start-key]) tm-coll)
+  (let [v (mapv #(select-keys % [:dadysql.core/sql tc/exec-time-total-key tc/exec-time-start-key]) tm-coll)
         w (mapv (fn [t]
                   (update-in t [tc/exec-time-start-key] (fn [o] (str (as-date o))))
                   ) v)]

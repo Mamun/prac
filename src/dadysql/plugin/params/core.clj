@@ -19,7 +19,7 @@
 
 (defn new-param-key
   [order childs]
-  (ParamKey. param-key childs order))
+  (ParamKey. :dadysql.core/param childs order))
 
 
 (defn temp-generator [_ _]
@@ -48,7 +48,7 @@
 
 
 (defn assoc-param-ref-gen [root-node generator]
-  (let [p [param-key param-ref-gen-key]
+  (let [p [:dadysql.core/param param-ref-gen-key]
         p-index (node-path root-node p)]
     (if p-index
       (assoc-in root-node (conj p-index :generator) generator)
@@ -146,7 +146,7 @@
   ParamRefConKey
   (-porder [this] (:lorder this))
   (-pprocess? [_ m]
-    (->> (group-by second (param-key m))
+    (->> (group-by second (:dadysql.core/param m))
          (param-ref-con-key)))
   (-pprocess [_ p-value m]
     (let [[_ _ v] p-value]
@@ -154,7 +154,7 @@
   ParamRefKey
   (-porder [this] (:lorder this))
   (-pprocess? [_ m]
-    (->> (group-by second (param-key m))
+    (->> (group-by second (:dadysql.core/param m))
          (param-ref-key)))
   (-pprocess [_ p-value m]
     (let [[s _ k] p-value]
@@ -163,7 +163,7 @@
   ParamRefFunKey
   (-porder [this] (:lorder this))
   (-pprocess? [_ m]
-    (->> (group-by second (param-key m))
+    (->> (group-by second (:dadysql.core/param m))
          (param-ref-fn-key)))
   (-pprocess [_ p-value m]
     (let [[s _ f k] p-value]
@@ -173,7 +173,7 @@
   ParamRefGenKey
   (-porder [this] (:lorder this))
   (-pprocess? [_ m]
-    (->> (group-by second (param-key m))
+    (->> (group-by second (:dadysql.core/param m))
          (param-ref-gen-key)))
   (-pprocess [this p-value _]
     (let [[_ _ v] p-value]
@@ -195,12 +195,12 @@
 (defmethod param-paths
   nested-map-format
   [_ [root-m & child-m] param-m]
-  (let [model-name (get root-m model-key)
+  (let [model-name (get root-m :dadaysql.core/model)
         rp (ccu/get-path param-m model-name)
-        rpp (assoc-param-path param-m rp (param-key root-m))
+        rpp (assoc-param-path param-m rp (:dadysql.core/param root-m))
         cpp (for [c child-m
-                  :let [crp (ccu/get-path param-m rp (model-key c))]
-                  p (assoc-param-path param-m crp (param-key c))]
+                  :let [crp (ccu/get-path param-m rp (:dadaysql.core/model c))]
+                  p (assoc-param-path param-m crp (:dadysql.core/param c))]
               p)]
     (-> []
         (into rpp)
@@ -210,7 +210,7 @@
 (defmethod param-paths
   map-format
   [_ tm-coll param-m]
-  (->> (map param-key tm-coll)
+  (->> (map :dadysql.core/param tm-coll)
        (reduce concat)
        (cc/distinct-with-range 1)
        (assoc-param-path param-m (ccu/empty-path))))

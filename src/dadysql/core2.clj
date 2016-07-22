@@ -49,12 +49,12 @@
   [tms gname name-coll]
   (let [name-set (into #{} (cc/as-sequential name-coll))
         p (if name-coll
-            (comp (filter #(= (group-key %) gname))
-                  (filter #(contains? name-set (name-key %))))
-            (comp (filter #(= (group-key %) gname))))
+            (comp (filter #(= (:dadysql.core/group %) gname))
+                  (filter #(contains? name-set (:dadysql.core/name %))))
+            (comp (filter #(= (:dadysql.core/group %) gname))))
         t (into [] p (vals tms))
-        w (sort-by index t)]
-    (into [] (map name-key) w)))
+        w (sort-by :dadysql.core/index t)]
+    (into [] (map :dadysql.core/name) w)))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;; Processing impl  ;;;;;;;;;;;;;;;;;;;;;;;;
@@ -79,7 +79,7 @@
         (-> (apply comp (c/as-xf-process :output n-processor))
             (transduce conj tm-coll))
         :input
-        (let [p (->> (c/remove-child (c/remove-child n-processor param-spec-key) param-key)
+        (let [p (->> (c/remove-child (c/remove-child n-processor :dadysql.core/param-spec ) :dadysql.core/param)
                      (c/as-xf-process :input)
                      (apply f/comp-xf-until))]
           (transduce p conj tm-coll))
@@ -91,7 +91,7 @@
 
 (defn apply-validation! [tm-coll]
   (reduce (fn [acc v]
-            (if-let [vali (param-spec-key v)]
+            (if-let [vali (:dadysql.core/param-spec v)]
               (if (s/valid? vali (input-key v))
                 (conj acc v)
                 (reduced (f/fail (s/explain-data vali (input-key v))))
@@ -112,7 +112,7 @@
 (defmethod warp-input-node-process map-format
   [handler n-processor _]
   (fn [tm-coll params]
-    (let [param-m (c/get-child n-processor param-key)
+    (let [param-m (c/get-child n-processor :dadysql.core/param)
           input (p/do-param params map-format tm-coll param-m)]
       (if (f/failed? input)
         input
@@ -125,13 +125,13 @@
 (defmethod warp-input-node-process nested-map-format
   [handler n-processor _]
   (fn [tm-coll params]
-    (let [param-m (c/get-child n-processor param-key)
+    (let [param-m (c/get-child n-processor :dadysql.core/param)
           input (f/try-> params
                           (p/do-param nested-map-format tm-coll param-m)
-                          (j/do-disjoin (get-in tm-coll [0 join-key])))]
+                          (j/do-disjoin (get-in tm-coll [0 :dadysql.core/join ])))]
       (if (f/failed? input)
         input
-        (-> (mapv (fn [m] (assoc m input-key ((model-key m) input))) tm-coll)
+        (-> (mapv (fn [m] (assoc m input-key ((:dadaysql.core/model m) input))) tm-coll)
             (do-node-process n-processor :input)
             (apply-validation!)
             (handler input))))))
@@ -141,14 +141,14 @@
   [format m]
   (condp = format
     map-format
-    (dissoc m result-key)
+    (dissoc m :dadaysql.core/result)
     array-format
-    (assoc m result-key #{result-array-key})
+    (assoc m :dadaysql.core/result #{result-array-key})
     value-format
     (-> m
-        (assoc model-key (name-key m))
-        (assoc result-key #{result-single-key result-array-key})
-        (assoc dml-key dml-select-key))
+        (assoc :dadaysql.core/model (:dadysql.core/name m))
+        (assoc :dadaysql.core/result #{result-single-key result-array-key})
+        (assoc :dadaysql.core/dml-key dml-select-key))
     m))
 
 
@@ -160,8 +160,8 @@
 (defn into-model-map
   [v]
   (if (f/failed? v)
-    (hash-map (model-key v) v)
-    (hash-map (model-key v)
+    (hash-map (:dadaysql.core/model v) v)
+    (hash-map (:dadaysql.core/model v)
               (output-key v))))
 
 
@@ -199,14 +199,14 @@
 
 (defn- is-join-pull
   [tm-coll]
-  (if (and (not-empty (join-key (first tm-coll)))
+  (if (and (not-empty (:dadysql.core/join (first tm-coll)))
            (not (nil? (rest tm-coll))))
     true false))
 
 
 (defn- merge-relation-param
   [root-result root params]
-  (-> (join-key root)
+  (-> (:dadysql.core/join root)
       (j/get-source-relational-key-value root-result)
       (merge params)))
 
@@ -236,7 +236,7 @@
                       (merge-relation-param root params)
                       (r-handler)
                       (merge root-output)
-                      (j/do-join (join-key root)))))))))
+                      (j/do-join (:dadysql.core/join root)))))))))
 
 
 

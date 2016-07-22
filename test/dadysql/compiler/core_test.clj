@@ -12,24 +12,24 @@
 
 (deftest compiler-merge-test
   (testing "test compiler-merge "
-    (let [v [{param-key      [[1 2 3]]
-              column-key     {:p 1}
-              timeout-key    4
-              result-key     #{result-single-key}
-              param-spec-key :a/b}
-             {param-key   [[8 9 0]]
-              timeout-key 6}
-             {param-key      [[5 6 7]]
-              column-key     {:p  4
+    (let [v [{:dadysql.core/param      [[1 2 3]]
+              :clojure.core/column     {:p 1}
+              :dadaysql.core/timeout    4
+              :dadaysql.core/result     #{result-single-key}
+              :dadysql.core/param-spec :a/b}
+             {:dadysql.core/param   [[8 9 0]]
+              :dadaysql.core/timeout 6}
+             {:dadysql.core/param      [[5 6 7]]
+              :clojure.core/column     {:p  4
                               :p1 :p}
               :p             9
-              result-key     #{result-array-key}
-              param-spec-key :a/b}]
-          expected-result {param-key   [[5 6 7] [8 9 0] [1 2 3]],
-                           column-key  {:p 4, :p1 :p}
-                           timeout-key 6
-                           result-key  #{result-array-key}
-                           param-spec-key :a/b
+              :dadaysql.core/result     #{result-array-key}
+              :dadysql.core/param-spec :a/b}]
+          expected-result {:dadysql.core/param   [[5 6 7] [8 9 0] [1 2 3]],
+                           :clojure.core/column  {:p 4, :p1 :p}
+                           :dadaysql.core/timeout 6
+                           :dadaysql.core/result  #{result-array-key}
+                           :dadysql.core/param-spec :a/b
                            :p          9}
           actual-result (apply merge-with compiler-merge v)]
       ;(clojure.pprint/pprint actual-result)

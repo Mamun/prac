@@ -27,7 +27,7 @@
   ;; Create database table and init data
   (do
     (td/get-ds)
-    (-> @td/ds
+    (-> (td/get-ds)
         (t/db-do  [:create-ddl :init-data] (t/read-file "tie.edn2.sql"))))
 
 
@@ -53,7 +53,7 @@
   ;;With model name when name as vector
   (-> @td/ds
       (t/pull (t/read-file "tie.edn.sql")
-              :name [:get-dept-list])
+              {:name [:get-dept-list]})
       (clojure.pprint/pprint)
       )
 

@@ -8,7 +8,7 @@
 (defrecord JoinKey [cname corder])
 
 (defn new-join-key []
-  (map->JoinKey {:cname  join-key
+  (map->JoinKey {:cname  :dadysql.core/join
                  :corder 2}))
 
 (extend-protocol ILeafNode
@@ -59,7 +59,7 @@
   (->> join-coll
        (group-by first)
        (map (fn [[k coll]]
-              {k {join-key coll}}))
+              {k {:dadysql.core/join coll}}))
        (into {})))
 
 

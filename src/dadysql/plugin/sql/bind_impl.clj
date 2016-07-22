@@ -8,17 +8,17 @@
 
 (defn validate-input-not-empty!
   [m]
-  (if (and (not-empty (rest (sql-key m)))
+  (if (and (not-empty (rest (:dadysql.core/sql m)))
            (empty? (input-key m)))
-    (f/fail (format "Input is missing for %s " (name-key m)))
+    (f/fail (format "Input is missing for %s " (:dadysql.core/name m)))
     m))
 
 
 (defn validate-input-type!
   [m]
-  (let [dml-type (dml-key m)
+  (let [dml-type (:dadaysql.core/dml-key m)
         input (input-key m)
-        sql (sql-key m)]
+        sql (:dadysql.core/sql m)]
     (if (and (not= dml-type dml-insert-key)
              (not-empty (rest sql))
              (not (map? input)))
@@ -39,7 +39,7 @@
 (defn validate-required-params!
   [m]
   (let [input (cc/as-sequential (input-key m))
-        r (-> (f/comp-xf-until (map #(validate-required-params*! (rest (sql-key m)) %)))
+        r (-> (f/comp-xf-until (map #(validate-required-params*! (rest (:dadysql.core/sql m)) %)))
               (transduce conj input))]
     (if (f/failed? r)
       r
@@ -74,7 +74,7 @@
 
 (defn default-proc
   [tm]
-  (let [[sql-str & sql-params] (sql-key tm)
+  (let [[sql-str & sql-params] (:dadysql.core/sql tm)
         input (input-key tm)
         ;todo Need to find type using sql str
         validation nil ; (validation-key tm)
@@ -86,18 +86,18 @@
                    q-str (assoc sql-coll 0 w)]
                (reduce conj q-str p-value)))]
     (->> (reduce rf [sql-str] sql-params)
-         (assoc tm sql-key))))
+         (assoc tm :dadysql.core/sql))))
 
 
 (defn insert-proc
   [tm]
-  (let [sql (sql-key tm)
+  (let [sql (:dadysql.core/sql tm)
         sql-str (reduce (partial update-sql-str "?") sql)]
     (->> (input-key tm)
          (cc/as-sequential)
          (mapv #(cc/select-values %1 (rest sql)))
          (reduce conj [sql-str])
-         (assoc tm sql-key))))
+         (assoc tm :dadysql.core/sql))))
 
 
 
@@ -151,12 +151,12 @@
   [sql-str]
   (let [p (comp (filter not-empty)
                 (map sql-str-emit)
-                (map (fn [v] {sql-key v
-                              dml-key (dml-type v)})))
+                (map (fn [v] {:dadysql.core/sql v
+                              :dadaysql.core/dml-key (dml-type v)})))
         sql (clojure.string/split (clojure.string/trim sql-str) #";")]
     (->> (transduce p conj [] sql)
          (mapv (fn [i m]
-                 (assoc m index i)
+                 (assoc m :dadysql.core/index i)
                  ) (range)))))
 
 
@@ -169,7 +169,7 @@
 
 
 (defn new-sql-key [order coll]
-  (SqlKey. sql-key coll order))
+  (SqlKey. :dadysql.core/sql coll order))
 
 
 (defn new-childs-key []
@@ -185,7 +185,7 @@
 
 (defn batch-process [childs m]
   (let [p (-> (group-by-node-name childs)
-              (get (dml-key m)))]
+              (get (:dadaysql.core/dml-key m)))]
     (-process p m)))
 
 
@@ -198,32 +198,32 @@
   InsertSqlKey
   (-lorder [this] (:corder this))
   (-process-type [_] :input)
-  (-process? [_ m] (= dml-insert-key (dml-key m)))
+  (-process? [_ m] (= dml-insert-key (:dadaysql.core/dml-key m)))
   (-process [_ m]
     (do-insert-proc m))
   UpdateSqlKey
   (-lorder [this] (:corder this))
   (-process-type [_] :input)
-  (-process? [_ m] (= dml-update-key (dml-key m)))
+  (-process? [_ m] (= dml-update-key (:dadaysql.core/dml-key m)))
   (-process [_ m]
     (do-default-proc m))
   SelectSqlKey
   (-lorder [this] (:corder this))
   (-process-type [_] :input)
   (-process? [_ m] (do
-                     (= dml-select-key (dml-key m))))
+                     (= dml-select-key (:dadaysql.core/dml-key m))))
   (-process [_ m]
     (do-default-proc m))
   DeleteSqlKey
   (-lorder [this] (:corder this))
   (-process-type [_] :input)
-  (-process? [_ m] (= dml-delete-key (dml-key m)))
+  (-process? [_ m] (= dml-delete-key (:dadaysql.core/dml-key m)))
   (-process [_ m]
     (do-default-proc m))
   CallSqlKey
   (-lorder [this] (:corder this))
   (-process-type [_] :input)
-  (-process? [_ m] (= dml-call-key (dml-key m)))
+  (-process? [_ m] (= dml-call-key (:dadaysql.core/dml-key m)))
   (-process [_ m]
     (do-default-proc m)))
 

@@ -66,8 +66,8 @@
   "Return commit type if not found return commit-none-key  "
   [tm-coll]
   (let [p (comp
-            (filter #(not= dml-select-key (dml-key %)))
-            (map #(commit-key %))
+            (filter #(not= dml-select-key (:dadaysql.core/dml-key %)))
+            (map #(:dadaysql.core/commit %))
             (map #(or % commit-all-key)))
         commits (into [] p tm-coll)]
     ;(println commits)
@@ -106,9 +106,9 @@
 
 (defn jdbc-handler-single
   [ds tm]
-  (let [dml-type (dml-key tm)
-        sql (sql-key tm)
-        result (result-key tm)]
+  (let [dml-type (:dadaysql.core/dml-key tm)
+        sql (:dadysql.core/sql tm)
+        result (:dadaysql.core/result tm)]
     ;todo Need to move this log from here
     (condp = dml-type
       dml-select-key
@@ -139,7 +139,7 @@
                    exec-time-total-key total
                    exec-time-start-key stm)))
       (catch Exception e
-        (log/error e (sql-key m))
+        (log/error e (:dadysql.core/sql m))
         (-> (f/fail {query-exception-key (.getMessage e)})
             (merge m))))))
 
@@ -148,14 +148,14 @@
   [handler]
   (fn [m]
     (async/go
-      (let [t-v (or (timeout-key m) 2000)
+      (let [t-v (or (:dadaysql.core/timeout m) 2000)
             exec-ch (async/thread (handler m))
             [v rch] (async/alts! [exec-ch (async/timeout t-v)])]
         (if (= rch exec-ch)
           v
           ;; Need to assoc exception here as it returns from here
           (-> {query-exception-key "SQL Execution time out"
-               timeout-key         t-v}
+               :dadaysql.core/timeout         t-v}
               (f/fail)
               (merge m)))))))
 
@@ -220,7 +220,7 @@
 
 (defn sql-executor-node
   [ds tms type]
-  (let [tx (apply hash-map (get-in tms [global-key tx-prop]))
+  (let [tx (apply hash-map (get-in tms [global-key :dadysql.core/tx-prop]))
         f (fn [m-coll] (db-execute m-coll type ds tx))]
     (fn-as-node-processor f :name :sql-executor)))
 

@@ -28,11 +28,11 @@
             (let [[f & r] acc]
               (cond
                 (nil? f) (conj acc v)
-                (string? v) (if (sql-key f)
+                (string? v) (if (:dadysql.core/sql f)
                               acc
                               (->> (clojure.string/split (clojure.string/trim v) #";")
                                    (mapv clojure.string/trim)
-                                   (assoc f sql-key)
+                                   (assoc f :dadysql.core/sql)
                                    (conj r)))
                 :else (conj acc v)))
             ) (list) w))

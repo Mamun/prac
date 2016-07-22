@@ -8,23 +8,23 @@
 (defonce global-key :_global_)
 (defonce module-key :_module_)
 (defonce process-context-key :process-context)
-(defonce reserve-name-key :reserve-name)
-(defonce file-name-key :file-name)
-(defonce file-reload-key :file-reload)
+;(defonce reserve-name-key :reserve-name)
+;(defonce file-name-key :file-name)
+;(defonce file-reload-key :file-reload)
 (defonce ds-key :datasource)
 (defonce ds-conn-key :datasource-conn)
-(defonce tx-prop :tx-prop)
+;(defonce tx-prop :tx-prop)
 
 
-(defonce name-key :name)
-(defonce column-key :column)
+;(defonce name-key :name)
+;(defonce column-key :column)
 (defonce doc-key :doc)
-(defonce model-key :model)
+;(defonce model-key :model)
 (defonce skip-key :skip)
-(defonce timeout-key :timeout)
-(defonce group-key :group)
-(defonce index :index)
-(defonce sql-key :sql)
+;(defonce timeout-key :timeout)
+;(defonce group-key :group)
+;(defonce index :index)
+;(defonce sql-key :sql)
 
 
 ;(def root-meta :meta)
@@ -44,7 +44,7 @@
 (defonce input-key :input)
 
 
-(defonce result-key :result)
+;(defonce result-key :result)
 (defonce result-array-key :array)
 (defonce result-single-key :single)
 
@@ -52,27 +52,27 @@
 ;(def out-type :output-type)
 
 
-(defonce param-key :param)
+;(defonce param-key :param)
 (defonce param-ref-con-key :ref-con)
 (defonce param-ref-key :ref-key)
 (defonce param-ref-fn-key :ref-fn-key)
 (defonce param-ref-gen-key :ref-gen)
 
 
-(defonce param-spec-key :param-spec)
+;(defonce param-spec-key :param-spec)
 #_(defonce validation-type-key :type)
 #_(defonce validation-range-key :range)
 #_(defonce validation-contain-key :contain)
 
 
-(defonce join-key :join)
+;(defonce join-key :join)
 (defonce join-1-1-key :1-1)
 (defonce join-1-n-key :1-n)
 (defonce join-n-1-key :n-1)
 (defonce join-n-n-key :n-n)
 
 
-(defonce dml-key :dml-type)
+;(defonce dml-key :dml-type)
 (defonce dml-select-key :select)
 (defonce dml-insert-key :insert)
 (defonce dml-update-key :update)
@@ -81,7 +81,7 @@
 
 
 
-(defonce commit-key :commit)
+;(defonce commit-key :commit)
 (defonce commit-all-key :all)
 (defonce commit-any-key :any)
 (defonce commit-none-key :none)
@@ -97,6 +97,27 @@
                    map-format array-format value-format})
 (def all-pformat #{nested-map-format map-format})
 
+
+(def namespace-key {:name ::name
+                    :group ::group
+                    :model ::model
+                    :reserve-name ::reserve-name
+                    :file-reload ::file-reload
+                    :tx-prop ::tx-prop
+                    :join ::join
+                    :timeout ::timeout
+                    :skip ::skip
+                    :param ::param
+                    :param-spec ::param-spec
+                    :result ::result
+                    :column ::column
+                    :sql ::sql
+                    :commit ::commit
+                    :dml-type ::dml-type
+                    :index ::index
+
+                    :extend ::extend
+                    })
 
 
 
@@ -123,6 +144,8 @@
   (s/with-gen (s/or :one keyword? :many (s/coll-of keyword? :kind vector? :distinct true))
               (fn [] (s/gen #{global-key :get-dept-list :get-dept-by-ids :get-employee-list :get-meeting-list :get-employee-meeting-list}))))
 
+(s/def ::index int?)
+
 
 (s/def ::sql
   (s/with-gen (s/every string? :kind vector?)
@@ -130,6 +153,9 @@
                               "select * from employee where id = :id;\nselect d.* from department d, employee e where e.id=:id and d.id = e.dept_id;\nselect ed.* from employee_detail ed where ed.employee_id=:id;\nselect m.*, em.employee_id from meeting m, employee_meeting em where em.employee_id=:id and em.meeting_id = m.meeting_id;\n"
                               "select * from meeting where  meeting_id = :id;\nselect e.*, em.employee_id from employee e, employee_meeting em where em.meeting_id = :id and em.employee_id = e.id;\n"
                               "insert into department (id, transaction_id, dept_name) values (:id, :transaction_id, :dept_name);\nupdate department set dept_name=:dept_name, transaction_id=:next_transaction_id  where transaction_id=:transaction_id and id=:id;\ndelete from department where id in (:id);\n"}))))
+
+(s/def ::dml-type any?)
+
 
 (s/def ::model
   (s/with-gen (s/or :one keyword? :many (s/coll-of keyword? :kind vector?))
@@ -199,7 +225,7 @@
                          [:name param-ref-gen-key :gen-name]}))))
 
 
-(s/def ::params
+(s/def ::param
   (clojure.spec/*
     (clojure.spec/alt
       :ref-con ::param-ref-con
@@ -236,7 +262,7 @@
 
 
 
-(s/def ::common (s/keys :opt-un [::timeout ::column ::result ::params ::param-spec]))
+(s/def ::common (s/keys :opt-un [::timeout ::column ::result ::param ::param-spec]))
 
 
 (s/def ::extend
@@ -254,6 +280,7 @@
 
 
 (s/def ::compiler-input-spec (clojure.spec/cat :global (s/? ::global) :module (s/* ::module)))
+
 
 
 
@@ -320,8 +347,7 @@
             (do
               (println k v)
               [(or (k rm) k) v]))]
-    (into {} (map f m))
-    ))
+    (into {} (map f m))))
 
 
 
@@ -329,7 +355,14 @@
 
 (comment
 
-  (replace-mk {:name 1} {:name ::name})
+  #_(get
+    (clojure.set/rename-keys {:name 1} {:name ::name})
+    ::name)
+
+  (replace-mk {:name 1} {:name ::name1})
+
+  #_(::name
+    (assoc {} ::name 1))
 
   (into {} [[:name 2]])
 

@@ -34,14 +34,6 @@
               ) true v)))
 
 
-#_(defn default-global-spec
-  []
-  `{(schema.core/required-key ~name-key)         schema.core/Keyword
-    (schema.core/optional-key ~tx-prop)          schema.core/Any #_(s/pred check-tx-proc? 'check-tx-proc)
-    (schema.core/optional-key ~file-name-key)    schema.core/Str
-    (schema.core/optional-key ~file-reload-key)  boolean
-    (schema.core/optional-key ~reserve-name-key) #{schema.core/Keyword}
-    (schema.core/optional-key ~ds-key)           schema.core/Any})
 
 
 

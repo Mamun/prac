@@ -72,7 +72,7 @@
                             {:department {:id [107]}})]
         ;  (clojure.pprint/pprint pc)
         ;(clojure.pprint/pprint actual-result)
-        (is (= (get-in actual-result [0 sql-key])
+        (is (= (get-in actual-result [0 :dadysql.core/sql])
                expected-result))
         ))
     )

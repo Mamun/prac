@@ -27,26 +27,26 @@
           han (-> handler
                   (warp-map-output)
                   (warp-async-go))
-          m-coll [{sql-key "select * from dual"}
-                  {sql-key "select * from dual1 "}
-                  {sql-key "select * from dual1 "}]
+          m-coll [{:dadysql.core/sql "select * from dual"}
+                  {:dadysql.core/sql "select * from dual1 "}
+                  {:dadysql.core/sql "select * from dual1 "}]
           result (apply-handler-parallel han m-coll)]
       (is (not (empty? result)))))
   (testing "test warp-parallel-coll"
     (let [handler (fn [m]
                     (do
-                      (when (= :b (name-key m))
+                      (when (= :b (:dadysql.core/name m))
                         (Thread/sleep 3000))
                       (assoc m output-key {:a 3})))
           han (-> handler
                   (warp-map-output)
                   (warp-async-go))
-          m-coll [{sql-key  "select * from dual"
-                   name-key :a}
-                  {sql-key  "select * from dual1 "
-                   name-key :b}
-                  {sql-key  "select * from dual1 "
-                   name-key :c}]
+          m-coll [{:dadysql.core/sql  "select * from dual"
+                   :dadysql.core/name :a}
+                  {:dadysql.core/sql  "select * from dual1 "
+                   :dadysql.core/name :b}
+                  {:dadysql.core/sql  "select * from dual1 "
+                   :dadysql.core/name :c}]
           result (apply-handler-parallel han m-coll)]
       (is (failed? (get-in result [2]))))))
 
@@ -59,12 +59,12 @@
           hand (-> handler
                    (warp-map-output)
                    (warp-async-go))
-          coll [{sql-key  "select * from dual"
-                 name-key :a}
-                {sql-key  "select * from dual1 "
-                 name-key :b}
-                {sql-key  "select * from dual1 "
-                 name-key :c}]
+          coll [{:dadysql.core/sql  "select * from dual"
+                 :dadysql.core/name :a}
+                {:dadysql.core/sql  "select * from dual1 "
+                 :dadysql.core/name :b}
+                {:dadysql.core/sql  "select * from dual1 "
+                 :dadysql.core/name :c}]
           ;actual-result (apply-handler-until-fail hand coll)
           ]
       ;(clojure.pprint/pprint actual-result)
@@ -80,7 +80,7 @@
 
 (deftest commit-type-test
   (testing "test commit-type with one dml type "
-    (let [data [{dml-key     dml-select-key
+    (let [data [{:dadaysql.core/dml-key     dml-select-key
                  commit-type commit-all-key}]
           actual-result (commit-type data)]
       (is (= actual-result
@@ -98,8 +98,8 @@
              commit-all-key))
       ))
   (testing "test commit-type with all "
-    (let [data [{commit-key commit-all-key}
-                {commit-key commit-none-key}]
+    (let [data [{:dadaysql.core/commit commit-all-key}
+                {:dadaysql.core/commit commit-none-key}]
           actual-result (commit-type data)]
       (is (= actual-result
              commit-none-key)))))

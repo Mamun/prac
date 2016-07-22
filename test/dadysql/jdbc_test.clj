@@ -7,16 +7,16 @@
 
 (deftest has-dml-type?-test
   (testing "test has-dml-type? "
-    (let [data {dml-key dml-select-key}]
+    (let [data {:dadaysql.core/dml-key dml-select-key}]
       (is (not (nil? (has-dml-type? data)))))))
 
 
 (deftest get-dml-test
   (testing "get-dml test "
-    (let [tms {:get-dml     {sql-key ["select * from tab where tab = :tab" :tab]
-                             dml-key dml-select-key}
-               :create-dual {sql-key ["insert into dual value (a )"]
-                             dml-key dml-select-key}}
+    (let [tms {:get-dml     {:dadysql.core/sql ["select * from tab where tab = :tab" :tab]
+                             :dadaysql.core/dml-key dml-select-key}
+               :create-dual {:dadysql.core/sql ["insert into dual value (a )"]
+                             :dadaysql.core/dml-key dml-select-key}}
           actual-result (get-dml tms)
           expected-result ["select * from tab where tab = ?"]]
       (is (= expected-result
@@ -37,12 +37,12 @@
 
         (are [e a]  (= e a)
           ;get-dept-by-id
-          :department (get-in w [:get-dept-by-id model-key])
-          dml-select-key (get-in w [:get-dept-by-id dml-key])
-          3000 (get-in w [:get-dept-by-id timeout-key])
-          ;["select * from department where id = :id " :id] (get-in w [:get-dept-by-id sql-key])
+          :department (get-in w [:get-dept-by-id :dadaysql.core/model])
+          dml-select-key (get-in w [:get-dept-by-id :dadaysql.core/dml-key])
+          3000 (get-in w [:get-dept-by-id :dadaysql.core/timeout])
+          ;["select * from department where id = :id " :id] (get-in w [:get-dept-by-id :dadysql.core/sql])
        ;   [[:id :type (resolve 'int?) "Id will be Long "]] (get-in w [:get-dept-by-id validation-key])
-          [[:department :id :1-n :employee :dept_id]] (get-in w [:get-dept-by-id join-key])
+          [[:department :id :1-n :employee :dept_id]] (get-in w [:get-dept-by-id :dadysql.core/join])
 
           #_[[:id :type #'clojure.core/vector? "Id will be sequence"]
            [:id :contain #'clojure.core/int? "Id contain will be Long "]]

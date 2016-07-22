@@ -102,7 +102,7 @@
 
   (-> (new-root-node)
       ;(select-module-node-processor)
-      (remove-node [param-key])
+      (remove-node [:dadysql.core/param])
       )
 
   #_(->> (new-root-node)
@@ -133,10 +133,10 @@
 
   (let [app-proc (new-global-key-node (new-leaf-node-coll))
         sch-value {doc-key         "hello"
-                   file-name-key   "check.tx"
-                   name-key        :hello
-                   extend-meta-key {:hello {param-key [[:Next_transaction_id param-ref-key :transaction_id]]}}
-                   param-key       [[:Next_transaction_id param-ref-key :transaction_id]]
+                   :dadysql.core/file-name   "check.tx"
+                   :dadysql.core/name        :hello
+                   extend-meta-key {:hello {:dadysql.core/param [[:Next_transaction_id param-ref-key :transaction_id]]}}
+                   :dadysql.core/param       [[:Next_transaction_id param-ref-key :transaction_id]]
                    }]
     (->> sch-value
          (s/validate (spec app-proc))
