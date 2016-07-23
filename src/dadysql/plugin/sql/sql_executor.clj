@@ -66,8 +66,8 @@
   "Return commit type if not found return commit-none-key  "
   [tm-coll]
   (let [p (comp
-            (filter #(not= dml-select-key (:dadaysql.core/dml-key %)))
-            (map #(:dadaysql.core/commit %))
+            (filter #(not= dml-select-key (:dadysql.core/dml-key %)))
+            (map #(:dadysql.core/commit %))
             (map #(or % commit-all-key)))
         commits (into [] p tm-coll)]
     ;(println commits)
@@ -106,9 +106,9 @@
 
 (defn jdbc-handler-single
   [ds tm]
-  (let [dml-type (:dadaysql.core/dml-key tm)
+  (let [dml-type (:dadysql.core/dml-key tm)
         sql (:dadysql.core/sql tm)
-        result (:dadaysql.core/result tm)]
+        result (:dadysql.core/result tm)]
     ;todo Need to move this log from here
     (condp = dml-type
       dml-select-key
@@ -148,14 +148,14 @@
   [handler]
   (fn [m]
     (async/go
-      (let [t-v (or (:dadaysql.core/timeout m) 2000)
+      (let [t-v (or (:dadysql.core/timeout m) 2000)
             exec-ch (async/thread (handler m))
             [v rch] (async/alts! [exec-ch (async/timeout t-v)])]
         (if (= rch exec-ch)
           v
           ;; Need to assoc exception here as it returns from here
           (-> {query-exception-key "SQL Execution time out"
-               :dadaysql.core/timeout         t-v}
+               :dadysql.core/timeout         t-v}
               (f/fail)
               (merge m)))))))
 

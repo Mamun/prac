@@ -92,17 +92,17 @@
 (defn apply-validation! [tm-coll]
   (reduce (fn [acc v]
             (if-let [vali (:dadysql.core/param-spec v)]
-              (if (s/valid? vali (input-key v))
+              (if (coll? (input-key v))
+
                 (conj acc v)
-                (reduced (f/fail (s/explain-data vali (input-key v))))
-                ;(println "apply validation is called" vali (input-key v))
-                )
+                (if (s/valid? vali (input-key v))
+                  (conj acc v)
+                  (reduced (f/fail (s/explain-data vali (input-key v))))
+                  ;(println "apply validation is called" vali (input-key v))
+                  ))
               (conj acc v)
               )
             ) (empty tm-coll) tm-coll )
-
-
-
   )
 
 
@@ -148,7 +148,7 @@
     (-> m
         (assoc :dadysql.core/model (:dadysql.core/name m))
         (assoc :dadysql.core/result #{result-single-key result-array-key})
-        (assoc :dadysql.core/dml-type dml-select-key))
+        (assoc :dadysql.core/dml-key dml-select-key))
     m))
 
 

@@ -7,16 +7,16 @@
 
 (deftest has-dml-type?-test
   (testing "test has-dml-type? "
-    (let [data {:dadysql.core/dml-type dml-select-key}]
+    (let [data {:dadysql.core/dml-key dml-select-key}]
       (is (not (nil? (has-dml-type? data)))))))
 
 
 (deftest get-dml-test
   (testing "get-dml test "
     (let [tms {:get-dml     {:dadysql.core/sql ["select * from tab where tab = :tab" :tab]
-                             :dadysql.core/dml-type dml-select-key}
+                             :dadysql.core/dml-key dml-select-key}
                :create-dual {:dadysql.core/sql ["insert into dual value (a )"]
-                             :dadysql.core/dml-type dml-select-key}}
+                             :dadysql.core/dml-key dml-select-key}}
           actual-result (get-dml tms)
           expected-result ["select * from tab where tab = ?"]]
       (is (= expected-result
@@ -42,7 +42,7 @@
         (are [e a]  (= e a)
           ;get-dept-by-id
           :department (get-in w [:get-dept-by-id :dadysql.core/model])
-          dml-select-key (get-in w [:get-dept-by-id :dadysql.core/dml-type])
+          dml-select-key (get-in w [:get-dept-by-id :dadysql.core/dml-key])
           2000 (get-in w [:get-dept-by-id :dadysql.core/timeout])
           ;["select * from department where id = :id " :id] (get-in w [:get-dept-by-id :dadysql.core/sql])
        ;   [[:id :type (resolve 'int?) "Id will be Long "]] (get-in w [:get-dept-by-id validation-key])

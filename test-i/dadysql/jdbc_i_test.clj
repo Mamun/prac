@@ -184,6 +184,8 @@
 
 (comment
 
+  (run-tests)
+
   (:delete-dept @td/tms)
 
   (pull @td/ds @td/tms

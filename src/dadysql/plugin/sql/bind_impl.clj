@@ -16,7 +16,7 @@
 
 (defn validate-input-type!
   [m]
-  (let [dml-type (:dadysql.core/dml-type m)
+  (let [dml-type (:dadysql.core/dml-key m)
         input (input-key m)
         sql (:dadysql.core/sql m)]
     (if (and (not= dml-type dml-insert-key)
@@ -185,7 +185,7 @@
 
 (defn batch-process [childs m]
   (let [p (-> (group-by-node-name childs)
-              (get (:dadysql.core/dml-typw m)))]
+              (get (:dadysql.core/dml-key m)))]
     (-process p m)))
 
 

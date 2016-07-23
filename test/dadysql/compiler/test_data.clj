@@ -30,7 +30,7 @@
                               :transaction_id
                               :dept_name],
     :dadysql.core/model      :department,
-    :dadysql.core/dml-type   :insert}
+    :dadysql.core/dml-key   :insert}
    {:dadysql.core/timeout    1000,
     :dadysql.core/param-spec :tie-edn2/get-dept-by-id,
     :dadysql.core/param
@@ -47,14 +47,14 @@
                               :transaction_id
                               :id],
     :dadysql.core/model      :department,
-    :dadysql.core/dml-type   :update}
+    :dadysql.core/dml-key   :update}
    {:dadysql.core/timeout    1000,
     :dadysql.core/param-spec :tie-edn2/get-dept-by-id,
     :dadysql.core/index      2,
     :dadysql.core/name       :delete-dept,
     :dadysql.core/sql        ["delete from department where id in (:id)" :id],
     :dadysql.core/model      :department,
-    :dadysql.core/dml-type   :delete}]
+    :dadysql.core/dml-key   :delete}]
 
   )
 
@@ -111,7 +111,7 @@
                             :limit
                             :offset],
     :dadysql.core/model    :department,
-    :dadysql.core/dml-type :select},
+    :dadysql.core/dml-key :select},
    :get-dept-by-ids
    {:dadysql.core/index      1,
     :dadysql.core/name       :get-dept-by-ids,
@@ -120,7 +120,7 @@
     :dadysql.core/result     #{:array},
     :dadysql.core/timeout    5000,
     :dadysql.core/param-spec :tie-edn2/get-dept-by-id,
-    :dadysql.core/dml-type   :select,
+    :dadysql.core/dml-key   :select,
     :dadysql.core/join       [[:department :id :1-n :employee :dept_id]],
     :dadysql.core/model      :department},
    :get-employee-list
@@ -137,7 +137,7 @@
                             :limit
                             :offset],
     :dadysql.core/model    :employee,
-    :dadysql.core/dml-type :select},
+    :dadysql.core/dml-key :select},
    :get-meeting-list
    {:dadysql.core/timeout  5000,
     :dadysql.core/result   #{:array},
@@ -148,7 +148,7 @@
     :dadysql.core/sql
                            ["select * from meeting limit :limit offset :offset" :limit :offset],
     :dadysql.core/model    :meeting,
-    :dadysql.core/dml-type :select},
+    :dadysql.core/dml-key :select},
    :get-employee-meeting-list
    {:dadysql.core/timeout  5000,
     :dadysql.core/result   #{:array},
@@ -160,7 +160,7 @@
                             :limit
                             :offset],
     :dadysql.core/model    :employee-meeting,
-    :dadysql.core/dml-type :select}})
+    :dadysql.core/dml-key :select}})
 
 
 

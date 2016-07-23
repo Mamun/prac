@@ -5,6 +5,12 @@
             ))
 
 
+(comment
+
+  (run-tests)
+
+  )
+
 (deftest get-source-relational-key-value-test
   (testing "test get-relational-key-value"
     (let [join [[:tab :id :1-n :tab2 :tab-id]
@@ -331,7 +337,7 @@
 (deftest group-by-join-src-test
   (testing "test group-by-join-src "
     (let [v [[:tab :id :1-n :tab1 :tab-id]]
-          expected-result {:tab {:join [[:tab :id :1-n :tab1 :tab-id]]}}
+          expected-result {:tab {:dadysql.core/join [[:tab :id :1-n :tab1 :tab-id]]}}
           actual-result (group-by-join-src v)]
       (is (= actual-result
              expected-result)))))

@@ -94,7 +94,7 @@
 
 (defn do-skip-for-dml-type
   [m]
-  (condp = (:dadysql.core/dml-type m)
+  (condp = (:dadysql.core/dml-key m)
     dml-select-key m
     dml-call-key (apply dissoc m skip-key-for-call)
     (apply dissoc m skip-key-for-others)))
@@ -118,7 +118,7 @@
 
 (defn compiler-emit [m]
   (-> m
-      (assoc :dadysql.core/dml-type (u/dml-type (:dadysql.core/sql m)))
+      (assoc :dadysql.core/dml-key (u/dml-type (:dadysql.core/sql m)))
       (update-in [:dadysql.core/sql] u/sql-str-emit)
       (cc/update-if-contains [:dadysql.core/param] #(mapv u/param-emit %))))
 
