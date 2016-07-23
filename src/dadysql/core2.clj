@@ -131,7 +131,7 @@
                           (j/do-disjoin (get-in tm-coll [0 :dadysql.core/join ])))]
       (if (f/failed? input)
         input
-        (-> (mapv (fn [m] (assoc m input-key ((:dadaysql.core/model m) input))) tm-coll)
+        (-> (mapv (fn [m] (assoc m input-key ((:dadysql.core/model m) input))) tm-coll)
             (do-node-process n-processor :input)
             (apply-validation!)
             (handler input))))))
@@ -141,14 +141,14 @@
   [format m]
   (condp = format
     map-format
-    (dissoc m :dadaysql.core/result)
+    (dissoc m :dadysql.core/result)
     array-format
-    (assoc m :dadaysql.core/result #{result-array-key})
+    (assoc m :dadysql.core/result #{result-array-key})
     value-format
     (-> m
-        (assoc :dadaysql.core/model (:dadysql.core/name m))
-        (assoc :dadaysql.core/result #{result-single-key result-array-key})
-        (assoc :dadaysql.core/dml-key dml-select-key))
+        (assoc :dadysql.core/model (:dadysql.core/name m))
+        (assoc :dadysql.core/result #{result-single-key result-array-key})
+        (assoc :dadysql.core/dml-type dml-select-key))
     m))
 
 
@@ -160,8 +160,8 @@
 (defn into-model-map
   [v]
   (if (f/failed? v)
-    (hash-map (:dadaysql.core/model v) v)
-    (hash-map (:dadaysql.core/model v)
+    (hash-map (:dadysql.core/model v) v)
+    (hash-map (:dadysql.core/model v)
               (output-key v))))
 
 

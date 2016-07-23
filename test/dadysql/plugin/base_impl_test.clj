@@ -135,7 +135,7 @@
         sch-value {doc-key         "hello"
                    :dadysql.core/file-name   "check.tx"
                    :dadysql.core/name        :hello
-                   extend-meta-key {:hello {:dadysql.core/param [[:Next_transaction_id param-ref-key :transaction_id]]}}
+                   :dadysql.core/extend {:hello {:dadysql.core/param [[:Next_transaction_id param-ref-key :transaction_id]]}}
                    :dadysql.core/param       [[:Next_transaction_id param-ref-key :transaction_id]]
                    }]
     (->> sch-value

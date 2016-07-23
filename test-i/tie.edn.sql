@@ -4,7 +4,7 @@
  :file-reload true
  :timeout 1000
  :reserve-name #{:create-ddl :drop-ddl :init-data}
- :tx-prop [:isolation :serializable :read-only? true]
+ :tx-prop [:isolation :serializable :read-only? false]
  :join [[:department :id :1-n :employee :dept_id]
         [:employee :id :1-1 :employee-detail :employee_id]
         [:employee :id :n-n :meeting :meeting_id [:employee-meeting :employee_id :meeting_id]]]

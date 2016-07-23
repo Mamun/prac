@@ -16,7 +16,7 @@
 
 (defn validate-input-type!
   [m]
-  (let [dml-type (:dadaysql.core/dml-key m)
+  (let [dml-type (:dadysql.core/dml-type m)
         input (input-key m)
         sql (:dadysql.core/sql m)]
     (if (and (not= dml-type dml-insert-key)
@@ -152,7 +152,7 @@
   (let [p (comp (filter not-empty)
                 (map sql-str-emit)
                 (map (fn [v] {:dadysql.core/sql v
-                              :dadaysql.core/dml-key (dml-type v)})))
+                              :dadysql.core/dml-key (dml-type v)})))
         sql (clojure.string/split (clojure.string/trim sql-str) #";")]
     (->> (transduce p conj [] sql)
          (mapv (fn [i m]
@@ -185,7 +185,7 @@
 
 (defn batch-process [childs m]
   (let [p (-> (group-by-node-name childs)
-              (get (:dadaysql.core/dml-key m)))]
+              (get (:dadysql.core/dml-typw m)))]
     (-process p m)))
 
 
@@ -198,32 +198,32 @@
   InsertSqlKey
   (-lorder [this] (:corder this))
   (-process-type [_] :input)
-  (-process? [_ m] (= dml-insert-key (:dadaysql.core/dml-key m)))
+  (-process? [_ m] (= dml-insert-key (:dadysql.core/dml-key m)))
   (-process [_ m]
     (do-insert-proc m))
   UpdateSqlKey
   (-lorder [this] (:corder this))
   (-process-type [_] :input)
-  (-process? [_ m] (= dml-update-key (:dadaysql.core/dml-key m)))
+  (-process? [_ m] (= dml-update-key (:dadysql.core/dml-key m)))
   (-process [_ m]
     (do-default-proc m))
   SelectSqlKey
   (-lorder [this] (:corder this))
   (-process-type [_] :input)
   (-process? [_ m] (do
-                     (= dml-select-key (:dadaysql.core/dml-key m))))
+                     (= dml-select-key (:dadysql.core/dml-key m))))
   (-process [_ m]
     (do-default-proc m))
   DeleteSqlKey
   (-lorder [this] (:corder this))
   (-process-type [_] :input)
-  (-process? [_ m] (= dml-delete-key (:dadaysql.core/dml-key m)))
+  (-process? [_ m] (= dml-delete-key (:dadysql.core/dml-key m)))
   (-process [_ m]
     (do-default-proc m))
   CallSqlKey
   (-lorder [this] (:corder this))
   (-process-type [_] :input)
-  (-process? [_ m] (= dml-call-key (:dadaysql.core/dml-key m)))
+  (-process? [_ m] (= dml-call-key (:dadysql.core/dml-key m)))
   (-process [_ m]
     (do-default-proc m)))
 

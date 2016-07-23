@@ -130,7 +130,7 @@
 
 
 (defn has-dml-type? [m-map]
-  (let [dml (:dadysql.core/dml-key m-map)]
+  (let [dml (:dadysql.core/dml-type m-map)]
     (or
       (= tc/dml-update-key dml)
       (= tc/dml-call-key dml)

@@ -16,7 +16,7 @@
 
 #_(defn new-extend-key-node
   ([leaf-node-coll ]
-   (ExtendKey. extend-meta-key leaf-node-coll 0)))
+   (ExtendKey. :dadysql.core/extend leaf-node-coll 0)))
 
 
 #_(defn check-tx-proc?
@@ -64,7 +64,7 @@
   (-spec [this]
     (let [r `{(schema.core/optional-key ~model-key) schema.core/Keyword}
           w (merge-compiler-spec r (:coll this))]
-      `{(schema.core/optional-key ~extend-meta-key)
+      `{(schema.core/optional-key ~:dadysql.core/extend)
         {schema.core/Keyword ~w}}))
   (-emit [this v-map]
     (->> (keys v-map)

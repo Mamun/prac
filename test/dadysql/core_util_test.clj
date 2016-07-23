@@ -46,16 +46,16 @@
 (deftest validate-model!-test
   (testing "test validate-model! with success "
     (let [data [{:dadysql.core/sql   "select * from dual "
-                 :dadaysql.core/model :DUEL}
+                 :dadysql.core/model :DUEL}
                 {:dadysql.core/sql   "select * from dual "
-                 :dadaysql.core/model :DUEL2}]
+                 :dadysql.core/model :DUEL2}]
           acutal-result (validate-model! data)]
       (is (not (failed? acutal-result)))))
   (testing "test validate-model! with success "
     (let [data [{:dadysql.core/sql   "select * from dual "
-                 :dadaysql.core/model :DUEL}
+                 :dadysql.core/model :DUEL}
                 {:dadysql.core/sql   "select * from dual "
-                 :dadaysql.core/model :DUEL}]
+                 :dadysql.core/model :DUEL}]
           acutal-result (validate-model! data)]
       (is (failed? acutal-result)))))
 
@@ -66,17 +66,18 @@
 (deftest filter-join-key-test
   (testing "test filter-join-key "
     (let [data [{:dadysql.core/sql   "select * from dual "
-                 :dadaysql.core/model :dual
+                 :dadysql.core/model :dual
                  :dadysql.core/join  [[:dual :id :1-n :dual2 :tab-id]
                             [:dual :id :1-n :tab3 :tab-id]]}
                 {:dadysql.core/sql   "select * from dual "
-                 :dadaysql.core/model :dual2
+                 :dadysql.core/model :dual2
                  :dadysql.core/join  [[:dual :id :1-n :tab2 :tab-id]
                             [:dual :id :1-n :tab3 :tab-id]]}]
-          expected-result [{:sql   "select * from dual ",
-                            :model :dual,
-                            :join  [[:dual :id :1-n :dual2 :tab-id]]}
-                           {:sql "select * from dual ", :model :dual2, :join []}]
+          expected-result [{:dadysql.core/sql   "select * from dual ",
+                            :dadysql.core/model :dual,
+                            :dadysql.core/join  [[:dual :id :1-n :dual2 :tab-id]]}
+                           {:dadysql.core/sql "select * from dual ",
+                            :dadysql.core/model :dual2, :dadysql.core/join []}]
           actual-result (filter-join-key data)]
       (is (= expected-result
              actual-result)))))
@@ -87,10 +88,10 @@
 
 (deftest is-reserve?-test
   (testing "test is-reserve? "
-    (let [data {global-key {:dadaysql.core/reserve-name #{:a :b}}}]
+    (let [data {global-key {:dadysql.core/reserve-name #{:a :b}}}]
       (is (is-reserve? data [:a]))))
   (testing "test is-reserve?  "
-    (let [data {global-key {:dadaysql.core/reserve-name #{:a :b}}}]
+    (let [data {global-key {:dadysql.core/reserve-name #{:a :b}}}]
       (is (not (is-reserve? data [:c]))))))
 
 ;(is-reserve?-test)
@@ -110,4 +111,8 @@
 
 ;(commit?-test)
 
-;(run-tests)
+(comment
+
+  (run-tests)
+  )
+;

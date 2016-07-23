@@ -28,9 +28,9 @@
 
 
 ;(def root-meta :meta)
-(defonce extend-meta-key :extend)
+;(defonce :dadysql.core/extend :extend)
 
-;(def meta-with-extend #{root-meta extend-meta-key})
+;(def meta-with-extend #{root-meta :dadysql.core/extend})
 
 (def nested-map-format :nested)
 (def nested-array-format :nested-array)

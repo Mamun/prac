@@ -24,7 +24,7 @@
 
 
 (defn validate-name-model! [coll]
-  (let [i-coll (->> (mapv (juxt :dadysql.core/name :dadaysql.core/model) coll)
+  (let [i-coll (->> (mapv (juxt :dadysql.core/name :dadysql.core/model) coll)
                     (filter (fn [v] (every? vector? v))))]
     (doseq [[name-coll model-coll] i-coll]
       (let [t-iden (count name-coll)
@@ -48,7 +48,7 @@
 
 
 (defn validate-extend-key! [coll]
-  (let [i-coll (->> (mapv (juxt :dadysql.core/name extend-meta-key) coll)
+  (let [i-coll (->> (mapv (juxt :dadysql.core/name :dadysql.core/extend) coll)
                     (mapv (fn [[n e]]
                             (let [n (if (vector? n)
                                       (into #{} n)
@@ -85,7 +85,7 @@
 
 
 (defn validate-join-key! [coll]
-  (let [i-coll (->> (mapv (juxt :dadysql.core/join :dadaysql.core/model) coll)
+  (let [i-coll (->> (mapv (juxt :dadysql.core/join :dadysql.core/model) coll)
 
                     )]
     (println i-coll)
@@ -144,33 +144,33 @@
   (cond
 
     (and (keyword? (:dadysql.core/name m))
-         (keyword? (:dadaysql.core/model m)))
+         (keyword? (:dadysql.core/model m)))
     (do
       [(-> m
            (assoc :dadysql.core/index 0)
            (update-in [:dadysql.core/sql] first))])
 
     (and (sequential? (:dadysql.core/name m))
-         (sequential? (:dadaysql.core/model m)))
+         (sequential? (:dadysql.core/model m)))
     (do
       (mapv (fn [i s n m]
               {:dadysql.core/name  n
                :dadysql.core/index     i
                :dadysql.core/sql   s
-               :dadaysql.core/model m})
+               :dadysql.core/model m})
             (range)
             (get-in m [:dadysql.core/sql])
             (get-in m [:dadysql.core/name])
-            (get-in m [:dadaysql.core/model])))
+            (get-in m [:dadysql.core/model])))
 
     (and (sequential? (:dadysql.core/name m))
-         (keyword? (:dadaysql.core/model m)))
+         (keyword? (:dadysql.core/model m)))
     (do
       (mapv (fn [i n s]
               {:dadysql.core/index     i
                :dadysql.core/name  n
                :dadysql.core/sql   s
-               :dadaysql.core/model (get-in m [:dadaysql.core/model])})
+               :dadysql.core/model (get-in m [:dadysql.core/model])})
             (range)
             (get-in m [:dadysql.core/name])
             (get-in m [:dadysql.core/sql])))
@@ -225,7 +225,7 @@
   (->> join-coll
        (group-by first)
        (map (fn [[k coll]]
-              {k {:join coll}}))
+              {k {:dadysql.core/join coll}}))
        (into {})))
 
 

@@ -33,11 +33,11 @@
 (deftest params-spec-test
   (testing "test params spec "
     (let [v [[:next_transaction_id :ref-fn-key 'inc :transaction_id]]
-          r (s/conform :dadysql.core/params v)]
+          r (s/conform :dadysql.core/param v)]
       (is (not= :clojure.spec/invalid r))))
   (testing "test params spec for invalid case "
     (let [v [[:next_transaction_id :ref-fn-key 'inc "transaction_id"]]
-          r (s/conform :dadysql.core/params v)]
+          r (s/conform :dadysql.core/param v)]
       (is (= :clojure.spec/invalid r)))))
 
 #_(gen/sample (gen/fmap (fn [w]

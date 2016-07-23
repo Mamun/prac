@@ -7,20 +7,22 @@
 
 (deftest has-dml-type?-test
   (testing "test has-dml-type? "
-    (let [data {:dadaysql.core/dml-key dml-select-key}]
+    (let [data {:dadysql.core/dml-type dml-select-key}]
       (is (not (nil? (has-dml-type? data)))))))
 
 
 (deftest get-dml-test
   (testing "get-dml test "
     (let [tms {:get-dml     {:dadysql.core/sql ["select * from tab where tab = :tab" :tab]
-                             :dadaysql.core/dml-key dml-select-key}
+                             :dadysql.core/dml-type dml-select-key}
                :create-dual {:dadysql.core/sql ["insert into dual value (a )"]
-                             :dadaysql.core/dml-key dml-select-key}}
+                             :dadysql.core/dml-type dml-select-key}}
           actual-result (get-dml tms)
           expected-result ["select * from tab where tab = ?"]]
       (is (= expected-result
              actual-result)))))
+
+;(get-dml-test)
 
 
 ;(var int?)
@@ -29,17 +31,19 @@
 
   (testing "test read file "
     (let [w (read-file "tie.edn.sql")]
+     ; (clojure.pprint/pprint (:get-meeting-by-id w))
+
       (do
         (are [e a] (= e a)
-          :gen-dept (get-in w [:gen-dept :model]))
+          :gen-dept (get-in w [:gen-dept ::dadysql.core/model]))
 
        ; (clojure.pprint/pprint (get-in w [:get-dept-by-id validation-key]))
 
         (are [e a]  (= e a)
           ;get-dept-by-id
-          :department (get-in w [:get-dept-by-id :dadaysql.core/model])
-          dml-select-key (get-in w [:get-dept-by-id :dadaysql.core/dml-key])
-          3000 (get-in w [:get-dept-by-id :dadaysql.core/timeout])
+          :department (get-in w [:get-dept-by-id :dadysql.core/model])
+          dml-select-key (get-in w [:get-dept-by-id :dadysql.core/dml-type])
+          2000 (get-in w [:get-dept-by-id :dadysql.core/timeout])
           ;["select * from department where id = :id " :id] (get-in w [:get-dept-by-id :dadysql.core/sql])
        ;   [[:id :type (resolve 'int?) "Id will be Long "]] (get-in w [:get-dept-by-id validation-key])
           [[:department :id :1-n :employee :dept_id]] (get-in w [:get-dept-by-id :dadysql.core/join])
@@ -70,26 +74,29 @@
             :meeting
             :meeting_id
             [:employee-meeting :employee_id :meeting_id]]
-           [:employee :dept_id :n-1 :department :id]] (get-in w [:get-dept-employee :join]))
+           [:employee :dept_id :n-1 :department :id]] (get-in w [:get-dept-employee :dadysql.core/join]))
 
         (are [expected actual]
           (= expected actual)
 
-          :meeting (get-in w [:create-meeting :model])
+          :meeting (get-in w [:create-meeting :dadysql.core/model])
           [[:meeting
             :meeting_id
             :n-n
             :employee
             :id
-            [:employee-meeting :meeting_id :employee_id]]] (get-in w [:get-meeting-by-id :join]))))))
+            [:employee-meeting :meeting_id :employee_id]]] (get-in w [:get-meeting-by-id :dadysql.core/join])))))
+  )
 
+
+;(clojure.pprint/pprint (read-file "tie.edn.sql"))
 
 #_(deftest read-file-test2
   (ts))
 
-;(read-file-test)
+(read-file-test)
 
-;(run-tests)
+
 
 ;((resolve 'int?) "sdf")
 
@@ -102,3 +109,8 @@
 
 
 ;(check-test)
+
+(comment
+
+  (run-tests)
+  )

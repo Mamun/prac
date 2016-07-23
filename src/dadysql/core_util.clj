@@ -21,7 +21,7 @@
 
 (defn validate-model!
   [tm-coll]
-  (let [model-coll (mapv :dadaysql.core/model tm-coll)
+  (let [model-coll (mapv :dadysql.core/model tm-coll)
         m (distinct model-coll)]
     (if (not= (count model-coll)
               (count m))
@@ -32,9 +32,9 @@
 
 (defn filter-join-key
   [coll]
-  (let [model-key-coll (mapv :dadaysql.core/model coll)
+  (let [model-key-coll (mapv :dadysql.core/model coll)
         p (comp
-            (cc/xf-skip-type #(= dml-call-key (:dadaysql.core/dml-key %)))
+            (cc/xf-skip-type #(= dml-call-key (:dadysql.core/dml-type %)))
             (map #(update-in % [:dadysql.core/join] j/filter-join-key-coll model-key-coll)))]
     (transduce p conj [] coll)))
 
@@ -43,7 +43,7 @@
   [tms coll]
   (if (->> (clojure.set/intersection
              (into #{} coll)
-             (get-in tms [global-key :dadaysql.core/reserve-name]))
+             (get-in tms [global-key :dadysql.core/reserve-name]))
            (not-empty))
     true
     false))

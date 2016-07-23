@@ -131,7 +131,7 @@
   (testing "cell emit test "
     (let [app-proc (bi/new-module-key-node (c/new-leaf-node-coll))
           sch-value {doc-key   "hello"
-                     ;      extend-meta-key {:hello {param-key [[:Next_transaction_id param-ref-key :transaction_id]]}}
+                     ;      :dadysql.core/extend {:hello {param-key [[:Next_transaction_id param-ref-key :transaction_id]]}}
                      param-key [[:next_transaction_id param-ref-key :transaction_id]]
                      sql-key   "select * from dual; select * from dual"}]
       (->> sch-value

@@ -37,7 +37,7 @@
 (comment
 
 
-  ;(init-tms)
+  (init-tms)
 
   (get-ds)
 

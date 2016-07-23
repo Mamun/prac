@@ -24,16 +24,16 @@
   (NameKey. :dadysql.core/name))
 
 (defn new-model-key []
-  (ModelKey. :dadaysql.core/model))
+  (ModelKey. :dadysql.core/model))
 
 (defn new-group-key []
   (GroupKey. :dadysql.core/group))
 
 (defn new-timeout-key []
-  (TimeoutKey. :dadaysql.core/timeout))
+  (TimeoutKey. :dadysql.core/timeout))
 
 (defn new-commit-key []
-  (CommitKey. :dadaysql.core/commit))
+  (CommitKey. :dadysql.core/commit))
 
 (defn new-skip-key []
   (SkipKey. skip-key))
@@ -42,17 +42,17 @@
   (ColumnKey. :clojure.core/column 5 :output))
 
 (defn new-result-key []
-  (ResultKey. :dadaysql.core/result 10 :output))
+  (ResultKey. :dadysql.core/result 10 :output))
 
 
 
 
 (defn do-result
   [tm]
-  (if-not (or (= (:dadaysql.core/dml-key tm) dml-select-key)
-              (= (:dadaysql.core/dml-key tm) dml-call-key))
+  (if-not (or (= (:dadysql.core/dml-type tm) dml-select-key)
+              (= (:dadysql.core/dml-type tm) dml-call-key))
     tm
-    (let [result (:dadaysql.core/result tm)
+    (let [result (:dadysql.core/result tm)
           output (output-key tm)]
       (cond
         (nil? result)
@@ -72,8 +72,8 @@
 
 (defn do-column
   [tm]
-  (if-not (or (= (:dadaysql.core/dml-key tm) dml-call-key)
-              (= (:dadaysql.core/dml-key tm) dml-select-key))
+  (if-not (or (= (:dadysql.core/dml-type tm) dml-call-key)
+              (= (:dadysql.core/dml-type tm) dml-select-key))
     tm
     (let [column (:clojure.core/column tm)
           output (output-key tm)]

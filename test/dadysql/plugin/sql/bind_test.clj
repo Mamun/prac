@@ -11,16 +11,20 @@
 (deftest bind-sql-params-test
   (testing "test bind-sql-params "
     (let [m {:dadysql.core/sql   ["select * from dual param = :a and param3 = :b" :a :b]
-             :dadaysql.core/dml-key   dml-select-key
+             :dadysql.core/dml-type   dml-select-key
              input-key {:a 3 :b 4}}
-          expected-result {:sql      ["select * from dual param = ? and param3 = ?" 3 4],
-                           :dml-type :select,
+          expected-result {:dadysql.core/sql      ["select * from dual param = ? and param3 = ?" 3 4],
+                           :dadysql.core/dml-type :select,
                            :input    {:a 3, :b 4}}
 
           proc (new-sql-key 0 (new-childs-key))
           actual-result (node-process proc m)]
-      (is (= actual-result
-             expected-result)))))
+      (is (= expected-result
+             actual-result
+             )))))
+
+;{:dadysql.core/sql ["select * from dual param = ? and param3 = ?" 3 4], :dadysql.core/dml-type :select, :input {:a 3, :b 4}}
+;{:dadysql.core/sql ["select * from dual param = ? and param3 = ?" 3 4], :dadysql.core/dml-key :select, :input {:a 3, :b 4}}
 
 ;(bind-sql-params-test)
 
@@ -77,7 +81,7 @@
 (deftest bind-sql-params-test
   (testing "test bind-sql-params with dml select "
     (let [m {:dadysql.core/sql   ["select * from dual param = :a and param3 = :b" :a :b]
-             :dadaysql.core/dml-key   dml-select-key
+             :dadysql.core/dml-key   dml-select-key
              input-key {:a 3 :b 4}}
           expected-result {:sql      ["select * from dual param = ? and param3 = ?" 3 4],
                            :dml-type :select,
@@ -88,7 +92,7 @@
 
   (testing "test bind-sql-params with dml insert  "
     (let [m {:dadysql.core/sql   ["insert into  dual values (:a :b)" :a :b]
-             :dadaysql.core/dml-key   dml-insert-key
+             :dadysql.core/dml-key   dml-insert-key
              input-key [{:a 3 :b 4}
                         {:a 5 :b 6}]}
           expected-result {:sql      ["insert into  dual values (? ?)" [3 4] [5 6]],
@@ -99,7 +103,7 @@
 
   (testing "test bind-sql-params with dml update  "
     (let [m {:dadysql.core/sql   ["update dual set :a= :a1, b1 = :b where id=:id" :a1 :b :id]
-             :dadaysql.core/dml-key   dml-insert-key
+             :dadysql.core/dml-key   dml-insert-key
              input-key {:a1 3 :b 4 :id 4}}
           expected-result {:sql      ["update dual set :a= ?, b1 = ? where id=?" [3 4 4]],
                            :dml-type :insert,
