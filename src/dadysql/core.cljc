@@ -6,7 +6,7 @@
 
 
 (defonce global-key :_global_)
-(defonce module-key :_module_)
+;(defonce module-key :_module_)
 (defonce process-context-key :process-context)
 ;(defonce reserve-name-key :reserve-name)
 ;(defonce file-name-key :file-name)
@@ -18,7 +18,7 @@
 
 ;(defonce name-key :name)
 ;(defonce column-key :column)
-(defonce doc-key :doc)
+;(defonce doc-key :doc)
 ;(defonce model-key :model)
 (defonce skip-key :skip)
 ;(defonce timeout-key :timeout)
@@ -52,11 +52,6 @@
 ;(def out-type :output-type)
 
 
-;(defonce param-key :param)
-(defonce param-ref-con-key :ref-con)
-(defonce param-ref-key :ref-key)
-(defonce param-ref-fn-key :ref-fn-key)
-(defonce param-ref-gen-key :ref-gen)
 
 
 ;(defonce param-spec-key :param-spec)
@@ -88,9 +83,15 @@
 
 
 ;(defonce error-key :error)
-(defonce exec-time-total-key :exec-total-time)
-(defonce exec-time-start-key :exec-start-time)
-(defonce query-exception-key :query-exception)
+
+(s/def ::exec-total-time int?)
+(s/def ::exec-start-time int?)
+
+;(defonce exec-time-total-key :exec-total-time)
+;(defonce exec-time-start-key :exec-start-time)
+;(defonce query-exception-key :query-exception)
+
+(s/def ::query-exception string?)
 
 
 (def all-oformat #{nested-join-format nested-map-format nested-array-format
@@ -117,6 +118,7 @@
                     :index ::index
 
                     :extend ::extend
+                    :spec-file ::spec-file
                     })
 
 
@@ -142,7 +144,7 @@
 
 (s/def ::name
   (s/with-gen (s/or :one keyword? :many (s/coll-of keyword? :kind vector? :distinct true))
-              (fn [] (s/gen #{global-key :get-dept-list :get-dept-by-ids :get-employee-list :get-meeting-list :get-employee-meeting-list}))))
+              (fn [] (s/gen #{ :get-dept-list :get-dept-by-ids :get-employee-list :get-meeting-list :get-employee-meeting-list}))))
 
 (s/def ::index int?)
 
@@ -202,16 +204,29 @@
     ))
 
 
+
+
+;(defonce param-key :param)
+
+
+(defonce param-ref-con-key :ref-con)
+(defonce param-ref-key :ref-key)
+(defonce param-ref-fn-key :ref-fn-key)
+(defonce param-ref-gen-key :ref-gen)
+
+
+;(s/def )
+
 (s/def ::param-ref-con
-  (s/with-gen (clojure.spec/tuple keyword? #(= param-ref-con-key %) any?)
+  (s/with-gen (clojure.spec/tuple keyword? #(= :ref-con %) any?)
               (fn []
-                (s/gen #{[:id param-ref-con-key 23]
-                         [:name param-ref-con-key "Hello"]}))))
+                (s/gen #{[:id :ref-con 23]
+                         [:name :ref-con "Hello"]}))))
 (s/def ::param-ref
-  (s/with-gen (clojure.spec/tuple keyword? #(= param-ref-key %) keyword?)
+  (s/with-gen (clojure.spec/tuple keyword? #(= :ref-key %) keyword?)
               (fn []
-                (s/gen #{[:id param-ref-key :rid]
-                         [:name param-ref-key :rname]}))))
+                (s/gen #{[:id :ref-key :rid]
+                         [:name :ref-key :rname]}))))
 (s/def ::param-ref-fn
   (s/with-gen (clojure.spec/tuple keyword? #(= param-ref-fn-key %) resolve? keyword?)
               (fn []
@@ -238,29 +253,7 @@
 (defn ns-keyword? [v]
   (if (namespace v) true false ))
 
-
-#_(defn resolve? [v]
-    )
-
-#_(comment
-    (ns-keyword? :av)
-    (ns-keyword? :acom/v)
-
-    ;(s/regex? s/*)
-    (s/spec? int?)
-
-    (s/regex? int?)
-
-    integer?
-
-    number?
-
-    )
-
-
 (s/def ::param-spec (s/and keyword? ns-keyword?))
-
-
 
 (s/def ::common (s/keys :opt-un [::timeout ::column ::result ::param ::param-spec]))
 
@@ -275,8 +268,10 @@
                           :opt-un [::model ::skip ::group ::commit ::extend])))
 
 
+(s/def ::spec-file symbol?)
+
 (s/def ::global (s/keys :req-un [::name]
-                        :opt-un [::timeout ::read-only? ::tx-prop ::file-reload ::reserve-name ::join]))
+                        :opt-un [::timeout ::read-only? ::tx-prop ::file-reload ::reserve-name ::join ::spec-file]))
 
 
 (s/def ::compiler-input-spec (clojure.spec/cat :global (s/? ::global) :module (s/* ::module)))

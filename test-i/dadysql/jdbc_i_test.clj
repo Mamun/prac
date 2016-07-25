@@ -110,7 +110,7 @@
 (deftest push!-test
   (testing "testing push! "
 
-    (is (= (push! @td/ds @td/tms
+    (is (= (push! @td/ds (td/get-tms)
                   {:name   :create-dept
                    :params {:dept_name "Support "}})
            [1]))

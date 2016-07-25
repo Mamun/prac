@@ -28,7 +28,7 @@
 
 (defn new-child-keys
   []
-  (vector (ParamRefConKey. param-ref-con-key 0)
+  (vector (ParamRefConKey. param-ref-con-key  0)
           (ParamRefKey. param-ref-key 1)
           (ParamRefFunKey. param-ref-fn-key 2)
           (ParamRefGenKey. param-ref-gen-key 3 temp-generator)))
@@ -48,79 +48,35 @@
 
 
 (defn assoc-param-ref-gen [root-node generator]
+
+
   (let [p [:dadysql.core/param param-ref-gen-key]
         p-index (node-path root-node p)]
+   ; (println "p-index" p-index)
+;    (clojure.pprint/pprint root-node)
     (if p-index
       (assoc-in root-node (conj p-index :generator) generator)
       root-node)))
 
 
-#_(defn get-params-key-schema [n coll]
-  (let [s (get-child-spec coll)]
-    `{(schema.core/optional-key ~n)
-      (schema.core/pred (fn [v#] (clojure.spec/valid? (eval '~s) v#))
-                        'k-spec-spec-valid?)}))
-
-
-
-#_(extend-protocol INodeCompiler
-  ParamKey
-  (-spec [this]
-    (get-params-key-schema (-node-name this) (:ccoll this)))
-  (-emit [this w]
-    (let [child-g (group-by #(-node-name %) (:ccoll this))]
-      (mapv #(-emit (get-in child-g [(second %) 0]) %) w)))
-  ParamRefGenKey
-  (-spec [_]
-    '(clojure.spec/tuple keyword? keyword? keyword?))
-  (-emit [_ w]
-    (update-in w [0] cc/as-lower-case-keyword))
-  ParamRefFunKey
-  (-spec [_]
-    '(clojure.spec/tuple keyword? keyword? resolve keyword?))
-  (-emit [_ w]
-    (-> w
-        (assoc 2 (resolve (nth w 2)))
-        (update-in [0] cc/as-lower-case-keyword)
-        (update-in [3] cc/as-lower-case-keyword)))
-  ParamRefKey
-  (-spec [_]
-    '(clojure.spec/tuple keyword? keyword? keyword?))
-  (-emit [_ w]
-    (-> w
-        (update-in [0] cc/as-lower-case-keyword)
-        (update-in [2] cc/as-lower-case-keyword)))
-  ParamRefConKey
-  (-spec [_]
-    '(clojure.spec/tuple keyword? keyword? number?))
-  (-emit [_ w]
-    (update-in w [0] cc/as-lower-case-keyword)))
-
-
-#_[(s/one s/Keyword "Source Data Model")
-   (s/one s/Keyword "Type of params ")
-   (s/one s/Keyword "Refer type ")]
-
-#_[(s/one s/Keyword "Source Data Model")
-   (s/one s/Keyword "Type of params ")
-   (s/one (s/pred resolve 'resolve-clj) "Any value")
-   (s/one s/Keyword "Refer Keyword ")]
-
-#_[(s/one s/Keyword "Source Data Model")
-   (s/one s/Keyword "Type of Params ")
-   (s/one s/Keyword "Refer keyword")]
-
-#_[(s/one s/Keyword "Source Data Model")
-   (s/one s/Keyword "Type of Param ")
-   (s/one s/Any "Any value")]
-
+#_(defn debug [m]
+  (println "--deug ")
+  (clojure.pprint/pprint m)
+  (println "debgi finished")
+  m
+  )
 
 (defn process-batch
   [child-coll input ks-coll]
   (let [pm (group-by-node-name child-coll)]
+   ; (clojure.pprint/pprint pm)
+   ; (clojure.pprint/pprint ks-coll)
     (->> ks-coll
+    ;     (debug)
          (sort-by (fn [[_ n]]
+                    ;(println n)
                     (-porder (n pm))))
+
          (reduce (fn [acc-input ks]
                    (let [[src n] ks
                          p (partial -pprocess (n pm))
@@ -147,7 +103,7 @@
   (-porder [this] (:lorder this))
   (-pprocess? [_ m]
     (->> (group-by second (:dadysql.core/param m))
-         (param-ref-con-key)))
+         (:dadysql.core/param-ref-con)))
   (-pprocess [_ p-value m]
     (let [[_ _ v] p-value]
       v))
@@ -155,7 +111,7 @@
   (-porder [this] (:lorder this))
   (-pprocess? [_ m]
     (->> (group-by second (:dadysql.core/param m))
-         (param-ref-key)))
+         (:dadysql.core/param-ref)))
   (-pprocess [_ p-value m]
     (let [[s _ k] p-value]
       (->> (cc/replace-last-in-vector s k)
@@ -195,11 +151,11 @@
 (defmethod param-paths
   nested-map-format
   [_ [root-m & child-m] param-m]
-  (let [model-name (get root-m :dadaysql.core/model)
+  (let [model-name (get root-m :dadysql.core/model)
         rp (ccu/get-path param-m model-name)
         rpp (assoc-param-path param-m rp (:dadysql.core/param root-m))
         cpp (for [c child-m
-                  :let [crp (ccu/get-path param-m rp (:dadaysql.core/model c))]
+                  :let [crp (ccu/get-path param-m rp (:dadysql.core/model c))]
                   p (assoc-param-path param-m crp (:dadysql.core/param c))]
               p)]
     (-> []

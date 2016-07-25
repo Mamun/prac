@@ -80,8 +80,8 @@
 
 (deftest commit-type-test
   (testing "test commit-type with one dml type "
-    (let [data [{:dadaysql.core/dml-key     dml-select-key
-                 commit-type commit-all-key}]
+    (let [data [{:dadysql.core/dml-key     dml-select-key
+                 :dadysql.core/commit commit-all-key}]
           actual-result (commit-type data)]
       (is (= actual-result
              commit-none-key))))
@@ -98,8 +98,8 @@
              commit-all-key))
       ))
   (testing "test commit-type with all "
-    (let [data [{:dadaysql.core/commit commit-all-key}
-                {:dadaysql.core/commit commit-none-key}]
+    (let [data [{:dadysql.core/commit commit-all-key}
+                {:dadysql.core/commit commit-none-key}]
           actual-result (commit-type data)]
       (is (= actual-result
              commit-none-key)))))

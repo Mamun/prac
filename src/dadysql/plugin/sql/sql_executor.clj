@@ -136,11 +136,11 @@
         (if (f/failed? r)
           r
           (assoc m output-key r
-                   exec-time-total-key total
-                   exec-time-start-key stm)))
+                   :dadysql.core/exec-total-time total
+                   :dadysql.core/exec-start-time stm)))
       (catch Exception e
         (log/error e (:dadysql.core/sql m))
-        (-> (f/fail {query-exception-key (.getMessage e)})
+        (-> (f/fail {:dadysql.core/query-exception (.getMessage e)})
             (merge m))))))
 
 
@@ -154,7 +154,7 @@
         (if (= rch exec-ch)
           v
           ;; Need to assoc exception here as it returns from here
-          (-> {query-exception-key "SQL Execution time out"
+          (-> {:dadysql.core/query-exception "SQL Execution time out"
                :dadysql.core/timeout         t-v}
               (f/fail)
               (merge m)))))))

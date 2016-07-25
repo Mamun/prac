@@ -5,7 +5,9 @@
             [dadysql.compiler.util :as u]
             [clojure.tools.reader.edn :as edn]
             [dadysql.compiler.file-reader :as fr]
-            [clojure.spec :as s]))
+            [clojure.spec :as s]
+            [dady.spec :as dsp]
+            [clojure.spec :as sp]))
 
 
 
@@ -77,7 +79,7 @@
                        (get-in module-m [:dadysql.core/extend model-v])
                        w1)
 
-        module-m (dissoc module-m :dadysql.core/name :dadysql.core/model :dadysql.core/sql :dadysql.core/extend doc-key)
+        module-m (dissoc module-m :dadysql.core/name :dadysql.core/model :dadysql.core/sql :dadysql.core/extend :dadysql.core/doc )
         f-config (select-keys f-config [:dadysql.core/param :dadysql.core/param-spec :dadysql.core/timeout])]
     (merge-with compiler-merge f-config module-m w2)))
 
@@ -170,47 +172,17 @@
 
 
 
-(defn load-param-spec [coll]
-  (let [w1 (filter keyword? (map :dadysql.core/param-spec coll))]
-    (doseq [w (map namespace w1)]
-      (require (symbol w) :reload))
-    (doseq [r w1]
-      (if (nil? (s/get-spec r))
-        (throw (ex-info "Spec not found " {:spec r}))))))
-
-
-
-#_(defn replace-mk
-  [f1 m]
-  (let [f (fn [[k v]] [(f1 k) v])]
-    (into {} (map f m))))
-
-
-(defn postwalk-rename-key
-  "Recursively transforms all map and first  vector keys from keywords to strings."
-  {:added "1.1"}
-  [m]
-  (clojure.walk/postwalk (fn [x]
-                           (cond (map? x)
-                                 (clojure.set/rename-keys x namespace-key )
-                                 :else x)) m)
-  )
-
-
-
-#_(defn update-keys [coll]
-
-
-
-  (mapv (fn [w]
-          (clojure.set/rename-keys w )
-          ) coll))
-
+(defn load-param-spec [spec-file coll]
+  (if spec-file
+    (require (symbol spec-file) :reload))
+  (doseq [r (filter keyword? (map :dadysql.core/param-spec coll))]
+    (if (nil? (s/get-spec r))
+      (throw (ex-info "Spec not found " {:spec r})))))
 
 
 (defn do-compile [coll]
   (u/validate-input-spec! coll)
-  (let [coll (postwalk-rename-key coll)]
+  (let [coll (dsp/key->nskey coll namespace-key)]
     (u/validate-distinct-name! coll)
     (u/validate-name-sql! coll)
     (u/validate-name-model! coll)
@@ -222,9 +194,8 @@
           reserve (reserve-compile reserve)
           global (dissoc global :dadysql.core/extend)
           w (concat [global] modules reserve)]
-      (load-param-spec w)
+      (load-param-spec (:dadysql.core/spec-file global) w)
       (->> w
-
            (into {} (map into-name-map))))))
 
 
@@ -237,9 +208,11 @@
 (comment
   ;(require )
 
+  ;(symbol 'he-hcsdf)
+  ;(symbol "asdf")
   ;(clojure.set/rename-keys {:a 3} {:b :v})
 
-  (->> (fr/read-file "tie.edn2.sql")
+  (->> (fr/read-file "tie.edn.sql")
      ;  (postwalk-rename-key  )
        (do-compile)
      ;  (s/explain-data :dadysql.core/compiler-input-spec )
@@ -251,6 +224,7 @@
        #_(s/conform :dadysql.compiler.spec/compiler-input-spec))
 
 
+  (sp/registry)
   ;(clojure.set/rename-keys {:a 3 :b 4} {:a :tr/c})
 
 
@@ -271,7 +245,7 @@
 
 
 
-  (s/registry)
+  (sp/registry)
 
   ;(add-quote Hello)
 

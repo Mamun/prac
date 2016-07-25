@@ -15,7 +15,7 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;; Selecting impl ;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn select-config
+#_(defn select-config
   [tms]
   (global-key tms))
 
@@ -251,10 +251,7 @@
         name (if gname
                (select-name-for-groups tms gname name)
                name)
-        tm-coll (select-name tms name)
-        ]
-
-
+        tm-coll (select-name tms name)]
     (if (f/failed? tm-coll)
       tm-coll
       (proc tm-coll params))))

@@ -86,6 +86,13 @@
              (tie/do-run (select-pull-node ds tms request-m) tms)))
 
 
+(defn debug [v]
+  (println "----")
+  (clojure.pprint/pprint v)
+  (println "---")
+  v
+  )
+
 (defn select-push-node [ds tms]
   (f/try-> tms
             (get-in [tc/global-key tc/process-context-key] [])
@@ -93,10 +100,6 @@
             (c/add-child-one (ce/sql-executor-node ds tms ce/Transaction))
             (p/assoc-param-ref-gen (fn [& {:as m}]
                                      (->> (default-request :db-seq m)
-                                          ;(seq)
-                                          ;(apply concat)
-                                          ;(cons tms)
-                                          ;(cons ds)
                                           (pull ds tms))))))
 
 
@@ -179,9 +182,9 @@
 
 (defn- execution-log
   [tm-coll]
-  (let [v (mapv #(select-keys % [:dadysql.core/sql tc/exec-time-total-key tc/exec-time-start-key]) tm-coll)
+  (let [v (mapv #(select-keys % [:dadysql.core/sql :dadysql.core/exec-total-time  :dadysql.core/exec-start-time ]) tm-coll)
         w (mapv (fn [t]
-                  (update-in t [tc/exec-time-start-key] (fn [o] (str (as-date o))))
+                  (update-in t [:dadysql.core/exec-start-time] (fn [o] (str (as-date o))))
                   ) v)]
     (log/info w)))
 

@@ -5,6 +5,7 @@
  :timeout 1000
  :reserve-name #{:create-ddl :drop-ddl :init-data}
  :tx-prop [:isolation :serializable :read-only? false]
+ :spec-file tie-edn
  :join [[:department :id :1-n :employee :dept_id]
         [:employee :id :1-1 :employee-detail :employee_id]
         [:employee :id :n-n :meeting :meeting_id [:employee-meeting :employee_id :meeting_id]]]
@@ -26,7 +27,7 @@ call next value for seq_meet;
 {:doc "General select statement. Name is used to identify each query, Abstract timeout will override with timeout here  "
  :name  [:get-dept-list :get-dept-by-ids :get-employee-list :get-meeting-list :get-employee-meeting-list]
  :model [:department :department :employee :meeting :employee-meeting]
- :extend {:get-dept-by-ids {:param-spec :tie-edn/get-dept-by-ids
+ :extend {:get-dept-by-ids {:param-spec :get-dept-by-ids/spec
                             :result #{:array}}}
  :timeout 5000
  :result #{:array}
@@ -51,7 +52,7 @@ select * from employee_meeting LIMIT :limit OFFSET :offset;
           :get-employee-dept   {:result #{:single}}
           :get-employee-detail {:result #{:single}}
           :get-employee-meeting {:result #{:array}}}
- :param-spec :tie-edn/int-id
+ :param-spec :int-id/spec
  }*/
 select * from employee where id = :id;
 select d.* from department d, employee e where e.id=:id and d.id = e.dept_id;
@@ -80,11 +81,11 @@ select e.*, em.employee_id from employee e, employee_meeting em where em.meeting
  :model [:department :employee ]
  :group :load-dept
  :extend {:get-dept-by-id {:timeout 2000
-                      :param-spec :tie-edn/int-id
+                      :param-spec :get-dept-by-id/spec
                       :result #{:single}}
          }
  :timeout 5000
- :param-spec :tie-edn/int-id
+ :param-spec :get-dept-by-id/spec
  }*/
 select * from department where id = :id ;
 select * from employee where dept_id = :id;
@@ -100,8 +101,7 @@ select * from employee where dept_id = :id;
                                 [:transaction_id :ref-con 0]]}
          :update-dept {:param [[:next_transaction_id :ref-fn-key inc :transaction_id]]}
          }
- :param-spec :tie-edn/int-id
- :commit :all
+  :commit :all
  }*/
 insert into department (id, transaction_id, dept_name) values (:id, :transaction_id, :dept_name);
 update department set dept_name=:dept_name, transaction_id=:next_transaction_id  where transaction_id=:transaction_id and id=:id;

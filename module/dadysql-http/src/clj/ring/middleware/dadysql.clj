@@ -66,7 +66,7 @@
 (defn get-sql-file-value [tms-atom]
   (->> @tms-atom
        (vals)
-       (mapv (fn [w] (select-keys w [:dadysql.core/name :dadaysql.core/model c/:dadysql.core/sql])))))
+       (mapv (fn [w] (select-keys w [:dadysql.core/name :dadysql.core/model :dadysql.core/sql])))))
 
 
 

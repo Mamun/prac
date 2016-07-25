@@ -1,23 +1,51 @@
  (ns tie-edn
-   (:require [clojure.spec :as s]))
+   (:require [clojure.spec :as s]
+             [dady.spec :as ds]))
 
 
-(s/def ::id integer?)
+(dady.spec/defsp
+  int-id
+  (s/def ::id int?)
+  (s/def ::spec (s/keys :req-un [::id])))
 
-(s/def ::get-dept-by-id (s/keys :req-un [::id]))
 
-(s/def ::get-dept-by-ids (s/every int?))
+(dady.spec/defsp
+  get-dept-by-id
+  (s/def ::id int?)
+  (s/def ::spec (s/keys :req-un [::id])))
 
-(s/def ::int-id (s/keys :req-un [::id] ) )
+
+(dady.spec/defsp
+  get-dept-by-ids
+  (s/def ::id (s/every int?))
+  (s/def ::spec (s/keys :req-un [::id])))
+
+
+
+
+
 
 
 (comment
+
+
+  #_(s/valid?
+    (::s/kvs->map {:id int?})
+    {:id "hello"}
+    )
+
+  ;(s/form :get-dept-by-ids/id)
+  ;(ds/find-ns-spec 'cfg )
+
+  (s/registry)
+
+  {:id int? :vip string?}
 
   ;(resolve 'int1?)
 
   (s/conform ::int "asdfsd")
 
-  (s/conform ::get-dept-by-id {:id 2})
+  (s/conform :get-dept-by-id/spec {:id 2})
 
   (s/spec? (s/spec ::get-dept-by-id))
 

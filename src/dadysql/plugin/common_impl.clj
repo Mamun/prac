@@ -18,7 +18,7 @@
 
 
 (defn new-doc-key []
-  (DocKey. doc-key))
+  (DocKey. :dadysql.core/doc))
 
 (defn new-name-key []
   (NameKey. :dadysql.core/name))
