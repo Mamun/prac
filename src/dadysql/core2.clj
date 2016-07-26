@@ -269,14 +269,14 @@
 
 
 (defn do-run
-  [n-processor tms {:keys [gname name params pformat rformat]}]
+  [n-processor tms {:keys [group name params pformat rformat]}]
   (let [exec (fn [tm-coll _]
                (do-node-process tm-coll n-processor :sql-executor))
         proc (-> exec
                  (warp-input-node-process n-processor pformat)
                  (warp-output-node-process n-processor rformat))
-        name (if gname
-               (select-name-for-groups tms gname name)
+        name (if group
+               (select-name-for-groups tms group name)
                name)
         tm-coll (select-name tms name)]
     (if (f/failed? tm-coll)

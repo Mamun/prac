@@ -3,6 +3,7 @@
            [java.util.concurrent.TimeUnit])
   (:require
     [clojure.tools.logging :as log]
+    [clojure.spec :as sp]
     [clojure.java.jdbc :as jdbc]
     [dadysql.core :as tc]
     [dadysql.core2 :as tie]
@@ -75,13 +76,21 @@
            (c/add-child-one (ce/sql-executor-node ds tms ce/Parallel))))
 
 
+(defn validate-input!
+  [req-m]
+  (if (sp/valid? :dadysql.core/input req-m)
+    req-m
+    (f/fail (sp/explain-data :dadysql.core/input req-m))))
+
+
+
 (defn pull
   "Read or query value from database. It will return as model map
    ds: datasource
    "
   [ds tms request-m]
   (f/try->> request-m
-            (tc/validate-input!)
+            (validate-input!)
             (default-request :pull)
             (tie/do-run (select-pull-node ds tms request-m) tms)))
 
@@ -107,7 +116,7 @@
   "Create, update or delete value in database. DB O/P will be run within transaction. "
   [ds tms request-m]
   (f/try->> request-m
-            (tc/validate-input!)
+            (validate-input!)
             (default-request :push)
             (tie/do-run (select-push-node ds tms) tms)))
 

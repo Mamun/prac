@@ -2,33 +2,15 @@
   (:use [dady.common]
         [dady.fail])
   (:require [clojure.spec :as s]
+            [clojure.spec :as s]
+            [clojure.spec :as s]
+            [clojure.spec :as s]
+            [clojure.spec :as s]
             [clojure.spec :as s]))
 
-
-
 (defonce global-key :_global_)
-;(defonce module-key :_module_)
+
 (defonce process-context-key :process-context)
-
-
-;(defonce skip-key :skip)
-
-
-(def nested-map-format :nested)
-(def nested-array-format :nested-array)
-(def nested-join-format :nested-join)
-(def map-format :map)
-(def array-format :array)
-(def value-format :value)
-
-(def all-oformat #{nested-join-format nested-map-format nested-array-format
-                   map-format array-format value-format})
-(def all-pformat #{nested-map-format map-format})
-
-
-
-(defonce output-key :output)
-(defonce input-key :input)
 
 
 (s/def ::dml-select (s/spec #(= :select %)))
@@ -232,45 +214,39 @@
 
 
 
+(defonce output-key :output)
+(defonce input-key :input)
+
+
+(def nested-map-format :nested)
+(def nested-array-format :nested-array)
+(def nested-join-format :nested-join)
+(def map-format :map)
+(def array-format :array)
+(def value-format :value)
 
 
 
+(s/def ::oformat #{nested-join-format nested-map-format nested-array-format
+                   map-format array-format value-format})
+(s/def ::pformat #{nested-map-format map-format})
 
-(defn validate-input!
-  [{:keys [gname name params oformat pformat] :as request-m}]
-  (cond
-    (and (nil? name)
-         (nil? gname))
-    (fail "Need value either name or gname")
-    (and (not (nil? gname))
-         (not (keyword? gname)))
-    (fail "gname will be keyword")
-    (and (not (nil? name))
-         (not (sequential? name))
-         (not (keyword? name)))
-    (fail "name will be keyword")
-    (and
-      (sequential? name)
-      (not (every? keyword? name)))
-    (fail "name will be sequence of keyword")
-    (and                                                    ;(= map-format out-format)
-      (sequential? name)
-      (contains? #{map-format array-format value-format} oformat))
-    (fail #?(:clj  (format "only one name keyword is allowed for %s format " oformat)
-             :cljs "Only one name keyword is allowed"))
-    (and
-      (not (nil? params))
-      (not (map? params)))
-    (fail "params will be map format ")
-    (and
-      (not (nil? pformat))
-      (not (contains? all-pformat pformat)))
-    (fail #?(:clj  (format "pformat is not correct, it will be %s ", (str all-pformat))
-             :cljs "pformat is not correct"))
-    (and
-      (not (nil? oformat))
-      (not (contains? all-oformat oformat)))
-    (fail #?(:clj  (format "oformat is not correct, it will be %s" (str all-oformat))
-             :cljs "oformat is not correct"))
-    :else
-    request-m))
+(s/def ::params map?)
+
+(s/def ::input (s/keys :req-un [(or ::name ::group)]
+                       :opt-un [::params ::pformat ::oformat]))
+
+
+(comment
+
+  (s/valid? ::input {:name   [:get-employee-detail]
+                     :params {:id 1}})
+
+
+  (s/explain ::input {:name   [:get-employee-detail]
+                     :group   :load-dept
+                     :pformat :map
+                     :params  {}})
+
+  )
+

@@ -71,7 +71,7 @@
                                          [2 "Hello Friday" 1]],
                        :department      {:id 1, :transaction_id 0, :dept_name "Business"}}}))
     (is (= (pull (td/get-ds) (td/get-tms)
-                 {:gname  :load-dept
+                 {:group  :load-dept
                   :params {:id 1}})
            {:department
             {:id             1,
@@ -83,7 +83,7 @@
                                :lastname       "Zoma",
                                :dept_id        1}]}}))
     (is (= (pull (td/get-ds) (td/get-tms)
-                 {:gname  :load-employee
+                 {:group  :load-employee
                   :params {:id 1}})
 
 
