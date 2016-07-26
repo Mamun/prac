@@ -36,7 +36,7 @@
   (CommitKey. :dadysql.core/commit))
 
 (defn new-skip-key []
-  (SkipKey. skip-key))
+  (SkipKey. :dadysql.core/skip))
 
 (defn new-column-key []
   (ColumnKey. :clojure.core/column 5 :output))
@@ -60,12 +60,12 @@
         (f/failed? output)
         tm
         (and (empty? output)
-             (contains? result result-single-key))
+             (contains? result :dadysql.core/single))
         (assoc tm output-key {})
-        (and (contains? result result-array-key)
-             (contains? result result-single-key))
+        (and (contains? result :dadysql.core/array)
+             (contains? result :dadysql.core/single))
         (assoc tm output-key [(first output) (second output)])
-        (contains? result result-single-key)
+        (contains? result :dadysql.core/single)
         (assoc tm output-key (first output))
         :else tm))))
 

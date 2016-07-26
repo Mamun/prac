@@ -19,8 +19,8 @@
 
 
 #_(defprotocol INodeCompiler
-  (-emit [this w] "Change value or ")
-  (-spec [this] "Defined schema here"))
+    (-emit [this w] "Change value or ")
+    (-spec [this] "Defined schema here"))
 
 #_(defn spec
     [node]
@@ -328,88 +328,3 @@
 
 
 
-;;;;;;;;;;;;;;;;;; Get node from path ;;;;;;;;;;;;;
-
-#_(defn select-module-node-processor
-  [root-node module-key]
-  (-> (get-node-from-path root-node [module-key])
-      (-childs)
-      (filter-node-processor)))
-
-
-
-#_(defmacro fn-as-node [f & node-description]
-    (let [this (gensym 'this)
-          node-name (first node-description)
-          cname (keyword node-name)
-          node-description (into [] node-description)]
-      (println node-description)
-      `(defrecord ~node-name ~node-description
-         ILeafNode
-         (-node-name [~this] (~cname ~this))
-         )))
-
-;(macroexpand-1 '(fn-as-node identity hello check ))
-
-
-;(extend-as-leaf FnNode :he)
-;(macroexpand '(extend-as-leaf FnNode :he))
-
-#_(defmacro extend-as-branch
-    [vname n]
-    (let [msg (gensym 'message)]
-      `(extend-protocol ILeafNode
-         ~vname
-         (-node-name [~msg] (~n ~msg)))))
-
-
-;(defrecord Hello [name])
-
-;(extend-as-branch Hello :name)
-;(macroexpand '(extend-as-branch Hello :name))
-
-;(extend-as-branch Hello :name)
-;(-node-name (Hello. "sdfds"))
-
-
-;(defrecord CollName [ccoll :ccoll])
-;(extend-as-branch CollName :ccoll)
-;(macroexpand '(extend-as-branch CollName :ccoll))
-
-
-
-
-#_(defmacro extend-as-branch
-    [vname ccoll]
-    (let [this (gensym 'this)
-          cname (gensym 'cname)
-          temp (gensym 'temp)]
-      `(extend-protocol IBranchNode
-         ~vname
-         (-get-child-path [~this ~cname]
-           (let [~temp (cell-index-single (~ccoll ~this) ~cname)]
-             (if ~temp
-               (vector ~ccoll ~temp)
-               (vector))))
-         (-add-child [~this ~cname]
-           (->> (-add-child (~ccoll ~this) ~cname)
-                (assoc ~this ~ccoll)))
-         (-remove-child [~this ~cname]
-           (->> (-remove-child (~ccoll ~this) ~cname)
-                (assoc ~this ~ccoll)))
-         (-childs [~this] (~ccoll ~this))
-         (-get-child [~this ~cname]
-           (-get-child (~ccoll ~this) ~cname))
-         (-update-child [~this ~cname]
-           (->> (-update-child (~ccoll ~this) ~cname)
-                (assoc ~this ~ccoll))))))
-
-
-
-
-#_(defmacro extend-as-leaf
-    [vname n]
-    (let [this (gensym 'this)]
-      `(extend-protocol ILeafNode
-         ~vname
-         (-node-name [~this] (~n ~this)))))

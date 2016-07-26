@@ -4,8 +4,8 @@
             [dady.common :as cc]
             [dady.fail :as f]
             [dadysql.core-util :as ccu]
-            #_[clojure.spec :as sp]
-            #_[schema.core :as s]))
+    #_[clojure.spec :as sp]
+    #_[schema.core :as s]))
 
 
 (defbranch ParamKey [cname ccoll corder])
@@ -28,22 +28,22 @@
 
 (defn new-child-keys
   []
-  (vector (ParamRefConKey. :dadysql.core/ref-con  0)
+  (vector (ParamRefConKey. :dadysql.core/ref-con 0)
           (ParamRefKey. :dadysql.core/ref-key 1)
           (ParamRefFunKey. :dadysql.core/ref-fn-key 2)
           (ParamRefGenKey. :dadysql.core/ref-gen 3 temp-generator)))
 
 
 #_(defn get-child-spec [coll-node]
-  (->> coll-node
-       (reduce (fn [acc node]
-                 (->> acc
-                      (cons (spec node))
-                      (cons (node-name node)))
-                 ) (list))
-       (cons 'clojure.spec/alt)
-       (list)
-       (cons 'clojure.spec/*)))
+    (->> coll-node
+         (reduce (fn [acc node]
+                   (->> acc
+                        (cons (spec node))
+                        (cons (node-name node)))
+                   ) (list))
+         (cons 'clojure.spec/alt)
+         (list)
+         (cons 'clojure.spec/*)))
 
 
 
@@ -52,27 +52,27 @@
 
   (let [p [:dadysql.core/param :dadysql.core/ref-gen]
         p-index (node-path root-node p)]
-   ; (println "p-index" p-index)
-;    (clojure.pprint/pprint root-node)
+    ; (println "p-index" p-index)
+    ;    (clojure.pprint/pprint root-node)
     (if p-index
       (assoc-in root-node (conj p-index :generator) generator)
       root-node)))
 
 
 #_(defn debug [m]
-  (println "--deug ")
-  (clojure.pprint/pprint m)
-  (println "debgi finished")
-  m
-  )
+    (println "--deug ")
+    (clojure.pprint/pprint m)
+    (println "debgi finished")
+    m
+    )
 
 (defn process-batch
   [child-coll input ks-coll]
   (let [pm (group-by-node-name child-coll)]
-   ; (clojure.pprint/pprint pm)
-   ; (clojure.pprint/pprint ks-coll)
+    ; (clojure.pprint/pprint pm)
+    ; (clojure.pprint/pprint ks-coll)
     (->> ks-coll
-    ;     (debug)
+         ;     (debug)
          (sort-by (fn [[_ n]]
                     ;(println n)
                     (-porder (n pm))))

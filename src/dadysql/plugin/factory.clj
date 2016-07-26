@@ -27,13 +27,13 @@
 
 
 #_(defn select-node
-  "Return all select node "
-  [node-coll node-name-coll]
-  (let [s (into #{} node-name-coll)
-        r (filter (fn [v] (contains? s (np/node-name v))) node-coll)]
-    (if (empty? r)
-      r
-      (into (empty node-coll) r))))
+    "Return all select node "
+    [node-coll node-name-coll]
+    (let [s (into #{} node-name-coll)
+          r (filter (fn [v] (contains? s (np/node-name v))) node-coll)]
+      (if (empty? r)
+        r
+        (into (empty node-coll) r))))
 
 
 #_(defbranch ExtendKey [lname coll lorder])
@@ -42,17 +42,17 @@
 
 
 #_(defn branch?
-  [node]
-  (satisfies? IBranchNode node))
+    [node]
+    (satisfies? IBranchNode node))
 
 
 #_(defn childrent
-  [node]
-  (-childs node))
+    [node]
+    (-childs node))
 
 
 #_(defn new-module-key-node
-  [leaf-node-coll]
-  (Modulekey. module-key leaf-node-coll 0))
+    [leaf-node-coll]
+    (Modulekey. module-key leaf-node-coll 0))
 
 

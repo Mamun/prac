@@ -50,8 +50,8 @@
   [commit-type read-only result-coll]
   (cond
     (= true read-only) true
-    (= commit-type commit-none-key) true
-    (and (= commit-type commit-all-key)
+    (= commit-type :dadysql.core/none) true
+    (and (= commit-type :dadysql.core/all)
          (f/failed? result-coll)) true
     :else false))
 
@@ -68,15 +68,15 @@
   (let [p (comp
             (filter #(not= :dadysql.core/dml-select (:dadysql.core/dml-key %)))
             (map #(:dadysql.core/commit %))
-            (map #(or % commit-all-key)))
+            (map #(or % :dadysql.core/all)))
         commits (into [] p tm-coll)]
     ;(println commits)
     (if (empty? commits)
-      commit-none-key
-      (or (some #{commit-none-key} commits)
-          (some #{commit-all-key} commits)
-          (cc/contain-all? commits commit-any-key)
-          commit-none-key))))
+      :dadysql.core/none
+      (or (some #{:dadysql.core/none} commits)
+          (some #{:dadysql.core/all} commits)
+          (cc/contain-all? commits :dadysql.core/any)
+          :dadysql.core/none))))
 
 
 (defn read-only?
@@ -109,10 +109,9 @@
   (let [dml-type (:dadysql.core/dml-key tm)
         sql (:dadysql.core/sql tm)
         result (:dadysql.core/result tm)]
-    ;todo Need to move this log from here
     (condp = dml-type
       :dadysql.core/dml-select
-      (if (contains? result result-array-key)
+      (if (contains? result :dadysql.core/array)
         (jdbc/query ds sql :as-arrays? true :identifiers clojure.string/lower-case)
         (jdbc/query ds sql :as-arrays? false :identifiers clojure.string/lower-case))
       :dadysql.core/dml-insert
@@ -131,7 +130,7 @@
                        (- (System/nanoTime)
                           st)) 1000000.0)                   ;;in msecs
             r (if (seq? r) (into [] r) r)]
-;        (clojure.pprint/pprint r)
+        ;        (clojure.pprint/pprint r)
 
         (if (f/failed? r)
           r
@@ -186,7 +185,7 @@
     (-> (map #(apply-handler-one (jdbc-handler->chan ds) %))
         (f/comp-xf-until)
         (transduce conj m-coll))
-    commit-all-key
+    :dadysql.core/all
     (do-execute SerialNotFailed ds m-coll)
     ;; default serial
     (do-execute Serial ds m-coll)))

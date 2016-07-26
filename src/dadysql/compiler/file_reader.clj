@@ -40,7 +40,7 @@
 
 
 (defn read-file
-  [file-name ]
+  [file-name]
   (-> file-name
       (tie-file-reader)
       (map-sql-tag)

@@ -36,6 +36,9 @@
 
 (comment
 
+  (clojure.pprint/pprint
+    (:create-dept (read-file "tie.edn.sql")))
+
 
   (init-tms)
 

@@ -18,7 +18,7 @@
   ([file-name] (read-file file-name (imp/new-root-node)))
   ([file-name pc]
    (-> (fr/read-file file-name)
-       (assoc-in [tc/global-key :dadysql.core/file-name ] file-name)
+       (assoc-in [tc/global-key :dadysql.core/file-name] file-name)
        (assoc-in [tc/global-key tc/process-context-key] pc))))
 
 
@@ -31,7 +31,7 @@
   (let [dfmat (if (or gname
                       (sequential? name))
                 {:pformat tc/map-format :rformat tc/nested-join-format}
-                {:pformat tc/map-format :rformat :one })
+                {:pformat tc/map-format :rformat :one})
         request-m (merge dfmat request-m)
         request-m (if gname
                     (assoc request-m :rformat tc/nested-join-format)
@@ -70,9 +70,9 @@
 
 (defn select-pull-node [ds tms request-m]
   (f/try-> tms
-            (get-in [tc/global-key tc/process-context-key] [])
-            (filter-processor request-m)
-            (c/add-child-one (ce/sql-executor-node ds tms ce/Parallel))))
+           (get-in [tc/global-key tc/process-context-key] [])
+           (filter-processor request-m)
+           (c/add-child-one (ce/sql-executor-node ds tms ce/Parallel))))
 
 
 (defn pull
@@ -81,35 +81,35 @@
    "
   [ds tms request-m]
   (f/try->> request-m
-             (tc/validate-input!)
-             (default-request :pull)
-             (tie/do-run (select-pull-node ds tms request-m) tms)))
+            (tc/validate-input!)
+            (default-request :pull)
+            (tie/do-run (select-pull-node ds tms request-m) tms)))
 
 
 #_(defn debug [v]
-  (println "----")
-  (clojure.pprint/pprint v)
-  (println "---")
-  v
-  )
+    (println "----")
+    (clojure.pprint/pprint v)
+    (println "---")
+    v
+    )
 
 (defn select-push-node [ds tms]
   (f/try-> tms
-            (get-in [tc/global-key tc/process-context-key] [])
-            (c/remove-type :output)
-            (c/add-child-one (ce/sql-executor-node ds tms ce/Transaction))
-            (p/assoc-param-ref-gen (fn [& {:as m}]
-                                     (->> (default-request :db-seq m)
-                                          (pull ds tms))))))
+           (get-in [tc/global-key tc/process-context-key] [])
+           (c/remove-type :output)
+           (c/add-child-one (ce/sql-executor-node ds tms ce/Transaction))
+           (p/assoc-param-ref-gen (fn [& {:as m}]
+                                    (->> (default-request :db-seq m)
+                                         (pull ds tms))))))
 
 
 (defn push!
   "Create, update or delete value in database. DB O/P will be run within transaction. "
-  [ds tms request-m ]
+  [ds tms request-m]
   (f/try->> request-m
-             (tc/validate-input!)
-             (default-request :push)
-             (tie/do-run (select-push-node ds tms) tms)))
+            (tc/validate-input!)
+            (default-request :push)
+            (tie/do-run (select-push-node ds tms) tms)))
 
 
 
@@ -119,8 +119,8 @@
       (let [tm-coll (vals (tie/select-name tms name-coll))]
         (doseq [m tm-coll]
           (when-let [sql (get-in m [:dadysql.core/sql])]
-                   (log/info "db do with " sql)
-            (jdbc/db-do-commands ds  sql))))
+            (log/info "db do with " sql)
+            (jdbc/db-do-commands ds sql))))
       (catch Exception e
         (do
           (log/error e)
@@ -182,7 +182,7 @@
 
 (defn- execution-log
   [tm-coll]
-  (let [v (mapv #(select-keys % [:dadysql.core/sql :dadysql.core/exec-total-time  :dadysql.core/exec-start-time ]) tm-coll)
+  (let [v (mapv #(select-keys % [:dadysql.core/sql :dadysql.core/exec-total-time :dadysql.core/exec-start-time]) tm-coll)
         w (mapv (fn [t]
                   (update-in t [:dadysql.core/exec-start-time] (fn [o] (str (as-date o))))
                   ) v)]

@@ -79,14 +79,14 @@
                        (get-in module-m [:dadysql.core/extend model-v])
                        w1)
 
-        module-m (dissoc module-m :dadysql.core/name :dadysql.core/model :dadysql.core/sql :dadysql.core/extend :dadysql.core/doc )
+        module-m (dissoc module-m :dadysql.core/name :dadysql.core/model :dadysql.core/sql :dadysql.core/extend :dadysql.core/doc)
         f-config (select-keys f-config [:dadysql.core/param :dadysql.core/param-spec :dadysql.core/timeout])]
     (merge-with compiler-merge f-config module-m w2)))
 
 
 (defn do-skip
   [m]
-  (->> (into [] (skip-key m))
+  (->> (into [] (:dadysql.core/skip m))
        (apply dissoc m)))
 
 
@@ -128,10 +128,10 @@
 
 (defn compile-one [m global-m]
 
- ; (clojure.pprint/pprint m )
+  ; (clojure.pprint/pprint m )
   (let [;m (edn/read-string (clojure.string/lower-case (str m)))
         model-m (u/map-name-model-sql (select-keys m [:dadysql.core/name :dadysql.core/model :dadysql.core/sql]))]
-   ; (println model-m)
+    ; (println model-m)
     (reduce (fn [acc v]
               (->> (do-merge v m global-m)
                    (remove-duplicate)
@@ -180,9 +180,17 @@
       (throw (ex-info "Spec not found " {:spec r})))))
 
 
+(defn key->nskey
+  [m mk]
+  (clojure.walk/postwalk (fn [x]
+                           (if-let [v (get mk x)]
+                             v
+                             x)) m))
+
+
 (defn do-compile [coll]
   (u/validate-input-spec! coll)
-  (let [coll (dsp/key->nskey coll namespace-key)]
+  (let [coll (key->nskey coll alais-map)]
     (u/validate-distinct-name! coll)
     (u/validate-name-sql! coll)
     (u/validate-name-model! coll)
@@ -213,9 +221,9 @@
   ;(clojure.set/rename-keys {:a 3} {:b :v})
 
   (->> (fr/read-file "tie.edn.sql")
-     ;  (postwalk-rename-key  )
+       ;  (postwalk-rename-key  )
        (do-compile)
-     ;  (s/explain-data :dadysql.core/compiler-input-spec )
+       ;  (s/explain-data :dadysql.core/compiler-input-spec )
        ;(clojure.pprint/pprint)
        )
 

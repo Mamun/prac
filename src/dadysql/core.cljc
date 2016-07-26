@@ -2,38 +2,17 @@
   (:use [dady.common]
         [dady.fail])
   (:require [clojure.spec :as s]
-            [clojure.walk :as w]
-            [clojure.spec :as s]
-            [clojure.spec :as s]
             [clojure.spec :as s]))
+
 
 
 (defonce global-key :_global_)
 ;(defonce module-key :_module_)
 (defonce process-context-key :process-context)
-;(defonce reserve-name-key :reserve-name)
-;(defonce file-name-key :file-name)
-;(defonce file-reload-key :file-reload)
-(defonce ds-key :datasource)
-(defonce ds-conn-key :datasource-conn)
-;(defonce tx-prop :tx-prop)
 
 
-;(defonce name-key :name)
-;(defonce column-key :column)
-;(defonce doc-key :doc)
-;(defonce model-key :model)
-(defonce skip-key :skip)
-;(defonce timeout-key :timeout)
-;(defonce group-key :group)
-;(defonce index :index)
-;(defonce sql-key :sql)
+;(defonce skip-key :skip)
 
-
-;(def root-meta :meta)
-;(defonce :dadysql.core/extend :extend)
-
-;(def meta-with-extend #{root-meta :dadysql.core/extend})
 
 (def nested-map-format :nested)
 (def nested-array-format :nested-array)
@@ -42,101 +21,80 @@
 (def array-format :array)
 (def value-format :value)
 
-
-(defonce output-key :output)
-(defonce input-key :input)
-
-
-;(defonce result-key :result)
-(defonce result-array-key :array)
-(defonce result-single-key :single)
-
-;(def in-type :input-type)
-;(def out-type :output-type)
-
-
-
-
-;(defonce param-spec-key :param-spec)
-#_(defonce validation-type-key :type)
-#_(defonce validation-range-key :range)
-#_(defonce validation-contain-key :contain)
-
-
-;(defonce join-key :join)
-
-
-;(defonce dml-key :dml-type)
-
-(s/def ::dml-type any?)
-(s/def ::dml-select any?)
-(s/def ::dml-insert any?)
-(s/def ::dml-update any?)
-(s/def ::dml-delete any?)
-(s/def ::dml-call any?)
-
-;(defonce dml-select-key :select)
-
-
-;(defonce dml-insert-key :insert)
-;(defonce dml-update-key :update)
-;(defonce dml-delete-key :delete)
-(defonce dml-call-key :call)
-
-
-
-;(defonce commit-key :commit)
-(defonce commit-all-key :all)
-(defonce commit-any-key :any)
-(defonce commit-none-key :none)
-
-
-;(defonce error-key :error)
-
-(s/def ::exec-total-time int?)
-(s/def ::exec-start-time int?)
-
-;(defonce exec-time-total-key :exec-total-time)
-;(defonce exec-time-start-key :exec-start-time)
-;(defonce query-exception-key :query-exception)
-
-(s/def ::query-exception string?)
-
-
 (def all-oformat #{nested-join-format nested-map-format nested-array-format
                    map-format array-format value-format})
 (def all-pformat #{nested-map-format map-format})
 
 
-(def namespace-key {:timeout      ::timeout
-                    :reserve-name ::reserve-name
-                    :file-reload  ::file-reload
-                    :tx-prop      ::tx-prop
-                    :join         ::join
-                    :doc          ::doc
 
-                    :name         ::name
-                    :model        ::model
-                    :group        ::group
-                    :result       ::result
-                    :column       ::column
-                    :sql          ::sql
-                    :commit       ::commit
-                    :dml-type     ::dml-type
-                    :index        ::index
-
-                    :skip         ::skip
-                    :param        ::param
-                    :param-spec   ::param-spec
-                    :ref-con      ::ref-con
-                    :ref-key      ::ref-key
-                    :ref-fn-key   ::ref-fn-key
-                    :ref-gen      ::ref-gen
+(defonce output-key :output)
+(defonce input-key :input)
 
 
-                    :extend       ::extend
-                    :spec-file    ::spec-file
-                    })
+(s/def ::dml-select (s/spec #(= :select %)))
+(s/def ::dml-insert any?)
+(s/def ::dml-update any?)
+(s/def ::dml-delete any?)
+(s/def ::dml-call any?)
+(s/def ::dml-type any?)
+
+
+(s/def ::all (s/spec #(= :all %)))
+(s/def ::any (s/spec #(= :any %)))
+(s/def ::none (s/spec #(= :none %)))
+(s/def ::commit #{:all :any :none})
+
+
+
+(s/def ::exec-total-time int?)
+(s/def ::exec-start-time int?)
+(s/def ::query-exception string?)
+
+
+(def alais-map {:doc          ::doc
+                :timeout      ::timeout
+                :reserve-name ::reserve-name
+                :file-reload  ::file-reload
+                :tx-prop      ::tx-prop
+
+
+
+                :join         ::join
+                :1-1          ::one-one
+                :1-n          ::one-many
+                :n-1          ::many-one
+                :n-n          ::many-many
+
+                :name         ::name
+                :model        ::model
+                :group        ::group
+                :column       ::column
+                :sql          ::sql
+
+                :result       ::result
+                :array        ::array
+                :single       ::single
+
+                :commit       ::commit
+                :all          ::all
+                :any          ::any
+                :none         ::none
+
+                :dml-type     ::dml-type
+                :index        ::index
+
+                :skip         ::skip
+                :param        ::param
+                :param-spec   ::param-spec
+                :ref-con      ::ref-con
+                :ref-key      ::ref-key
+                :ref-fn-key   ::ref-fn-key
+                :ref-gen      ::ref-gen
+
+
+                :extend       ::extend
+                :spec-file    ::spec-file
+                })
 
 
 
@@ -174,8 +132,6 @@
                               "insert into department (id, transaction_id, dept_name) values (:id, :transaction_id, :dept_name);\nupdate department set dept_name=:dept_name, transaction_id=:next_transaction_id  where transaction_id=:transaction_id and id=:id;\ndelete from department where id in (:id);\n"}))))
 
 
-
-
 (s/def ::model
   (s/with-gen (s/or :one keyword? :many (s/coll-of keyword? :kind vector?))
               (fn [] (s/gen #{:dept :employee :meeting}))))
@@ -189,30 +145,34 @@
   (s/with-gen keyword?
               #(s/gen #{:load-dept :load-employee})))
 
-(s/def ::commit #{:all :any :none})
+
 
 (s/def ::column
   (s/with-gen (s/every-kv keyword? keyword?)
               (fn [] (s/gen #{{:id :empl_id}
                               {:dept_id :id}}))))
 
+;(defonce result-array-key :array)
+;(defonce result-single-key :single)
 
-(s/def ::result (s/every #{result-array-key result-single-key} :kind set?))
+(s/def ::array (s/spec #(= :array %)))
+(s/def ::single (s/spec #(= :single %)))
+(s/def ::result (s/every #{:array :single} :kind set?))
+
+
 (s/def ::read-only? boolean?)
 
 
-
-(defonce join-1-1-key :1-1)
-(defonce join-1-n-key :1-n)
-(defonce join-n-1-key :n-1)
-(defonce join-n-n-key :n-n)
-
+(s/def ::one-one (s/spec #(= :1-1 %)))
+(s/def ::one-many (s/spec #(= :1-n %)))
+(s/def ::many-one (s/spec #(= :n-1 %)))
+(s/def ::many-many (s/spec #(= :n-n %)))
 
 (s/def ::join-one
-  (s/tuple keyword? keyword? (s/spec #{join-1-1-key join-1-n-key join-n-1-key}) keyword? keyword?))
+  (s/tuple keyword? keyword? (s/spec #{:1-1 :1-n :n-1}) keyword? keyword?))
 
 (s/def ::join-many
-  (s/tuple keyword? keyword? (s/spec #{join-n-n-key}) keyword? keyword? (s/tuple keyword? keyword? keyword?)))
+  (s/tuple keyword? keyword? (s/spec #{:n-n}) keyword? keyword? (s/tuple keyword? keyword? keyword?)))
 
 (s/def ::join
   (s/with-gen
@@ -222,13 +182,10 @@
         :join-many ::join-many))
     (fn []
       (s/gen
-        #{[[:department :id join-1-n-key :employee :dept_id]
-           [:employee :id join-1-1-key :employee-detail :employee_id]
-           [:employee :id :n-n :meeting :meeting_id [:employee-meeting :employee_id :meeting_id]]]
-          }))
-    ))
-
-
+        #{[[:department :id ::one-many :employee :dept_id]
+           [:employee :id ::one-one :employee-detail :employee_id]
+           [:employee :id :many-many :meeting :meeting_id [:employee-meeting :employee_id :meeting_id]]]
+          }))))
 
 
 (s/def ::ref-con (clojure.spec/tuple keyword? (s/spec #(= :ref-con %)) any?))
@@ -272,102 +229,6 @@
 
 
 (s/def ::compiler-input-spec (clojure.spec/cat :global (s/? ::global) :module (s/* ::module)))
-
-
-
-
-
-(comment
-
-  (namespace :b)
-
-
-  #_(->
-      {::name "Hello"}
-      (::name))
-
-
-  ;{:name ::name}
-
-
-  (clojure.walk)
-
-  (clojure.set/rename-keys {:fname "Musterman"} {:fname :person/fname})
-
-
-  ;;backend core part come as lib
-  (s/def ::person-spec (s/keys ::req-un [::id ::fname ::lname]))
-
-  ;;web side
-  (s/def ::person-ui-spec (s/merge (s/keys ::req-un [::channel])
-                                   ::person-spec
-                                   ))
-
-
-
-
-  (s/merge (s/keys ::req-un [:dob]))
-
-
-
-
-  (s/form (s/spec boolean?))
-
-  ;(s/form one? )
-
-  ;(s/form (s/spec int?))
-
-  (s/form ::extend)
-
-  (s/form ::module)
-
-  (require :reload 'clojure.spec.gen)
-  (in-ns 'clojure.spec.gen)
-
-  ;; combinators, see call to lazy-combinators above for complete list
-
-  (generate (gen ::param-ref))
-
-  )
-
-
-
-
-(defn replace-mk
-  [m rm]
-  (let [f (fn [[k v]]
-            (do
-              ;(println k v)
-              [(or (k rm) k) v]))]
-    (into {} (map f m))))
-
-
-
-
-
-(comment
-
-  #_(get
-      (clojure.set/rename-keys {:name 1} {:name ::name})
-      ::name)
-
-  (replace-mk {:name 1} {:name ::name1})
-
-  #_(::name
-      (assoc {} ::name 1))
-
-  (into {} [[:name 2]])
-
-  (into {} [[::name "asdf"]])
-
-
-  ;::name
-  ;(:name {:name ::name})
-
-  (postwalk-rename-keys {:name 1} {:name ::name})
-  )
-
-
 
 
 

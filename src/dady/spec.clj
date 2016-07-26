@@ -19,7 +19,7 @@
   [n & content]
   (let [content (update-ns n content)]
     `(do
-  ;     (clojure.core/remove-ns '~(symbol n))
+       ;     (clojure.core/remove-ns '~(symbol n))
        (clojure.core/in-ns '~(symbol n))
        (clojure.core/refer 'clojure.core)
        (clojure.core/require '[clojure.spec :as ~(symbol 's)])
@@ -28,17 +28,7 @@
 
 
 
-(defn key->nskey
-  "Recursively transforms all map and first  vector keys from keywords to strings."
-  {:added "1.1"}
-  [m mk]
-  (clojure.walk/postwalk (fn [x]
-                           (if-let [v (get mk x)]
-                             v
-                             x)
-                           #_(cond (map? x)
-                                 (clojure.set/rename-keys x mk)
-                                 :else x)) m))
+
 
 
 (defn find-ns-spec [ns-name]
@@ -56,12 +46,12 @@
 
 
   #_(let [w {:a :a/a :b :b/b}]
-    (->> {:a 2 :b [1 :a]}
-         (clojure.walk/postwalk (fn [x]
-                                  (if-let [v (get w x)]
-                                    v
-                                    x)
-                                  ))))
+      (->> {:a 2 :b [1 :a]}
+           (clojure.walk/postwalk (fn [x]
+                                    (if-let [v (get w x)]
+                                      v
+                                      x)
+                                    ))))
 
 
   (str :hello)

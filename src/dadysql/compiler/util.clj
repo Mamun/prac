@@ -70,7 +70,7 @@
 
 (defn find-join-model [[s-tab _ join-key d-tab _ [r-tab]]]
   (condp = join-key
-    join-n-n-key [d-tab s-tab r-tab]
+    :dadysql.core/many-many [d-tab s-tab r-tab]
     [d-tab s-tab]))
 
 
@@ -156,7 +156,7 @@
     (do
       (mapv (fn [i s n m]
               {:dadysql.core/name  n
-               :dadysql.core/index     i
+               :dadysql.core/index i
                :dadysql.core/sql   s
                :dadysql.core/model m})
             (range)
@@ -168,7 +168,7 @@
          (keyword? (:dadysql.core/model m)))
     (do
       (mapv (fn [i n s]
-              {:dadysql.core/index     i
+              {:dadysql.core/index i
                :dadysql.core/name  n
                :dadysql.core/sql   s
                :dadysql.core/model (get-in m [:dadysql.core/model])})
@@ -178,9 +178,9 @@
 
     (sequential? (:dadysql.core/name m))
     (mapv (fn [i s n]
-            {:dadysql.core/name n
-             :dadysql.core/index    i
-             :dadysql.core/sql  s})
+            {:dadysql.core/name  n
+             :dadysql.core/index i
+             :dadysql.core/sql   s})
           (range)
           (get-in m [:dadysql.core/sql])
           (get-in m [:dadysql.core/name]))
@@ -209,10 +209,10 @@
   [join-coll]
   (let [f (fn [[s-tab s-id join-key d-tab d-id [r-tab r-id r-id2] :as j]]
             (condp = join-key
-              join-1-1-key [d-tab d-id join-1-1-key s-tab s-id]
-              join-1-n-key [d-tab d-id join-n-1-key s-tab s-id]
-              join-n-1-key [d-tab d-id join-1-n-key s-tab s-id]
-              join-n-n-key [d-tab d-id join-n-n-key s-tab s-id [r-tab r-id2 r-id]]
+              :dadysql.core/one-one [d-tab d-id :dadysql.core/one-one s-tab s-id]
+              :dadysql.core/one-many [d-tab d-id :dadysql.core/many-one s-tab s-id]
+              :dadysql.core/many-one [d-tab d-id :dadysql.core/one-many s-tab s-id]
+              :dadysql.core/many-many [d-tab d-id :dadysql.core/many-many s-tab s-id [r-tab r-id2 r-id]]
               j))]
     (->> (map f join-coll)
          (concat join-coll)
@@ -240,34 +240,34 @@
 
 ;;;;;;;;;;;;;;;;,,Emit sql ;;;;;;
 #_(defn dml-type
-  [v]
-  ;(println v)
-  (-> v
+    [v]
+    ;(println v)
+    (-> v
 
-      (clojure.string/trim)
-      (clojure.string/lower-case)
-      (clojure.string/split #"\s+")
-      (first)
-      (keyword)))
+        (clojure.string/trim)
+        (clojure.string/lower-case)
+        (clojure.string/split #"\s+")
+        (first)
+        (keyword)))
 
 (defn dml-type
   [v]
   ;(println v)
   (let [w (-> v
-             ; (first)
+              ; (first)
               (clojure.string/trim)
               (clojure.string/lower-case)
               (clojure.string/split #"\s+")
               (first)
               (keyword))]
 
-    (condp =   w
+    (condp = w
       :select :dadysql.core/dml-select
       :update :dadysql.core/dml-update
       :insert :dadysql.core/dml-insert
       :delete :dadysql.core/dml-delete
-      :call   :dadysql.core/dml-call
-      (throw (ex-info "Undefined dml op" {:for v} )))
+      :call :dadysql.core/dml-call
+      (throw (ex-info "Undefined dml op" {:for v})))
     ))
 
 
@@ -293,7 +293,7 @@
     (let [p (comp (filter not-empty)
                   (map sql-str-emit)
                   (map (fn [v] {:dadysql.core/sql v
-                                dml-key (dml-type v)})))
+                                dml-key           (dml-type v)})))
           sql (-> (clojure.string/trim sql-str)
                   (clojure.string/lower-case)
                   (clojure.string/split #";"))]
@@ -308,17 +308,17 @@
 
 (defn param-emit [w]
   (condp = (second w)
-    :dadysql.core/ref-fn-key  (assoc w 2 (resolve (nth w 2)))
+    :dadysql.core/ref-fn-key (assoc w 2 (resolve (nth w 2)))
     w))
 
 
 
 
 #_(defn validation-emit [v]
-  (condp = (second v)
-    validation-type-key (assoc v 2 (resolve (nth v 2)))
-    validation-contain-key (assoc v 2 (resolve (nth v 2)))
-    v))
+    (condp = (second v)
+      validation-type-key (assoc v 2 (resolve (nth v 2)))
+      validation-contain-key (assoc v 2 (resolve (nth v 2)))
+      v))
 
 
 

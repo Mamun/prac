@@ -128,8 +128,6 @@
 
   ;(s/valid? :get-dept-by-id/spec {:id 3} )
 
-
-
   )
 
 
@@ -171,11 +169,11 @@
     map-format
     (dissoc m :dadysql.core/result)
     array-format
-    (assoc m :dadysql.core/result #{result-array-key})
+    (assoc m :dadysql.core/result #{:dadysql.core/array})
     value-format
     (-> m
         (assoc :dadysql.core/model (:dadysql.core/name m))
-        (assoc :dadysql.core/result #{result-single-key result-array-key})
+        (assoc :dadysql.core/result #{:dadysql.core/single :dadysql.core/array})
         (assoc :dadysql.core/dml-key :dadysql.core/dml-select))
     m))
 

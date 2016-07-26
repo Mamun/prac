@@ -15,7 +15,7 @@
     (let [v [{:dadysql.core/param      [[1 2 3]]
               :clojure.core/column     {:p 1}
               :dadysql.core/timeout    4
-              :dadysql.core/result     #{result-single-key}
+              :dadysql.core/result     #{:dadysql.core/single}
               :dadysql.core/param-spec :a/b}
              {:dadysql.core/param   [[8 9 0]]
               :dadysql.core/timeout 6}
@@ -23,12 +23,12 @@
               :clojure.core/column     {:p  4
                               :p1 :p}
               :p             9
-              :dadysql.core/result     #{result-array-key}
+              :dadysql.core/result     #{:dadysql.core/array}
               :dadysql.core/param-spec :a/b}]
           expected-result {:dadysql.core/param   [[5 6 7] [8 9 0] [1 2 3]],
                            :clojure.core/column  {:p 4, :p1 :p}
                            :dadysql.core/timeout 6
-                           :dadysql.core/result  #{result-array-key}
+                           :dadysql.core/result  #{:dadysql.core/array}
                            :dadysql.core/param-spec :a/b
                            :p          9}
           actual-result (apply merge-with compiler-merge v)]

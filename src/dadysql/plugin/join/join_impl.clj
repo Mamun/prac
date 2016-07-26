@@ -2,7 +2,7 @@
   (:use [dady.proto])
   (:require [dadysql.core :refer :all]
             [dady.common :as cc]
-            #_[schema.core :as s]))
+    #_[schema.core :as s]))
 
 
 (defrecord JoinKey [cname corder])
@@ -22,7 +22,7 @@
 (defn join-emission-batch [j-coll]
   (mapv (fn [j]
           (condp = (nth j 2)
-            join-n-n-key
+            :dadysql.core/many-many
             (-> j
                 (update-in [0] cc/as-lower-case-keyword)
                 (update-in [1] cc/as-lower-case-keyword)
@@ -38,20 +38,20 @@
           ) j-coll))
 
 
-(defn map-reverse-join
-  [join-coll]
-  (let [f (fn [[s-tab s-id join-key d-tab d-id [r-tab r-id r-id2] :as j]]
-            (condp = join-key
-              join-1-1-key [d-tab d-id join-1-1-key s-tab s-id]
-              join-1-n-key [d-tab d-id join-n-1-key s-tab s-id]
-              join-n-1-key [d-tab d-id join-1-n-key s-tab s-id]
-              join-n-n-key [d-tab d-id join-n-n-key s-tab s-id [r-tab r-id2 r-id]]
-              j))]
-    (->> (map f join-coll)
-         (concat join-coll)
-         (distinct)
-         (sort-by first)
-         (into []))))
+#_(defn map-reverse-join
+    [join-coll]
+    (let [f (fn [[s-tab s-id join-key d-tab d-id [r-tab r-id r-id2] :as j]]
+              (condp = join-key
+                :dadysql.core/one-one [d-tab d-id :dadysql.core/one-one s-tab s-id]
+                :dadysql.core/one-many [d-tab d-id :dadysql.core/many-one s-tab s-id]
+                :dadysql.core/many-one [d-tab d-id :dadysql.core/one-many s-tab s-id]
+                :dadysql.core/many-many [d-tab d-id :dadysql.core/many-many s-tab s-id [r-tab r-id2 r-id]]
+                j))]
+      (->> (map f join-coll)
+           (concat join-coll)
+           (distinct)
+           (sort-by first)
+           (into []))))
 
 
 (defn group-by-join-src
@@ -66,35 +66,13 @@
 
 
 
-#_(extend-protocol INodeCompiler
-  JoinKey
-  (-spec [this]
-    `{(schema.core/optional-key ~(-node-name this))
-      [[(schema.core/one schema.core/Keyword "Source Data Model")
-        (schema.core/one schema.core/Keyword "Source Model Id")
-        (schema.core/one (schema.core/enum ~join-1-n-key ~join-1-1-key ~join-n-1-key ~join-n-n-key) "Relationship")
-        (schema.core/one schema.core/Keyword "Dest Model")
-        (schema.core/one schema.core/Keyword "Dest Model Id")
-        (schema.core/optional [(schema.core/one schema.core/Keyword "Join Model ")
-                     (schema.core/one schema.core/Keyword "Join Model Id1")
-                     (schema.core/one schema.core/Keyword "Join Model Id2")] "JoinSingleNTNSchema")]]})
-  (-emit [_ j-coll]
-    (->> j-coll
-         (join-emission-batch)
-         (map-reverse-join)
-         (group-by-join-src))))
-
-
-
-
-
 
 
 (defn filter-join-key-coll
   [join model-coll]
   (->> join
        (filter (fn [[_ _ rel d-table _ nr]]
-                 (if (= rel join-n-n-key)
+                 (if (= rel :dadysql.core/many-many)
                    (some #{(first nr)} model-coll)
                    (some #{d-table} model-coll))))
        (into [])))
