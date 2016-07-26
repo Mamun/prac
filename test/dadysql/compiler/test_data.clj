@@ -13,13 +13,14 @@
    :dadysql.core/extend     {:insert-dept {:dadysql.core/param   [[:transaction_id :ref-con 0]
                                                                   [:transaction_id :ref-con 0]]
                                            :dadysql.core/timeout 30}
-                             :update-dept {:dadysql.core/param [[:next_transaction_id :ref-fn-key 'inc :transaction_id]]}
+                             ;:update-dept {:dadysql.core/param [[:next_transaction_id :ref-fn-key 'inc :transaction_id]]}
                              :delete-dept {:dadysql.core/param-spec :tie-edn2/get-dept-by-id}}}
   )
 
 
 (def compile-one-expected-result
   [{:dadysql.core/timeout    30,
+    :doc  "Modify department"
     :dadysql.core/param-spec :tie-edn2/get-dept-by-id,
     :dadysql.core/param      [[:transaction_id :ref-con 0]],
     :dadysql.core/index      0,
@@ -30,14 +31,11 @@
                               :transaction_id
                               :dept_name],
     :dadysql.core/model      :department,
-    :dadysql.core/dml-key   :insert}
+    :dadysql.core/dml-key   :dadysql.core/dml-insert}
    {:dadysql.core/timeout    1000,
+    :doc  "Modify department"
     :dadysql.core/param-spec :tie-edn2/get-dept-by-id,
-    :dadysql.core/param
-                             [[:next_transaction_id
-                               :ref-fn-key
-                               #'clojure.core/inc
-                               :transaction_id]],
+
     :dadysql.core/index      1,
     :dadysql.core/name       :update-dept,
     :dadysql.core/sql
@@ -47,19 +45,21 @@
                               :transaction_id
                               :id],
     :dadysql.core/model      :department,
-    :dadysql.core/dml-key   :update}
+    :dadysql.core/dml-key   :dadysql.core/dml-update}
    {:dadysql.core/timeout    1000,
+    :doc  "Modify department"
     :dadysql.core/param-spec :tie-edn2/get-dept-by-id,
     :dadysql.core/index      2,
     :dadysql.core/name       :delete-dept,
     :dadysql.core/sql        ["delete from department where id in (:id)" :id],
     :dadysql.core/model      :department,
-    :dadysql.core/dml-key   :delete}]
+    :dadysql.core/dml-key   :dadysql.core/dml-delete}]
 
   )
 
 
 ;(s/spec? integer?)
+
 
 
 
@@ -111,7 +111,7 @@
                             :limit
                             :offset],
     :dadysql.core/model    :department,
-    :dadysql.core/dml-key :select},
+    :dadysql.core/dml-key :dadysql.core/dml-select},
    :get-dept-by-ids
    {:dadysql.core/index      1,
     :dadysql.core/name       :get-dept-by-ids,
@@ -120,7 +120,7 @@
     :dadysql.core/result     #{:array},
     :dadysql.core/timeout    5000,
     :dadysql.core/param-spec :tie-edn2/get-dept-by-id,
-    :dadysql.core/dml-key   :select,
+    :dadysql.core/dml-key   :dadysql.core/dml-select,
     :dadysql.core/join       [[:department :id :1-n :employee :dept_id]],
     :dadysql.core/model      :department},
    :get-employee-list
@@ -148,7 +148,7 @@
     :dadysql.core/sql
                            ["select * from meeting limit :limit offset :offset" :limit :offset],
     :dadysql.core/model    :meeting,
-    :dadysql.core/dml-key :select},
+    :dadysql.core/dml-key :dadysql.core/dml-select},
    :get-employee-meeting-list
    {:dadysql.core/timeout  5000,
     :dadysql.core/result   #{:array},
@@ -160,7 +160,7 @@
                             :limit
                             :offset],
     :dadysql.core/model    :employee-meeting,
-    :dadysql.core/dml-key :select}})
+    :dadysql.core/dml-key :dadysql.core/dml-select}})
 
 
 

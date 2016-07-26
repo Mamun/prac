@@ -61,6 +61,9 @@
 (comment
   (compile-one-test)
 
+
+  ;(run-tests)
+
   )
 
 

@@ -6,7 +6,27 @@
             [dadysql.core-util :as cu]
             ))
 
+(deftest apply-validation-test!
+  (testing "testing apply validation "
+    (let [input [{:dadysql.core/name       :get-dept-by-id,
+                  :dadysql.core/sql        ["select * from department where id = ?" 1],
+                  :dadysql.core/model      :department,
+                  :dadysql.core/result     #{:single},
+                  :dadysql.core/param-spec :get-dept-by-id/spec,
+                  :dadysql.core/timeout    2000,
+                  :dadysql.core/dml-key    :dadysql.core/dml-select,
+                  :dadysql.core/join       [],
+                  :dadysql.core/group      :load-dept,
+                  :dadysql.core/index      0,
+                  :input                   {:id 1}}]
+          r  (apply-validation! input)
+          ]
+      (is (= r input))
+      )
+    )
+  )
 
+;(apply-validation-test!)
 
 
 #_(deftest do-output-bind-test

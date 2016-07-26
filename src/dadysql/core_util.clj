@@ -34,7 +34,7 @@
   [coll]
   (let [model-key-coll (mapv :dadysql.core/model coll)
         p (comp
-            (cc/xf-skip-type #(= dml-call-key (:dadysql.core/dml-key %)))
+            (cc/xf-skip-type #(= :dadysql.core/dml-call (:dadysql.core/dml-key %)))
             (map #(update-in % [:dadysql.core/join] j/filter-join-key-coll model-key-coll)))]
     (transduce p conj [] coll)))
 

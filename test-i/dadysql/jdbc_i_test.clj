@@ -107,20 +107,25 @@
 
 ;(pull-test)
 
+#_(clojure.pprint/pprint
+  (:create-dept (td/get-tms)))
+
+;(empty [ 1 2 3] )
+
 (deftest push!-test
   (testing "testing push! "
 
-    (is (= (push! @td/ds (td/get-tms)
+    (is (= (push! (td/get-ds) (td/get-tms)
                   {:name   :create-dept
                    :params {:dept_name "Support "}})
            [1]))
 
-    (is (= (push! @td/ds @td/tms
+    (is (= (push! (td/get-ds) (td/get-tms)
                   {:name   [:create-dept]
                    :params {:department {:dept_name "IT"}}})
            {:department [1]}))
 
-    (is (= (push! @td/ds @td/tms
+    (is (= (push! (td/get-ds) (td/get-tms)
                   {:name   [:create-employee :create-employee-detail]
                    :params {:employee {:firstname       "Schwan"
                                        :lastname        "Ragg"
@@ -131,7 +136,7 @@
                                                          :country "Germany"}}}})
            {:employee [1] :employee-detail [1]}))
 
-    (is (= (push! @td/ds @td/tms
+    (is (= (push! (td/get-ds) (td/get-tms)
                   {:name   [:create-meeting :create-employee-meeting]
                    :params {:meeting {:subject  "Hello Meeting for IT"
                                       :employee [{:current_transaction_id 1,
@@ -146,27 +151,34 @@
                                                   :id                     2}]}}})
            {:meeting [1], :employee-meeting [1 1]}))
 
-    (is (= (push! @td/ds @td/tms
+    (is (= (push! (td/get-ds) (td/get-tms)
                   {:name   [:create-meeting :create-employee-meeting]
                    :params {:meeting {:subject  "Hello Meeting for Manager"
                                       :employee {:id 112}}}})
            {:meeting [1], :employee-meeting [1]}))
 
-    (is (= (push! @td/ds @td/tms
-                  {:name   [:delete-dept]
-                   :params {:department {:id 1 }}})
-           {:department [1]}))
 
-    (is (= (push! @td/ds @td/tms
+
+    (is (= (push! (td/get-ds) (td/get-tms)
                   {:name   :update-dept
                    :params {:dept_name "Call Center Munich 1" :transaction_id 0 :id 1}})
            [1]))
 
-    (is (= (push! @td/ds @td/tms
+    (is (= (push! (td/get-ds) (td/get-tms)
                   {:name   [:update-dept]
                    :params {:department {:dept_name "Call Center Munich 1" :transaction_id 0 :id 1}}})
-           {:department [1]}))))
+           {:department [1]}))
+    (is (= (push! (td/get-ds) (td/get-tms)
+                  {:name   [:delete-dept]
+                   :params {:department {:id 1 }}})
+           {:department [1]}))
+    ))
 
+
+(comment
+  (push!-test)
+
+  )
 
 ;@td/tms
 ;(run-tests)

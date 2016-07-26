@@ -86,7 +86,7 @@
              (tie/do-run (select-pull-node ds tms request-m) tms)))
 
 
-(defn debug [v]
+#_(defn debug [v]
   (println "----")
   (clojure.pprint/pprint v)
   (println "---")
@@ -135,11 +135,11 @@
 (defn has-dml-type? [m-map]
   (let [dml (:dadysql.core/dml-key m-map)]
     (or
-      (= tc/dml-update-key dml)
-      (= tc/dml-call-key dml)
-      (= tc/dml-insert-key dml)
-      (= tc/dml-delete-key dml)
-      (= tc/dml-select-key dml))))
+      (= :dadysql.core/dml-update dml)
+      (= :dadysql.core/dml-call dml)
+      (= :dadysql.core/dml-insert dml)
+      (= :dadysql.core/dml-delete dml)
+      (= :dadysql.core/dml-select dml))))
 
 
 (defn get-dml

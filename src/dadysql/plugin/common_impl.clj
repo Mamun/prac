@@ -49,8 +49,8 @@
 
 (defn do-result
   [tm]
-  (if-not (or (= (:dadysql.core/dml-key tm) dml-select-key)
-              (= (:dadysql.core/dml-key tm) dml-call-key))
+  (if-not (or (= (:dadysql.core/dml-key tm) :dadysql.core/dml-select)
+              (= (:dadysql.core/dml-key tm) :dadysql.core/dml-call))
     tm
     (let [result (:dadysql.core/result tm)
           output (output-key tm)]
@@ -72,8 +72,8 @@
 
 (defn do-column
   [tm]
-  (if-not (or (= (:dadysql.core/dml-key tm) dml-call-key)
-              (= (:dadysql.core/dml-key tm) dml-select-key))
+  (if-not (or (= (:dadysql.core/dml-key tm) :dadysql.core/dml-call)
+              (= (:dadysql.core/dml-key tm) :dadysql.core/dml-select))
     tm
     (let [column (:clojure.core/column tm)
           output (output-key tm)]

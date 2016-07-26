@@ -28,7 +28,7 @@
   (do
     (td/get-ds)
     (-> (td/get-ds)
-        (t/db-do  [:create-ddl :init-data] (t/read-file "tie.edn2.sql"))))
+        (t/db-do  [:create-ddl :init-data] (t/read-file "tie.edn.sql"))))
 
 
   (-> @td/ds
@@ -178,7 +178,7 @@
   ;; Check all depts
   (-> @td/ds
       (t/pull (t/read-file "tie.edn.sql")
-              :name [:get-dept-list])
+              {:name [:get-dept-list]})
       (clojure.pprint/pprint))
 
 
@@ -210,11 +210,12 @@
                  :params d)
         (clojure.pprint/pprint)))
 
-  (let [d {:dept_name "Call Center Munich 1" :transaction_id 0 :id 1}]
+  (let [d {:dept_name "Call Center Munich 1" :transaction_id 0 :id 2}]
     (-> @td/ds
         (t/push! (t/read-file "tie.edn.sql")
-                 :name :update-dept
-                 :params d)
+                 {
+                  :name   :update-dept
+                  :params d})
         (clojure.pprint/pprint)))
 
 

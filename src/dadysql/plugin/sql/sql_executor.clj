@@ -66,7 +66,7 @@
   "Return commit type if not found return commit-none-key  "
   [tm-coll]
   (let [p (comp
-            (filter #(not= dml-select-key (:dadysql.core/dml-key %)))
+            (filter #(not= :dadysql.core/dml-select (:dadysql.core/dml-key %)))
             (map #(:dadysql.core/commit %))
             (map #(or % commit-all-key)))
         commits (into [] p tm-coll)]
@@ -111,11 +111,11 @@
         result (:dadysql.core/result tm)]
     ;todo Need to move this log from here
     (condp = dml-type
-      dml-select-key
+      :dadysql.core/dml-select
       (if (contains? result result-array-key)
         (jdbc/query ds sql :as-arrays? true :identifiers clojure.string/lower-case)
         (jdbc/query ds sql :as-arrays? false :identifiers clojure.string/lower-case))
-      dml-insert-key
+      :dadysql.core/dml-insert
       (jdbc/execute! ds sql :multi? true)
       (jdbc/execute! ds sql))))
 

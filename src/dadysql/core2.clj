@@ -16,8 +16,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;; Selecting impl ;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 #_(defn select-config
-  [tms]
-  (global-key tms))
+    [tms]
+    (global-key tms))
 
 
 (defn select-name
@@ -38,10 +38,10 @@
       tm-map
       :else
       (f/try-> tm-map
-                (cu/validate-name! name-key-coll)
-                (cc/select-values name-key-coll)
-                (cu/validate-model!)
-                (cu/filter-join-key)))))
+               (cu/validate-name! name-key-coll)
+               (cc/select-values name-key-coll)
+               (cu/validate-model!)
+               (cu/filter-join-key)))))
 
 
 
@@ -79,7 +79,7 @@
         (-> (apply comp (c/as-xf-process :output n-processor))
             (transduce conj tm-coll))
         :input
-        (let [p (->> (c/remove-child (c/remove-child n-processor :dadysql.core/param-spec ) :dadysql.core/param)
+        (let [p (->> (c/remove-child (c/remove-child n-processor :dadysql.core/param-spec) :dadysql.core/param)
                      (c/as-xf-process :input)
                      (apply f/comp-xf-until))]
           (transduce p conj tm-coll))
@@ -89,21 +89,49 @@
         tm-coll))))
 
 
+(defn do-validate [spec v]
+  ;(println v)
+  (if (sequential? v)
+    (reduce (fn [acc w]
+              (if (s/valid? spec w)
+                (conj acc w)
+                (reduced (f/fail (s/explain-data spec w))))
+              ) (empty v) v)
+
+    (if (s/valid? spec v)
+      v
+      (f/fail (s/explain-data spec v)))))
+
+;(sequential? {:a 2})
+
 (defn apply-validation! [tm-coll]
+  ;(clojure.pprint/pprint tm-coll)
+
   (reduce (fn [acc v]
             (if-let [vali (:dadysql.core/param-spec v)]
-              (if (coll? (input-key v))
+              (let [w (do-validate vali (input-key v))]
 
-                (conj acc v)
-                (if (s/valid? vali (input-key v))
+                (if (f/failed? w)
+                  (reduced w)
                   (conj acc v)
-                  (reduced (f/fail (s/explain-data vali (input-key v))))
-                  ;(println "apply validation is called" vali (input-key v))
-                  ))
+                  )
+                )
+
+
               (conj acc v)
               )
-            ) (empty tm-coll) tm-coll )
+            ) [] tm-coll)
   )
+
+
+(comment
+
+  ;(s/valid? :get-dept-by-id/spec {:id 3} )
+
+
+
+  )
+
 
 
 (defmulti warp-input-node-process (fn [_ _ fmt] fmt))
@@ -127,8 +155,8 @@
   (fn [tm-coll params]
     (let [param-m (c/get-child n-processor :dadysql.core/param)
           input (f/try-> params
-                          (p/do-param nested-map-format tm-coll param-m)
-                          (j/do-disjoin (get-in tm-coll [0 :dadysql.core/join ])))]
+                         (p/do-param nested-map-format tm-coll param-m)
+                         (j/do-disjoin (get-in tm-coll [0 :dadysql.core/join])))]
       (if (f/failed? input)
         input
         (-> (mapv (fn [m] (assoc m input-key ((:dadysql.core/model m) input))) tm-coll)
@@ -148,8 +176,9 @@
     (-> m
         (assoc :dadysql.core/model (:dadysql.core/name m))
         (assoc :dadysql.core/result #{result-single-key result-array-key})
-        (assoc :dadysql.core/dml-key dml-select-key))
+        (assoc :dadysql.core/dml-key :dadysql.core/dml-select))
     m))
+
 
 
 (defn assoc-result-format
@@ -166,8 +195,8 @@
 
 
 #_(defn into-map
-  [tm-coll]
-  (into {} tm-coll))
+    [tm-coll]
+    (into {} tm-coll))
 
 
 (defn format-output
@@ -191,10 +220,10 @@
   [handler n-processor format]
   (fn [tm-coll params]
     (f/try-> tm-coll
-              (assoc-result-format format)
-              (handler params)
-              (do-node-process n-processor :output)
-              (format-output format))))
+             (assoc-result-format format)
+             (handler params)
+             (do-node-process n-processor :output)
+             (format-output format))))
 
 
 (defn- is-join-pull
@@ -233,10 +262,10 @@
           (if (not-continue? root-output)
             root-output
             (f/try-> root-output
-                      (merge-relation-param root params)
-                      (r-handler)
-                      (merge root-output)
-                      (j/do-join (:dadysql.core/join root)))))))))
+                     (merge-relation-param root params)
+                     (r-handler)
+                     (merge root-output)
+                     (j/do-join (:dadysql.core/join root)))))))))
 
 
 
@@ -244,7 +273,7 @@
 (defn do-run
   [n-processor tms {:keys [gname name params pformat rformat]}]
   (let [exec (fn [tm-coll _]
-              (do-node-process tm-coll n-processor :sql-executor))
+               (do-node-process tm-coll n-processor :sql-executor))
         proc (-> exec
                  (warp-input-node-process n-processor pformat)
                  (warp-output-node-process n-processor rformat))

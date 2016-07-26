@@ -80,7 +80,7 @@
 
 (deftest commit-type-test
   (testing "test commit-type with one dml type "
-    (let [data [{:dadysql.core/dml-key     dml-select-key
+    (let [data [{:dadysql.core/dml-key     :dadysql.core/dml-select
                  :dadysql.core/commit commit-all-key}]
           actual-result (commit-type data)]
       (is (= actual-result

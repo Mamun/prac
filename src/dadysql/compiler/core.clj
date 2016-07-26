@@ -97,8 +97,8 @@
 (defn do-skip-for-dml-type
   [m]
   (condp = (:dadysql.core/dml-key m)
-    dml-select-key m
-    dml-call-key (apply dissoc m skip-key-for-call)
+    :dadysql.core/dml-select m
+    :dadysql.core/dml-call (apply dissoc m skip-key-for-call)
     (apply dissoc m skip-key-for-others)))
 
 

@@ -88,7 +88,8 @@
   (let [i-coll (->> (mapv (juxt :dadysql.core/join :dadysql.core/model) coll)
 
                     )]
-    (println i-coll)
+    ;(println i-coll)
+    coll
     )
   )
 
@@ -238,7 +239,7 @@
 
 
 ;;;;;;;;;;;;;;;;,,Emit sql ;;;;;;
-(defn dml-type
+#_(defn dml-type
   [v]
   ;(println v)
   (-> v
@@ -248,6 +249,27 @@
       (clojure.string/split #"\s+")
       (first)
       (keyword)))
+
+(defn dml-type
+  [v]
+  ;(println v)
+  (let [w (-> v
+             ; (first)
+              (clojure.string/trim)
+              (clojure.string/lower-case)
+              (clojure.string/split #"\s+")
+              (first)
+              (keyword))]
+
+    (condp =   w
+      :select :dadysql.core/dml-select
+      :update :dadysql.core/dml-update
+      :insert :dadysql.core/dml-insert
+      :delete :dadysql.core/dml-delete
+      :call   :dadysql.core/dml-call
+      (throw (ex-info "Undefined dml op" {:for v} )))
+    ))
+
 
 
 (def sql-param-regex #"\w*:[\w|\-|#]+")
@@ -286,7 +308,7 @@
 
 (defn param-emit [w]
   (condp = (second w)
-    param-ref-fn-key  (assoc w 2 (resolve (nth w 2)))
+    :dadysql.core/ref-fn-key  (assoc w 2 (resolve (nth w 2)))
     w))
 
 

@@ -33,7 +33,10 @@
   {:added "1.1"}
   [m mk]
   (clojure.walk/postwalk (fn [x]
-                           (cond (map? x)
+                           (if-let [v (get mk x)]
+                             v
+                             x)
+                           #_(cond (map? x)
                                  (clojure.set/rename-keys x mk)
                                  :else x)) m))
 
@@ -51,6 +54,14 @@
 
 (comment
 
+
+  #_(let [w {:a :a/a :b :b/b}]
+    (->> {:a 2 :b [1 :a]}
+         (clojure.walk/postwalk (fn [x]
+                                  (if-let [v (get w x)]
+                                    v
+                                    x)
+                                  ))))
 
 
   (str :hello)

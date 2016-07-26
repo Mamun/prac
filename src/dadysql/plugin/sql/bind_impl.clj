@@ -19,11 +19,41 @@
   (let [dml-type (:dadysql.core/dml-key m)
         input (input-key m)
         sql (:dadysql.core/sql m)]
-    (if (and (not= dml-type dml-insert-key)
+    (if (and (not= dml-type :dadysql.core/dml-insert)
              (not-empty (rest sql))
              (not (map? input)))
       (f/fail (format "Input Params for %s will be map format but %s is not map format " sql input))
       m)))
+
+(comment
+
+  ;(contains? #{1 2 3}  5)
+
+  (validate-input-type!
+    {
+     :dadysql.core/sql
+                           ["insert into employee_detail (employee_id, street,   city,  state,  country )                     values (:employee_id, :street, :city, :state, :country)"
+                            :employee_id
+                            :street
+                            :city
+                            :state
+                            :country],
+
+     :dadysql.core/dml-key :dadysql.core/dml-insert,
+
+     :input
+                           [{:street      "Schwan",
+                             :city        "Munich",
+                             :state       "Bayern",
+                             :country     "Germany",
+                             :id          126,
+                             :employee_id 125}],
+     })
+
+  )
+
+
+
 
 
 (defn- validate-required-params*!
@@ -120,21 +150,33 @@
 
 
 
-(defn dml-type
+#_(defn dml-type
   [v]
-  (-> v
-      (first)
-      (clojure.string/trim)
-      (clojure.string/lower-case)
-      (clojure.string/split #"\s+")
-      (first)
-      (keyword)))
+  (println v)
+  (let [w (-> v
+              (first)
+              (clojure.string/trim)
+              (clojure.string/lower-case)
+              (clojure.string/split #"\s+")
+              (first)
+              (keyword))]
+
+    (condp =   w
+      :select :dadysql.core/dml-select
+      :update :dadysql.core/dml-update
+      :insert :dadysql.core/dml-insert
+      :delete :dadysql.core/dml-delete
+      :call   :dadysql.core/dml-call
+      (throw (ex-info "Undefined dml op" {:for v} )))
+    ))
+
+;insert
+;(dml-type ["select * from p where "])
+
+;(def sql-param-regex #"\w*:[\w|\-|#]+")
 
 
-(def sql-param-regex #"\w*:[\w|\-|#]+")
-
-
-(defn sql-str-emit
+#_(defn sql-str-emit
   [sql-str]
   (->> (re-seq sql-param-regex sql-str)
        (transduce (comp (map read-string)) conj)
@@ -147,7 +189,7 @@
                  ) [sql-str])))
 
 
-(defn sql-emit
+#_(defn sql-emit
   [sql-str]
   (let [p (comp (filter not-empty)
                 (map sql-str-emit)
@@ -174,17 +216,26 @@
 
 (defn new-childs-key []
   (vector
-    (InsertSqlKey. dml-insert-key 0)
-    (UpdateSqlKey. dml-update-key 1)
-    (DeleteSqlKey. dml-delete-key 2)
-    (SelectSqlKey. dml-select-key 3)
-    (CallSqlKey. dml-call-key 4)))
+    (InsertSqlKey. :dadysql.core/dml-insert 0)
+    (UpdateSqlKey. :dadysql.core/dml-update 1)
+    (DeleteSqlKey. :dadysql.core/dml-delete 2)
+    (SelectSqlKey. :dadysql.core/dml-select 3)
+    (CallSqlKey. :dadysql.core/dml-call 4)))
 
 
-
+#_(defn debug [v]
+  (println "---")
+  (clojure.pprint/pprint v)
+  (println "---")
+  v
+  )
 
 (defn batch-process [childs m]
+
+  ;(clojure.pprint/pprint m)
+
   (let [p (-> (group-by-node-name childs)
+   ;           (debug)
               (get (:dadysql.core/dml-key m)))]
     (-process p m)))
 
@@ -198,32 +249,32 @@
   InsertSqlKey
   (-lorder [this] (:corder this))
   (-process-type [_] :input)
-  (-process? [_ m] (= dml-insert-key (:dadysql.core/dml-key m)))
+  (-process? [_ m] (= :dadysql.core/dml-insert (:dadysql.core/dml-key m)))
   (-process [_ m]
     (do-insert-proc m))
   UpdateSqlKey
   (-lorder [this] (:corder this))
   (-process-type [_] :input)
-  (-process? [_ m] (= dml-update-key (:dadysql.core/dml-key m)))
+  (-process? [_ m] (= :dadysql.core/dml-update (:dadysql.core/dml-key m)))
   (-process [_ m]
     (do-default-proc m))
   SelectSqlKey
   (-lorder [this] (:corder this))
   (-process-type [_] :input)
   (-process? [_ m] (do
-                     (= dml-select-key (:dadysql.core/dml-key m))))
+                     (= :dadysql.core/dml-select (:dadysql.core/dml-key m))))
   (-process [_ m]
     (do-default-proc m))
   DeleteSqlKey
   (-lorder [this] (:corder this))
   (-process-type [_] :input)
-  (-process? [_ m] (= dml-delete-key (:dadysql.core/dml-key m)))
+  (-process? [_ m] (= :dadysql.core/dml-delete (:dadysql.core/dml-key m)))
   (-process [_ m]
     (do-default-proc m))
   CallSqlKey
   (-lorder [this] (:corder this))
   (-process-type [_] :input)
-  (-process? [_ m] (= dml-call-key (:dadysql.core/dml-key m)))
+  (-process? [_ m] (= :dadysql.core/dml-call (:dadysql.core/dml-key m)))
   (-process [_ m]
     (do-default-proc m)))
 
