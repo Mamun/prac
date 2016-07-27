@@ -5,7 +5,7 @@
             [dady.common :as cc]
             [dady.fail :as f]
             [dady.proto :refer :all]
-            [dadysql.core :refer :all]
+            [dadysql.spec :refer :all]
             [clojure.tools.logging :as log]))
 
 
@@ -50,8 +50,8 @@
   [commit-type read-only result-coll]
   (cond
     (= true read-only) true
-    (= commit-type :dadysql.core/none) true
-    (and (= commit-type :dadysql.core/all)
+    (= commit-type :dadysql.spec/none) true
+    (and (= commit-type :dadysql.spec/all)
          (f/failed? result-coll)) true
     :else false))
 
@@ -66,17 +66,17 @@
   "Return commit type if not found return commit-none-key  "
   [tm-coll]
   (let [p (comp
-            (filter #(not= :dadysql.core/dml-select (:dadysql.core/dml-key %)))
-            (map #(:dadysql.core/commit %))
-            (map #(or % :dadysql.core/all)))
+            (filter #(not= :dadysql.spec/dml-select (:dadysql.spec/dml-key %)))
+            (map #(:dadysql.spec/commit %))
+            (map #(or % :dadysql.spec/all)))
         commits (into [] p tm-coll)]
     ;(println commits)
     (if (empty? commits)
-      :dadysql.core/none
-      (or (some #{:dadysql.core/none} commits)
-          (some #{:dadysql.core/all} commits)
-          (cc/contain-all? commits :dadysql.core/any)
-          :dadysql.core/none))))
+      :dadysql.spec/none
+      (or (some #{:dadysql.spec/none} commits)
+          (some #{:dadysql.spec/all} commits)
+          (cc/contain-all? commits :dadysql.spec/any)
+          :dadysql.spec/none))))
 
 
 (defn read-only?
@@ -106,15 +106,15 @@
 
 (defn jdbc-handler-single
   [ds tm]
-  (let [dml-type (:dadysql.core/dml-key tm)
-        sql (:dadysql.core/sql tm)
-        result (:dadysql.core/result tm)]
+  (let [dml-type (:dadysql.spec/dml-key tm)
+        sql (:dadysql.spec/sql tm)
+        result (:dadysql.spec/result tm)]
     (condp = dml-type
-      :dadysql.core/dml-select
-      (if (contains? result :dadysql.core/array)
+      :dadysql.spec/dml-select
+      (if (contains? result :dadysql.spec/array)
         (jdbc/query ds sql :as-arrays? true :identifiers clojure.string/lower-case)
         (jdbc/query ds sql :as-arrays? false :identifiers clojure.string/lower-case))
-      :dadysql.core/dml-insert
+      :dadysql.spec/dml-insert
       (jdbc/execute! ds sql :multi? true)
       (jdbc/execute! ds sql))))
 
@@ -135,11 +135,11 @@
         (if (f/failed? r)
           r
           (assoc m output-key r
-                   :dadysql.core/exec-total-time total
-                   :dadysql.core/exec-start-time stm)))
+                   :dadysql.spec/exec-total-time total
+                   :dadysql.spec/exec-start-time stm)))
       (catch Exception e
-        (log/error e (:dadysql.core/sql m))
-        (-> (f/fail {:dadysql.core/query-exception (.getMessage e)})
+        (log/error e (:dadysql.spec/sql m))
+        (-> (f/fail {:dadysql.spec/query-exception (.getMessage e)})
             (merge m))))))
 
 
@@ -147,14 +147,14 @@
   [handler]
   (fn [m]
     (async/go
-      (let [t-v (or (:dadysql.core/timeout m) 2000)
+      (let [t-v (or (:dadysql.spec/timeout m) 2000)
             exec-ch (async/thread (handler m))
             [v rch] (async/alts! [exec-ch (async/timeout t-v)])]
         (if (= rch exec-ch)
           v
           ;; Need to assoc exception here as it returns from here
-          (-> {:dadysql.core/query-exception "SQL Execution time out"
-               :dadysql.core/timeout         t-v}
+          (-> {:dadysql.spec/query-exception "SQL Execution time out"
+               :dadysql.spec/timeout         t-v}
               (f/fail)
               (merge m)))))))
 
@@ -185,7 +185,7 @@
     (-> (map #(apply-handler-one (jdbc-handler->chan ds) %))
         (f/comp-xf-until)
         (transduce conj m-coll))
-    :dadysql.core/all
+    :dadysql.spec/all
     (do-execute SerialNotFailed ds m-coll)
     ;; default serial
     (do-execute Serial ds m-coll)))
@@ -219,7 +219,7 @@
 
 (defn sql-executor-node
   [ds tms type]
-  (let [tx (apply hash-map (get-in tms [global-key :dadysql.core/tx-prop]))
+  (let [tx (apply hash-map (get-in tms [global-key :dadysql.spec/tx-prop]))
         f (fn [m-coll] (db-execute m-coll type ds tx))]
     (fn-as-node-processor f :name :sql-executor)))
 

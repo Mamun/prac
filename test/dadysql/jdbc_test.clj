@@ -1,22 +1,22 @@
 (ns dadysql.jdbc-test
   (:use [clojure.test])
   (:require [dady.common :refer :all]
-            [dadysql.core :refer :all]
+            [dadysql.spec :refer :all]
             [dadysql.jdbc :refer :all]))
 
 
 (deftest has-dml-type?-test
   (testing "test has-dml-type? "
-    (let [data {:dadysql.core/dml-key :dadysql.core/dml-select}]
+    (let [data {:dadysql.spec/dml-key :dadysql.spec/dml-select}]
       (is (not (nil? (has-dml-type? data)))))))
 
 
 (deftest get-dml-test
   (testing "get-dml test "
-    (let [tms {:get-dml     {:dadysql.core/sql ["select * from tab where tab = :tab" :tab]
-                             :dadysql.core/dml-key :dadysql.core/dml-select}
-               :create-dual {:dadysql.core/sql ["insert into dual value (a )"]
-                             :dadysql.core/dml-key :dadysql.core/dml-select}}
+    (let [tms {:get-dml     {:dadysql.spec/sql ["select * from tab where tab = :tab" :tab]
+                             :dadysql.spec/dml-key :dadysql.spec/dml-select}
+               :create-dual {:dadysql.spec/sql ["insert into dual value (a )"]
+                             :dadysql.spec/dml-key :dadysql.spec/dml-select}}
           actual-result (get-dml tms)
           expected-result ["select * from tab where tab = ?"]]
       (is (= expected-result
@@ -28,7 +28,7 @@
 ;(var int?)
 
 #_(clojure.pprint/pprint
-  (get-in (read-file "tie.edn.sql") [:get-dept-employee :dadysql.core/join]))
+  (get-in (read-file "tie.edn.sql") [:get-dept-employee :dadysql.spec/join]))
 
 
 (deftest read-file-test
@@ -39,18 +39,18 @@
 
       (do
         (are [e a] (= e a)
-          :gen-dept (get-in w [:gen-dept ::dadysql.core/model]))
+          :gen-dept (get-in w [:gen-dept :dadysql.spec/model]))
 
        ; (clojure.pprint/pprint (get-in w [:get-dept-by-id validation-key]))
 
         (are [e a]  (= e a)
           ;get-dept-by-id
-          :department (get-in w [:get-dept-by-id :dadysql.core/model])
-          :dadysql.core/dml-select (get-in w [:get-dept-by-id :dadysql.core/dml-key])
-          2000 (get-in w [:get-dept-by-id :dadysql.core/timeout])
-          ;["select * from department where id = :id " :id] (get-in w [:get-dept-by-id :dadysql.core/sql])
+          :department (get-in w [:get-dept-by-id :dadysql.spec/model])
+          :dadysql.spec/dml-select (get-in w [:get-dept-by-id :dadysql.spec/dml-key])
+          2000 (get-in w [:get-dept-by-id :dadysql.spec/timeout])
+          ;["select * from department where id = :id " :id] (get-in w [:get-dept-by-id :dadysql.spec/sql])
        ;   [[:id :type (resolve 'int?) "Id will be Long "]] (get-in w [:get-dept-by-id validation-key])
-          [[:department :id :dadysql.core/one-many :employee :dept_id]] (get-in w [:get-dept-by-id :dadysql.core/join])
+          [[:department :id :dadysql.spec/one-many :employee :dept_id]] (get-in w [:get-dept-by-id :dadysql.spec/join])
 
           #_[[:id :type #'clojure.core/vector? "Id will be sequence"]
            [:id :contain #'clojure.core/int? "Id contain will be Long "]]
@@ -71,25 +71,25 @@
           (= expected actual)
 
           ;join test
-          [[:employee :id :dadysql.core/one-one :employee-detail :employee_id]
+          [[:employee :id :dadysql.spec/one-one :employee-detail :employee_id]
            [:employee
             :id
-            :dadysql.core/many-many
+            :dadysql.spec/many-many
             :meeting
             :meeting_id
             [:employee-meeting :employee_id :meeting_id]]
-           [:employee :dept_id :dadysql.core/many-one :department :id]] (get-in w [:get-dept-employee :dadysql.core/join]))
+           [:employee :dept_id :dadysql.spec/many-one :department :id]] (get-in w [:get-dept-employee :dadysql.spec/join]))
 
         (are [expected actual]
           (= expected actual)
 
-          :meeting (get-in w [:create-meeting :dadysql.core/model])
+          :meeting (get-in w [:create-meeting :dadysql.spec/model])
           [[:meeting
             :meeting_id
-            :dadysql.core/many-many
+            :dadysql.spec/many-many
             :employee
             :id
-            [:employee-meeting :meeting_id :employee_id]]] (get-in w [:get-meeting-by-id :dadysql.core/join])))))
+            [:employee-meeting :meeting_id :employee_id]]] (get-in w [:get-meeting-by-id :dadysql.spec/join])))))
   )
 
 

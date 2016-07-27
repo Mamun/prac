@@ -1,12 +1,5 @@
-(ns dadysql.core
-  (:use [dady.common]
-        [dady.fail])
-  (:require [clojure.spec :as s]
-            [clojure.spec :as s]
-            [clojure.spec :as s]
-            [clojure.spec :as s]
-            [clojure.spec :as s]
-            [clojure.spec :as s]))
+(ns dadysql.spec
+  (:require [clojure.spec :as s]))
 
 (defonce global-key :_global_)
 
@@ -31,52 +24,6 @@
 (s/def ::exec-total-time int?)
 (s/def ::exec-start-time int?)
 (s/def ::query-exception string?)
-
-
-(def alais-map {:doc          ::doc
-                :timeout      ::timeout
-                :reserve-name ::reserve-name
-                :file-reload  ::file-reload
-                :tx-prop      ::tx-prop
-
-
-
-                :join         ::join
-                :1-1          ::one-one
-                :1-n          ::one-many
-                :n-1          ::many-one
-                :n-n          ::many-many
-
-                :name         ::name
-                :model        ::model
-                :group        ::group
-                :column       ::column
-                :sql          ::sql
-
-                :result       ::result
-                :array        ::array
-                :single       ::single
-
-                :commit       ::commit
-                :all          ::all
-                :any          ::any
-                :none         ::none
-
-                :dml-type     ::dml-type
-                :index        ::index
-
-                :skip         ::skip
-                :param        ::param
-                :param-spec   ::param-spec
-                :ref-con      ::ref-con
-                :ref-key      ::ref-key
-                :ref-fn-key   ::ref-fn-key
-                :ref-gen      ::ref-gen
-
-
-                :extend       ::extend
-                :spec-file    ::spec-file
-                })
 
 
 
@@ -235,6 +182,56 @@
 
 (s/def ::input (s/keys :req-un [(or ::name ::group)]
                        :opt-un [::params ::pformat ::oformat]))
+
+
+
+(def alais-map {:doc          ::doc
+                :timeout      ::timeout
+                :reserve-name ::reserve-name
+                :file-reload  ::file-reload
+                :tx-prop      ::tx-prop
+
+
+
+                :join         ::join
+                :1-1          ::one-one
+                :1-n          ::one-many
+                :n-1          ::many-one
+                :n-n          ::many-many
+
+                :name         ::name
+                :model        ::model
+                :group        ::group
+                :column       ::column
+                :sql          ::sql
+
+                :result       ::result
+                :array        ::array
+                :single       ::single
+
+                :commit       ::commit
+                :all          ::all
+                :any          ::any
+                :none         ::none
+
+                :dml-type     ::dml-type
+                :index        ::index
+
+                :skip         ::skip
+                :param        ::param
+                :param-spec   ::param-spec
+                :ref-con      ::ref-con
+                :ref-key      ::ref-key
+                :ref-fn-key   ::ref-fn-key
+                :ref-gen      ::ref-gen
+
+
+                :extend       ::extend
+                :spec-file    ::spec-file
+                })
+
+
+
 
 
 (comment

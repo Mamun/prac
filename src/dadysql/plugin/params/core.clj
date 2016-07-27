@@ -1,9 +1,9 @@
 (ns dadysql.plugin.params.core
   (:use [dady.proto])
-  (:require [dadysql.core :refer :all]
+  (:require [dadysql.spec :refer :all]
             [dady.common :as cc]
             [dady.fail :as f]
-            [dadysql.core-util :as ccu]
+            [dadysql.plugin.util :as ccu]
     #_[clojure.spec :as sp]
     #_[schema.core :as s]))
 
@@ -19,7 +19,7 @@
 
 (defn new-param-key
   [order childs]
-  (ParamKey. :dadysql.core/param childs order))
+  (ParamKey. :dadysql.spec/param childs order))
 
 
 (defn temp-generator [_ _]
@@ -28,10 +28,10 @@
 
 (defn new-child-keys
   []
-  (vector (ParamRefConKey. :dadysql.core/ref-con 0)
-          (ParamRefKey. :dadysql.core/ref-key 1)
-          (ParamRefFunKey. :dadysql.core/ref-fn-key 2)
-          (ParamRefGenKey. :dadysql.core/ref-gen 3 temp-generator)))
+  (vector (ParamRefConKey. :dadysql.spec/ref-con 0)
+          (ParamRefKey. :dadysql.spec/ref-key 1)
+          (ParamRefFunKey. :dadysql.spec/ref-fn-key 2)
+          (ParamRefGenKey. :dadysql.spec/ref-gen 3 temp-generator)))
 
 
 #_(defn get-child-spec [coll-node]
@@ -50,7 +50,7 @@
 (defn assoc-param-ref-gen [root-node generator]
 
 
-  (let [p [:dadysql.core/param :dadysql.core/ref-gen]
+  (let [p [:dadysql.spec/param :dadysql.spec/ref-gen]
         p-index (node-path root-node p)]
     ; (println "p-index" p-index)
     ;    (clojure.pprint/pprint root-node)
@@ -102,16 +102,16 @@
   ParamRefConKey
   (-porder [this] (:lorder this))
   (-pprocess? [_ m]
-    (->> (group-by second (:dadysql.core/param m))
-         (:dadysql.core/ref-con)))
+    (->> (group-by second (:dadysql.spec/param m))
+         (:dadysql.spec/ref-con)))
   (-pprocess [_ p-value m]
     (let [[_ _ v] p-value]
       v))
   ParamRefKey
   (-porder [this] (:lorder this))
   (-pprocess? [_ m]
-    (->> (group-by second (:dadysql.core/param m))
-         (:dadysql.core/ref-key)))
+    (->> (group-by second (:dadysql.spec/param m))
+         (:dadysql.spec/ref-key)))
   (-pprocess [_ p-value m]
     (let [[s _ k] p-value]
       (->> (cc/replace-last-in-vector s k)
@@ -119,8 +119,8 @@
   ParamRefFunKey
   (-porder [this] (:lorder this))
   (-pprocess? [_ m]
-    (->> (group-by second (:dadysql.core/param m))
-         (:dadysql.core/ref-fn-key)))
+    (->> (group-by second (:dadysql.spec/param m))
+         (:dadysql.spec/ref-fn-key)))
   (-pprocess [_ p-value m]
     (let [[s _ f k] p-value]
       (->> (cc/replace-last-in-vector s k)
@@ -129,8 +129,8 @@
   ParamRefGenKey
   (-porder [this] (:lorder this))
   (-pprocess? [_ m]
-    (->> (group-by second (:dadysql.core/param m))
-         (:dadysql.core/ref-gen)))
+    (->> (group-by second (:dadysql.spec/param m))
+         (:dadysql.spec/ref-gen)))
   (-pprocess [this p-value _]
     (let [[_ _ v] p-value]
       ((:generator this) :name v))))
@@ -151,12 +151,12 @@
 (defmethod param-paths
   nested-map-format
   [_ [root-m & child-m] param-m]
-  (let [model-name (get root-m :dadysql.core/model)
+  (let [model-name (get root-m :dadysql.spec/model)
         rp (ccu/get-path param-m model-name)
-        rpp (assoc-param-path param-m rp (:dadysql.core/param root-m))
+        rpp (assoc-param-path param-m rp (:dadysql.spec/param root-m))
         cpp (for [c child-m
-                  :let [crp (ccu/get-path param-m rp (:dadysql.core/model c))]
-                  p (assoc-param-path param-m crp (:dadysql.core/param c))]
+                  :let [crp (ccu/get-path param-m rp (:dadysql.spec/model c))]
+                  p (assoc-param-path param-m crp (:dadysql.spec/param c))]
               p)]
     (-> []
         (into rpp)
@@ -166,7 +166,7 @@
 (defmethod param-paths
   map-format
   [_ tm-coll param-m]
-  (->> (map :dadysql.core/param tm-coll)
+  (->> (map :dadysql.spec/param tm-coll)
        (reduce concat)
        (cc/distinct-with-range 1)
        (assoc-param-path param-m (ccu/empty-path))))

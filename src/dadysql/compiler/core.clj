@@ -1,6 +1,6 @@
 (ns dadysql.compiler.core
-  (:require [dadysql.core :refer :all]
-            [dadysql.core]
+  (:require [dadysql.spec :refer :all]
+            [dadysql.spec]
             [dady.common :as cc]
             [dadysql.compiler.util :as u]
             [clojure.tools.reader.edn :as edn]
@@ -19,10 +19,10 @@
 
 (defn default-config
   []
-  {:dadysql.core/file-reload true
-   :dadysql.core/timeout     1000
-   :dadysql.core/name        global-key
-   :dadysql.core/tx-prop     [:isolation :serializable :read-only? true]})
+  {:dadysql.spec/file-reload true
+   :dadysql.spec/timeout     1000
+   :dadysql.spec/name        global-key
+   :dadysql.spec/tx-prop     [:isolation :serializable :read-only? true]})
 
 
 (defn compiler-merge
@@ -40,7 +40,7 @@
   [r-name-coll coll]
   (->> coll
        (group-by (fn [m]
-                   (let [name (get-in m [:dadysql.core/name])]
+                   (let [name (get-in m [:dadysql.spec/name])]
                      (if (or (re-matches (reserve-regex) (str name))
                              (contains? r-name-coll name)
                              (= global-key name))
@@ -52,7 +52,7 @@
 (defn group-by-config-key
   [coll]
   (->> coll
-       (group-by #(if (= global-key (:dadysql.core/name %))
+       (group-by #(if (= global-key (:dadysql.spec/name %))
                    :global
                    :modules))))
 
@@ -60,69 +60,69 @@
 (defn do-grouping [coll]
   (let [{:keys [global modules]} (group-by-config-key coll)
         f-global (or (first global) {})
-        {:keys [reserve modules]} (-> (get-in f-global [:dadysql.core/reserve-name])
+        {:keys [reserve modules]} (-> (get-in f-global [:dadysql.spec/reserve-name])
                                       (group-by-reserve-key modules))]
     (hash-map :global f-global :reserve reserve :modules modules)))
 
 
 (defn do-merge
   [w module-m f-config]
-  (let [name-v (get w :dadysql.core/name)
+  (let [name-v (get w :dadysql.spec/name)
         w1 (merge-with compiler-merge
-                       (get-in f-config [:dadysql.core/extend name-v])
-                       (get-in module-m [:dadysql.core/extend name-v])
+                       (get-in f-config [:dadysql.spec/extend name-v])
+                       (get-in module-m [:dadysql.spec/extend name-v])
                        w)
 
-        model-v (get w1 :dadysql.core/model)
+        model-v (get w1 :dadysql.spec/model)
         w2 (merge-with compiler-merge
-                       (get-in f-config [:dadysql.core/extend model-v])
-                       (get-in module-m [:dadysql.core/extend model-v])
+                       (get-in f-config [:dadysql.spec/extend model-v])
+                       (get-in module-m [:dadysql.spec/extend model-v])
                        w1)
 
-        module-m (dissoc module-m :dadysql.core/name :dadysql.core/model :dadysql.core/sql :dadysql.core/extend :dadysql.core/doc)
-        f-config (select-keys f-config [:dadysql.core/param :dadysql.core/param-spec :dadysql.core/timeout])]
+        module-m (dissoc module-m :dadysql.spec/name :dadysql.spec/model :dadysql.spec/sql :dadysql.spec/extend :dadysql.spec/doc)
+        f-config (select-keys f-config [:dadysql.spec/param :dadysql.spec/param-spec :dadysql.spec/timeout])]
     (merge-with compiler-merge f-config module-m w2)))
 
 
 (defn do-skip
   [m]
-  (->> (into [] (:dadysql.core/skip m))
+  (->> (into [] (:dadysql.spec/skip m))
        (apply dissoc m)))
 
 
-(def skip-key-for-call [:dadysql.core/join :dadysql.core/param-spec :dadysql.core/param])
-(def skip-key-for-others [:dadysql.core/result :clojure.core/column])
+(def skip-key-for-call [:dadysql.spec/join :dadysql.spec/param-spec :dadysql.spec/param])
+(def skip-key-for-others [:dadysql.spec/result :clojure.core/column])
 
 
 (defn do-skip-for-dml-type
   [m]
-  (condp = (:dadysql.core/dml-key m)
-    :dadysql.core/dml-select m
-    :dadysql.core/dml-call (apply dissoc m skip-key-for-call)
+  (condp = (:dadysql.spec/dml-key m)
+    :dadysql.spec/dml-select m
+    :dadysql.spec/dml-call (apply dissoc m skip-key-for-call)
     (apply dissoc m skip-key-for-others)))
 
 
 (defn do-merge-default
   [m]
-  (if (:dadysql.core/model m)
+  (if (:dadysql.spec/model m)
     m
-    (assoc m :dadysql.core/model (:dadysql.core/name m))))
+    (assoc m :dadysql.spec/model (:dadysql.spec/name m))))
 
 
 (defn remove-duplicate [m]
   (->> (keys m)
        (reduce (fn [acc k]
                  (condp = k
-                   :dadysql.core/param (update-in acc [k] (fn [w] (cc/distinct-with-range 2 w)))
+                   :dadysql.spec/param (update-in acc [k] (fn [w] (cc/distinct-with-range 2 w)))
                    acc)
                  ) m)))
 
 
 (defn compiler-emit [m]
   (-> m
-      (assoc :dadysql.core/dml-key (u/dml-type (:dadysql.core/sql m)))
-      (update-in [:dadysql.core/sql] u/sql-str-emit)
-      (cc/update-if-contains [:dadysql.core/param] #(mapv u/param-emit %))))
+      (assoc :dadysql.spec/dml-key (u/dml-type (:dadysql.spec/sql m)))
+      (update-in [:dadysql.spec/sql] u/sql-str-emit)
+      (cc/update-if-contains [:dadysql.spec/param] #(mapv u/param-emit %))))
 
 
 
@@ -130,7 +130,7 @@
 
   ; (clojure.pprint/pprint m )
   (let [;m (edn/read-string (clojure.string/lower-case (str m)))
-        model-m (u/map-name-model-sql (select-keys m [:dadysql.core/name :dadysql.core/model :dadysql.core/sql]))]
+        model-m (u/map-name-model-sql (select-keys m [:dadysql.spec/name :dadysql.spec/model :dadysql.spec/sql]))]
     ; (println model-m)
     (reduce (fn [acc v]
               (->> (do-merge v m global-m)
@@ -151,31 +151,31 @@
 
 
 (defn compile-one-config [tm]
-  (let [v (get-in tm [:dadysql.core/join])
+  (let [v (get-in tm [:dadysql.spec/join])
         v (u/join-emit v)
-        w (merge-with merge v (get-in tm [:dadysql.core/extend]))]
+        w (merge-with merge v (get-in tm [:dadysql.spec/extend]))]
     (-> tm
-        (dissoc :dadysql.core/join)
-        (assoc :dadysql.core/extend w))))
+        (dissoc :dadysql.spec/join)
+        (assoc :dadysql.spec/extend w))))
 
 
 (defn reserve-compile [coll]
   (mapv (fn [m]
           (-> m
-              (update-in [:dadysql.core/sql] (fn [v] (clojure.string/join ";" v))))
+              (update-in [:dadysql.spec/sql] (fn [v] (clojure.string/join ";" v))))
           ) coll))
 
 
 (defn into-name-map
   [v]
-  (hash-map (:dadysql.core/name v) v))
+  (hash-map (:dadysql.spec/name v) v))
 
 
 
 (defn load-param-spec [spec-file coll]
   (if spec-file
     (require (symbol spec-file) :reload))
-  (doseq [r (filter keyword? (map :dadysql.core/param-spec coll))]
+  (doseq [r (filter keyword? (map :dadysql.spec/param-spec coll))]
     (if (nil? (s/get-spec r))
       (throw (ex-info "Spec not found " {:spec r})))))
 
@@ -200,9 +200,9 @@
           global (compile-one-config global)
           modules (compile-batch global modules)
           reserve (reserve-compile reserve)
-          global (dissoc global :dadysql.core/extend)
+          global (dissoc global :dadysql.spec/extend)
           w (concat [global] modules reserve)]
-      (load-param-spec (:dadysql.core/spec-file global) w)
+      (load-param-spec (:dadysql.spec/spec-file global) w)
       (->> w
            (into {} (map into-name-map))))))
 
@@ -223,7 +223,7 @@
   (->> (fr/read-file "tie.edn.sql")
        ;  (postwalk-rename-key  )
        (do-compile)
-       ;  (s/explain-data :dadysql.core/compiler-input-spec )
+       ;  (s/explain-data :dadysql.spec/compiler-input-spec )
        ;(clojure.pprint/pprint)
        )
 

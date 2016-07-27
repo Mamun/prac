@@ -1,6 +1,6 @@
 (ns dadysql.plugin.join.join-impl
   (:use [dady.proto])
-  (:require [dadysql.core :refer :all]
+  (:require [dadysql.spec :refer :all]
             [dady.common :as cc]
     #_[schema.core :as s]))
 
@@ -8,7 +8,7 @@
 (defrecord JoinKey [cname corder])
 
 (defn new-join-key []
-  (map->JoinKey {:cname  :dadysql.core/join
+  (map->JoinKey {:cname  :dadysql.spec/join
                  :corder 2}))
 
 (extend-protocol ILeafNode
@@ -22,7 +22,7 @@
 (defn join-emission-batch [j-coll]
   (mapv (fn [j]
           (condp = (nth j 2)
-            :dadysql.core/many-many
+            :dadysql.spec/many-many
             (-> j
                 (update-in [0] cc/as-lower-case-keyword)
                 (update-in [1] cc/as-lower-case-keyword)
@@ -42,10 +42,10 @@
     [join-coll]
     (let [f (fn [[s-tab s-id join-key d-tab d-id [r-tab r-id r-id2] :as j]]
               (condp = join-key
-                :dadysql.core/one-one [d-tab d-id :dadysql.core/one-one s-tab s-id]
-                :dadysql.core/one-many [d-tab d-id :dadysql.core/many-one s-tab s-id]
-                :dadysql.core/many-one [d-tab d-id :dadysql.core/one-many s-tab s-id]
-                :dadysql.core/many-many [d-tab d-id :dadysql.core/many-many s-tab s-id [r-tab r-id2 r-id]]
+                :dadysql.spec/one-one [d-tab d-id :dadysql.spec/one-one s-tab s-id]
+                :dadysql.spec/one-many [d-tab d-id :dadysql.spec/many-one s-tab s-id]
+                :dadysql.spec/many-one [d-tab d-id :dadysql.spec/one-many s-tab s-id]
+                :dadysql.spec/many-many [d-tab d-id :dadysql.spec/many-many s-tab s-id [r-tab r-id2 r-id]]
                 j))]
       (->> (map f join-coll)
            (concat join-coll)
@@ -59,7 +59,7 @@
   (->> join-coll
        (group-by first)
        (map (fn [[k coll]]
-              {k {:dadysql.core/join coll}}))
+              {k {:dadysql.spec/join coll}}))
        (into {})))
 
 
@@ -68,11 +68,3 @@
 
 
 
-(defn filter-join-key-coll
-  [join model-coll]
-  (->> join
-       (filter (fn [[_ _ rel d-table _ nr]]
-                 (if (= rel :dadysql.core/many-many)
-                   (some #{(first nr)} model-coll)
-                   (some #{d-table} model-coll))))
-       (into [])))

@@ -7,15 +7,15 @@
     ;[dady.node-proto :as p]
     [dady.proto :refer :all]
     [dadysql.plugin.params.core :refer :all]
-    [dadysql.core :refer :all]
+    [dadysql.spec :refer :all]
     [dady.common :refer :all]
     [clojure.spec :as sp]))
 
 
 (deftest param-paths-test
   (testing "test param-paths  "
-    (let [coll [{:dadysql.core/param [[:id :ref-gen :gen-dept]]}
-                {:dadysql.core/param [[:id3 :ref-gen :gen-dept]]}]
+    (let [coll [{:dadysql.spec/param [[:id :ref-gen :gen-dept]]}
+                {:dadysql.spec/param [[:id3 :ref-gen :gen-dept]]}]
           expected-result (list [[:id] :ref-gen :gen-dept] [[:id3] :ref-gen :gen-dept])
           actual-result (param-paths map-format coll {:id2 1})]
       (is (= actual-result
@@ -26,12 +26,12 @@
 
 (deftest model-param-paths-test
   (testing "test model-param-paths  "
-    (let [coll [{:dadysql.core/param [[:transaction_id :ref-con 0]
+    (let [coll [{:dadysql.spec/param [[:transaction_id :ref-con 0]
                             [:transaction_id2 :ref-key :id]
-                            [:id :dadysql.core/ref-gen :gen-dept]],
-                 :dadysql.core/model :employee}
-                {:dadysql.core/param [[:city :ref-con 0]],
-                 :dadysql.core/model :employee-detail}]
+                            [:id :dadysql.spec/ref-gen :gen-dept]],
+                 :dadysql.spec/model :employee}
+                {:dadysql.spec/param [[:city :ref-con 0]],
+                 :dadysql.spec/model :employee-detail}]
           param {:employee {:firstname "Schwan"
                             :lastname  "Ragg"
                             :dept_id   1
@@ -41,9 +41,9 @@
                                         :country "Germany"}}}
           expected-result [[[:employee :transaction_id] :ref-con 0]
                            [[:employee :transaction_id2] :ref-key :id]
-                           [[:employee :id] :dadysql.core/ref-gen :gen-dept]
+                           [[:employee :id] :dadysql.spec/ref-gen :gen-dept]
                            [[:employee :employee-detail :city] :ref-con 0]]
-          actual-result (param-paths nested-map-format coll :dadysql.core/param)]
+          actual-result (param-paths nested-map-format coll :dadysql.spec/param)]
       (is (= actual-result
              expected-result)))))
 
@@ -52,13 +52,13 @@
 
   (testing "test param-ref-con "
     (let [w (new-child-keys)
-          cw (get-node-from-path w [:dadysql.core/ref-con])]
+          cw (get-node-from-path w [:dadysql.spec/ref-con])]
       (is (= 5
-             (-pprocess cw [:id :dadysql.core/ref-con 5] {})))))
+             (-pprocess cw [:id :dadysql.spec/ref-con 5] {})))))
   (testing "test param-ref-con-key"
     (let [context (new-param-key 0 (new-child-keys))
-          coll [{:dadysql.core/param [[:transaction_id :dadysql.core/ref-con 0]],
-                 :dadysql.core/model :employee}]
+          coll [{:dadysql.spec/param [[:transaction_id :dadysql.spec/ref-con 0]],
+                 :dadysql.spec/model :employee}]
           input {:id 2}
           expected-result {:id 2 :transaction_id 0}
           actual-result (do-param input
@@ -72,9 +72,9 @@
     (let [context (-> (b/new-root-node)
                       ;(select-module-node-processor module-key)
                       (assoc-param-ref-gen (fn [k v] 5)))
-          context (get-node-from-path context [:dadysql.core/param])
-          coll [{:dadysql.core/param [[:transaction_id :dadysql.core/ref-con 0]],
-                 :dadysql.core/model :employee}]
+          context (get-node-from-path context [:dadysql.spec/param])
+          coll [{:dadysql.spec/param [[:transaction_id :dadysql.spec/ref-con 0]],
+                 :dadysql.spec/model :employee}]
           input {:employee {:id 2}}
           expected-result {:employee {:id 2 :transaction_id 0}}
           actual-result (do-param input
@@ -91,8 +91,8 @@
 (deftest param-ref-key-test
   (testing "test param-ref-key"
     (let [context (new-param-key 0 (new-child-keys))
-          coll [{:dadysql.core/param [[:transaction_id :dadysql.core/ref-key :id]],
-                 :dadysql.core/model :employee}]
+          coll [{:dadysql.spec/param [[:transaction_id :dadysql.spec/ref-key :id]],
+                 :dadysql.spec/model :employee}]
           input {:id 2}
           expected-result {:id 2 :transaction_id 2}
           actual-result (do-param input
@@ -106,10 +106,10 @@
     (let [context (-> (b/new-root-node)
                       ;(select-module-node-processor module-key)
                       (assoc-param-ref-gen (fn [k v] 5)))
-          context (get-node-from-path context [:dadysql.core/param])
+          context (get-node-from-path context [:dadysql.spec/param])
           ;         _ (clojure.pprint/pprint context)
-          coll [{:dadysql.core/param [[:transaction_id :dadysql.core/ref-key :id]],
-                 :dadysql.core/model :employee}]
+          coll [{:dadysql.spec/param [[:transaction_id :dadysql.spec/ref-key :id]],
+                 :dadysql.spec/model :employee}]
           input {:employee {:id 2}}
           expected-result {:employee {:id 2 :transaction_id 2}}
           actual-result (do-param input
@@ -124,8 +124,8 @@
 (deftest param-ref-fn-key-test
   (testing "test params-ref-fn-key "
     (let [context (new-param-key 0 (new-child-keys))
-          coll [{:dadysql.core/param [[:transaction_id :dadysql.core/ref-fn-key inc :id]],
-                 :dadysql.core/model :employee}]
+          coll [{:dadysql.spec/param [[:transaction_id :dadysql.spec/ref-fn-key inc :id]],
+                 :dadysql.spec/model :employee}]
           input {:id 2}
           expected-result {:id 2 :transaction_id 3}
           actual-result (do-param input
@@ -139,9 +139,9 @@
     (let [context (-> (b/new-root-node)
                       ;(select-module-node-processor module-key)
                       (assoc-param-ref-gen (fn [k v] 5)))
-          context (get-node-from-path context [:dadysql.core/param])
-          coll [{:dadysql.core/param [[:transaction_id :dadysql.core/ref-fn-key inc :id]],
-                 :dadysql.core/model :employee}]
+          context (get-node-from-path context [:dadysql.spec/param])
+          coll [{:dadysql.spec/param [[:transaction_id :dadysql.spec/ref-fn-key inc :id]],
+                 :dadysql.spec/model :employee}]
           input {:employee {:id 2}}
           expected-result {:employee {:id 2 :transaction_id 3}}
           actual-result (do-param input
@@ -159,9 +159,9 @@
     (let [context (-> (b/new-root-node)
                       ;(select-module-node-processor module-key)
                       (assoc-param-ref-gen (fn [k v] 5)))
-          context (get-node-from-path context [:dadysql.core/param])
-          coll [{:dadysql.core/param [[:transaction_id :dadysql.core/ref-gen :id]],
-                 :dadysql.core/model :employee}]
+          context (get-node-from-path context [:dadysql.spec/param])
+          coll [{:dadysql.spec/param [[:transaction_id :dadysql.spec/ref-gen :id]],
+                 :dadysql.spec/model :employee}]
           input {:id 2}
           expected-result {:id 2 :transaction_id 5}
           actual-result (do-param input
@@ -175,9 +175,9 @@
     (let [context (-> (b/new-root-node)
                       ;(select-module-node-processor module-key)
                       (assoc-param-ref-gen (fn [k v] (fail "Not found"))))
-          context (get-node-from-path context [:dadysql.core/param])
-          coll [{:dadysql.core/param [[:transaction_id :dadysql.core/ref-gen :id]],
-                 :dadysql.core/model :employee}]
+          context (get-node-from-path context [:dadysql.spec/param])
+          coll [{:dadysql.spec/param [[:transaction_id :dadysql.spec/ref-gen :id]],
+                 :dadysql.spec/model :employee}]
           input {:id 2}
           actual-result (do-param input
                                   map-format
@@ -194,9 +194,9 @@
     (let [context (-> (b/new-root-node)
                       ;(select-module-node-processor module-key)
                       (assoc-param-ref-gen (fn [k v] 3)))
-          context (get-node-from-path context [:dadysql.core/param])
-          coll [{:dadysql.core/param [[:transaction_id :dadysql.core/ref-gen :id]],
-                 :dadysql.core/model :employee}]
+          context (get-node-from-path context [:dadysql.spec/param])
+          coll [{:dadysql.spec/param [[:transaction_id :dadysql.spec/ref-gen :id]],
+                 :dadysql.spec/model :employee}]
           input {:employee {:id 2}}
           expected-result {:employee {:id 2, :transaction_id 3}}
           actual-result (do-param input
@@ -209,9 +209,9 @@
     (let [context (-> (b/new-root-node)
                       ;(select-module-node-processor module-key)
                       (assoc-param-ref-gen (fn [k v] (fail "Not found"))))
-          context (get-node-from-path context [:dadysql.core/param])
-          coll [{:dadysql.core/param [[:transaction_id :dadysql.core/ref-gen :id]],
-                 :dadysql.core/model :employee}]
+          context (get-node-from-path context [:dadysql.spec/param])
+          coll [{:dadysql.spec/param [[:transaction_id :dadysql.spec/ref-gen :id]],
+                 :dadysql.spec/model :employee}]
           input {:employee {:id 2}}
           actual-result (do-param input
                                   nested-map-format
@@ -228,12 +228,12 @@
     (let [context (-> (b/new-root-node)
                       ;(select-module-node-processor module-key)
                       (assoc-param-ref-gen (fn [k v] 5)))
-          context (get-node-from-path context [:dadysql.core/param])
-          coll [{:dadysql.core/param [[:transaction_id :dadysql.core/ref-con 0]
-                            [:id2 :dadysql.core/ref-fn-key inc :transaction_id]
-                            [:id4 :dadysql.core/ref-key :id]
-                            [:id3 :dadysql.core/ref-gen :id]]
-                 :dadysql.core/model :employee}]
+          context (get-node-from-path context [:dadysql.spec/param])
+          coll [{:dadysql.spec/param [[:transaction_id :dadysql.spec/ref-con 0]
+                            [:id2 :dadysql.spec/ref-fn-key inc :transaction_id]
+                            [:id4 :dadysql.spec/ref-key :id]
+                            [:id3 :dadysql.spec/ref-gen :id]]
+                 :dadysql.spec/model :employee}]
           input {:employee {:id 2}}
           expected-result {:employee {:id 2, :transaction_id 0, :id4 2, :id2 1, :id3 5}}
           actual-result (do-param input
@@ -246,7 +246,7 @@
     (let [context (-> (b/new-root-node)
                       ;(select-module-node-processor module-key)
                       (assoc-param-ref-gen (fn [k v] 5)))
-          context (get-node-from-path context [:dadysql.core/param])
+          context (get-node-from-path context [:dadysql.spec/param])
           coll []
           input {:employee {:id 2}}
           expected-result {:employee {:id 2}}

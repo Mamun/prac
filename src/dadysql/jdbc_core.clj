@@ -1,60 +1,16 @@
 ;; Expose as API
 ;;
-(ns dadysql.core2
+(ns dadysql.jdbc-core
   (:require
     [clojure.spec :as s]
-    [dady.common :as cc]
     [dady.fail :as f]
-    [dadysql.core :refer :all]
-    [dadysql.core-util :as cu]
+    [dadysql.spec :refer :all]
+    [dadysql.core :as dc]
     [dadysql.plugin.join.core :as j]
     [dadysql.plugin.params.core :as p]
     [dady.proto :as c]))
 
 
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;; Selecting impl ;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-#_(defn select-config
-    [tms]
-    (global-key tms))
-
-
-(defn select-name
-  "Return list module "
-  [tms name-coll]
-  (let [name-key-coll (cc/as-sequential name-coll)
-        tm-map (select-keys tms name-key-coll)]
-    (cond
-      (or (nil? tms)
-          (empty? tms))
-      (f/fail " Source is empty ")
-      (f/failed? tms)
-      tms
-      (or (nil? tm-map)
-          (empty? tm-map))
-      (f/fail (format " %s Name not found" (str name-key-coll)))
-      (cu/is-reserve? tms name-key-coll)
-      tm-map
-      :else
-      (f/try-> tm-map
-               (cu/validate-name! name-key-coll)
-               (cc/select-values name-key-coll)
-               (cu/validate-model!)
-               (cu/filter-join-key)))))
-
-
-
-(defn select-name-for-groups
-  [tms gname name-coll]
-  (let [name-set (into #{} (cc/as-sequential name-coll))
-        p (if name-coll
-            (comp (filter #(= (:dadysql.core/group %) gname))
-                  (filter #(contains? name-set (:dadysql.core/name %))))
-            (comp (filter #(= (:dadysql.core/group %) gname))))
-        t (into [] p (vals tms))
-        w (sort-by :dadysql.core/index t)]
-    (into [] (map :dadysql.core/name) w)))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;; Processing impl  ;;;;;;;;;;;;;;;;;;;;;;;;
@@ -79,7 +35,7 @@
         (-> (apply comp (c/as-xf-process :output n-processor))
             (transduce conj tm-coll))
         :input
-        (let [p (->> (c/remove-child (c/remove-child n-processor :dadysql.core/param-spec) :dadysql.core/param)
+        (let [p (->> (c/remove-child (c/remove-child n-processor :dadysql.spec/param-spec) :dadysql.spec/param)
                      (c/as-xf-process :input)
                      (apply f/comp-xf-until))]
           (transduce p conj tm-coll))
@@ -108,7 +64,7 @@
   ;(clojure.pprint/pprint tm-coll)
 
   (reduce (fn [acc v]
-            (if-let [vali (:dadysql.core/param-spec v)]
+            (if-let [vali (:dadysql.spec/param-spec v)]
               (let [w (do-validate vali (input-key v))]
 
                 (if (f/failed? w)
@@ -138,7 +94,7 @@
 (defmethod warp-input-node-process map-format
   [handler n-processor _]
   (fn [tm-coll params]
-    (let [param-m (c/get-child n-processor :dadysql.core/param)
+    (let [param-m (c/get-child n-processor :dadysql.spec/param)
           input (p/do-param params map-format tm-coll param-m)]
       (if (f/failed? input)
         input
@@ -151,13 +107,13 @@
 (defmethod warp-input-node-process nested-map-format
   [handler n-processor _]
   (fn [tm-coll params]
-    (let [param-m (c/get-child n-processor :dadysql.core/param)
+    (let [param-m (c/get-child n-processor :dadysql.spec/param)
           input (f/try-> params
                          (p/do-param nested-map-format tm-coll param-m)
-                         (j/do-disjoin (get-in tm-coll [0 :dadysql.core/join])))]
+                         (j/do-disjoin (get-in tm-coll [0 :dadysql.spec/join])))]
       (if (f/failed? input)
         input
-        (-> (mapv (fn [m] (assoc m input-key ((:dadysql.core/model m) input))) tm-coll)
+        (-> (mapv (fn [m] (assoc m input-key ((:dadysql.spec/model m) input))) tm-coll)
             (do-node-process n-processor :input)
             (apply-validation!)
             (handler input))))))
@@ -167,14 +123,14 @@
   [format m]
   (condp = format
     map-format
-    (dissoc m :dadysql.core/result)
+    (dissoc m :dadysql.spec/result)
     array-format
-    (assoc m :dadysql.core/result #{:dadysql.core/array})
+    (assoc m :dadysql.spec/result #{:dadysql.spec/array})
     value-format
     (-> m
-        (assoc :dadysql.core/model (:dadysql.core/name m))
-        (assoc :dadysql.core/result #{:dadysql.core/single :dadysql.core/array})
-        (assoc :dadysql.core/dml-key :dadysql.core/dml-select))
+        (assoc :dadysql.spec/model (:dadysql.spec/name m))
+        (assoc :dadysql.spec/result #{:dadysql.spec/single :dadysql.spec/array})
+        (assoc :dadysql.spec/dml-key :dadysql.spec/dml-select))
     m))
 
 
@@ -187,8 +143,8 @@
 (defn into-model-map
   [v]
   (if (f/failed? v)
-    (hash-map (:dadysql.core/model v) v)
-    (hash-map (:dadysql.core/model v)
+    (hash-map (:dadysql.spec/model v) v)
+    (hash-map (:dadysql.spec/model v)
               (output-key v))))
 
 
@@ -226,14 +182,14 @@
 
 (defn- is-join-pull
   [tm-coll]
-  (if (and (not-empty (:dadysql.core/join (first tm-coll)))
+  (if (and (not-empty (:dadysql.spec/join (first tm-coll)))
            (not (nil? (rest tm-coll))))
     true false))
 
 
 (defn- merge-relation-param
   [root-result root params]
-  (-> (:dadysql.core/join root)
+  (-> (:dadysql.spec/join root)
       (j/get-source-relational-key-value root-result)
       (merge params)))
 
@@ -263,22 +219,19 @@
                      (merge-relation-param root params)
                      (r-handler)
                      (merge root-output)
-                     (j/do-join (:dadysql.core/join root)))))))))
+                     (j/do-join (:dadysql.spec/join root)))))))))
 
 
 
 
 (defn do-run
-  [n-processor tms {:keys [group name params pformat rformat]}]
+  [n-processor tms {:keys [params pformat rformat] :as p}]
   (let [exec (fn [tm-coll _]
                (do-node-process tm-coll n-processor :sql-executor))
         proc (-> exec
                  (warp-input-node-process n-processor pformat)
                  (warp-output-node-process n-processor rformat))
-        name (if group
-               (select-name-for-groups tms group name)
-               name)
-        tm-coll (select-name tms name)]
+        tm-coll (dc/select-name tms p)]
     (if (f/failed? tm-coll)
       tm-coll
       (proc tm-coll params))))

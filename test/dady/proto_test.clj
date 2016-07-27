@@ -4,7 +4,7 @@
   (:require [dadysql.plugin.factory :as bi]
             [dadysql.plugin.factory :as c]
             [dadysql.plugin.params.core :as p]
-            [dadysql.core :refer :all]
+            [dadysql.spec :refer :all]
         ;    [schema.core :as s]
             [dady.common :refer :all]))
 
@@ -21,7 +21,7 @@
 (deftest cell-index-single-test
   (testing "testing path-index-single "
     (let [mpc (bi/new-root-node )
-          p   (cell-index-single mpc :dadysql.core/name)]
+          p   (cell-index-single mpc :dadysql.spec/name)]
       (is (= p 0)))))
 
 
@@ -32,7 +32,7 @@
 
   (testing "testing path-index-batch 2"
     (let [impl (vector (p/new-param-key 0 (p/new-child-keys)))
-          p (node-path impl [:dadysql.core/param ])]
+          p (node-path impl [:dadysql.spec/param ])]
       (is (= p [0]))))
   #_(testing "testing path-index-batch 2"
     (let [impl (vector (p/new-param-key 0 (p/new-child-keys)))
@@ -131,7 +131,7 @@
   (testing "cell emit test "
     (let [app-proc (bi/new-module-key-node (c/new-leaf-node-coll))
           sch-value {doc-key   "hello"
-                     ;      :dadysql.core/extend {:hello {param-key [[:Next_transaction_id param-ref-key :transaction_id]]}}
+                     ;      :dadysql.spec/extend {:hello {param-key [[:Next_transaction_id param-ref-key :transaction_id]]}}
                      param-key [[:next_transaction_id param-ref-key :transaction_id]]
                      sql-key   "select * from dual; select * from dual"}]
       (->> sch-value
