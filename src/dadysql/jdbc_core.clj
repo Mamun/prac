@@ -62,6 +62,20 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;; Processing impl  ;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+(defn node->xf [type n-processor]
+  (condp = type
+    :input
+    (->> (c/remove-child n-processor :dadysql.spec/param)
+         (c/as-xf-process :input)
+         (apply f/comp-xf-until))
+    :output
+    (apply comp (c/as-xf-process :output n-processor))
+    :sql-executor
+    (c/get-child n-processor :sql-executor)
+    (throw (ex-info "Node process not found for " {:type type}))))
+
+
+
 (defn- coll-failed?
   [tm-coll]
   (reduce (fn [acc v]
@@ -69,6 +83,7 @@
               (reduced v)
               acc)
             ) tm-coll tm-coll))
+
 
 
 (defn- do-node-process
@@ -79,15 +94,11 @@
       r
       (condp = type
         :output
-        (-> (apply comp (c/as-xf-process :output n-processor))
-            (transduce conj tm-coll))
+        (transduce (node->xf :output n-processor ) conj tm-coll)
         :sql-executor
-        (-> (c/get-child n-processor :sql-executor)
-            (c/node-process tm-coll))
+        (c/node-process (node->xf :sql-executor n-processor ) tm-coll)
+
         tm-coll))))
-
-
-
 
 
 
@@ -191,21 +202,19 @@
 
 
 
-(defn warp-input-node-process
-  [handler n-processor]
+(defn warp-node-process
+  [handler steps]
   (fn [tm-coll]
-    (let [p (->> (c/remove-child n-processor :dadysql.spec/param)
-                 (c/as-xf-process :input)
-                 (apply f/comp-xf-until))]
-      (-> (transduce p conj tm-coll)
-          (handler)))))
+    (-> (transduce steps conj tm-coll)
+        (handler))))
 
 
 
 (defn get-process [n-processor {:keys [rformat]}]
-  (let [exec (fn [tm-coll]
+  (let [input-steps (node->xf :input n-processor)
+        exec (fn [tm-coll]
                (do-node-process tm-coll n-processor :sql-executor))]
     (-> exec
-        (warp-input-node-process n-processor)
+        (warp-node-process input-steps)
         (warp-output-node-process n-processor rformat))))
 
