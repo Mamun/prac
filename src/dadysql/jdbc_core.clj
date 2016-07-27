@@ -224,15 +224,10 @@
 
 
 
-(defn do-run
-  [n-processor tms {:keys [params pformat rformat] :as p}]
+(defn get-process [n-processor {:keys [pformat rformat]}]
   (let [exec (fn [tm-coll _]
-               (do-node-process tm-coll n-processor :sql-executor))
-        proc (-> exec
-                 (warp-input-node-process n-processor pformat)
-                 (warp-output-node-process n-processor rformat))
-        tm-coll (dc/select-name tms p)]
-    (if (f/failed? tm-coll)
-      tm-coll
-      (proc tm-coll params))))
+               (do-node-process tm-coll n-processor :sql-executor))]
+    (-> exec
+        (warp-input-node-process n-processor pformat)
+        (warp-output-node-process n-processor rformat))))
 

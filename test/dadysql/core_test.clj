@@ -1,30 +1,11 @@
 (ns dadysql.core-test
-  (:use [clojure.test]
-        [dadysql.plugin.util])
+  (:use [clojure.test])
   (:require [dadysql.spec :refer :all]
             [dadysql.core :refer :all]
             [dady.common :refer :all]
             [dady.fail :refer :all]
-            ))
-
-(deftest get-path-test
-  (testing "test get-path "
-    (let [d {:a {:b [{:b 4}]}}
-          expected-result [[:a]]
-          acutal-result (get-path d :a)]
-      (is (= acutal-result expected-result))))
-  (testing "test get-path "
-    (let [d {:a [{:b 4}]}
-          expected-result [[:a 0 :b]]
-          acutal-result (get-path d [[:a 0]] :b)]
-      (is (= expected-result acutal-result))))
-  (testing "test get-path "
-    (let [d {:a [{:b 4}
-                 {:c 8}]}
-          expected-result [[:a 0] [:a 1]]
-          acutal-result (get-path d :a)]
-      (is (= expected-result acutal-result)))))
-
+            [dadysql.compiler.core :as fr]
+            [dady.fail :as f]))
 
 
 
@@ -69,15 +50,15 @@
     (let [data [{:dadysql.spec/sql   "select * from dual "
                  :dadysql.spec/model :dual
                  :dadysql.spec/join  [[:dual :id :1-n :dual2 :tab-id]
-                            [:dual :id :1-n :tab3 :tab-id]]}
+                                      [:dual :id :1-n :tab3 :tab-id]]}
                 {:dadysql.spec/sql   "select * from dual "
                  :dadysql.spec/model :dual2
                  :dadysql.spec/join  [[:dual :id :1-n :tab2 :tab-id]
-                            [:dual :id :1-n :tab3 :tab-id]]}]
+                                      [:dual :id :1-n :tab3 :tab-id]]}]
           expected-result [{:dadysql.spec/sql   "select * from dual ",
                             :dadysql.spec/model :dual,
                             :dadysql.spec/join  [[:dual :id :1-n :dual2 :tab-id]]}
-                           {:dadysql.spec/sql "select * from dual ",
+                           {:dadysql.spec/sql   "select * from dual ",
                             :dadysql.spec/model :dual2, :dadysql.spec/join []}]
           actual-result (filter-join-key data)]
       (is (= expected-result
@@ -114,10 +95,49 @@
              expected-result)))))
 
 
-
 ;(has-dml-type?-test)
 
 
+(deftest validate-input!-test
+  (testing "test validate-input! "
+    (let [w {:name :get-dept-by-id}]
+      (is (= (validate-input! w) w))))
+  (testing "test validate-input! "
+    (let [w {:name [:get-dept-by-id]}]
+      (is (= (validate-input! w) w))))
+  (testing "test validate-input! "
+    (let [w {:name  [:get-dept-by-id]
+             :group :load-dept}]
+      (is (= (validate-input! w) w))))
+  (testing "test validate-input! "
+    (let [w {:name  [:get-dept-by-id]
+             :group [:load-dept]}
+          _ (failed? (validate-input! w))
+          ]
+
+
+      )))
+
+
+
+(deftest select-name-test
+  (testing "test select-name"
+    (let [m {:name :get-dept-by-id}
+          r (select-name (fr/read-file "tie.edn.sql") m)]
+      (is (= 1 (count r)))
+      (is (not (failed? r))))))
+
+
+
+(deftest default-request-test
+  (testing "test default-request"
+    (are [a e]
+      (= a e)
+      (default-request :pull {:name :get-dept-by-id})  {:pformat :map, :rformat :one, :name :get-dept-by-id}
+      (default-request :pull {:name [:get-dept-by-id]}) {:pformat :map, :rformat :nested-join, :name [:get-dept-by-id]}
+      (default-request :push {:name :get-dept-by-id})  {:pformat :map, :rformat :one, :name :get-dept-by-id}
+      (default-request :push {:name [:get-dept-by-id]}) {:pformat :nested, :rformat :nested, :name [:get-dept-by-id]}
+      (default-request :db-seq {:name :get-dept-by-id})  {:pformat :map, :rformat value-format, :name :get-dept-by-id})))
 
 
 #_(deftest commit?-test
@@ -128,6 +148,12 @@
 ;(commit?-test)
 
 (comment
+
+  (default-request-test)
+
+  (validate-input!-test)
+
+  (select-name-test)
 
   (run-tests)
   )

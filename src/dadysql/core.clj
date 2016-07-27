@@ -59,7 +59,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;; Selecting impl ;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-(defn *select-name*
+(defn select-name-by-name-coll
   "Return list module "
   [tms name-coll]
   (let [name-key-coll (cc/as-sequential name-coll)
@@ -107,7 +107,7 @@
         name (if group
                (select-name-for-groups tms group name)
                name)
-        tm-coll (*select-name* tms name)]
+        tm-coll (select-name-by-name-coll tms name)]
     tm-coll))
 
 

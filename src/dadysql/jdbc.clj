@@ -7,7 +7,6 @@
     [clojure.java.jdbc :as jdbc]
     [dadysql.spec :as tc]
     [dadysql.core :as dc]
-    [dadysql.core-node :as cd]
     [dadysql.jdbc-core :as tie]
     [dadysql.compiler.core :as fr]
     [dadysql.plugin.factory :as imp]
@@ -26,7 +25,37 @@
 
 
 
+(defn- filter-processor
+  [process {:keys [out-format]}]
+  (if (= out-format tc/value-format)
+    (c/remove-type process :output)
+    process))
 
+
+(defn select-pull-node [ds tms request-m]
+  (f/try-> tms
+           (get-in [tc/global-key tc/process-context-key] [])
+           (filter-processor request-m)
+           (c/add-child-one (ce/sql-executor-node ds tms ce/Parallel))))
+
+
+
+(defn select-push-node [gen-pull-fn ds tms]
+  (f/try-> tms
+           (get-in [tc/global-key tc/process-context-key] [])
+           (c/remove-type :output)
+           (c/add-child-one (ce/sql-executor-node ds tms ce/Transaction))
+           (p/assoc-param-ref-gen (fn [& {:as m}]
+                                    (->> (dc/default-request :db-seq m)
+                                         (gen-pull-fn ds tms))))))
+
+
+(defn do-run
+  [proc tms {:keys [params] :as p}]
+  (let [tm-coll (dc/select-name tms p)]
+    (if (f/failed? tm-coll)
+      tm-coll
+      (proc tm-coll params))))
 
 
 
@@ -34,36 +63,36 @@
   "Read or query value from database. It will return as model map
    ds: datasource
    "
-  [ds tms request-m]
-  (f/try->> request-m
-            (dc/validate-input!)
-            (dc/default-request :pull)
-            (tie/do-run (cd/select-pull-node ds tms request-m) tms)))
-
-
-#_(defn debug [v]
-    (println "----")
-    (clojure.pprint/pprint v)
-    (println "---")
-    v
-    )
+  [ds tms req-m]
+  (let [r (f/try->> req-m
+                    (dc/validate-input!)
+                    (dc/default-request :pull))]
+    (if (f/failed? r)
+      r
+      (f/try-> (select-pull-node ds tms r)
+               (tie/get-process r)
+               (do-run tms r)))))
 
 
 
 (defn push!
   "Create, update or delete value in database. DB O/P will be run within transaction. "
-  [ds tms request-m]
-  (f/try->> request-m
-            (dc/validate-input!)
-            (dc/default-request :push)
-            (tie/do-run (cd/select-push-node pull ds tms) tms)))
+  [ds tms req-m]
+  (let [r (f/try->> req-m
+                    (dc/validate-input!)
+                    (dc/default-request :push))]
+    (if (f/failed? r)
+      r
+      (f/try-> (select-push-node pull ds tms)
+               (tie/get-process r)
+               (do-run tms r)))))
 
 
 
 (defn db-do [ds name-coll tms]
   (when name-coll
     (try
-      (let [tm-coll (vals (dc/*select-name* tms name-coll))]
+      (let [tm-coll (vals (dc/select-name-by-name-coll tms name-coll))]
         (doseq [m tm-coll]
           (when-let [sql (get-in m [:dadysql.spec/sql])]
             (log/info "db do with " sql)
