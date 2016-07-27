@@ -51,11 +51,13 @@
 
 
 (defn do-run
-  [proc tms {:keys [params] :as p}]
-  (let [tm-coll (dc/select-name tms p)]
-    (if (f/failed? tm-coll)
-      tm-coll
-      (proc tm-coll params))))
+  [node tms req-m]
+  (let [proc (tie/get-process node req-m)]
+    (f/try-> tms
+             (dc/select-name req-m)
+             (tie/do-param node req-m)
+             (tie/validate-param-spec!)
+             (proc))))
 
 
 
@@ -70,7 +72,6 @@
     (if (f/failed? r)
       r
       (f/try-> (select-pull-node ds tms r)
-               (tie/get-process r)
                (do-run tms r)))))
 
 
@@ -84,7 +85,6 @@
     (if (f/failed? r)
       r
       (f/try-> (select-push-node pull ds tms)
-               (tie/get-process r)
                (do-run tms r)))))
 
 

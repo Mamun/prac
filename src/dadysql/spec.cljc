@@ -162,8 +162,9 @@
 
 
 (defonce output-key :output)
-(defonce input-key :input)
+;(defonce input-key :input)
 
+(s/def ::input-param any?)
 
 (def nested-map-format :nested)
 (def nested-array-format :nested-array)

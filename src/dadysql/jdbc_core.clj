@@ -1,5 +1,3 @@
-;; Expose as API
-;;
 (ns dadysql.jdbc-core
   (:require
     [clojure.spec :as s]
@@ -12,8 +10,57 @@
 
 
 
+(defn do-spec-validate [spec v]
+  (if (sequential? v)
+    (reduce (fn [acc w]
+              (if (s/valid? spec w)
+                (conj acc w)
+                (reduced (f/fail (s/explain-data spec w))))
+              ) (empty v) v)
+    (if (s/valid? spec v)
+      v
+      (f/fail (s/explain-data spec v)))))
+
+
+
+(defn validate-param-spec! [tm-coll]
+  (reduce (fn [acc v]
+            (if-let [vali (:dadysql.spec/param-spec v)]
+              (let [w (do-spec-validate vali (:dadysql.spec/input-param v))]
+                (if (f/failed? w)
+                  (reduced w)
+                  (conj acc v))
+                )
+              (conj acc v))
+            ) [] tm-coll))
+
+
+
+(defmulti do-param (fn [_ _ fmt] (:pformat fmt)))
+
+
+(defmethod do-param map-format
+  [tm-coll node {:keys [params]}]
+  (let [param-m (c/get-child node :dadysql.spec/param)
+        input (p/apply-param-proc params map-format tm-coll param-m)]
+    (if (f/failed? input)
+      input
+      (mapv (fn [m] (assoc m :dadysql.spec/input-param input)) tm-coll))))
+
+
+(defmethod do-param nested-map-format
+  [tm-coll node {:keys [params]}]
+  (let [param-m (c/get-child node :dadysql.spec/param)
+        input (f/try-> params
+                       (p/apply-param-proc nested-map-format tm-coll param-m)
+                       (j/do-disjoin (get-in tm-coll [0 :dadysql.spec/join])))]
+    (if (f/failed? input)
+      input
+      (mapv (fn [m] (assoc m :dadysql.spec/input-param ((:dadysql.spec/model m) input))) tm-coll))))
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;; Processing impl  ;;;;;;;;;;;;;;;;;;;;;;;;
+
 
 (defn- coll-failed?
   [tm-coll]
@@ -24,7 +71,7 @@
             ) tm-coll tm-coll))
 
 
-(defn do-node-process
+(defn- do-node-process
   [tm-coll n-processor type]
   (if (f/failed? tm-coll)
     tm-coll
@@ -34,89 +81,14 @@
         :output
         (-> (apply comp (c/as-xf-process :output n-processor))
             (transduce conj tm-coll))
-        :input
-        (let [p (->> (c/remove-child (c/remove-child n-processor :dadysql.spec/param-spec) :dadysql.spec/param)
-                     (c/as-xf-process :input)
-                     (apply f/comp-xf-until))]
-          (transduce p conj tm-coll))
         :sql-executor
         (-> (c/get-child n-processor :sql-executor)
             (c/node-process tm-coll))
         tm-coll))))
 
 
-(defn do-validate [spec v]
-  ;(println v)
-  (if (sequential? v)
-    (reduce (fn [acc w]
-              (if (s/valid? spec w)
-                (conj acc w)
-                (reduced (f/fail (s/explain-data spec w))))
-              ) (empty v) v)
-
-    (if (s/valid? spec v)
-      v
-      (f/fail (s/explain-data spec v)))))
-
-;(sequential? {:a 2})
-
-(defn apply-validation! [tm-coll]
-  ;(clojure.pprint/pprint tm-coll)
-
-  (reduce (fn [acc v]
-            (if-let [vali (:dadysql.spec/param-spec v)]
-              (let [w (do-validate vali (input-key v))]
-
-                (if (f/failed? w)
-                  (reduced w)
-                  (conj acc v)
-                  )
-                )
 
 
-              (conj acc v)
-              )
-            ) [] tm-coll)
-  )
-
-
-(comment
-
-  ;(s/valid? :get-dept-by-id/spec {:id 3} )
-
-  )
-
-
-
-(defmulti warp-input-node-process (fn [_ _ fmt] fmt))
-
-
-(defmethod warp-input-node-process map-format
-  [handler n-processor _]
-  (fn [tm-coll params]
-    (let [param-m (c/get-child n-processor :dadysql.spec/param)
-          input (p/do-param params map-format tm-coll param-m)]
-      (if (f/failed? input)
-        input
-        (-> (mapv (fn [m] (assoc m input-key input)) tm-coll)
-            (do-node-process n-processor :input)
-            (apply-validation!)
-            (handler input))))))
-
-
-(defmethod warp-input-node-process nested-map-format
-  [handler n-processor _]
-  (fn [tm-coll params]
-    (let [param-m (c/get-child n-processor :dadysql.spec/param)
-          input (f/try-> params
-                         (p/do-param nested-map-format tm-coll param-m)
-                         (j/do-disjoin (get-in tm-coll [0 :dadysql.spec/join])))]
-      (if (f/failed? input)
-        input
-        (-> (mapv (fn [m] (assoc m input-key ((:dadysql.spec/model m) input))) tm-coll)
-            (do-node-process n-processor :input)
-            (apply-validation!)
-            (handler input))))))
 
 
 (defn do-result1
@@ -148,11 +120,6 @@
               (output-key v))))
 
 
-#_(defn into-map
-    [tm-coll]
-    (into {} tm-coll))
-
-
 (defn format-output
   [tm-coll format]
   (cond
@@ -172,10 +139,10 @@
 
 (defmethod warp-output-node-process :default
   [handler n-processor format]
-  (fn [tm-coll params]
+  (fn [tm-coll]
     (f/try-> tm-coll
              (assoc-result-format format)
-             (handler params)
+             (handler)
              (do-node-process n-processor :output)
              (format-output format))))
 
@@ -188,10 +155,13 @@
 
 
 (defn- merge-relation-param
-  [root-result root params]
-  (-> (:dadysql.spec/join root)
-      (j/get-source-relational-key-value root-result)
-      (merge params)))
+  [root-result root more-tm]
+  (let [w (-> (:dadysql.spec/join root)
+              (j/get-source-relational-key-value root-result))]
+    (mapv (fn [r]
+            (update-in r [:dadysql.spec/input-param] merge w)
+            ) more-tm)))
+
 
 
 (defn- not-continue?
@@ -206,28 +176,36 @@
 (defmethod warp-output-node-process nested-join-format
   [handler n-processor _]
   (let [rf (warp-output-node-process handler n-processor :default)]
-    (fn [tm-coll params]
+    (fn [tm-coll]
       (if (not (is-join-pull tm-coll))
-        (rf tm-coll params)
+        (rf tm-coll)
         (let [[root & more-tm] tm-coll
-              root-output (rf [root] params)
-              r-handler (fn [r-out]
-                          (rf more-tm r-out))]
+              root-output (rf [root])]
           (if (not-continue? root-output)
             root-output
             (f/try-> root-output
-                     (merge-relation-param root params)
-                     (r-handler)
+                     (merge-relation-param root more-tm)
+                     (rf)
                      (merge root-output)
                      (j/do-join (:dadysql.spec/join root)))))))))
 
 
 
+(defn warp-input-node-process
+  [handler n-processor]
+  (fn [tm-coll]
+    (let [p (->> (c/remove-child n-processor :dadysql.spec/param)
+                 (c/as-xf-process :input)
+                 (apply f/comp-xf-until))]
+      (-> (transduce p conj tm-coll)
+          (handler)))))
 
-(defn get-process [n-processor {:keys [pformat rformat]}]
-  (let [exec (fn [tm-coll _]
+
+
+(defn get-process [n-processor {:keys [rformat]}]
+  (let [exec (fn [tm-coll]
                (do-node-process tm-coll n-processor :sql-executor))]
     (-> exec
-        (warp-input-node-process n-processor pformat)
+        (warp-input-node-process n-processor)
         (warp-output-node-process n-processor rformat))))
 

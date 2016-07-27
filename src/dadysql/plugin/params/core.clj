@@ -172,7 +172,7 @@
        (assoc-param-path param-m (ccu/empty-path))))
 
 
-(defn do-param
+(defn apply-param-proc
   [rinput input-format tm-coll param-imp]
   (let [r (param-paths input-format tm-coll rinput)]
     (-pprocess param-imp r rinput)))

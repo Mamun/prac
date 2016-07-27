@@ -61,11 +61,11 @@
                  :dadysql.spec/model :employee}]
           input {:id 2}
           expected-result {:id 2 :transaction_id 0}
-          actual-result (do-param input
-                                  map-format
-                                  coll
-                                  context
-                                  )]
+          actual-result (apply-param-proc input
+                                          map-format
+                                          coll
+                                          context
+                                          )]
       (is (= expected-result
              actual-result))))
   (testing "test param-ref-con "
@@ -77,10 +77,10 @@
                  :dadysql.spec/model :employee}]
           input {:employee {:id 2}}
           expected-result {:employee {:id 2 :transaction_id 0}}
-          actual-result (do-param input
-                                  nested-map-format
-                                  coll
-                                  context)]
+          actual-result (apply-param-proc input
+                                          nested-map-format
+                                          coll
+                                          context)]
       (is (= expected-result
              actual-result)))))
 
@@ -95,11 +95,11 @@
                  :dadysql.spec/model :employee}]
           input {:id 2}
           expected-result {:id 2 :transaction_id 2}
-          actual-result (do-param input
-                                  map-format
-                                  coll
-                                  context
-                                  )]
+          actual-result (apply-param-proc input
+                                          map-format
+                                          coll
+                                          context
+                                          )]
       (is (= expected-result
              actual-result))))
   (testing "test param-ref-key "
@@ -112,10 +112,10 @@
                  :dadysql.spec/model :employee}]
           input {:employee {:id 2}}
           expected-result {:employee {:id 2 :transaction_id 2}}
-          actual-result (do-param input
-                                  nested-map-format
-                                  coll
-                                  context)]
+          actual-result (apply-param-proc input
+                                          nested-map-format
+                                          coll
+                                          context)]
       (is (= expected-result
              actual-result)))))
 
@@ -128,11 +128,11 @@
                  :dadysql.spec/model :employee}]
           input {:id 2}
           expected-result {:id 2 :transaction_id 3}
-          actual-result (do-param input
-                                  map-format
-                                  coll
-                                  context
-                                  )]
+          actual-result (apply-param-proc input
+                                          map-format
+                                          coll
+                                          context
+                                          )]
       (is (= expected-result
              actual-result))))
   (testing "test param-ref-fn-key "
@@ -144,10 +144,10 @@
                  :dadysql.spec/model :employee}]
           input {:employee {:id 2}}
           expected-result {:employee {:id 2 :transaction_id 3}}
-          actual-result (do-param input
-                                  nested-map-format
-                                  coll
-                                  context)]
+          actual-result (apply-param-proc input
+                                          nested-map-format
+                                          coll
+                                          context)]
       (is (= expected-result
              actual-result)))))
 
@@ -164,11 +164,11 @@
                  :dadysql.spec/model :employee}]
           input {:id 2}
           expected-result {:id 2 :transaction_id 5}
-          actual-result (do-param input
-                                  map-format
-                                  coll
-                                  context
-                                  )]
+          actual-result (apply-param-proc input
+                                          map-format
+                                          coll
+                                          context
+                                          )]
       (is (= expected-result
              actual-result))))
   (testing "test params-ref-gen-key"
@@ -179,10 +179,10 @@
           coll [{:dadysql.spec/param [[:transaction_id :dadysql.spec/ref-gen :id]],
                  :dadysql.spec/model :employee}]
           input {:id 2}
-          actual-result (do-param input
-                                  map-format
-                                  coll
-                                  context)]
+          actual-result (apply-param-proc input
+                                          map-format
+                                          coll
+                                          context)]
       (is (failed? actual-result)))))
 
 
@@ -199,10 +199,10 @@
                  :dadysql.spec/model :employee}]
           input {:employee {:id 2}}
           expected-result {:employee {:id 2, :transaction_id 3}}
-          actual-result (do-param input
-                                  nested-map-format
-                                  coll
-                                  context)]
+          actual-result (apply-param-proc input
+                                          nested-map-format
+                                          coll
+                                          context)]
       (is (= (expected-result
                actual-result)))))
   (testing "test params-ref-gen-key"
@@ -213,10 +213,10 @@
           coll [{:dadysql.spec/param [[:transaction_id :dadysql.spec/ref-gen :id]],
                  :dadysql.spec/model :employee}]
           input {:employee {:id 2}}
-          actual-result (do-param input
-                                  nested-map-format
-                                  coll
-                                  context)]
+          actual-result (apply-param-proc input
+                                          nested-map-format
+                                          coll
+                                          context)]
       (is (failed? actual-result)))))
 
 
@@ -236,10 +236,10 @@
                  :dadysql.spec/model :employee}]
           input {:employee {:id 2}}
           expected-result {:employee {:id 2, :transaction_id 0, :id4 2, :id2 1, :id3 5}}
-          actual-result (do-param input
-                                  nested-map-format
-                                  coll
-                                  context)]
+          actual-result (apply-param-proc input
+                                          nested-map-format
+                                          coll
+                                          context)]
       (is (= expected-result
              actual-result))))
   (testing "test do-params-comp for empty collection  "
@@ -250,10 +250,10 @@
           coll []
           input {:employee {:id 2}}
           expected-result {:employee {:id 2}}
-          actual-result (do-param input
-                                  nested-map-format
-                                  coll
-                                  context)]
+          actual-result (apply-param-proc input
+                                          nested-map-format
+                                          coll
+                                          context)]
       (is (= expected-result
              actual-result)))))
 
