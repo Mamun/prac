@@ -52,9 +52,11 @@
 
 (defn do-run
   [node tms req-m]
-  (let [proc (tie/get-process node req-m)]
+  (let [proc (tie/get-process node req-m)
+        rformat (:rformat req-m) ]
     (f/try-> tms
              (dc/select-name req-m)
+             (dc/assoc-result-format rformat)
              (tie/do-param node req-m)
              (tie/validate-param-spec!)
              (proc))))

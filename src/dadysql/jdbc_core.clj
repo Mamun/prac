@@ -102,25 +102,6 @@
 
 
 
-(defn do-result1
-  [format m]
-  (condp = format
-    map-format
-    (dissoc m :dadysql.spec/result)
-    array-format
-    (assoc m :dadysql.spec/result #{:dadysql.spec/array})
-    value-format
-    (-> m
-        (assoc :dadysql.spec/model (:dadysql.spec/name m))
-        (assoc :dadysql.spec/result #{:dadysql.spec/single :dadysql.spec/array})
-        (assoc :dadysql.spec/dml-key :dadysql.spec/dml-select))
-    m))
-
-
-
-(defn assoc-result-format
-  [tm-coll format]
-  (mapv (fn [m] (do-result1 format m)) tm-coll))
 
 
 (defn into-model-map
@@ -152,7 +133,6 @@
   [handler n-processor format]
   (fn [tm-coll]
     (f/try-> tm-coll
-             (assoc-result-format format)
              (handler)
              (do-node-process n-processor :output)
              (format-output format))))

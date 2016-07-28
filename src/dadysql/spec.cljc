@@ -175,14 +175,14 @@
 
 
 
-(s/def ::oformat #{nested-join-format nested-map-format nested-array-format
+(s/def ::rformat #{nested-join-format nested-map-format nested-array-format
                    map-format array-format value-format})
 (s/def ::pformat #{nested-map-format map-format})
 
 (s/def ::params map?)
 
 (s/def ::input (s/keys :req-un [(or ::name ::group)]
-                       :opt-un [::params ::pformat ::oformat]))
+                       :opt-un [::params ::pformat ::rformat]))
 
 
 

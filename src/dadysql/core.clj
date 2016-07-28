@@ -148,3 +148,25 @@
   (-> request-m
       (assoc :pformat tc/map-format)
       (assoc :rformat tc/value-format)))
+
+
+
+(defn do-result1
+  [format m]
+  (condp = format
+    tc/map-format
+    (dissoc m :dadysql.spec/result)
+    tc/array-format
+    (assoc m :dadysql.spec/result #{:dadysql.spec/array})
+    tc/value-format
+    (-> m
+        (assoc :dadysql.spec/model (:dadysql.spec/name m))
+        (assoc :dadysql.spec/result #{:dadysql.spec/single :dadysql.spec/array})
+        (assoc :dadysql.spec/dml-key :dadysql.spec/dml-select))
+    m))
+
+
+
+(defn assoc-result-format
+  [tm-coll format]
+  (mapv (fn [m] (do-result1 format m)) tm-coll))
