@@ -21,7 +21,7 @@
   ([file-name pc]
    (-> (fr/read-file file-name)
        (assoc-in [tc/global-key :dadysql.spec/file-name] file-name)
-       (assoc-in [tc/global-key tc/process-context-key] pc))))
+       (assoc-in [tc/global-key :dadysql.spec/process-context-key] pc))))
 
 
 
@@ -34,7 +34,7 @@
 
 (defn select-pull-node [ds tms request-m]
   (f/try-> tms
-           (get-in [tc/global-key tc/process-context-key] [])
+           (get-in [tc/global-key :dadysql.spec/process-context-key] [])
            (filter-processor request-m)
            (c/add-child-one (ce/sql-executor-node ds tms ce/Parallel))))
 
@@ -42,7 +42,7 @@
 
 (defn select-push-node [gen-pull-fn ds tms]
   (f/try-> tms
-           (get-in [tc/global-key tc/process-context-key] [])
+           (get-in [tc/global-key :dadysql.spec/process-context-key] [])
            (c/remove-type :output)
            (c/add-child-one (ce/sql-executor-node ds tms ce/Transaction))
            (p/assoc-param-ref-gen (fn [& {:as m}]

@@ -3,6 +3,7 @@
     [clojure.spec :as sp]
     [dady.common :as cc]
     [dady.fail :as f]
+    [clojure.set]
     [dadysql.spec :as tc]))
 
 
@@ -116,26 +117,26 @@
 
 
 (defmethod default-request :pull
-  [_ {:keys [name gname] :as request-m}]
-  (let [dfmat (if (or gname
+  [_ {:keys [name group] :as request-m}]
+  (let [dfmat (if (or group
                       (sequential? name))
                 {:pformat tc/map-format :rformat tc/nested-join-format}
                 {:pformat tc/map-format :rformat :one})
         request-m (merge dfmat request-m)
-        request-m (if gname
+        request-m (if group
                     (assoc request-m :rformat tc/nested-join-format)
                     request-m)]
     request-m))
 
 
 (defmethod default-request :push
-  [_ {:keys [gname name] :as request-m}]
-  (let [d (if (or gname
+  [_ {:keys [group name] :as request-m}]
+  (let [d (if (or group
                   (sequential? name))
             {:pformat tc/nested-map-format :rformat tc/nested-map-format}
             {:pformat tc/map-format :rformat :one})
         request-m (merge d request-m)
-        request-m (if gname
+        request-m (if group
                     (-> request-m
                         (assoc :pformat tc/nested-map-format)
                         (assoc :rformat tc/nested-map-format))

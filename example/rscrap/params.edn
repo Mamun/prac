@@ -1,0 +1,58 @@
+{"/ratanet/front?controller=CreditApplication&action=DispoMaterialType"
+ {"Instance_theDossierConditions_theVendorInfo_mSalesmanId" "otatli"
+  "Instance_theDossierConditions_theMaterialInfo$0_mCode"   "612"}
+
+ "/ratanet/front?controller=CreditApplication&action=DispoPlusCreditType"
+ {"CAM_Instance_theDossierConditions_mCreditTypeCode"      0
+  "Instance_theDossierConditions_mPaymentDay"              1
+  "Instance_theDossierConditions_theMaterialInfo$0_mTaken" "E"
+  "Instance_theDossierConditions_theMaterialInfo$0_mPrice" 2000
+  "CAM_mCreditAmount"                                      2000}
+
+ "/ratanet/front?controller=CreditApplication&action=DispoV2CustomerIdentity"
+ {"Instance_theFamily_theCreditHolder_mCitizenshipCoba"              "000"
+  "Instance_theFamily_mFamilySituation"                              "C"
+  "Instance_mWhichSigners"                                           "alone"
+  "Instance_theFamily_theCreditHolder_mMaidenName"                   "test"
+  "Instance_theFamily_theCreditHolder_theBankAccount_mDateBeginYear" "2011"
+  "Instance_theFamily_theCreditHolder_mBirthPlace"                   "Munich"
+  "Instance_theFamily_mNoChildren"                                   "0"
+  "Instance_theFamily_theCreditHolder_theBankAccount_mIBAN"          "DE55701500001000648657"
+  "Instance_theFamily_theCreditHolder_mNoAdvertisment"               "A"
+  "accountTypeSelected"                                              "SEPA"
+  "Instance_theFamily_theAddressLiving_theAddress_mStreet"           "Schwanthalerstrase 31"
+  "Instance_theFamily_theAddressLiving_mBeginDate"                   "01.2009"
+  "Instance_theFamily_theCreditHolder_mFirstName"                    "ratanet"
+  "Instance_theFamily_theAddressLiving_theAddress_mCity"             "Munich"
+  "account_type"                                                     "SEPA"
+  "Instance_theFamily_theCreditHolder_theIdCard_mType"               "PAS"
+  "Instance_theFamily_theCreditHolder_theIdCard_mValidTill"          "01.01.2018"
+  "Instance_theFamily_theCreditHolder_mSurname"                      "Musterman"
+  "Instance_theDossierConditions_mPaymentMode"                       "P"
+  "Instance_theFamily_theCreditHolder_mBirthDate"                    "01.01.1990"
+  "Instance_theFamily_theCreditHolder_theIdCard_mNo"                 "CheckEmpty"
+  "Instance_theDossierConditions_mContractReference"                 "0023"
+  "Instance_theFamily_theAddressLiving_theAddress_mPostalCode"       "80796"
+  "Instance_theFamily_theCreditHolder_theIdCard_mIssuedBy"           "dfger"
+  "Instance_theFamily_mHaveCard"                                     "E"
+  "Instance_theFamily_theCreditHolder_mSigle"                        "Herr"
+  "SCHUFA_AGREEMENT_CHECK"                                           "1"}
+
+ "/ratanet/front?controller=CreditApplication&action=DispoV2CustomerIdentityComplementary"
+ {"Instance_theFamily_theCreditHolder_theCurrentEmployment_theEnterprise_mName"            "aaa"
+  "Instance_theFamily_theBudget_mResidencePrimary"                                         "99999"
+  "CreditHolderSalaryExtraField"                                                           "5000"
+  "Instance_theFamily_theCreditHolder_mEmail"                                              "mamuninfo@gmail.com"
+  "Instance_theFamily_theCreditHolder_theCurrentEmployment_mDateEnd"                       nil
+  "Instance_theFamily_theCreditHolder_theCurrentEmployment_theEnterprise_theAddress_mCity" "Munich"
+  "Instance_theFamily_theCreditHolder_mTelephone"                                          "08999168111"
+  "Instance_theFamily_theAddressLiving_mSituation"                                         "K"
+  "Instance_theFamily_theCreditHolder_theCurrentEmployment_mDateBegin"                     "12.2012"
+  "Instance_theFamily_theCreditHolder_mTelephoneGSM"                                       nil
+  "Checkbox_Kontoprotect_CHECK"                                                            "1"
+  "Instance_theDecision_mSalaryProofSeen"                                                  "N"
+  "Instance_theFamily_theCreditHolder_theCurrentEmployment_mProfessionCode"                "60"
+  "Instance_theFamily_theBudget_mCreditHolderSalary"                                       "5000"
+  "Kontoprotect_CHECK"                                                                     "1"
+  }
+ }

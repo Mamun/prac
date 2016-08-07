@@ -3,7 +3,7 @@
 
 (defonce global-key :_global_)
 
-(defonce process-context-key :process-context)
+;(defonce process-context-key :process-context)
 
 
 (s/def ::dml-select (s/spec #(= :select %)))
