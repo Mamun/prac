@@ -1,57 +1,18 @@
- (ns tie-edn
-   (:require [clojure.spec :as s]
-             [dady.spec :as ds]))
+(ns tie-edn
+  (:require [clojure.spec :as s]
+            [dady.spec :as ds]))
 
 
-(dady.spec/defsp
-  int-id
-  (s/def ::id int?)
-  (s/def ::spec (s/keys :req-un [::id])))
-
-
-(dady.spec/defsp
-  get-dept-by-id
-  (s/def ::id int?)
-  (s/def ::spec (s/keys :req-un [::id])))
-
-
-(dady.spec/defsp
-  get-dept-by-ids
-  (s/def ::id (s/every int?))
-  (s/def ::spec (s/keys :req-un [::id])))
-
-
-
-
+(dady.spec/defm int-id {:id int?})
+(dady.spec/defm get-dept-by-id {:id int?})
+(dady.spec/defm get-dept-by-ids {:id (s/every int?)})
 
 
 
 (comment
 
+  (s/valid? :int-id/spec {:id 34})
 
-  #_(s/valid?
-    (::s/kvs->map {:id int?})
-    {:id "hello"}
-    )
-
-  ;(s/form :get-dept-by-ids/id)
-  ;(ds/find-ns-spec 'cfg )
-
-  (s/registry)
-
-  {:id int? :vip string?}
-
-  ;(resolve 'int1?)
-
-  (s/conform ::int "asdfsd")
-
-  (s/conform :get-dept-by-id/spec {:id 2})
-
-  (s/spec? (s/spec ::get-dept-by-id))
-
-  ;(s/valid? keyword? ::a)
-
-  (load-file "tie_edn.clj")
-
+  (s/explain :int-id/spec {:id "asdf"} )
 
   )

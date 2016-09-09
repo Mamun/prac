@@ -2,6 +2,20 @@
   (:require [clojure.spec :as s]))
 
 
+
+(def compile-one-data2
+  {:doc                     "Modify department"
+   :dadysql.spec/name       [:insert-dept ]
+   :dadysql.spec/model      :department
+   :dadysql.spec/param-spec {:id int?}
+   :dadysql.spec/sql        ["insert into department (id, transaction_id, dept_name) values (:id, :transaction_id, :dept_name)"]
+   :dadysql.spec/extend     {:insert-dept {:dadysql.spec/param   [[:transaction_id :ref-con 0]
+                                                                  [:transaction_id :ref-con 0]]
+                                           :dadysql.spec/timeout 30}}})
+
+
+
+
 (def compile-one-data
   {:doc                     "Modify department"
    :dadysql.spec/name       [:insert-dept :update-dept :delete-dept]

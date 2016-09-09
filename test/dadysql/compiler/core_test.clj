@@ -64,6 +64,10 @@
 
   ;(run-tests)
 
+
+  (->> (r/default-config)
+       (r/compile-one compile-one-data2 ))
+
   )
 
 
