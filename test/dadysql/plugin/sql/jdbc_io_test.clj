@@ -1,7 +1,7 @@
-(ns dadysql.plugin.sql.sql-executor-test
+(ns dadysql.plugin.sql.jdbc-io-test
   (:use [clojure.test]
         [dady.fail]
-        [dadysql.plugin.sql.sql-executor])
+        [dadysql.plugin.sql.jdbc-io])
   (:require [dadysql.spec :refer :all]
             [dady.common :as cc]))
 

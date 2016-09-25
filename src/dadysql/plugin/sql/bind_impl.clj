@@ -30,19 +30,15 @@
   ;(contains? #{1 2 3}  5)
 
   (validate-input-type!
-    {
-     :dadysql.spec/sql
-                           ["insert into employee_detail (employee_id, street,   city,  state,  country )                     values (:employee_id, :street, :city, :state, :country)"
+    {:dadysql.spec/sql     ["insert into employee_detail (employee_id, street,   city,  state,  country )
+                           values (:employee_id, :street, :city, :state, :country)"
                             :employee_id
                             :street
                             :city
                             :state
                             :country],
-
      :dadysql.spec/dml-key :dadysql.spec/dml-insert,
-
-     :input
-                           [{:street      "Schwan",
+     :input                [{:street      "Schwan",
                              :city        "Munich",
                              :state       "Bayern",
                              :country     "Germany",

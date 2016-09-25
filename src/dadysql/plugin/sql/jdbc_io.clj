@@ -1,4 +1,4 @@
-(ns dadysql.plugin.sql.sql-executor
+(ns dadysql.plugin.sql.jdbc-io
   (:require [clojure.set]
             [clojure.core.async :as async :refer [<! >! <!! chan alt! go go-loop onto-chan sliding-buffer]]
             [clojure.java.jdbc :as jdbc]
@@ -87,24 +87,8 @@
      true)))
 
 
-(defn apply-handler-one
-  [handler m]
-  (-> (handler m)
-      (async/<!!)))
 
-
-(defn apply-handler-parallel
-  [handler m-coll]
-  (->> m-coll
-       (map #(handler %))
-       (doall)
-       (async/merge)
-       (async/take (count m-coll))
-       (async/into [])
-       (async/<!!)))
-
-
-(defn jdbc-handler-single
+(defn jdbc-handler
   [ds tm]
   (let [dml-type (:dadysql.spec/dml-key tm)
         sql (:dadysql.spec/sql tm)
@@ -130,8 +114,6 @@
                        (- (System/nanoTime)
                           st)) 1000000.0)                   ;;in msecs
             r (if (seq? r) (into [] r) r)]
-        ;        (clojure.pprint/pprint r)
-
         (if (f/failed? r)
           r
           (assoc m output-key r
@@ -160,66 +142,74 @@
 
 
 
-(defn jdbc-handler->chan [ds]
-  (-> (partial jdbc-handler-single ds)
-      (warp-map-output)
-      (warp-async-go)))
+(defmulti execute (fn [_ _ & {:keys [type]}] type))
 
 
+(defmethod execute
+  :default
+  [ds m-coll _]
+  (let [handler (-> (partial jdbc-handler ds)
+                    (warp-map-output))]
+    (-> (map handler)
+        (transduce conj m-coll))))
 
-(def Parallel :parallel)
-(def Transaction :transaction)
-(def Serial :serial)
-(def SerialNotFailed :serial-not-failed)
+
+(defmethod execute
+  :dadysql.plugin.sql.jdbc-io/parallel
+  [ds m-coll _]
+  (let [handler (-> (partial jdbc-handler ds)
+                    (warp-map-output)
+                    (warp-async-go))]
+    (->> m-coll
+         (map #(handler %))
+         (doall)
+         (async/merge)
+         (async/take (count m-coll))
+         (async/into [])
+         (async/<!!))))
 
 
-(defn do-execute [type ds m-coll]
-  (condp = type
-    Parallel
-    (-> (jdbc-handler->chan ds)
-        (apply-handler-parallel m-coll))
-    Serial
-    (-> (map #(apply-handler-one (jdbc-handler->chan ds) %))
-        (transduce conj m-coll))
-    SerialNotFailed
-    (-> (map #(apply-handler-one (jdbc-handler->chan ds) %))
+(defmethod execute
+  :dadysql.plugin.sql.jdbc-io/serial-until-failed
+  [ds m-coll _]
+  (let [handler (-> (partial jdbc-handler ds)
+                    (warp-map-output))]
+    (-> (map (handler ds))
         (f/comp-xf-until)
-        (transduce conj m-coll))
-    :dadysql.spec/all
-    (do-execute SerialNotFailed ds m-coll)
-    ;; default serial
-    (do-execute Serial ds m-coll)))
+        (transduce conj m-coll))))
 
 
-(defn do-transaction-execute
-  [ds tx-map m-coll]
+
+(defn execute-type [commit-type]
+  (if (= :dadysql.spec/all commit-type)
+    :dadysql.plugin.sql.jdbc-io/serial-until-failed
+    :dadysql.plugin.sql.jdbc-io/serial))
+
+
+(defmethod execute
+  :dadysql.plugin.sql.jdbc-io/transaction
+  [ds m-coll & {:keys [tx-map]}]
   (let [isolation (or (:isolation tx-map) :serializable)
         read-only? (read-only? tx-map)
-        commit-type (commit-type m-coll)]
+        commit-type (commit-type m-coll)
+        exec-type (execute-type commit-type)]
     (if (has-transaction? ds)
-      (do-execute commit-type ds m-coll)
+      (execute ds m-coll :type exec-type)
       (jdbc/with-db-transaction
         [t-conn ds
          :isolation isolation
          :read-only? read-only?]
-        (let [result-coll (do-execute commit-type t-conn m-coll)]
+        (let [result-coll (execute t-conn m-coll :type exec-type)]
           (when (is-rollback? commit-type read-only? result-coll)
             (jdbc/db-set-rollback-only! t-conn))
           result-coll)))))
 
 
-(defn db-execute
-  [m-coll type ds tx]
-  (if (= Transaction type)
-    (-> (do-transaction-execute ds tx m-coll)
-        (notify-async-tracking))
-    (-> (do-execute type ds m-coll)
-        (notify-async-tracking))))
-
-
 (defn sql-executor-node
   [ds tms type]
   (let [tx (apply hash-map (get-in tms [global-key :dadysql.spec/tx-prop]))
-        f (fn [m-coll] (db-execute m-coll type ds tx))]
+        f (fn [m-coll]
+            (-> (execute ds m-coll :type type :tx-map tx)
+                (notify-async-tracking)))]
     (fn-as-node-processor f :name :sql-executor)))
 

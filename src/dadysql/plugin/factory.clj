@@ -3,7 +3,6 @@
     [dadysql.spec :refer :all]
     [dadysql.plugin.common-impl :as c]
     [dadysql.plugin.params.core :as p]
-    ;[dadysql.plugin.validation.core :as v]
     [dadysql.plugin.sql.bind-impl :as sql]
     [dadysql.plugin.join.join-impl :as join]))
 
@@ -25,34 +24,5 @@
           (join/new-join-key)))
 
 
-
-#_(defn select-node
-    "Return all select node "
-    [node-coll node-name-coll]
-    (let [s (into #{} node-name-coll)
-          r (filter (fn [v] (contains? s (np/node-name v))) node-coll)]
-      (if (empty? r)
-        r
-        (into (empty node-coll) r))))
-
-
-#_(defbranch ExtendKey [lname coll lorder])
-#_(defbranch Modulekey [lname coll lorder])
-#_(defbranch GlobalKey [lname coll lorder])
-
-
-#_(defn branch?
-    [node]
-    (satisfies? IBranchNode node))
-
-
-#_(defn childrent
-    [node]
-    (-childs node))
-
-
-#_(defn new-module-key-node
-    [leaf-node-coll]
-    (Modulekey. module-key leaf-node-coll 0))
 
 

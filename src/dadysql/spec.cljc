@@ -92,9 +92,9 @@
 (s/def ::read-only? boolean?)
 
 
-(s/def ::one-one (s/spec #(= :1-1 %)))
-(s/def ::one-many (s/spec #(= :1-n %)))
-(s/def ::many-one (s/spec #(= :n-1 %)))
+(s/def ::one-one   (s/spec #(= :1-1 %)))
+(s/def ::one-many  (s/spec #(= :1-n %)))
+(s/def ::many-one  (s/spec #(= :n-1 %)))
 (s/def ::many-many (s/spec #(= :n-n %)))
 
 (s/def ::join-one

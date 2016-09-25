@@ -12,7 +12,7 @@
     [dadysql.plugin.factory :as imp]
     [dady.proto :as c]
     [dady.fail :as f]
-    [dadysql.plugin.sql.sql-executor :as ce]
+    [dadysql.plugin.sql.jdbc-io :as ce]
     [dadysql.plugin.params.core :as p]))
 
 
@@ -36,7 +36,7 @@
   (f/try-> tms
            (get-in [tc/global-key :dadysql.spec/process-context-key] [])
            (filter-processor request-m)
-           (c/add-child-one (ce/sql-executor-node ds tms ce/Parallel))))
+           (c/add-child-one (ce/sql-executor-node ds tms  :dadysql.plugin.sql.jdbc-io/parallel))))
 
 
 
@@ -44,7 +44,7 @@
   (f/try-> tms
            (get-in [tc/global-key :dadysql.spec/process-context-key] [])
            (c/remove-type :output)
-           (c/add-child-one (ce/sql-executor-node ds tms ce/Transaction))
+           (c/add-child-one (ce/sql-executor-node ds tms :dadysql.plugin.sql.jdbc-io/transaction))
            (p/assoc-param-ref-gen (fn [& {:as m}]
                                     (->> (dc/default-request :db-seq m)
                                          (gen-pull-fn ds tms))))))

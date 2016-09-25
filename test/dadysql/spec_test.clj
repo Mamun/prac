@@ -7,6 +7,24 @@
             [clojure.spec.test :as t]
             [dadysql.compiler.file-reader :as f]))
 
+(s/def ::id (s/and string?
+                   #(clojure.string/starts-with?  % "Foo")
+                   #(do (println %) true )))
+
+(defn foo-gen []
+  (->> (s/gen (s/int-in 1 10))
+       (gen/fmap (fn [v] (str "Foo" v)))))
+
+
+(s/exercise ::id 10 {::id foo-gen})
+
+;(gen/generate (s/spec ::id :gen foo-gen) )
+
+
+(s/def ::lookup (s/map-of keyword? string?) )
+
+
+(s/exercise ::lookup)
 
 
 
@@ -116,64 +134,64 @@
 #_(comment
 
 
-  (gen/generate (s/gen :dadysql.spec/param-spec))
+    (gen/generate (s/gen :dadysql.spec/param-spec))
 
 
-  (gen/generate (s/gen :dadysql.spec/extend))
+    (gen/generate (s/gen :dadysql.spec/extend))
 
-  (gen/generate (s/gen :dadysql.spec/module))
+    (gen/generate (s/gen :dadysql.spec/module))
 
-  (gen/generate (s/gen :dadysql.spec/global))
+    (gen/generate (s/gen :dadysql.spec/global))
 
-  (gen/generate  (s/gen :dadysql.spec/compiler-input-spec))
-
-
-  (gen/sample
-    (gen/bind (s/gen :dadysql.spec/vali-type2)
-              (fn [v]
-                (println v)
-                {:a v}
-
-                (s/gen int?)
-                )))
+    (gen/generate (s/gen :dadysql.spec/compiler-input-spec))
 
 
+    (gen/sample
+      (gen/bind (s/gen :dadysql.spec/vali-type2)
+                (fn [v]
+                  (println v)
+                  {:a v}
 
-  (gen/sample
-    (gen/bind (s/gen :dadysql.spec/params)
-              (fn [v]
-                (println v)
-                {:a v}
-
-                (s/gen int?)
-              )))
+                  (s/gen int?)
+                  )))
 
 
 
-  
+    (gen/sample
+      (gen/bind (s/gen :dadysql.spec/params)
+                (fn [v]
+                  (println v)
+                  {:a v}
+
+                  (s/gen int?)
+                  )))
+
+
+
+
 
     (s/gen :dadysql.spec/params)
 
 
 
 
-  (gen/generate
-    (gen/bind (s/gen :dadysql.spec/params) (fn [v]
-                                                      (println v)
-                                                      [:a]
-                                                      )))
+    (gen/generate
+      (gen/bind (s/gen :dadysql.spec/params) (fn [v]
+                                               (println v)
+                                               [:a]
+                                               )))
 
-  (gen/sample (gen/fmap (fn [w]
+    (gen/sample (gen/fmap (fn [w]
                             (into [] (into #{} w)))
                           (gen/such-that not-empty (s/gen :dadysql.spec/params))))
 
 
-  (gen/sample (gen/fmap (fn [w]
-                          (into [] (into #{} w)))
-                        (gen/such-that not-empty (s/gen :dadysql.spec/param-spec))))
+    (gen/sample (gen/fmap (fn [w]
+                            (into [] (into #{} w)))
+                          (gen/such-that not-empty (s/gen :dadysql.spec/param-spec))))
 
 
-  (gen/sample (gen/fmap (fn [w]
+    (gen/sample (gen/fmap (fn [w]
                             (into [] (into #{} w)))
                           (gen/such-that not-empty (s/gen :dadysql.spec/join))))
 
@@ -182,21 +200,21 @@
 
 
 
-  (->> "tie.edn.sql"
+    (->> "tie.edn.sql"
          (f/read-file)
          (s/explain :dadysql.spec/compiler-input-spec)
 
          )
 
 
-  (gen/generate (s/gen :dadysql.spec/extend) )
+    (gen/generate (s/gen :dadysql.spec/extend))
 
 
 
 
-  (gen/generate (s/gen :dadysql.spec/compiler-input-spec))
+    (gen/generate (s/gen :dadysql.spec/compiler-input-spec))
 
-  )
+    )
 
 
 
