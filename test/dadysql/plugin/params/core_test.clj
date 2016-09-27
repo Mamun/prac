@@ -7,7 +7,7 @@
     ;[dady.node-proto :as p]
     [dady.proto :refer :all]
     [dadysql.plugin.params.core :refer :all]
-    [dadysql.spec :refer :all]
+    #_[dadysql.spec :refer :all]
     [dady.common :refer :all]
     [clojure.spec :as sp]))
 
@@ -17,7 +17,7 @@
     (let [coll [{:dadysql.core/param [[:id :ref-gen :gen-dept]]}
                 {:dadysql.core/param [[:id3 :ref-gen :gen-dept]]}]
           expected-result (list [[:id] :ref-gen :gen-dept] [[:id3] :ref-gen :gen-dept])
-          actual-result (param-paths map-format coll {:id2 1})]
+          actual-result (param-paths :dadysql.core/format-map coll {:id2 1})]
       (is (= actual-result
              expected-result)))))
 
@@ -43,7 +43,7 @@
                            [[:employee :transaction_id2] :ref-key :id]
                            [[:employee :id] :dadysql.core/ref-gen :gen-dept]
                            [[:employee :employee-detail :city] :ref-con 0]]
-          actual-result (param-paths nested-map-format coll :dadysql.core/param)]
+          actual-result (param-paths :dadysql.core/format-nested coll :dadysql.core/param)]
       (is (= actual-result
              expected-result)))))
 
@@ -62,7 +62,7 @@
           input {:id 2}
           expected-result {:id 2 :transaction_id 0}
           actual-result (apply-param-proc input
-                                          map-format
+                                          :dadysql.core/format-map
                                           coll
                                           context
                                           )]
@@ -78,7 +78,7 @@
           input {:employee {:id 2}}
           expected-result {:employee {:id 2 :transaction_id 0}}
           actual-result (apply-param-proc input
-                                          nested-map-format
+                                          :dadysql.core/format-nested
                                           coll
                                           context)]
       (is (= expected-result
@@ -96,7 +96,7 @@
           input {:id 2}
           expected-result {:id 2 :transaction_id 2}
           actual-result (apply-param-proc input
-                                          map-format
+                                          :dadysql.core/format-map
                                           coll
                                           context
                                           )]
@@ -113,7 +113,7 @@
           input {:employee {:id 2}}
           expected-result {:employee {:id 2 :transaction_id 2}}
           actual-result (apply-param-proc input
-                                          nested-map-format
+                                          :dadysql.core/format-nested
                                           coll
                                           context)]
       (is (= expected-result
@@ -129,7 +129,7 @@
           input {:id 2}
           expected-result {:id 2 :transaction_id 3}
           actual-result (apply-param-proc input
-                                          map-format
+                                          :dadysql.core/format-map
                                           coll
                                           context
                                           )]
@@ -145,7 +145,7 @@
           input {:employee {:id 2}}
           expected-result {:employee {:id 2 :transaction_id 3}}
           actual-result (apply-param-proc input
-                                          nested-map-format
+                                          :dadysql.core/format-nested
                                           coll
                                           context)]
       (is (= expected-result
@@ -165,7 +165,7 @@
           input {:id 2}
           expected-result {:id 2 :transaction_id 5}
           actual-result (apply-param-proc input
-                                          map-format
+                                          :dadysql.core/format-map
                                           coll
                                           context
                                           )]
@@ -180,7 +180,7 @@
                  :dadysql.core/model :employee}]
           input {:id 2}
           actual-result (apply-param-proc input
-                                          map-format
+                                          :dadysql.core/format-map
                                           coll
                                           context)]
       (is (failed? actual-result)))))
@@ -200,7 +200,7 @@
           input {:employee {:id 2}}
           expected-result {:employee {:id 2, :transaction_id 3}}
           actual-result (apply-param-proc input
-                                          nested-map-format
+                                          :dadysql.core/format-nested
                                           coll
                                           context)]
       (is (= (expected-result
@@ -214,7 +214,7 @@
                  :dadysql.core/model :employee}]
           input {:employee {:id 2}}
           actual-result (apply-param-proc input
-                                          nested-map-format
+                                          :dadysql.core/format-nested
                                           coll
                                           context)]
       (is (failed? actual-result)))))
@@ -237,7 +237,7 @@
           input {:employee {:id 2}}
           expected-result {:employee {:id 2, :transaction_id 0, :id4 2, :id2 1, :id3 5}}
           actual-result (apply-param-proc input
-                                          nested-map-format
+                                          :dadysql.core/format-nested
                                           coll
                                           context)]
       (is (= expected-result
@@ -251,7 +251,7 @@
           input {:employee {:id 2}}
           expected-result {:employee {:id 2}}
           actual-result (apply-param-proc input
-                                          nested-map-format
+                                          :dadysql.core/format-nested
                                           coll
                                           context)]
       (is (= expected-result

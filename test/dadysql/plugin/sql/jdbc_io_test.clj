@@ -2,7 +2,7 @@
   (:use [clojure.test]
         [dady.fail]
         [dadysql.plugin.sql.jdbc-io])
-  (:require [dadysql.spec :refer :all]
+  (:require #_[dadysql.spec :refer :all]
             [dady.common :as cc]))
 
 
@@ -21,7 +21,7 @@
 
 ;(warp-map-output-test)
 
-(deftest warp-parallel-coll-test
+#_(deftest warp-parallel-coll-test
   (testing "test warp-parallel-coll"
     (let [handler (fn [m] (assoc m :dadysql.core/output {:a 3}))
           han (-> handler

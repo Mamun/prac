@@ -1,6 +1,6 @@
 (ns ring.middleware.dadysql-test
   (:use [clojure.test])
-  (:require [dadysql.spec :refer :all]
+  (:require #_[dadysql.spec :refer :all]
 
             [ring.middleware.dadysql :refer :all]
             [test-data :as td]))

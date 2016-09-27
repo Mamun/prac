@@ -1,6 +1,6 @@
 (ns dadysql.plugin.params.core
   (:use [dady.proto])
-  (:require [dadysql.spec :refer :all]
+  (:require #_[dadysql.spec :refer :all]
             [dady.common :as cc]
             [dady.fail :as f]
             [dadysql.plugin.util :as ccu]
@@ -149,7 +149,7 @@
 
 
 (defmethod param-paths
-  nested-map-format
+  :dadysql.core/format-nested
   [_ [root-m & child-m] param-m]
   (let [model-name (get root-m :dadysql.core/model)
         rp (ccu/get-path param-m model-name)
@@ -164,7 +164,7 @@
 
 
 (defmethod param-paths
-  map-format
+  :dadysql.core/format-map
   [_ tm-coll param-m]
   (->> (map :dadysql.core/param tm-coll)
        (reduce concat)

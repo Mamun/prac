@@ -1,6 +1,6 @@
 (ns dadysql.plugin.join.join-impl
   (:use [dady.proto])
-  (:require [dadysql.spec :refer :all]
+  (:require #_[dadysql.spec :refer :all]
             [dady.common :as cc]
     #_[schema.core :as s]))
 

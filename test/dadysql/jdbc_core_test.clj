@@ -3,7 +3,6 @@
   (:require [dadysql.jdbc-core :refer :all]
             [dadysql.plugin.factory :refer :all]
             [dadysql.plugin.params.core :as p]
-            [dadysql.spec :refer :all]
             [dadysql.plugin.util :as cu]))
 
 
@@ -37,7 +36,7 @@
                     :dadysql.core/join       [],
                     :dadysql.core/group      :load-dept,
                     :dadysql.core/index      0}]
-          r (do-param tm-coll [(p/new-param-key 4 (p/new-child-keys))] {:pformat map-format
+          r (do-param tm-coll [(p/new-param-key 4 (p/new-child-keys))] {:pformat :dadysql.core/format-map
                                                                         :params  {:id 4}})]
       (is (= (get-in r [0 :dadysql.core/input-param]) {:id 4})))))
 

@@ -1,5 +1,5 @@
 (ns dadysql.compiler.util
-  (:use [dadysql.spec])
+
   (:require [clojure.spec :as s]
             [clojure.string]
             [dady.common :as dc]))

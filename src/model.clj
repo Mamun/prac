@@ -26,28 +26,28 @@
        nil)))
 
 
-(in-spec User
+#_(in-spec User
   (s/def ::id string?)
   (s/def ::spec (s/keys :req-un [::id])))
 
 
-(in-spec Credit
+#_(in-spec Credit
   (s/def ::no number?)
   (s/def ::spec (s/keys :req-un [::id])))
 
 
 
 
-(Model User {:id int?})
+;(Model User {:id int?})
 
 
-(s/valid? :User/spec {:id "Musterman"})
-(s/valid? :Credit/spec {:id 3})
+#_(s/valid? :User/spec {:id "Musterman"})
+#_(s/valid? :Credit/spec {:id 3})
 
 
-(s/valid? :User/id "Musterman")
-(s/valid? :Credit/id 12345)
-(s/valid? :Credit/id "Error")
+#_(s/valid? :User/id "Musterman")
+#_(s/valid? :Credit/id 12345)
+#_(s/valid? :Credit/id "Error")
 
 
 

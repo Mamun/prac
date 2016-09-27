@@ -1,6 +1,6 @@
 (ns dadysql.plugin.factory
   (:require
-    [dadysql.spec :refer :all]
+
     [dadysql.plugin.common-impl :as c]
     [dadysql.plugin.params.core :as p]
     [dadysql.plugin.sql.bind-impl :as sql]

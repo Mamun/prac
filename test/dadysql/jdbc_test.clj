@@ -1,7 +1,6 @@
 (ns dadysql.jdbc-test
   (:use [clojure.test])
   (:require [dady.common :refer :all]
-            [dadysql.spec :refer :all]
             [dadysql.jdbc :refer :all]))
 
 

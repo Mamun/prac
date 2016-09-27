@@ -4,7 +4,7 @@
     [dady.common :as cc]
     [dady.fail :as f]
     [clojure.set]
-    [dadysql.spec :as tc]))
+    ))
 
 
 (defn validate-name!
@@ -52,7 +52,7 @@
   [tms coll]
   (if (->> (clojure.set/intersection
              (into #{} coll)
-             (get-in tms [tc/global-key :dadysql.core/reserve-name]))
+             (get-in tms [:_global_ :dadysql.core/reserve-name]))
            (not-empty))
     true
     false))
@@ -120,11 +120,11 @@
   [_ {:keys [name group] :as request-m}]
   (let [dfmat (if (or group
                       (sequential? name))
-                {:pformat tc/map-format :rformat tc/nested-join-format}
-                {:pformat tc/map-format :rformat :one})
+                {:pformat :dadysql.core/format-map :rformat :dadysql.core/format-nested-join}
+                {:pformat :dadysql.core/format-map :rformat :one})
         request-m (merge dfmat request-m)
         request-m (if group
-                    (assoc request-m :rformat tc/nested-join-format)
+                    (assoc request-m :rformat :dadysql.core/format-nested-join)
                     request-m)]
     request-m))
 
@@ -133,13 +133,13 @@
   [_ {:keys [group name] :as request-m}]
   (let [d (if (or group
                   (sequential? name))
-            {:pformat tc/nested-map-format :rformat tc/nested-map-format}
-            {:pformat tc/map-format :rformat :one})
+            {:pformat :dadysql.core/format-nested :rformat :dadysql.core/format-nested}
+            {:pformat :dadysql.core/format-map :rformat :one})
         request-m (merge d request-m)
         request-m (if group
                     (-> request-m
-                        (assoc :pformat tc/nested-map-format)
-                        (assoc :rformat tc/nested-map-format))
+                        (assoc :pformat :dadysql.core/format-nested)
+                        (assoc :rformat :dadysql.core/format-nested))
                     request-m)]
     request-m))
 
@@ -147,19 +147,19 @@
 (defmethod default-request :db-seq
   [_ request-m]
   (-> request-m
-      (assoc :pformat tc/map-format)
-      (assoc :rformat tc/value-format)))
+      (assoc :pformat :dadysql.core/format-map)
+      (assoc :rformat :dadysql.core/format-value)))
 
 
 
 (defn do-result1
   [format m]
   (condp = format
-    tc/map-format
+    :dadysql.core/format-map
     (dissoc m :dadysql.core/result)
-    tc/array-format
+    :dadysql.core/format-array
     (assoc m :dadysql.core/result #{:dadysql.core/array})
-    tc/value-format
+    :dadysql.core/format-value
     (-> m
         (assoc :dadysql.core/model (:dadysql.core/name m))
         (assoc :dadysql.core/result #{:dadysql.core/single :dadysql.core/array})

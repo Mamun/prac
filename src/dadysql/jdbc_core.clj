@@ -2,7 +2,7 @@
   (:require
     [clojure.spec :as s]
     [dady.fail :as f]
-    [dadysql.spec :refer :all]
+    ;[dadysql.spec :refer :all]
     [dadysql.core-processor :as dc]
     [dadysql.plugin.join.core :as j]
     [dadysql.plugin.params.core :as p]
@@ -39,20 +39,20 @@
 (defmulti do-param (fn [_ _ fmt] (:pformat fmt)))
 
 
-(defmethod do-param map-format
+(defmethod do-param :dadysql.core/format-map
   [tm-coll node {:keys [params]}]
   (let [param-m (c/get-child node :dadysql.core/param)
-        input (p/apply-param-proc params map-format tm-coll param-m)]
+        input (p/apply-param-proc params :dadysql.core/format-map tm-coll param-m)]
     (if (f/failed? input)
       input
       (mapv (fn [m] (assoc m :dadysql.core/input-param input)) tm-coll))))
 
 
-(defmethod do-param nested-map-format
+(defmethod do-param :dadysql.core/format-nested
   [tm-coll node {:keys [params]}]
   (let [param-m (c/get-child node :dadysql.core/param)
         input (f/try-> params
-                       (p/apply-param-proc nested-map-format tm-coll param-m)
+                       (p/apply-param-proc :dadysql.core/format-nested tm-coll param-m)
                        (j/do-disjoin (get-in tm-coll [0 :dadysql.core/join])))]
     (if (f/failed? input)
       input
@@ -117,7 +117,7 @@
   (cond
     (= :one format)
     (f/try-> tm-coll first :dadysql.core/output)
-    (= value-format format)
+    (= :dadysql.core/format-value format)
     (f/try-> tm-coll first :dadysql.core/output (get-in [1 0]))
     :else
     (let [xf (comp (map into-model-map))]
@@ -164,7 +164,7 @@
 
 
 
-(defmethod warp-output-node-process nested-join-format
+(defmethod warp-output-node-process :dadysql.core/format-nested-join
   [handler n-processor _]
   (let [rf (warp-output-node-process handler n-processor :default)]
     (fn [tm-coll]

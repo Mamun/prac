@@ -3,9 +3,7 @@
            [java.util.concurrent.TimeUnit])
   (:require
     [clojure.tools.logging :as log]
-    [clojure.spec :as sp]
     [clojure.java.jdbc :as jdbc]
-    [dadysql.spec :as tc]
     [dadysql.core-processor :as dc]
     [dadysql.jdbc-core :as tie]
     [dadysql.compiler.core :as fr]
@@ -20,21 +18,21 @@
   ([file-name] (read-file file-name (imp/new-root-node)))
   ([file-name pc]
    (-> (fr/read-file file-name)
-       (assoc-in [tc/global-key :dadysql.core/file-name] file-name)
-       (assoc-in [tc/global-key :dadysql.core/process-context-key] pc))))
+       (assoc-in [:_global_ :dadysql.core/file-name] file-name)
+       (assoc-in [:_global_ :dadysql.core/process-context-key] pc))))
 
 
 
 (defn- filter-processor
   [process {:keys [out-format]}]
-  (if (= out-format tc/value-format)
+  (if (= out-format :dadysql.core/format-value)
     (c/remove-type process :output)
     process))
 
 
 (defn select-pull-node [ds tms request-m]
   (f/try-> tms
-           (get-in [tc/global-key :dadysql.core/process-context-key] [])
+           (get-in [:_global_ :dadysql.core/process-context-key] [])
            (filter-processor request-m)
            (c/add-child-one (ce/sql-executor-node ds tms  :dadysql.plugin.sql.jdbc-io/parallel))))
 
@@ -42,7 +40,7 @@
 
 (defn select-push-node [gen-pull-fn ds tms]
   (f/try-> tms
-           (get-in [tc/global-key :dadysql.core/process-context-key] [])
+           (get-in [:_global_ :dadysql.core/process-context-key] [])
            (c/remove-type :output)
            (c/add-child-one (ce/sql-executor-node ds tms :dadysql.plugin.sql.jdbc-io/transaction))
            (p/assoc-param-ref-gen (fn [& {:as m}]

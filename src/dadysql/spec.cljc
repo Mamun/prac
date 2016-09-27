@@ -1,7 +1,7 @@
 (ns dadysql.spec
   (:require [clojure.spec :as s]))
 
-(defonce global-key :_global_)
+;(defonce global-key :_global_)
 
 ;(defonce process-context-key :process-context)
 
@@ -166,18 +166,24 @@
 
 (s/def :dadysql.core/input-param any?)
 
-(def nested-map-format :nested)
-(def nested-array-format :nested-array)
-(def nested-join-format :nested-join)
-(def map-format :map)
-(def array-format :array)
-(def value-format :value)
+(s/def :dadysql.core/format-nested any?)
+(s/def :dadysql.core/format-nested-array any?)
+(s/def :dadysql.core/format-nested-join any?)
+;(def nested-map-format :nested)
+;(def nested-array-format :nested-array)
+;(def nested-join-format :nested-join)
+
+(s/def :dadysql.core/format-map any?)
+;(def map-format :map)
+(s/def :dadysql.core/format-array any?)
+;(def array-format :array)
+;(def value-format :value)
+(s/def :dadysql.core/format-value any?)
 
 
-
-(s/def :dadysql.core/rformat #{nested-join-format nested-map-format nested-array-format
-                   map-format array-format value-format})
-(s/def :dadysql.core/pformat #{nested-map-format map-format})
+(s/def :dadysql.core/rformat #{:dadysql.core/format-nested :dadysql.core/format-nested-array :dadysql.core/format-nested-join
+                               :dadysql.core/format-map :dadysql.core/format-array :dadysql.core/format-value})
+(s/def :dadysql.core/pformat #{:dadysql.core/format-nested :dadysql.core/format-map})
 
 (s/def :dadysql.core/params map?)
 

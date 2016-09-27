@@ -6,7 +6,7 @@
             [clojure.tools.reader.edn :as edn]
             [dadysql.compiler.file-reader :as fr]
             [clojure.spec :as s]
-            [dady.spec :as dsp]
+
             [clojure.spec :as sp]))
 
 
@@ -21,7 +21,7 @@
   []
   {:dadysql.core/file-reload true
    :dadysql.core/timeout     1000
-   :dadysql.core/name        global-key
+   :dadysql.core/name        :_global_
    :dadysql.core/tx-prop     [:isolation :serializable :read-only? true]})
 
 
@@ -43,7 +43,7 @@
                    (let [name (get-in m [:dadysql.core/name])]
                      (if (or (re-matches (reserve-regex) (str name))
                              (contains? r-name-coll name)
-                             (= global-key name))
+                             (= :_global_ name))
                        :reserve
                        :modules))))))
 
@@ -52,7 +52,7 @@
 (defn group-by-config-key
   [coll]
   (->> coll
-       (group-by #(if (= global-key (:dadysql.core/name %))
+       (group-by #(if (= :_global_ (:dadysql.core/name %))
                    :global
                    :modules))))
 

@@ -1,7 +1,6 @@
 (ns dadysql.core-processor-test
   (:use [clojure.test])
-  (:require [dadysql.spec :refer :all]
-            [dadysql.core-processor :refer :all]
+  (:require [dadysql.core-processor :refer :all]
             [dady.common :refer :all]
             [dady.fail :refer :all]
             [dadysql.compiler.core :as fr]
@@ -70,10 +69,10 @@
 
 (deftest is-reserve?-test
   (testing "test is-reserve? "
-    (let [data {global-key {:dadysql.core/reserve-name #{:a :b}}}]
+    (let [data {:_global_ {:dadysql.core/reserve-name #{:a :b}}}]
       (is (is-reserve? data [:a]))))
   (testing "test is-reserve?  "
-    (let [data {global-key {:dadysql.core/reserve-name #{:a :b}}}]
+    (let [data {:_global_ {:dadysql.core/reserve-name #{:a :b}}}]
       (is (not (is-reserve? data [:c]))))))
 
 ;(is-reserve?-test)
@@ -133,11 +132,11 @@
   (testing "test default-request"
     (are [a e]
       (= a e)
-      (default-request :pull {:name :get-dept-by-id})  {:pformat :map, :rformat :one, :name :get-dept-by-id}
-      (default-request :pull {:name [:get-dept-by-id]}) {:pformat :map, :rformat :nested-join, :name [:get-dept-by-id]}
-      (default-request :push {:name :get-dept-by-id})  {:pformat :map, :rformat :one, :name :get-dept-by-id}
-      (default-request :push {:name [:get-dept-by-id]}) {:pformat :nested, :rformat :nested, :name [:get-dept-by-id]}
-      (default-request :db-seq {:name :get-dept-by-id})  {:pformat :map, :rformat value-format, :name :get-dept-by-id})))
+      (default-request :pull {:name :get-dept-by-id})  {:pformat :dadysql.core/format-map, :rformat :one, :name :get-dept-by-id}
+      (default-request :pull {:name [:get-dept-by-id]}) {:pformat :dadysql.core/format-map, :rformat :dadysql.core/format-nested-join, :name [:get-dept-by-id]}
+      (default-request :push {:name :get-dept-by-id})  {:pformat :dadysql.core/format-map, :rformat :one, :name :get-dept-by-id}
+      (default-request :push {:name [:get-dept-by-id]}) {:pformat :dadysql.core/format-nested, :rformat :dadysql.core/format-nested, :name [:get-dept-by-id]}
+      (default-request :db-seq {:name :get-dept-by-id})  {:pformat :dadysql.core/format-map, :rformat :dadysql.core/format-value, :name :get-dept-by-id})))
 
 
 #_(deftest commit?-test

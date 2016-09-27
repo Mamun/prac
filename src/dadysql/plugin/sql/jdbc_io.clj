@@ -5,7 +5,7 @@
             [dady.common :as cc]
             [dady.fail :as f]
             [dady.proto :refer :all]
-            [dadysql.spec :refer :all]
+            #_[dadysql.spec :refer :all]
             [clojure.tools.logging :as log]))
 
 
@@ -200,7 +200,7 @@
 (defmethod execute
   :dadysql.plugin.sql.jdbc-io/transaction
   [ds m-coll & {:keys [tms]}]
-  (let [tx-prop (apply hash-map (get-in tms [global-key :dadysql.core/tx-prop]))
+  (let [tx-prop (apply hash-map (get-in tms [:_global_ :dadysql.core/tx-prop]))
         isolation (or (:isolation tx-prop) :serializable)
         read-only? (read-only? tx-prop)
         commit-type (commit-type m-coll)

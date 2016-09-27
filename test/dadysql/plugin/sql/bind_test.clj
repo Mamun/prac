@@ -7,7 +7,7 @@
     ;[dadysql.plugin.sql-util :refer :all]
 
     [dady.proto :refer :all]
-    [dadysql.spec :refer :all]))
+    #_[dadysql.spec :refer :all]))
 
 
 (deftest bind-sql-params-test

@@ -2,7 +2,7 @@
   (:use [clojure.test]
         [dadysql.compiler.core :as r]
         [dadysql.jdbc-core :as c]
-        [dadysql.spec]
+
         [dadysql.compiler.util])
   (:require [clojure.spec :as s]
             [clojure.spec.gen :as gen]))
