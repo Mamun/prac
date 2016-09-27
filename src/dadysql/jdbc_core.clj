@@ -3,7 +3,7 @@
     [clojure.spec :as s]
     [dady.fail :as f]
     [dadysql.spec :refer :all]
-    [dadysql.core :as dc]
+    [dadysql.core-processor :as dc]
     [dadysql.plugin.join.core :as j]
     [dadysql.plugin.params.core :as p]
     [dady.proto :as c]))

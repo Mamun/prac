@@ -3,37 +3,6 @@
             [clojure.walk :as w]))
 
 
-#_(defn update-ns
-  "Doc "
-  [ns-str spec-list]
-  (w/postwalk (fn [v]
-                (if (and (keyword? v)
-                         (= (namespace v) (str *ns*)))
-                  (keyword (str ns-str "/" (name v)))
-                  v)
-                ) spec-list))
-
-
-#_(defmacro defsp
-  "Doc "
-  [n & content]
-  (let [content (update-ns n content)]
-    `(do
-       ;     (clojure.core/remove-ns '~(symbol n))
-       (clojure.core/in-ns '~(symbol n))
-       (clojure.core/refer 'clojure.core)
-       (clojure.core/require '[clojure.spec :as ~(symbol 's)])
-       ~@content
-       nil)))
-
-
-#_(defn find-ns-spec [ns-name]
-  (->>
-    (filter (fn [w]
-              (let [[k _] w]
-                (clojure.string/includes? (str k) (str ns-name)))
-              ) (s/registry))
-    (into {})))
 
 
 
@@ -67,7 +36,7 @@
     `(do ~@w)))
 
 
-(defn make-spec [n mk]
+#_(defn make-spec [n mk]
   (defm n mk)
   )
 

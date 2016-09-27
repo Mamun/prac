@@ -1,4 +1,4 @@
-(ns dadysql.core
+(ns dadysql.core-processor
   (:require
     [clojure.spec :as sp]
     [dady.common :as cc]

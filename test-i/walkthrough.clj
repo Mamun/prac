@@ -61,7 +61,7 @@
 
   (-> @td/ds
       (t/pull (t/read-file "tie.edn.sql")
-              :name [:get-dept-list :get-employee-list])
+              {:name [:get-dept-list :get-employee-list]})
       (clojure.pprint/pprint))
 
 
@@ -274,7 +274,7 @@
   ;; read all meeting
   (-> {:datasource @conn}
       (t/pull (t/read-file "tie.edn.sql")
-              :name [:get-meeting-list])
+              {:name [:get-meeting-list]})
       (clojure.pprint/pprint))
 
 
@@ -285,8 +285,8 @@
     (->
       @td/ds
       (t/push! (t/read-file "tie.edn.sql")
-               :name [:create-meeting]
-               :params meeting)
+               {:name   [:create-meeting]
+                :params meeting})
       (clojure.pprint/pprint)
       )
     )
@@ -297,8 +297,8 @@
     (->
       (t/read-file "tie.edn.sql")
       (t/push! @td/ds
-               :name [:create-meeting :create-employee-meeting]
-               :params meeting)
+               {:name   [:create-meeting :create-employee-meeting]
+                :params meeting})
       (clojure.pprint/pprint)
       )
     )
@@ -329,6 +329,13 @@
                     (fn [v]
                       (clojure.pprint/pprint v)))
 
+  (t/stop-tracking :hello)
+
   (t/start-sql-execution)
+
+
+
+
+
 
   )

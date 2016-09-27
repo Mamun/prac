@@ -72,3 +72,14 @@
   (->> (interleave steps-coll (repeat (xf-until failed?)))
        (cons (xf-until failed?))
        (apply comp)))
+
+
+(comment
+
+  (-> (map (fn [v] (assoc v :a 1) ) )
+      (comp-xf-until)
+      (transduce conj [(fail "Hello") {:b 1}])
+
+      )
+
+  )

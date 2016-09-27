@@ -45,6 +45,13 @@
     tm-coll))
 
 
+(defn warp-tracking [handler]
+  (fn [m]
+    (do
+      (notify-async-tracking
+        (handler m)))))
+
+
 
 (defn is-rollback?
   [commit-type read-only result-coll]
@@ -147,18 +154,21 @@
 
 (defmethod execute
   :default
-  [ds m-coll _]
+  [ds m-coll & _]
   (let [handler (-> (partial jdbc-handler ds)
-                    (warp-map-output))]
+                    (warp-map-output)
+                    (warp-tracking)
+                    )]
     (-> (map handler)
         (transduce conj m-coll))))
 
 
 (defmethod execute
   :dadysql.plugin.sql.jdbc-io/parallel
-  [ds m-coll _]
+  [ds m-coll & _]
   (let [handler (-> (partial jdbc-handler ds)
                     (warp-map-output)
+                    (warp-tracking)
                     (warp-async-go))]
     (->> m-coll
          (map #(handler %))
@@ -171,10 +181,11 @@
 
 (defmethod execute
   :dadysql.plugin.sql.jdbc-io/serial-until-failed
-  [ds m-coll _]
+  [ds m-coll & _]
   (let [handler (-> (partial jdbc-handler ds)
-                    (warp-map-output))]
-    (-> (map (handler ds))
+                    (warp-map-output)
+                    (warp-tracking))]
+    (-> (map handler)
         (f/comp-xf-until)
         (transduce conj m-coll))))
 
@@ -188,9 +199,10 @@
 
 (defmethod execute
   :dadysql.plugin.sql.jdbc-io/transaction
-  [ds m-coll & {:keys [tx-map]}]
-  (let [isolation (or (:isolation tx-map) :serializable)
-        read-only? (read-only? tx-map)
+  [ds m-coll & {:keys [tms]}]
+  (let [tx-prop (apply hash-map (get-in tms [global-key :dadysql.spec/tx-prop]))
+        isolation (or (:isolation tx-prop) :serializable)
+        read-only? (read-only? tx-prop)
         commit-type (commit-type m-coll)
         exec-type (execute-type commit-type)]
     (if (has-transaction? ds)
@@ -207,9 +219,35 @@
 
 (defn sql-executor-node
   [ds tms type]
-  (let [tx (apply hash-map (get-in tms [global-key :dadysql.spec/tx-prop]))
-        f (fn [m-coll]
-            (-> (execute ds m-coll :type type :tx-map tx)
-                (notify-async-tracking)))]
+  (let [f (fn [m-coll]
+            (execute ds m-coll :type type :tms tms))]
     (fn-as-node-processor f :name :sql-executor)))
 
+
+(comment
+
+  (require '[dadysql.jdbc :as t])
+  (require '[test-data :as td])
+
+
+  (let [meeting [{:dadysql.spec/sql
+                                        ["insert into meeting (meeting_id, subject) values (?, ?)"
+                                         [109 "Hello Meeting for IT"]],
+                  :dadysql.spec/timeout 1000,
+                  :dadysql.spec/commit  :dadysql.spec/all,
+                  :dadysql.spec/dml-key :dadysql.spec/dml-insert,
+                  :dadysql.spec/join    [],
+                  :dadysql.spec/group   :create-meeting,
+                  :dadysql.spec/model   :meeting,
+                  :dadysql.spec/param   [[:meeting_id :dadysql.spec/ref-gen :gen-meet]],
+                  :dadysql.spec/index   0,
+                  :dadysql.spec/input-param
+                                        {:subject "Hello Meeting for IT", :meeting_id 109},
+                  :dadysql.spec/name    :create-meeting}]]
+    (->> (execute @td/ds meeting :tms (t/read-file "tie.edn.sql")
+                  :type :dadysql.plugin.sql.jdbc-io/transaction)
+         (clojure.pprint/pprint)))
+
+
+
+  )

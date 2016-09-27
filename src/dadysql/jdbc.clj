@@ -6,7 +6,7 @@
     [clojure.spec :as sp]
     [clojure.java.jdbc :as jdbc]
     [dadysql.spec :as tc]
-    [dadysql.core :as dc]
+    [dadysql.core-processor :as dc]
     [dadysql.jdbc-core :as tie]
     [dadysql.compiler.core :as fr]
     [dadysql.plugin.factory :as imp]
