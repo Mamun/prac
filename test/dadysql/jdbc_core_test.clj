@@ -9,17 +9,17 @@
 
 (deftest validate-param-spec!-test
   (testing "testing apply validation "
-    (let [input [{:dadysql.spec/name        :get-dept-by-id,
-                  :dadysql.spec/sql         ["select * from department where id = ?" 1],
-                  :dadysql.spec/model       :department,
-                  :dadysql.spec/result      #{:single},
-                  :dadysql.spec/param-spec  :get-dept-by-id/spec,
-                  :dadysql.spec/timeout     2000,
-                  :dadysql.spec/dml-key     :dadysql.spec/dml-select,
-                  :dadysql.spec/join        [],
-                  :dadysql.spec/group       :load-dept,
-                  :dadysql.spec/index       0,
-                  :dadysql.spec/input-param {:id 1}}]
+    (let [input [{:dadysql.core/name        :get-dept-by-id,
+                  :dadysql.core/sql         ["select * from department where id = ?" 1],
+                  :dadysql.core/model       :department,
+                  :dadysql.core/result      #{:single},
+                  :dadysql.core/param-spec  :get-dept-by-id/spec,
+                  :dadysql.core/timeout     2000,
+                  :dadysql.core/dml-key     :dadysql.core/dml-select,
+                  :dadysql.core/join        [],
+                  :dadysql.core/group       :load-dept,
+                  :dadysql.core/index       0,
+                  :dadysql.core/input-param {:id 1}}]
           r (validate-param-spec! input)]
       (is (= r input)))))
 
@@ -27,19 +27,19 @@
 
 (deftest do-param-test
   (testing "do param test"
-    (let [tm-coll [{:dadysql.spec/name       :get-dept-by-id,
-                    :dadysql.spec/sql        ["select * from department where id = ?" 1],
-                    :dadysql.spec/model      :department,
-                    :dadysql.spec/result     #{:single},
-                    :dadysql.spec/param-spec :get-dept-by-id/spec,
-                    :dadysql.spec/timeout    2000,
-                    :dadysql.spec/dml-key    :dadysql.spec/dml-select,
-                    :dadysql.spec/join       [],
-                    :dadysql.spec/group      :load-dept,
-                    :dadysql.spec/index      0}]
+    (let [tm-coll [{:dadysql.core/name       :get-dept-by-id,
+                    :dadysql.core/sql        ["select * from department where id = ?" 1],
+                    :dadysql.core/model      :department,
+                    :dadysql.core/result     #{:single},
+                    :dadysql.core/param-spec :get-dept-by-id/spec,
+                    :dadysql.core/timeout    2000,
+                    :dadysql.core/dml-key    :dadysql.core/dml-select,
+                    :dadysql.core/join       [],
+                    :dadysql.core/group      :load-dept,
+                    :dadysql.core/index      0}]
           r (do-param tm-coll [(p/new-param-key 4 (p/new-child-keys))] {:pformat map-format
                                                                         :params  {:id 4}})]
-      (is (= (get-in r [0 :dadysql.spec/input-param]) {:id 4})))))
+      (is (= (get-in r [0 :dadysql.core/input-param]) {:id 4})))))
 
 
 
@@ -114,7 +114,7 @@
                             {:department {:id [107]}})]
         ;  (clojure.pprint/pprint pc)
         ;(clojure.pprint/pprint actual-result)
-        (is (= (get-in actual-result [0 :dadysql.spec/sql])
+        (is (= (get-in actual-result [0 :dadysql.core/sql])
                expected-result))
         ))
     )

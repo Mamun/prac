@@ -12,24 +12,24 @@
 
 (deftest compiler-merge-test
   (testing "test compiler-merge "
-    (let [v [{:dadysql.spec/param      [[1 2 3]]
+    (let [v [{:dadysql.core/param      [[1 2 3]]
               :clojure.core/column     {:p 1}
-              :dadysql.spec/timeout    4
-              :dadysql.spec/result     #{:dadysql.spec/single}
-              :dadysql.spec/param-spec :a/b}
-             {:dadysql.spec/param   [[8 9 0]]
-              :dadysql.spec/timeout 6}
-             {:dadysql.spec/param      [[5 6 7]]
+              :dadysql.core/timeout    4
+              :dadysql.core/result     #{:dadysql.core/single}
+              :dadysql.core/param-spec :a/b}
+             {:dadysql.core/param   [[8 9 0]]
+              :dadysql.core/timeout 6}
+             {:dadysql.core/param      [[5 6 7]]
               :clojure.core/column     {:p  4
                               :p1 :p}
               :p             9
-              :dadysql.spec/result     #{:dadysql.spec/array}
-              :dadysql.spec/param-spec :a/b}]
-          expected-result {:dadysql.spec/param   [[5 6 7] [8 9 0] [1 2 3]],
+              :dadysql.core/result     #{:dadysql.core/array}
+              :dadysql.core/param-spec :a/b}]
+          expected-result {:dadysql.core/param   [[5 6 7] [8 9 0] [1 2 3]],
                            :clojure.core/column  {:p 4, :p1 :p}
-                           :dadysql.spec/timeout 6
-                           :dadysql.spec/result  #{:dadysql.spec/array}
-                           :dadysql.spec/param-spec :a/b
+                           :dadysql.core/timeout 6
+                           :dadysql.core/result  #{:dadysql.core/array}
+                           :dadysql.core/param-spec :a/b
                            :p          9}
           actual-result (apply merge-with compiler-merge v)]
       ;(clojure.pprint/pprint actual-result)
@@ -48,9 +48,9 @@
              compile-one-expected-result))))
   (testing "test compile-one"
     (let [config (r/default-config)
-          w {:dadysql.spec/doc  "Modify department"
-             :dadysql.spec/name [:insert-dept :update-dept :delete-dept]
-             :dadysql.spec/sql  ["call next value for seq_dept"
+          w {:dadysql.core/doc  "Modify department"
+             :dadysql.core/name [:insert-dept :update-dept :delete-dept]
+             :dadysql.core/sql  ["call next value for seq_dept"
                     "call next value for seq_empl"
                     "call next value for seq_meet"]}
           actual-result (->> (compile-one w config))]

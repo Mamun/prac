@@ -18,65 +18,65 @@
 
 
 (defn new-doc-key []
-  (DocKey. :dadysql.spec/doc))
+  (DocKey. :dadysql.core/doc))
 
 (defn new-name-key []
-  (NameKey. :dadysql.spec/name))
+  (NameKey. :dadysql.core/name))
 
 (defn new-model-key []
-  (ModelKey. :dadysql.spec/model))
+  (ModelKey. :dadysql.core/model))
 
 (defn new-group-key []
-  (GroupKey. :dadysql.spec/group))
+  (GroupKey. :dadysql.core/group))
 
 (defn new-timeout-key []
-  (TimeoutKey. :dadysql.spec/timeout))
+  (TimeoutKey. :dadysql.core/timeout))
 
 (defn new-commit-key []
-  (CommitKey. :dadysql.spec/commit))
+  (CommitKey. :dadysql.core/commit))
 
 (defn new-skip-key []
-  (SkipKey. :dadysql.spec/skip))
+  (SkipKey. :dadysql.core/skip))
 
 (defn new-column-key []
   (ColumnKey. :clojure.core/column 5 :output))
 
 (defn new-result-key []
-  (ResultKey. :dadysql.spec/result 10 :output))
+  (ResultKey. :dadysql.core/result 10 :output))
 
 
 
 
 (defn do-result
   [tm]
-  (if-not (or (= (:dadysql.spec/dml-key tm) :dadysql.spec/dml-select)
-              (= (:dadysql.spec/dml-key tm) :dadysql.spec/dml-call))
+  (if-not (or (= (:dadysql.core/dml-key tm) :dadysql.core/dml-select)
+              (= (:dadysql.core/dml-key tm) :dadysql.core/dml-call))
     tm
-    (let [result (:dadysql.spec/result tm)
-          output (output-key tm)]
+    (let [result (:dadysql.core/result tm)
+          output (:dadysql.core/output tm)]
       (cond
         (nil? result)
         tm
         (f/failed? output)
         tm
         (and (empty? output)
-             (contains? result :dadysql.spec/single))
-        (assoc tm output-key {})
-        (and (contains? result :dadysql.spec/array)
-             (contains? result :dadysql.spec/single))
-        (assoc tm output-key [(first output) (second output)])
-        (contains? result :dadysql.spec/single)
-        (assoc tm output-key (first output))
+             (contains? result :dadysql.core/single))
+        (assoc tm :dadysql.core/output {})
+        (and (contains? result :dadysql.core/array)
+             (contains? result :dadysql.core/single))
+        (assoc tm :dadysql.core/output [(first output) (second output)])
+        (contains? result :dadysql.core/single)
+        (assoc tm :dadysql.core/output (first output))
         :else tm))))
 
 
 (defn do-column
   [tm]
-  (if-not (or (= (:dadysql.spec/dml-key tm) :dadysql.spec/dml-call)
-              (= (:dadysql.spec/dml-key tm) :dadysql.spec/dml-select))
+  (if-not (or (= (:dadysql.core/dml-key tm) :dadysql.core/dml-call)
+              (= (:dadysql.core/dml-key tm) :dadysql.core/dml-select))
     tm
     (let [column (:clojure.core/column tm)
-          output (output-key tm)]
+          output (:dadysql.core/output tm)]
       (cond
         (or (nil? column)
             (f/failed? tm)
@@ -87,7 +87,7 @@
         (->> (repeat column)
              (map clojure.set/rename-keys output)
              (into [])
-             (assoc tm output-key))))))
+             (assoc tm :dadysql.core/output))))))
 
 
 (extend-protocol INodeProcessor

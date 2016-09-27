@@ -6,15 +6,15 @@
 
 
 (defn validate-input-spec! [coll]
-  (let [w (s/conform :dadysql.spec/compiler-input-spec coll)]
+  (let [w (s/conform :dadysql.core/compiler-input-spec coll)]
     (if (= w :clojure.spec/invalid)
       (do
-        (println (s/explain :dadysql.spec/compiler-input-spec coll))
-        (throw (ex-info "Compile failed " (s/explain-data :dadysql.spec/compiler-input-spec coll)))))))
+        (println (s/explain :dadysql.core/compiler-input-spec coll))
+        (throw (ex-info "Compile failed " (s/explain-data :dadysql.core/compiler-input-spec coll)))))))
 
 
 (defn validate-distinct-name! [coll]
-  (let [i-coll (flatten (mapv :dadysql.spec/name coll))]
+  (let [i-coll (flatten (mapv :dadysql.core/name coll))]
     (if-not (apply distinct? i-coll)
       (let [w (->> (frequencies i-coll)
                    (filter (fn [[_ v]]
@@ -24,7 +24,7 @@
 
 
 (defn validate-name-model! [coll]
-  (let [i-coll (->> (mapv (juxt :dadysql.spec/name :dadysql.spec/model) coll)
+  (let [i-coll (->> (mapv (juxt :dadysql.core/name :dadysql.core/model) coll)
                     (filter (fn [v] (every? vector? v))))]
     (doseq [[name-coll model-coll] i-coll]
       (let [t-iden (count name-coll)
@@ -36,7 +36,7 @@
 
 
 (defn validate-name-sql! [coll]
-  (let [i-coll (->> (mapv (juxt :dadysql.spec/name :dadysql.spec/sql) coll)
+  (let [i-coll (->> (mapv (juxt :dadysql.core/name :dadysql.core/sql) coll)
                     (filter (fn [v] (every? vector? v))))]
     (doseq [[name-coll sql-coll] i-coll]
       (let [t-iden (count name-coll)
@@ -48,7 +48,7 @@
 
 
 (defn validate-extend-key! [coll]
-  (let [i-coll (->> (mapv (juxt :dadysql.spec/name :dadysql.spec/extend) coll)
+  (let [i-coll (->> (mapv (juxt :dadysql.core/name :dadysql.core/extend) coll)
                     (mapv (fn [[n e]]
                             (let [n (if (vector? n)
                                       (into #{} n)
@@ -70,7 +70,7 @@
 
 (defn find-join-model [[s-tab _ join-key d-tab _ [r-tab]]]
   (condp = join-key
-    :dadysql.spec/many-many [d-tab s-tab r-tab]
+    :dadysql.core/many-many [d-tab s-tab r-tab]
     [d-tab s-tab]))
 
 
@@ -85,7 +85,7 @@
 
 
 (defn validate-join-key! [coll]
-  (let [i-coll (->> (mapv (juxt :dadysql.spec/join :dadysql.spec/model) coll)
+  (let [i-coll (->> (mapv (juxt :dadysql.core/join :dadysql.core/model) coll)
 
                     )]
     ;(println i-coll)
@@ -95,7 +95,7 @@
 
 
 (defn validation-ns [coll]
-  (remove nil? (map :dadysql.spec/param-spec coll))
+  (remove nil? (map :dadysql.core/param-spec coll))
   )
 
 
@@ -144,51 +144,51 @@
   ;(clojure.pprint/pprint m )
   (cond
 
-    (and (keyword? (:dadysql.spec/name m))
-         (keyword? (:dadysql.spec/model m)))
+    (and (keyword? (:dadysql.core/name m))
+         (keyword? (:dadysql.core/model m)))
     (do
       [(-> m
-           (assoc :dadysql.spec/index 0)
-           (update-in [:dadysql.spec/sql] first))])
+           (assoc :dadysql.core/index 0)
+           (update-in [:dadysql.core/sql] first))])
 
-    (and (sequential? (:dadysql.spec/name m))
-         (sequential? (:dadysql.spec/model m)))
+    (and (sequential? (:dadysql.core/name m))
+         (sequential? (:dadysql.core/model m)))
     (do
       (mapv (fn [i s n m]
-              {:dadysql.spec/name  n
-               :dadysql.spec/index i
-               :dadysql.spec/sql   s
-               :dadysql.spec/model m})
+              {:dadysql.core/name  n
+               :dadysql.core/index i
+               :dadysql.core/sql   s
+               :dadysql.core/model m})
             (range)
-            (get-in m [:dadysql.spec/sql])
-            (get-in m [:dadysql.spec/name])
-            (get-in m [:dadysql.spec/model])))
+            (get-in m [:dadysql.core/sql])
+            (get-in m [:dadysql.core/name])
+            (get-in m [:dadysql.core/model])))
 
-    (and (sequential? (:dadysql.spec/name m))
-         (keyword? (:dadysql.spec/model m)))
+    (and (sequential? (:dadysql.core/name m))
+         (keyword? (:dadysql.core/model m)))
     (do
       (mapv (fn [i n s]
-              {:dadysql.spec/index i
-               :dadysql.spec/name  n
-               :dadysql.spec/sql   s
-               :dadysql.spec/model (get-in m [:dadysql.spec/model])})
+              {:dadysql.core/index i
+               :dadysql.core/name  n
+               :dadysql.core/sql   s
+               :dadysql.core/model (get-in m [:dadysql.core/model])})
             (range)
-            (get-in m [:dadysql.spec/name])
-            (get-in m [:dadysql.spec/sql])))
+            (get-in m [:dadysql.core/name])
+            (get-in m [:dadysql.core/sql])))
 
-    (sequential? (:dadysql.spec/name m))
+    (sequential? (:dadysql.core/name m))
     (mapv (fn [i s n]
-            {:dadysql.spec/name  n
-             :dadysql.spec/index i
-             :dadysql.spec/sql   s})
+            {:dadysql.core/name  n
+             :dadysql.core/index i
+             :dadysql.core/sql   s})
           (range)
-          (get-in m [:dadysql.spec/sql])
-          (get-in m [:dadysql.spec/name]))
+          (get-in m [:dadysql.core/sql])
+          (get-in m [:dadysql.core/name]))
 
-    (keyword? (:dadysql.spec/name m))
+    (keyword? (:dadysql.core/name m))
     [(-> m
-         (assoc :dadysql.spec/index 0)
-         (update-in [:dadysql.spec/sql] first))]
+         (assoc :dadysql.core/index 0)
+         (update-in [:dadysql.core/sql] first))]
 
     :else
     (do
@@ -209,10 +209,10 @@
   [join-coll]
   (let [f (fn [[s-tab s-id join-key d-tab d-id [r-tab r-id r-id2] :as j]]
             (condp = join-key
-              :dadysql.spec/one-one [d-tab d-id :dadysql.spec/one-one s-tab s-id]
-              :dadysql.spec/one-many [d-tab d-id :dadysql.spec/many-one s-tab s-id]
-              :dadysql.spec/many-one [d-tab d-id :dadysql.spec/one-many s-tab s-id]
-              :dadysql.spec/many-many [d-tab d-id :dadysql.spec/many-many s-tab s-id [r-tab r-id2 r-id]]
+              :dadysql.core/one-one [d-tab d-id :dadysql.core/one-one s-tab s-id]
+              :dadysql.core/one-many [d-tab d-id :dadysql.core/many-one s-tab s-id]
+              :dadysql.core/many-one [d-tab d-id :dadysql.core/one-many s-tab s-id]
+              :dadysql.core/many-many [d-tab d-id :dadysql.core/many-many s-tab s-id [r-tab r-id2 r-id]]
               j))]
     (->> (map f join-coll)
          (concat join-coll)
@@ -226,7 +226,7 @@
   (->> join-coll
        (group-by first)
        (map (fn [[k coll]]
-              {k {:dadysql.spec/join coll}}))
+              {k {:dadysql.core/join coll}}))
        (into {})))
 
 
@@ -262,11 +262,11 @@
               (keyword))]
 
     (condp = w
-      :select :dadysql.spec/dml-select
-      :update :dadysql.spec/dml-update
-      :insert :dadysql.spec/dml-insert
-      :delete :dadysql.spec/dml-delete
-      :call :dadysql.spec/dml-call
+      :select :dadysql.core/dml-select
+      :update :dadysql.core/dml-update
+      :insert :dadysql.core/dml-insert
+      :delete :dadysql.core/dml-delete
+      :call :dadysql.core/dml-call
       (throw (ex-info "Undefined dml op" {:for v})))
     ))
 
@@ -292,7 +292,7 @@
     [sql-str]
     (let [p (comp (filter not-empty)
                   (map sql-str-emit)
-                  (map (fn [v] {:dadysql.spec/sql v
+                  (map (fn [v] {:dadysql.core/sql v
                                 dml-key           (dml-type v)})))
           sql (-> (clojure.string/trim sql-str)
                   (clojure.string/lower-case)
@@ -308,7 +308,7 @@
 
 (defn param-emit [w]
   (condp = (second w)
-    :dadysql.spec/ref-fn-key (assoc w 2 (resolve (nth w 2)))
+    :dadysql.core/ref-fn-key (assoc w 2 (resolve (nth w 2)))
     w))
 
 

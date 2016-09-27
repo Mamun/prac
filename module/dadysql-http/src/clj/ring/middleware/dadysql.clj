@@ -8,8 +8,8 @@
 
 (defn- reload-tms
   ([tms-atom ds]
-   (when (get-in @tms-atom [c/global-key :dadysql.spec/file-reload ])
-     (f/try->> (get-in @tms-atom [c/global-key :dadysql.spec/file-name])
+   (when (get-in @tms-atom [c/global-key :dadysql.core/file-reload ])
+     (f/try->> (get-in @tms-atom [c/global-key :dadysql.core/file-name])
                (tj/read-file)
                (tj/validate-dml! ds)
                (reset! tms-atom)))
@@ -66,7 +66,7 @@
 (defn get-sql-file-value [tms-atom]
   (->> @tms-atom
        (vals)
-       (mapv (fn [w] (select-keys w [:dadysql.spec/name :dadysql.spec/model :dadysql.spec/sql])))))
+       (mapv (fn [w] (select-keys w [:dadysql.core/name :dadysql.core/model :dadysql.core/sql])))))
 
 
 

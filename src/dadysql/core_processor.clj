@@ -21,7 +21,7 @@
 
 (defn validate-model!
   [tm-coll]
-  (let [model-coll (mapv :dadysql.spec/model tm-coll)
+  (let [model-coll (mapv :dadysql.core/model tm-coll)
         m (distinct model-coll)]
     (if (not= (count model-coll)
               (count m))
@@ -33,7 +33,7 @@
   [join model-coll]
   (->> join
        (filter (fn [[_ _ rel d-table _ nr]]
-                 (if (= rel :dadysql.spec/many-many)
+                 (if (= rel :dadysql.core/many-many)
                    (some #{(first nr)} model-coll)
                    (some #{d-table} model-coll))))
        (into [])))
@@ -41,10 +41,10 @@
 
 (defn filter-join-key
   [coll]
-  (let [model-key-coll (mapv :dadysql.spec/model coll)
+  (let [model-key-coll (mapv :dadysql.core/model coll)
         p (comp
-            (cc/xf-skip-type #(= :dadysql.spec/dml-call (:dadysql.spec/dml-key %)))
-            (map #(update-in % [:dadysql.spec/join] filter-join-key-coll model-key-coll)))]
+            (cc/xf-skip-type #(= :dadysql.core/dml-call (:dadysql.core/dml-key %)))
+            (map #(update-in % [:dadysql.core/join] filter-join-key-coll model-key-coll)))]
     (transduce p conj [] coll)))
 
 
@@ -52,7 +52,7 @@
   [tms coll]
   (if (->> (clojure.set/intersection
              (into #{} coll)
-             (get-in tms [tc/global-key :dadysql.spec/reserve-name]))
+             (get-in tms [tc/global-key :dadysql.core/reserve-name]))
            (not-empty))
     true
     false))
@@ -88,19 +88,19 @@
   [tms gname name-coll]
   (let [name-set (into #{} (cc/as-sequential name-coll))
         p (if name-coll
-            (comp (filter #(= (:dadysql.spec/group %) gname))
-                  (filter #(contains? name-set (:dadysql.spec/name %))))
-            (comp (filter #(= (:dadysql.spec/group %) gname))))
+            (comp (filter #(= (:dadysql.core/group %) gname))
+                  (filter #(contains? name-set (:dadysql.core/name %))))
+            (comp (filter #(= (:dadysql.core/group %) gname))))
         t (into [] p (vals tms))
-        w (sort-by :dadysql.spec/index t)]
-    (into [] (map :dadysql.spec/name) w)))
+        w (sort-by :dadysql.core/index t)]
+    (into [] (map :dadysql.core/name) w)))
 
 
 (defn validate-input!
   [req-m]
-  (if (sp/valid? :dadysql.spec/input req-m)
+  (if (sp/valid? :dadysql.core/input req-m)
     req-m
-    (f/fail (sp/explain-data :dadysql.spec/input req-m))))
+    (f/fail (sp/explain-data :dadysql.core/input req-m))))
 
 
 (defn select-name [tms req-m]
@@ -156,14 +156,14 @@
   [format m]
   (condp = format
     tc/map-format
-    (dissoc m :dadysql.spec/result)
+    (dissoc m :dadysql.core/result)
     tc/array-format
-    (assoc m :dadysql.spec/result #{:dadysql.spec/array})
+    (assoc m :dadysql.core/result #{:dadysql.core/array})
     tc/value-format
     (-> m
-        (assoc :dadysql.spec/model (:dadysql.spec/name m))
-        (assoc :dadysql.spec/result #{:dadysql.spec/single :dadysql.spec/array})
-        (assoc :dadysql.spec/dml-key :dadysql.spec/dml-select))
+        (assoc :dadysql.core/model (:dadysql.core/name m))
+        (assoc :dadysql.core/result #{:dadysql.core/single :dadysql.core/array})
+        (assoc :dadysql.core/dml-key :dadysql.core/dml-select))
     m))
 
 

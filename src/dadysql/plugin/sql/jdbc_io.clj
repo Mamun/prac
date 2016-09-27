@@ -57,8 +57,8 @@
   [commit-type read-only result-coll]
   (cond
     (= true read-only) true
-    (= commit-type :dadysql.spec/none) true
-    (and (= commit-type :dadysql.spec/all)
+    (= commit-type :dadysql.core/none) true
+    (and (= commit-type :dadysql.core/all)
          (f/failed? result-coll)) true
     :else false))
 
@@ -73,17 +73,17 @@
   "Return commit type if not found return commit-none-key  "
   [tm-coll]
   (let [p (comp
-            (filter #(not= :dadysql.spec/dml-select (:dadysql.spec/dml-key %)))
-            (map #(:dadysql.spec/commit %))
-            (map #(or % :dadysql.spec/all)))
+            (filter #(not= :dadysql.core/dml-select (:dadysql.core/dml-key %)))
+            (map #(:dadysql.core/commit %))
+            (map #(or % :dadysql.core/all)))
         commits (into [] p tm-coll)]
     ;(println commits)
     (if (empty? commits)
-      :dadysql.spec/none
-      (or (some #{:dadysql.spec/none} commits)
-          (some #{:dadysql.spec/all} commits)
-          (cc/contain-all? commits :dadysql.spec/any)
-          :dadysql.spec/none))))
+      :dadysql.core/none
+      (or (some #{:dadysql.core/none} commits)
+          (some #{:dadysql.core/all} commits)
+          (cc/contain-all? commits :dadysql.core/any)
+          :dadysql.core/none))))
 
 
 (defn read-only?
@@ -97,15 +97,15 @@
 
 (defn jdbc-handler
   [ds tm]
-  (let [dml-type (:dadysql.spec/dml-key tm)
-        sql (:dadysql.spec/sql tm)
-        result (:dadysql.spec/result tm)]
+  (let [dml-type (:dadysql.core/dml-key tm)
+        sql (:dadysql.core/sql tm)
+        result (:dadysql.core/result tm)]
     (condp = dml-type
-      :dadysql.spec/dml-select
-      (if (contains? result :dadysql.spec/array)
+      :dadysql.core/dml-select
+      (if (contains? result :dadysql.core/array)
         (jdbc/query ds sql :as-arrays? true :identifiers clojure.string/lower-case)
         (jdbc/query ds sql :as-arrays? false :identifiers clojure.string/lower-case))
-      :dadysql.spec/dml-insert
+      :dadysql.core/dml-insert
       (jdbc/execute! ds sql :multi? true)
       (jdbc/execute! ds sql))))
 
@@ -123,12 +123,12 @@
             r (if (seq? r) (into [] r) r)]
         (if (f/failed? r)
           r
-          (assoc m output-key r
-                   :dadysql.spec/exec-total-time total
-                   :dadysql.spec/exec-start-time stm)))
+          (assoc m :dadysql.core/output r
+                   :dadysql.core/exec-total-time total
+                   :dadysql.core/exec-start-time stm)))
       (catch Exception e
-        (log/error e (:dadysql.spec/sql m))
-        (-> (f/fail {:dadysql.spec/query-exception (.getMessage e)})
+        (log/error e (:dadysql.core/sql m))
+        (-> (f/fail {:dadysql.core/query-exception (.getMessage e)})
             (merge m))))))
 
 
@@ -136,14 +136,14 @@
   [handler]
   (fn [m]
     (async/go
-      (let [t-v (or (:dadysql.spec/timeout m) 2000)
+      (let [t-v (or (:dadysql.core/timeout m) 2000)
             exec-ch (async/thread (handler m))
             [v rch] (async/alts! [exec-ch (async/timeout t-v)])]
         (if (= rch exec-ch)
           v
           ;; Need to assoc exception here as it returns from here
-          (-> {:dadysql.spec/query-exception "SQL Execution time out"
-               :dadysql.spec/timeout         t-v}
+          (-> {:dadysql.core/query-exception "SQL Execution time out"
+               :dadysql.core/timeout         t-v}
               (f/fail)
               (merge m)))))))
 
@@ -192,7 +192,7 @@
 
 
 (defn execute-type [commit-type]
-  (if (= :dadysql.spec/all commit-type)
+  (if (= :dadysql.core/all commit-type)
     :dadysql.plugin.sql.jdbc-io/serial-until-failed
     :dadysql.plugin.sql.jdbc-io/serial))
 
@@ -200,7 +200,7 @@
 (defmethod execute
   :dadysql.plugin.sql.jdbc-io/transaction
   [ds m-coll & {:keys [tms]}]
-  (let [tx-prop (apply hash-map (get-in tms [global-key :dadysql.spec/tx-prop]))
+  (let [tx-prop (apply hash-map (get-in tms [global-key :dadysql.core/tx-prop]))
         isolation (or (:isolation tx-prop) :serializable)
         read-only? (read-only? tx-prop)
         commit-type (commit-type m-coll)
@@ -230,20 +230,20 @@
   (require '[test-data :as td])
 
 
-  (let [meeting [{:dadysql.spec/sql
+  (let [meeting [{:dadysql.core/sql
                                         ["insert into meeting (meeting_id, subject) values (?, ?)"
                                          [109 "Hello Meeting for IT"]],
-                  :dadysql.spec/timeout 1000,
-                  :dadysql.spec/commit  :dadysql.spec/all,
-                  :dadysql.spec/dml-key :dadysql.spec/dml-insert,
-                  :dadysql.spec/join    [],
-                  :dadysql.spec/group   :create-meeting,
-                  :dadysql.spec/model   :meeting,
-                  :dadysql.spec/param   [[:meeting_id :dadysql.spec/ref-gen :gen-meet]],
-                  :dadysql.spec/index   0,
-                  :dadysql.spec/input-param
+                  :dadysql.core/timeout 1000,
+                  :dadysql.core/commit  :dadysql.core/all,
+                  :dadysql.core/dml-key :dadysql.core/dml-insert,
+                  :dadysql.core/join    [],
+                  :dadysql.core/group   :create-meeting,
+                  :dadysql.core/model   :meeting,
+                  :dadysql.core/param   [[:meeting_id :dadysql.core/ref-gen :gen-meet]],
+                  :dadysql.core/index   0,
+                  :dadysql.core/input-param
                                         {:subject "Hello Meeting for IT", :meeting_id 109},
-                  :dadysql.spec/name    :create-meeting}]]
+                  :dadysql.core/name    :create-meeting}]]
     (->> (execute @td/ds meeting :tms (t/read-file "tie.edn.sql")
                   :type :dadysql.plugin.sql.jdbc-io/transaction)
          (clojure.pprint/pprint)))

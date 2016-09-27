@@ -31,16 +31,16 @@
 (deftest tx-prop-spec-test
   (testing "tx-prop spec for valid condtion "
     (let [v [:isolation :serializable :read-only? true]
-          r (s/conform :dadysql.spec/tx-prop v)]
+          r (s/conform :dadysql.core/tx-prop v)]
       (is (not= ::s/invalid r))))
 
   (testing "tx-prop spec for valid condtion "
     (let [v [:isolation :serializable :read-only? 1]
-          r (s/conform :dadysql.spec/tx-prop v)]
+          r (s/conform :dadysql.core/tx-prop v)]
       (is (= ::s/invalid r))))
   (testing "tx-prop spec for valid condtion "
     (let [v [:isolation :serializable1 :read-only? true]
-          r (s/conform :dadysql.spec/tx-prop v)]
+          r (s/conform :dadysql.core/tx-prop v)]
       (is (= ::s/invalid r)))))
 
 
@@ -51,16 +51,16 @@
 (deftest params-spec-test
   (testing "test params spec "
     (let [v [[:next_transaction_id :ref-fn-key 'inc :transaction_id]]
-          r (s/conform :dadysql.spec/param v)]
+          r (s/conform :dadysql.core/param v)]
       (is (not= :clojure.spec/invalid r))))
   (testing "test params spec for invalid case "
     (let [v [[:next_transaction_id :ref-fn-key 'inc "transaction_id"]]
-          r (s/conform :dadysql.spec/param v)]
+          r (s/conform :dadysql.core/param v)]
       (is (= :clojure.spec/invalid r)))))
 
 #_(gen/sample (gen/fmap (fn [w]
                           (into [] (into #{} w)))
-                        (gen/such-that not-empty (s/gen :dadysql.spec/params))))
+                        (gen/such-that not-empty (s/gen :dadysql.core/params))))
 
 ;(params-spec-test)
 ;
@@ -71,18 +71,18 @@
     (let [v [[:department :id :1-n :employee :dept_id]
              [:employee :id :1-1 :employee-detail :employee_id]
              [:employee :id :n-n :meeting :meeting_id [:employee-meeting :employee_id :meeting_id]]]
-          r (s/conform :dadysql.spec/join v)]
+          r (s/conform :dadysql.core/join v)]
       (is (not= :clojure.spec/invalid r))))
   (testing "test join spec for invalid missing n-n key "
     (let [v [[:department :id :1-n :employee :dept_id]
              [:employee :id :1-1 :employee-detail :employee_id]
              [:employee :id :n-n :meeting :meeting_id [:employee-meeting :employee_id]]]
-          r (s/conform :dadysql.spec/join v)]
+          r (s/conform :dadysql.core/join v)]
       (is (= :clojure.spec/invalid r)))))
 
 #_(gen/sample (gen/fmap (fn [w]
                           (into [] (into #{} w)))
-                        (gen/such-that not-empty (s/gen :dadysql.spec/join))))
+                        (gen/such-that not-empty (s/gen :dadysql.core/join))))
 
 
 ;(join-spec-test)
@@ -91,7 +91,7 @@
 
 (deftest spec-test
   (testing "test do-compile "
-    (let [r (s/conform :dadysql.spec/compiler-input-spec do-compile-input-data)]
+    (let [r (s/conform :dadysql.core/compiler-input-spec do-compile-input-data)]
       (is (not= :clojure.spec/invalid r)))))
 
 
@@ -99,7 +99,7 @@
 
   ;(s/conform :tie-edn/get-dept-by-id {:id "asdf"})
 
-  (s/valid? :dadysql.spec/compiler-input-spec do-compile-input-data2)
+  (s/valid? :dadysql.core/compiler-input-spec do-compile-input-data2)
   )
 
 
@@ -111,7 +111,7 @@
     (let [w (-> "tie.edn.sql"
                 (f/read-file)
                 )
-          actual-result (s/conform :dadysql.spec/compiler-input-spec w)]
+          actual-result (s/conform :dadysql.core/compiler-input-spec w)]
       ; (clojure.pprint/pprint actual-result)
       (is (not= :clojure.spec/invalid actual-result)))))
 
@@ -134,20 +134,20 @@
 #_(comment
 
 
-    (gen/generate (s/gen :dadysql.spec/param-spec))
+    (gen/generate (s/gen :dadysql.core/param-spec))
 
 
-    (gen/generate (s/gen :dadysql.spec/extend))
+    (gen/generate (s/gen :dadysql.core/extend))
 
-    (gen/generate (s/gen :dadysql.spec/module))
+    (gen/generate (s/gen :dadysql.core/module))
 
-    (gen/generate (s/gen :dadysql.spec/global))
+    (gen/generate (s/gen :dadysql.core/global))
 
-    (gen/generate (s/gen :dadysql.spec/compiler-input-spec))
+    (gen/generate (s/gen :dadysql.core/compiler-input-spec))
 
 
     (gen/sample
-      (gen/bind (s/gen :dadysql.spec/vali-type2)
+      (gen/bind (s/gen :dadysql.core/vali-type2)
                 (fn [v]
                   (println v)
                   {:a v}
@@ -158,7 +158,7 @@
 
 
     (gen/sample
-      (gen/bind (s/gen :dadysql.spec/params)
+      (gen/bind (s/gen :dadysql.core/params)
                 (fn [v]
                   (println v)
                   {:a v}
@@ -170,30 +170,30 @@
 
 
 
-    (s/gen :dadysql.spec/params)
+    (s/gen :dadysql.core/params)
 
 
 
 
     (gen/generate
-      (gen/bind (s/gen :dadysql.spec/params) (fn [v]
+      (gen/bind (s/gen :dadysql.core/params) (fn [v]
                                                (println v)
                                                [:a]
                                                )))
 
     (gen/sample (gen/fmap (fn [w]
                             (into [] (into #{} w)))
-                          (gen/such-that not-empty (s/gen :dadysql.spec/params))))
+                          (gen/such-that not-empty (s/gen :dadysql.core/params))))
 
 
     (gen/sample (gen/fmap (fn [w]
                             (into [] (into #{} w)))
-                          (gen/such-that not-empty (s/gen :dadysql.spec/param-spec))))
+                          (gen/such-that not-empty (s/gen :dadysql.core/param-spec))))
 
 
     (gen/sample (gen/fmap (fn [w]
                             (into [] (into #{} w)))
-                          (gen/such-that not-empty (s/gen :dadysql.spec/join))))
+                          (gen/such-that not-empty (s/gen :dadysql.core/join))))
 
 
 
@@ -202,17 +202,17 @@
 
     (->> "tie.edn.sql"
          (f/read-file)
-         (s/explain :dadysql.spec/compiler-input-spec)
+         (s/explain :dadysql.core/compiler-input-spec)
 
          )
 
 
-    (gen/generate (s/gen :dadysql.spec/extend))
+    (gen/generate (s/gen :dadysql.core/extend))
 
 
 
 
-    (gen/generate (s/gen :dadysql.spec/compiler-input-spec))
+    (gen/generate (s/gen :dadysql.core/compiler-input-spec))
 
     )
 

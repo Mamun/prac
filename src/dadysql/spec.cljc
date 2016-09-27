@@ -6,24 +6,24 @@
 ;(defonce process-context-key :process-context)
 
 
-(s/def ::dml-select (s/spec #(= :select %)))
-(s/def ::dml-insert any?)
-(s/def ::dml-update any?)
-(s/def ::dml-delete any?)
-(s/def ::dml-call any?)
-(s/def ::dml-type any?)
+(s/def :dadysql.core/dml-select (s/spec #(= :select %)))
+(s/def :dadysql.core/dml-insert any?)
+(s/def :dadysql.core/dml-update any?)
+(s/def :dadysql.core/dml-delete any?)
+(s/def :dadysql.core/dml-call any?)
+(s/def :dadysql.core/dml-type any?)
 
 
-(s/def ::all (s/spec #(= :all %)))
-(s/def ::any (s/spec #(= :any %)))
-(s/def ::none (s/spec #(= :none %)))
-(s/def ::commit #{:all :any :none})
+(s/def :dadysql.core/all (s/spec #(= :all %)))
+(s/def :dadysql.core/any (s/spec #(= :any %)))
+(s/def :dadysql.core/none (s/spec #(= :none %)))
+(s/def :dadysql.core/commit #{:all :any :none})
 
 
 
-(s/def ::exec-total-time int?)
-(s/def ::exec-start-time int?)
-(s/def ::query-exception string?)
+(s/def :dadysql.core/exec-total-time int?)
+(s/def :dadysql.core/exec-start-time int?)
+(s/def :dadysql.core/query-exception string?)
 
 
 
@@ -31,29 +31,29 @@
   (if (resolve v) true false))
 
 
-(s/def ::tx-prop (s/cat :ck #{:isolation}
+(s/def :dadysql.core/tx-prop (s/cat :ck #{:isolation}
                         :cv (s/spec #{:none :read-committed :read-uncommitted :repeatable-read :serializable})
                         :rk #{:read-only?}
                         :rv (s/spec boolean?)))
 
 
-(s/def ::file-reload boolean?)
-(s/def ::reserve-name (s/with-gen (s/every keyword? :kind set?)
+(s/def :dadysql.core/file-reload boolean?)
+(s/def :dadysql.core/reserve-name (s/with-gen (s/every keyword? :kind set?)
                                   (fn []
                                     (s/gen #{#{:create-ddl :drop-ddl :init-data}
                                              #{:init-data}}))))
 
-(s/def ::doc string?)
-(s/def ::timeout pos-int?)
+(s/def :dadysql.core/doc string?)
+(s/def :dadysql.core/timeout pos-int?)
 
-(s/def ::name
+(s/def :dadysql.core/name
   (s/with-gen (s/or :one keyword? :many (s/coll-of keyword? :kind vector? :distinct true))
               (fn [] (s/gen #{:get-dept-list :get-dept-by-ids :get-employee-list :get-meeting-list :get-employee-meeting-list}))))
 
-(s/def ::index int?)
+(s/def :dadysql.core/index int?)
 
 
-(s/def ::sql
+(s/def :dadysql.core/sql
   (s/with-gen (s/every string? :kind vector?)
               (fn [] (s/gen #{"select * from department LIMIT :limit OFFSET :offset;\nselect * from department where id in (:id) ;\nselect * from employee LIMIT :limit OFFSET :offset;\nselect * from meeting LIMIT :limit OFFSET :offset;\nselect * from employee_meeting LIMIT :limit OFFSET :offset;\n"
                               "select * from employee where id = :id;\nselect d.* from department d, employee e where e.id=:id and d.id = e.dept_id;\nselect ed.* from employee_detail ed where ed.employee_id=:id;\nselect m.*, em.employee_id from meeting m, employee_meeting em where em.employee_id=:id and em.meeting_id = m.meeting_id;\n"
@@ -61,22 +61,22 @@
                               "insert into department (id, transaction_id, dept_name) values (:id, :transaction_id, :dept_name);\nupdate department set dept_name=:dept_name, transaction_id=:next_transaction_id  where transaction_id=:transaction_id and id=:id;\ndelete from department where id in (:id);\n"}))))
 
 
-(s/def ::model
+(s/def :dadysql.core/model
   (s/with-gen (s/or :one keyword? :many (s/coll-of keyword? :kind vector?))
               (fn [] (s/gen #{:dept :employee :meeting}))))
 
-(s/def ::skip
+(s/def :dadysql.core/skip
   (s/with-gen (s/every keyword? :kind set?)
               (fn [] (s/gen #{#{:join :column}
                               #{:join}}))))
 
-(s/def ::group
+(s/def :dadysql.core/group
   (s/with-gen keyword?
               #(s/gen #{:load-dept :load-employee})))
 
 
 
-(s/def ::column
+(s/def :dadysql.core/column
   (s/with-gen (s/every-kv keyword? keyword?)
               (fn [] (s/gen #{{:id :empl_id}
                               {:dept_id :id}}))))
@@ -84,87 +84,87 @@
 ;(defonce result-array-key :array)
 ;(defonce result-single-key :single)
 
-(s/def ::array (s/spec #(= :array %)))
-(s/def ::single (s/spec #(= :single %)))
-(s/def ::result (s/every #{:array :single} :kind set?))
+(s/def :dadysql.core/array (s/spec #(= :array %)))
+(s/def :dadysql.core/single (s/spec #(= :single %)))
+(s/def :dadysql.core/result (s/every #{:array :single} :kind set?))
 
 
-(s/def ::read-only? boolean?)
+(s/def :dadysql.core/read-only? boolean?)
 
 
-(s/def ::one-one   (s/spec #(= :1-1 %)))
-(s/def ::one-many  (s/spec #(= :1-n %)))
-(s/def ::many-one  (s/spec #(= :n-1 %)))
-(s/def ::many-many (s/spec #(= :n-n %)))
+(s/def :dadysql.core/one-one   (s/spec #(= :1-1 %)))
+(s/def :dadysql.core/one-many  (s/spec #(= :1-n %)))
+(s/def :dadysql.core/many-one  (s/spec #(= :n-1 %)))
+(s/def :dadysql.core/many-many (s/spec #(= :n-n %)))
 
-(s/def ::join-one
+(s/def :dadysql.core/join-one
   (s/tuple keyword? keyword? (s/spec #{:1-1 :1-n :n-1}) keyword? keyword?))
 
-(s/def ::join-many
+(s/def :dadysql.core/join-many
   (s/tuple keyword? keyword? (s/spec #{:n-n}) keyword? keyword? (s/tuple keyword? keyword? keyword?)))
 
-(s/def ::join
+(s/def :dadysql.core/join
   (s/with-gen
     (clojure.spec/*
       (clojure.spec/alt
-        :join-one ::join-one
-        :join-many ::join-many))
+        :join-one :dadysql.core/join-one
+        :join-many :dadysql.core/join-many))
     (fn []
       (s/gen
-        #{[[:department :id ::one-many :employee :dept_id]
-           [:employee :id ::one-one :employee-detail :employee_id]
+        #{[[:department :id :dadysql.core/one-many :employee :dept_id]
+           [:employee :id :dadysql.core/one-one :employee-detail :employee_id]
            [:employee :id :many-many :meeting :meeting_id [:employee-meeting :employee_id :meeting_id]]]
           }))))
 
 
-(s/def ::ref-con (clojure.spec/tuple keyword? (s/spec #(= :ref-con %)) any?))
-(s/def ::ref-key (clojure.spec/tuple keyword? (s/spec #(= :ref-key %)) keyword?))
-(s/def ::ref-fn-key (clojure.spec/tuple keyword? (s/spec #(= :ref-fn-key %)) resolve? keyword?))
-(s/def ::ref-gen (clojure.spec/tuple keyword? (s/spec #(= :ref-gen %)) keyword?))
+(s/def :dadysql.core/ref-con (clojure.spec/tuple keyword? (s/spec #(= :ref-con %)) any?))
+(s/def :dadysql.core/ref-key (clojure.spec/tuple keyword? (s/spec #(= :ref-key %)) keyword?))
+(s/def :dadysql.core/ref-fn-key (clojure.spec/tuple keyword? (s/spec #(= :ref-fn-key %)) resolve? keyword?))
+(s/def :dadysql.core/ref-gen (clojure.spec/tuple keyword? (s/spec #(= :ref-gen %)) keyword?))
 
 
-(s/def ::param
+(s/def :dadysql.core/param
   (clojure.spec/*
     (clojure.spec/alt
-      :ref-con ::ref-con
-      :ref-fn-key ::ref-fn-key
-      :ref-gen ::ref-gen
-      :ref-key ::ref-key)))
+      :ref-con :dadysql.core/ref-con
+      :ref-fn-key :dadysql.core/ref-fn-key
+      :ref-gen :dadysql.core/ref-gen
+      :ref-key :dadysql.core/ref-key)))
 
 
 
 (defn ns-keyword? [v]
   (if (namespace v) true false))
 
-(s/def ::param-spec (s/and keyword? ns-keyword?))
+(s/def :dadysql.core/param-spec (s/and keyword? ns-keyword?))
 
-(s/def ::common (s/keys :opt-un [::timeout ::column ::result ::param ::param-spec]))
-
-
-(s/def ::extend
-  (s/every-kv keyword? (s/merge (s/keys :opt-un [::model]) ::common)))
+(s/def :dadysql.core/common (s/keys :opt-un [:dadysql.core/timeout :dadysql.core/column :dadysql.core/result :dadysql.core/param :dadysql.core/param-spec]))
 
 
-(s/def ::module (s/merge
-                  ::common
-                  (s/keys :req-un [::name ::sql]
-                          :opt-un [::model ::skip ::group ::commit ::extend])))
+(s/def :dadysql.core/extend
+  (s/every-kv keyword? (s/merge (s/keys :opt-un [:dadysql.core/model]) :dadysql.core/common)))
 
 
-(s/def ::spec-file symbol?)
-
-(s/def ::global (s/keys :req-un [::name]
-                        :opt-un [::timeout ::read-only? ::tx-prop ::file-reload ::reserve-name ::join ::spec-file]))
-
-
-(s/def ::compiler-input-spec (clojure.spec/cat :global (s/? ::global) :module (s/* ::module)))
+(s/def :dadysql.core/module (s/merge
+                  :dadysql.core/common
+                  (s/keys :req-un [:dadysql.core/name :dadysql.core/sql]
+                          :opt-un [:dadysql.core/model :dadysql.core/skip :dadysql.core/group :dadysql.core/commit :dadysql.core/extend])))
 
 
+(s/def :dadysql.core/spec-file symbol?)
 
-(defonce output-key :output)
+(s/def :dadysql.core/global (s/keys :req-un [:dadysql.core/name]
+                        :opt-un [:dadysql.core/timeout :dadysql.core/read-only? :dadysql.core/tx-prop :dadysql.core/file-reload :dadysql.core/reserve-name :dadysql.core/join :dadysql.core/spec-file]))
+
+
+(s/def :dadysql.core/compiler-input-spec (clojure.spec/cat :global (s/? :dadysql.core/global) :module (s/* :dadysql.core/module)))
+
+
+(s/def :dadysql.core/output any?)
+;(defonce output-key :output)
 ;(defonce input-key :input)
 
-(s/def ::input-param any?)
+(s/def :dadysql.core/input-param any?)
 
 (def nested-map-format :nested)
 (def nested-array-format :nested-array)
@@ -175,60 +175,60 @@
 
 
 
-(s/def ::rformat #{nested-join-format nested-map-format nested-array-format
+(s/def :dadysql.core/rformat #{nested-join-format nested-map-format nested-array-format
                    map-format array-format value-format})
-(s/def ::pformat #{nested-map-format map-format})
+(s/def :dadysql.core/pformat #{nested-map-format map-format})
 
-(s/def ::params map?)
+(s/def :dadysql.core/params map?)
 
-(s/def ::input (s/keys :req-un [(or ::name ::group)]
-                       :opt-un [::params ::pformat ::rformat]))
-
-
-
-(def alais-map {:doc          ::doc
-                :timeout      ::timeout
-                :reserve-name ::reserve-name
-                :file-reload  ::file-reload
-                :tx-prop      ::tx-prop
+(s/def :dadysql.core/input (s/keys :req-un [(or :dadysql.core/name :dadysql.core/group)]
+                       :opt-un [:dadysql.core/params :dadysql.core/pformat :dadysql.core/rformat]))
 
 
 
-                :join         ::join
-                :1-1          ::one-one
-                :1-n          ::one-many
-                :n-1          ::many-one
-                :n-n          ::many-many
-
-                :name         ::name
-                :model        ::model
-                :group        ::group
-                :column       ::column
-                :sql          ::sql
-
-                :result       ::result
-                :array        ::array
-                :single       ::single
-
-                :commit       ::commit
-                :all          ::all
-                :any          ::any
-                :none         ::none
-
-                :dml-type     ::dml-type
-                :index        ::index
-
-                :skip         ::skip
-                :param        ::param
-                :param-spec   ::param-spec
-                :ref-con      ::ref-con
-                :ref-key      ::ref-key
-                :ref-fn-key   ::ref-fn-key
-                :ref-gen      ::ref-gen
+(def alais-map {:doc          :dadysql.core/doc
+                :timeout      :dadysql.core/timeout
+                :reserve-name :dadysql.core/reserve-name
+                :file-reload  :dadysql.core/file-reload
+                :tx-prop      :dadysql.core/tx-prop
 
 
-                :extend       ::extend
-                :spec-file    ::spec-file
+
+                :join         :dadysql.core/join
+                :1-1          :dadysql.core/one-one
+                :1-n          :dadysql.core/one-many
+                :n-1          :dadysql.core/many-one
+                :n-n          :dadysql.core/many-many
+
+                :name         :dadysql.core/name
+                :model        :dadysql.core/model
+                :group        :dadysql.core/group
+                :column       :dadysql.core/column
+                :sql          :dadysql.core/sql
+
+                :result       :dadysql.core/result
+                :array        :dadysql.core/array
+                :single       :dadysql.core/single
+
+                :commit       :dadysql.core/commit
+                :all          :dadysql.core/all
+                :any          :dadysql.core/any
+                :none         :dadysql.core/none
+
+                :dml-type     :dadysql.core/dml-type
+                :index        :dadysql.core/index
+
+                :skip         :dadysql.core/skip
+                :param        :dadysql.core/param
+                :param-spec   :dadysql.core/param-spec
+                :ref-con      :dadysql.core/ref-con
+                :ref-key      :dadysql.core/ref-key
+                :ref-fn-key   :dadysql.core/ref-fn-key
+                :ref-gen      :dadysql.core/ref-gen
+
+
+                :extend       :dadysql.core/extend
+                :spec-file    :dadysql.core/spec-file
                 })
 
 
@@ -237,11 +237,11 @@
 
 (comment
 
-  (s/valid? ::input {:name   [:get-employee-detail]
+  (s/valid? :dadysql.core/input {:name   [:get-employee-detail]
                      :params {:id 1}})
 
 
-  (s/explain ::input {:name   [:get-employee-detail]
+  (s/explain :dadysql.core/input {:name   [:get-employee-detail]
                      :group   :load-dept
                      :pformat :map
                      :params  {}})

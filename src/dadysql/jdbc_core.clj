@@ -25,8 +25,8 @@
 
 (defn validate-param-spec! [tm-coll]
   (reduce (fn [acc v]
-            (if-let [vali (:dadysql.spec/param-spec v)]
-              (let [w (do-spec-validate vali (:dadysql.spec/input-param v))]
+            (if-let [vali (:dadysql.core/param-spec v)]
+              (let [w (do-spec-validate vali (:dadysql.core/input-param v))]
                 (if (f/failed? w)
                   (reduced w)
                   (conj acc v))
@@ -41,22 +41,22 @@
 
 (defmethod do-param map-format
   [tm-coll node {:keys [params]}]
-  (let [param-m (c/get-child node :dadysql.spec/param)
+  (let [param-m (c/get-child node :dadysql.core/param)
         input (p/apply-param-proc params map-format tm-coll param-m)]
     (if (f/failed? input)
       input
-      (mapv (fn [m] (assoc m :dadysql.spec/input-param input)) tm-coll))))
+      (mapv (fn [m] (assoc m :dadysql.core/input-param input)) tm-coll))))
 
 
 (defmethod do-param nested-map-format
   [tm-coll node {:keys [params]}]
-  (let [param-m (c/get-child node :dadysql.spec/param)
+  (let [param-m (c/get-child node :dadysql.core/param)
         input (f/try-> params
                        (p/apply-param-proc nested-map-format tm-coll param-m)
-                       (j/do-disjoin (get-in tm-coll [0 :dadysql.spec/join])))]
+                       (j/do-disjoin (get-in tm-coll [0 :dadysql.core/join])))]
     (if (f/failed? input)
       input
-      (mapv (fn [m] (assoc m :dadysql.spec/input-param ((:dadysql.spec/model m) input))) tm-coll))))
+      (mapv (fn [m] (assoc m :dadysql.core/input-param ((:dadysql.core/model m) input))) tm-coll))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;; Processing impl  ;;;;;;;;;;;;;;;;;;;;;;;;
@@ -65,7 +65,7 @@
 (defn node->xf [type n-processor]
   (condp = type
     :input
-    (->> (c/remove-child n-processor :dadysql.spec/param)
+    (->> (c/remove-child n-processor :dadysql.core/param)
          (c/as-xf-process :input)
          (apply f/comp-xf-until))
     :output
@@ -107,18 +107,18 @@
 (defn into-model-map
   [v]
   (if (f/failed? v)
-    (hash-map (:dadysql.spec/model v) v)
-    (hash-map (:dadysql.spec/model v)
-              (output-key v))))
+    (hash-map (:dadysql.core/model v) v)
+    (hash-map (:dadysql.core/model v)
+              (:dadysql.core/output v))))
 
 
 (defn format-output
   [tm-coll format]
   (cond
     (= :one format)
-    (f/try-> tm-coll first output-key)
+    (f/try-> tm-coll first :dadysql.core/output)
     (= value-format format)
-    (f/try-> tm-coll first output-key (get-in [1 0]))
+    (f/try-> tm-coll first :dadysql.core/output (get-in [1 0]))
     :else
     (let [xf (comp (map into-model-map))]
       (into {} xf tm-coll))))
@@ -140,17 +140,17 @@
 
 (defn- is-join-pull
   [tm-coll]
-  (if (and (not-empty (:dadysql.spec/join (first tm-coll)))
+  (if (and (not-empty (:dadysql.core/join (first tm-coll)))
            (not (nil? (rest tm-coll))))
     true false))
 
 
 (defn- merge-relation-param
   [root-result root more-tm]
-  (let [w (-> (:dadysql.spec/join root)
+  (let [w (-> (:dadysql.core/join root)
               (j/get-source-relational-key-value root-result))]
     (mapv (fn [r]
-            (update-in r [:dadysql.spec/input-param] merge w)
+            (update-in r [:dadysql.core/input-param] merge w)
             ) more-tm)))
 
 
@@ -178,7 +178,7 @@
                      (merge-relation-param root more-tm)
                      (rf)
                      (merge root-output)
-                     (j/do-join (:dadysql.spec/join root)))))))))
+                     (j/do-join (:dadysql.core/join root)))))))))
 
 
 

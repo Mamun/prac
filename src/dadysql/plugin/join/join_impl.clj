@@ -8,7 +8,7 @@
 (defrecord JoinKey [cname corder])
 
 (defn new-join-key []
-  (map->JoinKey {:cname  :dadysql.spec/join
+  (map->JoinKey {:cname  :dadysql.core/join
                  :corder 2}))
 
 (extend-protocol ILeafNode
@@ -22,7 +22,7 @@
 (defn join-emission-batch [j-coll]
   (mapv (fn [j]
           (condp = (nth j 2)
-            :dadysql.spec/many-many
+            :dadysql.core/many-many
             (-> j
                 (update-in [0] cc/as-lower-case-keyword)
                 (update-in [1] cc/as-lower-case-keyword)
@@ -42,10 +42,10 @@
     [join-coll]
     (let [f (fn [[s-tab s-id join-key d-tab d-id [r-tab r-id r-id2] :as j]]
               (condp = join-key
-                :dadysql.spec/one-one [d-tab d-id :dadysql.spec/one-one s-tab s-id]
-                :dadysql.spec/one-many [d-tab d-id :dadysql.spec/many-one s-tab s-id]
-                :dadysql.spec/many-one [d-tab d-id :dadysql.spec/one-many s-tab s-id]
-                :dadysql.spec/many-many [d-tab d-id :dadysql.spec/many-many s-tab s-id [r-tab r-id2 r-id]]
+                :dadysql.core/one-one [d-tab d-id :dadysql.core/one-one s-tab s-id]
+                :dadysql.core/one-many [d-tab d-id :dadysql.core/many-one s-tab s-id]
+                :dadysql.core/many-one [d-tab d-id :dadysql.core/one-many s-tab s-id]
+                :dadysql.core/many-many [d-tab d-id :dadysql.core/many-many s-tab s-id [r-tab r-id2 r-id]]
                 j))]
       (->> (map f join-coll)
            (concat join-coll)
@@ -59,7 +59,7 @@
   (->> join-coll
        (group-by first)
        (map (fn [[k coll]]
-              {k {:dadysql.spec/join coll}}))
+              {k {:dadysql.core/join coll}}))
        (into {})))
 
 

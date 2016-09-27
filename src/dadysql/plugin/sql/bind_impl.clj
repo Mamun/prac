@@ -8,18 +8,18 @@
 
 (defn validate-input-not-empty!
   [m]
-  (if (and (not-empty (rest (:dadysql.spec/sql m)))
-           (empty? (:dadysql.spec/input-param m)))
-    (f/fail (format "Input is missing for %s " (:dadysql.spec/name m)))
+  (if (and (not-empty (rest (:dadysql.core/sql m)))
+           (empty? (:dadysql.core/input-param m)))
+    (f/fail (format "Input is missing for %s " (:dadysql.core/name m)))
     m))
 
 
 (defn validate-input-type!
   [m]
-  (let [dml-type (:dadysql.spec/dml-key m)
-        input (:dadysql.spec/input-param m)
-        sql (:dadysql.spec/sql m)]
-    (if (and (not= dml-type :dadysql.spec/dml-insert)
+  (let [dml-type (:dadysql.core/dml-key m)
+        input (:dadysql.core/input-param m)
+        sql (:dadysql.core/sql m)]
+    (if (and (not= dml-type :dadysql.core/dml-insert)
              (not-empty (rest sql))
              (not (map? input)))
       (f/fail (format "Input Params for %s will be map format but %s is not map format " sql input))
@@ -30,14 +30,14 @@
   ;(contains? #{1 2 3}  5)
 
   (validate-input-type!
-    {:dadysql.spec/sql     ["insert into employee_detail (employee_id, street,   city,  state,  country )
+    {:dadysql.core/sql     ["insert into employee_detail (employee_id, street,   city,  state,  country )
                            values (:employee_id, :street, :city, :state, :country)"
                             :employee_id
                             :street
                             :city
                             :state
                             :country],
-     :dadysql.spec/dml-key :dadysql.spec/dml-insert,
+     :dadysql.core/dml-key :dadysql.core/dml-insert,
      :input                [{:street      "Schwan",
                              :city        "Munich",
                              :state       "Bayern",
@@ -64,8 +64,8 @@
 
 (defn validate-required-params!
   [m]
-  (let [input (cc/as-sequential (:dadysql.spec/input-param m))
-        r (-> (f/comp-xf-until (map #(validate-required-params*! (rest (:dadysql.spec/sql m)) %)))
+  (let [input (cc/as-sequential (:dadysql.core/input-param m))
+        r (-> (f/comp-xf-until (map #(validate-required-params*! (rest (:dadysql.core/sql m)) %)))
               (transduce conj input))]
     (if (f/failed? r)
       r
@@ -100,8 +100,8 @@
 
 (defn default-proc
   [tm]
-  (let [[sql-str & sql-params] (:dadysql.spec/sql tm)
-        input (:dadysql.spec/input-param tm)
+  (let [[sql-str & sql-params] (:dadysql.core/sql tm)
+        input (:dadysql.core/input-param tm)
         ;todo Need to find type using sql str
         validation nil                                      ; (validation-key tm)
         rf (fn [sql-coll p-key]
@@ -112,18 +112,18 @@
                    q-str (assoc sql-coll 0 w)]
                (reduce conj q-str p-value)))]
     (->> (reduce rf [sql-str] sql-params)
-         (assoc tm :dadysql.spec/sql))))
+         (assoc tm :dadysql.core/sql))))
 
 
 (defn insert-proc
   [tm]
-  (let [sql (:dadysql.spec/sql tm)
+  (let [sql (:dadysql.core/sql tm)
         sql-str (reduce (partial update-sql-str "?") sql)]
-    (->> (:dadysql.spec/input-param tm)
+    (->> (:dadysql.core/input-param tm)
          (cc/as-sequential)
          (mapv #(cc/select-values %1 (rest sql)))
          (reduce conj [sql-str])
-         (assoc tm :dadysql.spec/sql))))
+         (assoc tm :dadysql.core/sql))))
 
 
 
@@ -158,11 +158,11 @@
                 (keyword))]
 
       (condp = w
-        :select :dadysql.spec/dml-select
-        :update :dadysql.spec/dml-update
-        :insert :dadysql.spec/dml-insert
-        :delete :dadysql.spec/dml-delete
-        :call :dadysql.spec/dml-call
+        :select :dadysql.core/dml-select
+        :update :dadysql.core/dml-update
+        :insert :dadysql.core/dml-insert
+        :delete :dadysql.core/dml-delete
+        :call :dadysql.core/dml-call
         (throw (ex-info "Undefined dml op" {:for v})))
       ))
 
@@ -189,12 +189,12 @@
     [sql-str]
     (let [p (comp (filter not-empty)
                   (map sql-str-emit)
-                  (map (fn [v] {:dadysql.spec/sql     v
-                                :dadysql.spec/dml-key (dml-type v)})))
+                  (map (fn [v] {:dadysql.core/sql     v
+                                :dadysql.core/dml-key (dml-type v)})))
           sql (clojure.string/split (clojure.string/trim sql-str) #";")]
       (->> (transduce p conj [] sql)
            (mapv (fn [i m]
-                   (assoc m :dadysql.spec/index i)
+                   (assoc m :dadysql.core/index i)
                    ) (range)))))
 
 
@@ -207,16 +207,16 @@
 
 
 (defn new-sql-key [order coll]
-  (SqlKey. :dadysql.spec/sql coll order))
+  (SqlKey. :dadysql.core/sql coll order))
 
 
 (defn new-childs-key []
   (vector
-    (InsertSqlKey. :dadysql.spec/dml-insert 0)
-    (UpdateSqlKey. :dadysql.spec/dml-update 1)
-    (DeleteSqlKey. :dadysql.spec/dml-delete 2)
-    (SelectSqlKey. :dadysql.spec/dml-select 3)
-    (CallSqlKey. :dadysql.spec/dml-call 4)))
+    (InsertSqlKey. :dadysql.core/dml-insert 0)
+    (UpdateSqlKey. :dadysql.core/dml-update 1)
+    (DeleteSqlKey. :dadysql.core/dml-delete 2)
+    (SelectSqlKey. :dadysql.core/dml-select 3)
+    (CallSqlKey. :dadysql.core/dml-call 4)))
 
 
 #_(defn debug [v]
@@ -232,7 +232,7 @@
 
   (let [p (-> (group-by-node-name childs)
               ;           (debug)
-              (get (:dadysql.spec/dml-key m)))]
+              (get (:dadysql.core/dml-key m)))]
     (-process p m)))
 
 
@@ -245,32 +245,32 @@
   InsertSqlKey
   (-lorder [this] (:corder this))
   (-process-type [_] :input)
-  (-process? [_ m] (= :dadysql.spec/dml-insert (:dadysql.spec/dml-key m)))
+  (-process? [_ m] (= :dadysql.core/dml-insert (:dadysql.core/dml-key m)))
   (-process [_ m]
     (do-insert-proc m))
   UpdateSqlKey
   (-lorder [this] (:corder this))
   (-process-type [_] :input)
-  (-process? [_ m] (= :dadysql.spec/dml-update (:dadysql.spec/dml-key m)))
+  (-process? [_ m] (= :dadysql.core/dml-update (:dadysql.core/dml-key m)))
   (-process [_ m]
     (do-default-proc m))
   SelectSqlKey
   (-lorder [this] (:corder this))
   (-process-type [_] :input)
   (-process? [_ m] (do
-                     (= :dadysql.spec/dml-select (:dadysql.spec/dml-key m))))
+                     (= :dadysql.core/dml-select (:dadysql.core/dml-key m))))
   (-process [_ m]
     (do-default-proc m))
   DeleteSqlKey
   (-lorder [this] (:corder this))
   (-process-type [_] :input)
-  (-process? [_ m] (= :dadysql.spec/dml-delete (:dadysql.spec/dml-key m)))
+  (-process? [_ m] (= :dadysql.core/dml-delete (:dadysql.core/dml-key m)))
   (-process [_ m]
     (do-default-proc m))
   CallSqlKey
   (-lorder [this] (:corder this))
   (-process-type [_] :input)
-  (-process? [_ m] (= :dadysql.spec/dml-call (:dadysql.spec/dml-key m)))
+  (-process? [_ m] (= :dadysql.core/dml-call (:dadysql.core/dml-key m)))
   (-process [_ m]
     (do-default-proc m)))
 

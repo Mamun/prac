@@ -20,8 +20,8 @@
   ([file-name] (read-file file-name (imp/new-root-node)))
   ([file-name pc]
    (-> (fr/read-file file-name)
-       (assoc-in [tc/global-key :dadysql.spec/file-name] file-name)
-       (assoc-in [tc/global-key :dadysql.spec/process-context-key] pc))))
+       (assoc-in [tc/global-key :dadysql.core/file-name] file-name)
+       (assoc-in [tc/global-key :dadysql.core/process-context-key] pc))))
 
 
 
@@ -34,7 +34,7 @@
 
 (defn select-pull-node [ds tms request-m]
   (f/try-> tms
-           (get-in [tc/global-key :dadysql.spec/process-context-key] [])
+           (get-in [tc/global-key :dadysql.core/process-context-key] [])
            (filter-processor request-m)
            (c/add-child-one (ce/sql-executor-node ds tms  :dadysql.plugin.sql.jdbc-io/parallel))))
 
@@ -42,7 +42,7 @@
 
 (defn select-push-node [gen-pull-fn ds tms]
   (f/try-> tms
-           (get-in [tc/global-key :dadysql.spec/process-context-key] [])
+           (get-in [tc/global-key :dadysql.core/process-context-key] [])
            (c/remove-type :output)
            (c/add-child-one (ce/sql-executor-node ds tms :dadysql.plugin.sql.jdbc-io/transaction))
            (p/assoc-param-ref-gen (fn [& {:as m}]
@@ -96,7 +96,7 @@
     (try
       (let [tm-coll (vals (dc/select-name-by-name-coll tms name-coll))]
         (doseq [m tm-coll]
-          (when-let [sql (get-in m [:dadysql.spec/sql])]
+          (when-let [sql (get-in m [:dadysql.core/sql])]
             (log/info "db do with " sql)
             (jdbc/db-do-commands ds sql))))
       (catch Exception e
@@ -108,19 +108,19 @@
 
 
 (defn has-dml-type? [m-map]
-  (let [dml (:dadysql.spec/dml-key m-map)]
+  (let [dml (:dadysql.core/dml-key m-map)]
     (or
-      (= :dadysql.spec/dml-update dml)
-      (= :dadysql.spec/dml-call dml)
-      (= :dadysql.spec/dml-insert dml)
-      (= :dadysql.spec/dml-delete dml)
-      (= :dadysql.spec/dml-select dml))))
+      (= :dadysql.core/dml-update dml)
+      (= :dadysql.core/dml-call dml)
+      (= :dadysql.core/dml-insert dml)
+      (= :dadysql.core/dml-delete dml)
+      (= :dadysql.core/dml-select dml))))
 
 
 (defn get-dml
   [tms]
   (let [p (comp (filter has-dml-type?)
-                (map :dadysql.spec/sql)
+                (map :dadysql.core/sql)
                 (filter (fn [v] (if (< 1 (count v))
                                   true false)))
                 (map first)
@@ -157,9 +157,9 @@
 
 (defn- execution-log
   [tm-coll]
-  (let [v (mapv #(select-keys % [:dadysql.spec/sql :dadysql.spec/exec-total-time :dadysql.spec/exec-start-time]) tm-coll)
+  (let [v (mapv #(select-keys % [:dadysql.core/sql :dadysql.core/exec-total-time :dadysql.core/exec-start-time]) tm-coll)
         w (mapv (fn [t]
-                  (update-in t [:dadysql.spec/exec-start-time] (fn [o] (str (as-date o))))
+                  (update-in t [:dadysql.core/exec-start-time] (fn [o] (str (as-date o))))
                   ) v)]
     (log/info w)))
 

@@ -11,9 +11,9 @@
 
 (deftest map-name-model-sql-test
   (testing "test name map sql "
-    (let [w {:dadysql.spec/name  [:gen-dept :gen-empl :gen-meet],
-             :dadysql.spec/model [:dept :empl :meet]
-             :dadysql.spec/sql
+    (let [w {:dadysql.core/name  [:gen-dept :gen-empl :gen-meet],
+             :dadysql.core/model [:dept :empl :meet]
+             :dadysql.core/sql
                     ["call next value for seq_dept"
                      "call next value for seq_empl"
                      "call next value for seq_meet"]}
@@ -21,8 +21,8 @@
       (is (not-empty actual-result))))
 
   (testing "test name map sql "
-    (let [w {:dadysql.spec/name [:gen-dept :gen-empl :gen-meet],
-             :dadysql.spec/sql
+    (let [w {:dadysql.core/name [:gen-dept :gen-empl :gen-meet],
+             :dadysql.core/sql
                    ["call next value for seq_dept"
                     "call next value for seq_empl"
                     "call next value for seq_meet"]}
@@ -30,8 +30,8 @@
       (is (not-empty actual-result))))
 
   (testing "test name map sql "
-    (let [w {:dadysql.spec/name :gen-dept,
-             :dadysql.spec/sql  ["select * from dual "]
+    (let [w {:dadysql.core/name :gen-dept,
+             :dadysql.core/sql  ["select * from dual "]
              }
           actual-result (map-name-model-sql w)]
       (is (not-empty actual-result)))))

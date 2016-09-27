@@ -23,30 +23,30 @@
 
 (deftest warp-parallel-coll-test
   (testing "test warp-parallel-coll"
-    (let [handler (fn [m] (assoc m output-key {:a 3}))
+    (let [handler (fn [m] (assoc m :dadysql.core/output {:a 3}))
           han (-> handler
                   (warp-map-output)
                   (warp-async-go))
-          m-coll [{:dadysql.spec/sql "select * from dual"}
-                  {:dadysql.spec/sql "select * from dual1 "}
-                  {:dadysql.spec/sql "select * from dual1 "}]
+          m-coll [{:dadysql.core/sql "select * from dual"}
+                  {:dadysql.core/sql "select * from dual1 "}
+                  {:dadysql.core/sql "select * from dual1 "}]
           result (apply-handler-parallel han m-coll)]
       (is (not (empty? result)))))
   (testing "test warp-parallel-coll"
     (let [handler (fn [m]
                     (do
-                      (when (= :b (:dadysql.spec/name m))
+                      (when (= :b (:dadysql.core/name m))
                         (Thread/sleep 3000))
-                      (assoc m output-key {:a 3})))
+                      (assoc m :dadysql.core/output {:a 3})))
           han (-> handler
                   (warp-map-output)
                   (warp-async-go))
-          m-coll [{:dadysql.spec/sql  "select * from dual"
-                   :dadysql.spec/name :a}
-                  {:dadysql.spec/sql  "select * from dual1 "
-                   :dadysql.spec/name :b}
-                  {:dadysql.spec/sql  "select * from dual1 "
-                   :dadysql.spec/name :c}]
+          m-coll [{:dadysql.core/sql  "select * from dual"
+                   :dadysql.core/name :a}
+                  {:dadysql.core/sql  "select * from dual1 "
+                   :dadysql.core/name :b}
+                  {:dadysql.core/sql  "select * from dual1 "
+                   :dadysql.core/name :c}]
           result (apply-handler-parallel han m-coll)]
       (is (failed? (get-in result [2]))))))
 
@@ -59,12 +59,12 @@
           hand (-> handler
                    (warp-map-output)
                    (warp-async-go))
-          coll [{:dadysql.spec/sql  "select * from dual"
-                 :dadysql.spec/name :a}
-                {:dadysql.spec/sql  "select * from dual1 "
-                 :dadysql.spec/name :b}
-                {:dadysql.spec/sql  "select * from dual1 "
-                 :dadysql.spec/name :c}]
+          coll [{:dadysql.core/sql  "select * from dual"
+                 :dadysql.core/name :a}
+                {:dadysql.core/sql  "select * from dual1 "
+                 :dadysql.core/name :b}
+                {:dadysql.core/sql  "select * from dual1 "
+                 :dadysql.core/name :c}]
           ;actual-result (apply-handler-until-fail hand coll)
           ]
       ;(clojure.pprint/pprint actual-result)
@@ -80,26 +80,26 @@
 
 (deftest commit-type-test
   (testing "test commit-type with one dml type "
-    (let [data [{:dadysql.spec/dml-key     :dadysql.spec/dml-select
-                 :dadysql.spec/commit :dadysql.spec/all}]
+    (let [data [{:dadysql.core/dml-key     :dadysql.core/dml-select
+                 :dadysql.core/commit :dadysql.core/all}]
           actual-result (commit-type data)]
       (is (= actual-result
-             :dadysql.spec/none))))
+             :dadysql.core/none))))
   (testing "test commit-type with all "
-    (let [data [{commit-type :dadysql.spec/all}]
+    (let [data [{commit-type :dadysql.core/all}]
           actual-result (commit-type data)]
       (is (= actual-result
-             :dadysql.spec/all))
+             :dadysql.core/all))
       ))
   (testing "test commit-type with all "
-    (let [data [{commit-type :dadysql.spec/all}]
+    (let [data [{commit-type :dadysql.core/all}]
           actual-result (commit-type data)]
       (is (= actual-result
-             :dadysql.spec/all))
+             :dadysql.core/all))
       ))
   (testing "test commit-type with all "
-    (let [data [{:dadysql.spec/commit :dadysql.spec/all}
-                {:dadysql.spec/commit :dadysql.spec/none}]
+    (let [data [{:dadysql.core/commit :dadysql.core/all}
+                {:dadysql.core/commit :dadysql.core/none}]
           actual-result (commit-type data)]
       (is (= actual-result
-             :dadysql.spec/none)))))
+             :dadysql.core/none)))))
