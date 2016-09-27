@@ -36,7 +36,7 @@
                     :dadysql.core/join       [],
                     :dadysql.core/group      :load-dept,
                     :dadysql.core/index      0}]
-          r (do-param tm-coll [(p/new-param-key 4 (p/new-child-keys))] {:pformat :dadysql.core/format-map
+          r (do-param tm-coll [(p/new-param-key 4 (p/new-child-keys))] {:dadysql.core/pformat :dadysql.core/format-map
                                                                         :params  {:id 4}})]
       (is (= (get-in r [0 :dadysql.core/input-param]) {:id 4})))))
 

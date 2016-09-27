@@ -44,14 +44,14 @@
            (c/remove-type :output)
            (c/add-child-one (ce/sql-executor-node ds tms :dadysql.plugin.sql.jdbc-io/transaction))
            (p/assoc-param-ref-gen (fn [& {:as m}]
-                                    (->> (dc/default-request :db-seq m)
+                                    (->> (dc/assoc-format :db-seq m)
                                          (gen-pull-fn ds tms))))))
 
 
 (defn do-run
   [node tms req-m]
   (let [proc (tie/get-process node req-m)
-        rformat (:rformat req-m) ]
+        rformat (:dadysql.core/rformat req-m) ]
     (f/try-> tms
              (dc/select-name req-m)
              (dc/assoc-result-format rformat)
@@ -68,7 +68,7 @@
   [ds tms req-m]
   (let [r (f/try->> req-m
                     (dc/validate-input!)
-                    (dc/default-request :pull))]
+                    (dc/assoc-format :pull))]
     (if (f/failed? r)
       r
       (f/try-> (select-pull-node ds tms r)
@@ -81,7 +81,7 @@
   [ds tms req-m]
   (let [r (f/try->> req-m
                     (dc/validate-input!)
-                    (dc/default-request :push))]
+                    (dc/assoc-format :push))]
     (if (f/failed? r)
       r
       (f/try-> (select-push-node pull ds tms)

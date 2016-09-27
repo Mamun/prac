@@ -132,11 +132,11 @@
   (testing "test default-request"
     (are [a e]
       (= a e)
-      (default-request :pull {:name :get-dept-by-id})  {:pformat :dadysql.core/format-map, :rformat :one, :name :get-dept-by-id}
-      (default-request :pull {:name [:get-dept-by-id]}) {:pformat :dadysql.core/format-map, :rformat :dadysql.core/format-nested-join, :name [:get-dept-by-id]}
-      (default-request :push {:name :get-dept-by-id})  {:pformat :dadysql.core/format-map, :rformat :one, :name :get-dept-by-id}
-      (default-request :push {:name [:get-dept-by-id]}) {:pformat :dadysql.core/format-nested, :rformat :dadysql.core/format-nested, :name [:get-dept-by-id]}
-      (default-request :db-seq {:name :get-dept-by-id})  {:pformat :dadysql.core/format-map, :rformat :dadysql.core/format-value, :name :get-dept-by-id})))
+      (assoc-format :pull {:name :get-dept-by-id}) {:dadysql.core/pformat :dadysql.core/format-map, :dadysql.core/rformat :one, :name :get-dept-by-id}
+      (assoc-format :pull {:name [:get-dept-by-id]}) {:dadysql.core/pformat :dadysql.core/format-map, :dadysql.core/rformat :dadysql.core/format-nested-join, :name [:get-dept-by-id]}
+      (assoc-format :push {:name :get-dept-by-id}) {:dadysql.core/pformat :dadysql.core/format-map, :dadysql.core/rformat :one, :name :get-dept-by-id}
+      (assoc-format :push {:name [:get-dept-by-id]}) {:dadysql.core/pformat :dadysql.core/format-nested, :dadysql.core/rformat :dadysql.core/format-nested, :name [:get-dept-by-id]}
+      (assoc-format :db-seq {:name :get-dept-by-id}) {:dadysql.core/pformat :dadysql.core/format-map, :dadysql.core/rformat :dadysql.core/format-value, :name :get-dept-by-id})))
 
 
 #_(deftest commit?-test

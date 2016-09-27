@@ -73,7 +73,7 @@
       (t/pull (t/read-file "tie.edn2.sql")
               {:name   [:get-dept-by-id]
                :params {:id "sdf"}}
-              ;:rformat :map
+              ;:dadysql.core/rformat :map
               )
       (clojure.pprint/pprint))
 
@@ -117,7 +117,7 @@
       (t/pull (t/read-file "tie.edn.sql")
               :name [:get-employee-detail]
               :params {:id 1}
-              ;:rformat :nested-join
+              ;:dadysql.core/rformat :nested-join
               )
       (clojure.pprint/pprint))
 
@@ -127,7 +127,7 @@
       (t/pull (t/read-file "tie.edn.sql")
               :gname :load-employee
               :params {:id 1}
-              ;:rformat :nested-join
+              ;:dadysql.core/rformat :nested-join
               )
       (clojure.pprint/pprint))
 
@@ -139,7 +139,7 @@
         (t/push! (t/read-file "tie.edn.sql")
                  :name :insert-dept
                  :params v
-                 ;:rformat :as-sequence
+                 ;:dadysql.core/rformat :as-sequence
                  )
         (clojure.pprint/pprint)))
 
@@ -191,7 +191,7 @@
   (-> @td/ds
       (t/pull (t/read-file "tie.edn.sql")
               :name [:gen-dept :gen-empl]
-              ;:rformat :map
+              ;:dadysql.core/rformat :map
               )
       (clojure.pprint/pprint))
 
@@ -199,7 +199,7 @@
   (-> @td/ds
       (t/pull (t/read-file "tie.edn.sql")
               :name :gen-dept
-              :rformat value-format)
+              :dadysql.core/rformat value-format)
       (clojure.pprint/pprint))
 
   ;; Update department name
@@ -241,7 +241,7 @@
       (t/pull (t/read-file "tie.edn.sql")
               :name :get-employee-by-id
               :params {:id 1}
-              :rformat :array
+              :dadysql.core/rformat :array
               )
       (clojure.pprint/pprint))
 
@@ -259,7 +259,7 @@
                  :name [:create-employee :create-employee-detail]
                  :params employee
                  ;:iormat as-model
-                 ;:rformat as-model
+                 ;:dadysql.core/rformat as-model
                  )
         (clojure.pprint/pprint)
         )

@@ -113,42 +113,46 @@
 
 
 
-(defmulti default-request (fn [t _] t))
+(defmulti assoc-format (fn [t _] t))
 
 
-(defmethod default-request :pull
+(defmethod assoc-format :pull
   [_ {:keys [name group] :as request-m}]
   (let [dfmat (if (or group
                       (sequential? name))
-                {:pformat :dadysql.core/format-map :rformat :dadysql.core/format-nested-join}
-                {:pformat :dadysql.core/format-map :rformat :one})
+                {:dadysql.core/pformat :dadysql.core/format-map
+                 :dadysql.core/rformat :dadysql.core/format-nested-join}
+                {:dadysql.core/pformat :dadysql.core/format-map
+                 :dadysql.core/rformat :one})
         request-m (merge dfmat request-m)
         request-m (if group
-                    (assoc request-m :rformat :dadysql.core/format-nested-join)
+                    (assoc request-m :dadysql.core/rformat :dadysql.core/format-nested-join)
                     request-m)]
     request-m))
 
 
-(defmethod default-request :push
+(defmethod assoc-format :push
   [_ {:keys [group name] :as request-m}]
   (let [d (if (or group
                   (sequential? name))
-            {:pformat :dadysql.core/format-nested :rformat :dadysql.core/format-nested}
-            {:pformat :dadysql.core/format-map :rformat :one})
+            {:dadysql.core/pformat :dadysql.core/format-nested
+             :dadysql.core/rformat :dadysql.core/format-nested}
+            {:dadysql.core/pformat :dadysql.core/format-map
+             :dadysql.core/rformat :one})
         request-m (merge d request-m)
         request-m (if group
                     (-> request-m
-                        (assoc :pformat :dadysql.core/format-nested)
-                        (assoc :rformat :dadysql.core/format-nested))
+                        (assoc :dadysql.core/pformat :dadysql.core/format-nested)
+                        (assoc :dadysql.core/rformat :dadysql.core/format-nested))
                     request-m)]
     request-m))
 
 
-(defmethod default-request :db-seq
+(defmethod assoc-format :db-seq
   [_ request-m]
   (-> request-m
-      (assoc :pformat :dadysql.core/format-map)
-      (assoc :rformat :dadysql.core/format-value)))
+      (assoc :dadysql.core/pformat :dadysql.core/format-map)
+      (assoc :dadysql.core/rformat :dadysql.core/format-value)))
 
 
 

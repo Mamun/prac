@@ -36,7 +36,7 @@
 
 
 
-(defmulti do-param (fn [_ _ fmt] (:pformat fmt)))
+(defmulti do-param (fn [_ _ fmt] (:dadysql.core/pformat fmt)))
 
 
 (defmethod do-param :dadysql.core/format-map

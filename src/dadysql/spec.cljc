@@ -32,16 +32,16 @@
 
 
 (s/def :dadysql.core/tx-prop (s/cat :ck #{:isolation}
-                        :cv (s/spec #{:none :read-committed :read-uncommitted :repeatable-read :serializable})
-                        :rk #{:read-only?}
-                        :rv (s/spec boolean?)))
+                                    :cv (s/spec #{:none :read-committed :read-uncommitted :repeatable-read :serializable})
+                                    :rk #{:read-only?}
+                                    :rv (s/spec boolean?)))
 
 
 (s/def :dadysql.core/file-reload boolean?)
 (s/def :dadysql.core/reserve-name (s/with-gen (s/every keyword? :kind set?)
-                                  (fn []
-                                    (s/gen #{#{:create-ddl :drop-ddl :init-data}
-                                             #{:init-data}}))))
+                                              (fn []
+                                                (s/gen #{#{:create-ddl :drop-ddl :init-data}
+                                                         #{:init-data}}))))
 
 (s/def :dadysql.core/doc string?)
 (s/def :dadysql.core/timeout pos-int?)
@@ -92,9 +92,9 @@
 (s/def :dadysql.core/read-only? boolean?)
 
 
-(s/def :dadysql.core/one-one   (s/spec #(= :1-1 %)))
-(s/def :dadysql.core/one-many  (s/spec #(= :1-n %)))
-(s/def :dadysql.core/many-one  (s/spec #(= :n-1 %)))
+(s/def :dadysql.core/one-one (s/spec #(= :1-1 %)))
+(s/def :dadysql.core/one-many (s/spec #(= :1-n %)))
+(s/def :dadysql.core/many-one (s/spec #(= :n-1 %)))
 (s/def :dadysql.core/many-many (s/spec #(= :n-n %)))
 
 (s/def :dadysql.core/join-one
@@ -146,15 +146,15 @@
 
 
 (s/def :dadysql.core/module (s/merge
-                  :dadysql.core/common
-                  (s/keys :req-un [:dadysql.core/name :dadysql.core/sql]
-                          :opt-un [:dadysql.core/model :dadysql.core/skip :dadysql.core/group :dadysql.core/commit :dadysql.core/extend])))
+                              :dadysql.core/common
+                              (s/keys :req-un [:dadysql.core/name :dadysql.core/sql]
+                                      :opt-un [:dadysql.core/model :dadysql.core/skip :dadysql.core/group :dadysql.core/commit :dadysql.core/extend])))
 
 
 (s/def :dadysql.core/spec-file symbol?)
 
 (s/def :dadysql.core/global (s/keys :req-un [:dadysql.core/name]
-                        :opt-un [:dadysql.core/timeout :dadysql.core/read-only? :dadysql.core/tx-prop :dadysql.core/file-reload :dadysql.core/reserve-name :dadysql.core/join :dadysql.core/spec-file]))
+                                    :opt-un [:dadysql.core/timeout :dadysql.core/read-only? :dadysql.core/tx-prop :dadysql.core/file-reload :dadysql.core/reserve-name :dadysql.core/join :dadysql.core/spec-file]))
 
 
 (s/def :dadysql.core/compiler-input-spec (clojure.spec/cat :global (s/? :dadysql.core/global) :module (s/* :dadysql.core/module)))
@@ -188,7 +188,7 @@
 (s/def :dadysql.core/params map?)
 
 (s/def :dadysql.core/input (s/keys :req-un [(or :dadysql.core/name :dadysql.core/group)]
-                       :opt-un [:dadysql.core/params :dadysql.core/pformat :dadysql.core/rformat]))
+                                   :opt-un [:dadysql.core/params :dadysql.core/pformat :dadysql.core/rformat]))
 
 
 
@@ -244,13 +244,13 @@
 (comment
 
   (s/valid? :dadysql.core/input {:name   [:get-employee-detail]
-                     :params {:id 1}})
+                                 :params {:id 1}})
 
 
-  (s/explain :dadysql.core/input {:name   [:get-employee-detail]
-                     :group   :load-dept
-                     :pformat :map
-                     :params  {}})
+  (s/explain :dadysql.core/input {:name    [:get-employee-detail]
+                                  :group   :load-dept
+                                  :dadysql.core/pformat :map
+                                  :params  {}})
 
   )
 
