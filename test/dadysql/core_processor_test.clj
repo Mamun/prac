@@ -1,6 +1,6 @@
 (ns dadysql.core-processor-test
   (:use [clojure.test])
-  (:require [dadysql.core-processor :refer :all]
+  (:require [dadysql.core-selector :refer :all]
             [dady.common :refer :all]
             [dady.fail :refer :all]
             [dadysql.compiler.core :as fr]

@@ -4,7 +4,7 @@
   (:require
     [clojure.tools.logging :as log]
     [clojure.java.jdbc :as jdbc]
-    [dadysql.core-processor :as dc]
+    [dadysql.core-selector :as dc]
     [dadysql.jdbc-core :as tie]
     [dadysql.compiler.core :as fr]
     [dadysql.plugin.factory :as imp]
@@ -24,8 +24,8 @@
 
 
 (defn- filter-processor
-  [process {:keys [out-format]}]
-  (if (= out-format :dadysql.core/format-value)
+  [process r ]
+  (if (= (:dadysql.core/rformat r) :dadysql.core/format-value)
     (c/remove-type process :output)
     process))
 

@@ -2,8 +2,6 @@
   (:require
     [clojure.spec :as s]
     [dady.fail :as f]
-    ;[dadysql.spec :refer :all]
-    [dadysql.core-processor :as dc]
     [dadysql.plugin.join.core :as j]
     [dadysql.plugin.params.core :as p]
     [dady.proto :as c]))
@@ -114,11 +112,13 @@
 
 (defn format-output
   [tm-coll format]
+
   (cond
     (= :one format)
     (f/try-> tm-coll first :dadysql.core/output)
     (= :dadysql.core/format-value format)
-    (f/try-> tm-coll first :dadysql.core/output (get-in [1 0]))
+    (do
+      (f/try-> tm-coll first :dadysql.core/output (get-in [1 0])))
     :else
     (let [xf (comp (map into-model-map))]
       (into {} xf tm-coll))))
@@ -190,8 +190,10 @@
 
 
 
-(defn get-process [n-processor {:keys [rformat]}]
-  (let [input-steps (node->xf :input n-processor)
+(defn get-process [n-processor request-m]
+  ;(println "Request format" request-m)
+  (let [rformat (:dadysql.core/rformat request-m)
+        input-steps (node->xf :input n-processor)
         exec (fn [tm-coll]
                (do-node-process tm-coll n-processor :sql-executor))]
     (-> exec

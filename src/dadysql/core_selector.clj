@@ -1,10 +1,10 @@
-(ns dadysql.core-processor
+(ns dadysql.core-selector
   (:require
     [clojure.spec :as sp]
+    [dadysql.spec-core :as sc]
     [dady.common :as cc]
     [dady.fail :as f]
-    [clojure.set]
-    ))
+    [clojure.set]))
 
 
 (defn validate-name!
@@ -175,3 +175,41 @@
 (defn assoc-result-format
   [tm-coll format]
   (mapv (fn [m] (do-result1 format m)) tm-coll))
+
+
+#_(defn format-request [req-m]
+
+
+  )
+
+
+#_(defn select2 [tms req-m t]
+  (let [m (f/try->> req-m
+                    (sc/validate-input!)
+                    (assoc-format t))
+        rformat (:dadysql.core/rformat m)]
+    (clojure.pprint/pprint m)
+
+    (f/try-> tms
+             (select-name m)
+             (assoc-result-format rformat))))
+
+
+
+(comment
+
+
+  (require '[dadysql.jdbc :as t])
+
+  (select2 (t/read-file "tie.edn.sql")
+           {:name   [:create-dept]
+            :params {:department [{:dept_name "Software dept "}
+                                  {:dept_name "Hardware dept"}]}}
+           :push)
+
+  )
+
+
+
+
+

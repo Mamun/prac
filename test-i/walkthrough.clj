@@ -90,6 +90,8 @@
                :params {:id (list 1 2 3)}})
       (clojure.pprint/pprint))
 
+
+
   (-> @td/ds
       (t/pull (t/read-file "tie.edn.sql")
               {:name   [:get-dept-by-ids]
@@ -115,8 +117,8 @@
 
   (-> @td/ds
       (t/pull (t/read-file "tie.edn.sql")
-              :name [:get-employee-detail]
-              :params {:id 1}
+              {:name   [:get-employee-detail]
+               :params {:id 1}}
               ;:dadysql.core/rformat :nested-join
               )
       (clojure.pprint/pprint))
@@ -137,22 +139,27 @@
   (let [v {:dept_name "Call Center Munich"}]
     (-> @td/ds
         (t/push! (t/read-file "tie.edn.sql")
-                 :name :insert-dept
-                 :params v
+                 {:name   :create-dept
+                  :params v}
                  ;:dadysql.core/rformat :as-sequence
                  )
         (clojure.pprint/pprint)))
+
+
 
 
   ;; Wirite with batch!
   (let [d {:department {:dept_name "Call Center Munich 2"}}]
     (-> @td/ds
         (t/push! (t/read-file "tie.edn.sql")
-                 :name [:insert-dept]
-                 :params d
+                 {:name   [:create-dept]
+                  :params d}
 
                  )
         (clojure.pprint/pprint)))
+
+
+
 
   ;(:insert-dept (t/read-file "tie.edn.sql"))
 

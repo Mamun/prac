@@ -230,24 +230,27 @@
   (require '[test-data :as td])
 
 
-  (let [meeting [{:dadysql.core/sql
-                                        ["insert into meeting (meeting_id, subject) values (?, ?)"
-                                         [109 "Hello Meeting for IT"]],
-                  :dadysql.core/timeout 1000,
-                  :dadysql.core/commit  :dadysql.core/all,
-                  :dadysql.core/dml-key :dadysql.core/dml-insert,
-                  :dadysql.core/join    [],
-                  :dadysql.core/group   :create-meeting,
-                  :dadysql.core/model   :meeting,
-                  :dadysql.core/param   [[:meeting_id :dadysql.core/ref-gen :gen-meet]],
-                  :dadysql.core/index   0,
-                  :dadysql.core/input-param
-                                        {:subject "Hello Meeting for IT", :meeting_id 109},
-                  :dadysql.core/name    :create-meeting}]]
-    (->> (execute @td/ds meeting :tms (t/read-file "tie.edn.sql")
-                  :type :dadysql.plugin.sql.jdbc-io/transaction)
-         (clojure.pprint/pprint)))
+  (with-redefs [jdbc-handler (fn [_ _]
+                               (list 1)
+                               )]
+    (let [meeting [{:dadysql.core/sql
+                                          ["insert into meeting (meeting_id, subject) values (?, ?)"
+                                           [109 "Hello Meeting for IT"]],
+                    :dadysql.core/timeout 1000,
+                    :dadysql.core/commit  :dadysql.core/all,
+                    :dadysql.core/dml-key :dadysql.core/dml-insert,
+                    :dadysql.core/join    [],
+                    :dadysql.core/group   :create-meeting,
+                    :dadysql.core/model   :meeting,
+                    :dadysql.core/param   [[:meeting_id :dadysql.core/ref-gen :gen-meet]],
+                    :dadysql.core/index   0,
+                    :dadysql.core/input-param
+                                          {:subject "Hello Meeting for IT", :meeting_id 109},
+                    :dadysql.core/name    :create-meeting}]]
+      (->> (execute (td/get-ds) @td/ds meeting :tms (t/read-file "tie.edn.sql")
+                    :type :dadysql.plugin.sql.jdbc-io/transaction)
+           (clojure.pprint/pprint)))
 
-
+    )
 
   )
