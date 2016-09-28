@@ -97,10 +97,10 @@
 
 
 #_(defn validate-input!
-  [req-m]
-  (if (sp/valid? :dadysql.core/input req-m)
-    req-m
-    (f/fail (sp/explain-data :dadysql.core/input req-m))))
+    [req-m]
+    (if (sp/valid? :dadysql.core/input req-m)
+      req-m
+      (f/fail (sp/explain-data :dadysql.core/input req-m))))
 
 
 (defn select-name [tms req-m]
@@ -120,9 +120,9 @@
   [_ {:keys [name group] :as request-m}]
   (let [dfmat (if (or group
                       (sequential? name))
-                {:dadysql.core/input-format :dadysql.core/format-map
+                {:dadysql.core/input-format  :dadysql.core/format-map
                  :dadysql.core/output-format :dadysql.core/format-nested-join}
-                {:dadysql.core/input-format :dadysql.core/format-map
+                {:dadysql.core/input-format  :dadysql.core/format-map
                  :dadysql.core/output-format :one})
         request-m (merge dfmat request-m)
         request-m (if group
@@ -135,9 +135,9 @@
   [_ {:keys [group name] :as request-m}]
   (let [d (if (or group
                   (sequential? name))
-            {:dadysql.core/input-format :dadysql.core/format-nested
+            {:dadysql.core/input-format  :dadysql.core/format-nested
              :dadysql.core/output-format :dadysql.core/format-nested}
-            {:dadysql.core/input-format :dadysql.core/format-map
+            {:dadysql.core/input-format  :dadysql.core/format-map
              :dadysql.core/output-format :one})
         request-m (merge d request-m)
         request-m (if group
@@ -177,21 +177,12 @@
   (mapv (fn [m] (do-result1 format m)) tm-coll))
 
 
-#_(defn format-request [req-m]
 
-
-  )
-
-
-#_(defn select2 [tms req-m t]
-  (let [m (f/try->> req-m
-                    (sc/validate-input!)
-                    (assoc-format t))
-        rformat (:dadysql.core/output-format m)]
-    (clojure.pprint/pprint m)
-
+(defn select-name-for [req-m type tms]
+  (let [rformat (-> (assoc-format type req-m)
+                    (:dadysql.core/output-format req-m))]
     (f/try-> tms
-             (select-name m)
+             (select-name req-m)
              (assoc-result-format rformat))))
 
 
@@ -200,6 +191,23 @@
 
 
   (require '[dadysql.jdbc :as t])
+
+  (-> {:name   [:create-dept]
+       :params {:department [{:dept_name "Software dept "}
+                             {:dept_name "Hardware dept"}]}}
+
+      (select-name-for :push (t/read-file "tie.edn.sql"))
+      )
+
+
+
+  (-> {:name   [:get-dept-by-ids]
+       :params {:id [1 2 112]}}
+
+      (select-name-for :pull (t/read-file "tie.edn.sql"))
+      )
+
+
 
   (select2 (t/read-file "tie.edn.sql")
            {:name   [:create-dept]
