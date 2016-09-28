@@ -9,7 +9,7 @@
 (defn validate-input-not-empty!
   [m]
   (if (and (not-empty (rest (:dadysql.core/sql m)))
-           (empty? (:dadysql.core/input-param m)))
+           (empty? (:dadysql.core/input m)))
     (f/fail (format "Input is missing for %s " (:dadysql.core/name m)))
     m))
 
@@ -17,7 +17,7 @@
 (defn validate-input-type!
   [m]
   (let [dml-type (:dadysql.core/dml-key m)
-        input (:dadysql.core/input-param m)
+        input (:dadysql.core/input m)
         sql (:dadysql.core/sql m)]
     (if (and (not= dml-type :dadysql.core/dml-insert)
              (not-empty (rest sql))
@@ -64,7 +64,7 @@
 
 (defn validate-required-params!
   [m]
-  (let [input (cc/as-sequential (:dadysql.core/input-param m))
+  (let [input (cc/as-sequential (:dadysql.core/input m))
         r (-> (f/comp-xf-until (map #(validate-required-params*! (rest (:dadysql.core/sql m)) %)))
               (transduce conj input))]
     (if (f/failed? r)
@@ -101,7 +101,7 @@
 (defn default-proc
   [tm]
   (let [[sql-str & sql-params] (:dadysql.core/sql tm)
-        input (:dadysql.core/input-param tm)
+        input (:dadysql.core/input tm)
         ;todo Need to find type using sql str
         validation nil                                      ; (validation-key tm)
         rf (fn [sql-coll p-key]
@@ -119,7 +119,7 @@
   [tm]
   (let [sql (:dadysql.core/sql tm)
         sql-str (reduce (partial update-sql-str "?") sql)]
-    (->> (:dadysql.core/input-param tm)
+    (->> (:dadysql.core/input tm)
          (cc/as-sequential)
          (mapv #(cc/select-values %1 (rest sql)))
          (reduce conj [sql-str])

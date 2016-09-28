@@ -6,6 +6,7 @@
     [clojure.java.jdbc :as jdbc]
     [dadysql.core-selector :as dc]
     [dadysql.jdbc-core :as tie]
+    [dadysql.spec-core :as sc]
     [dadysql.compiler.core :as fr]
     [dadysql.plugin.factory :as imp]
     [dady.proto :as c]
@@ -25,7 +26,7 @@
 
 (defn- filter-processor
   [process r ]
-  (if (= (:dadysql.core/rformat r) :dadysql.core/format-value)
+  (if (= (:dadysql.core/output-format r) :dadysql.core/format-value)
     (c/remove-type process :output)
     process))
 
@@ -51,7 +52,7 @@
 (defn do-run
   [node tms req-m]
   (let [proc (tie/get-process node req-m)
-        rformat (:dadysql.core/rformat req-m) ]
+        rformat (:dadysql.core/output-format req-m) ]
     (f/try-> tms
              (dc/select-name req-m)
              (dc/assoc-result-format rformat)
@@ -67,7 +68,7 @@
    "
   [ds tms req-m]
   (let [r (f/try->> req-m
-                    (dc/validate-input!)
+                    (sc/validate-input!)
                     (dc/assoc-format :pull))]
     (if (f/failed? r)
       r
@@ -80,7 +81,7 @@
   "Create, update or delete value in database. DB O/P will be run within transaction. "
   [ds tms req-m]
   (let [r (f/try->> req-m
-                    (dc/validate-input!)
+                    (sc/validate-input!)
                     (dc/assoc-format :push))]
     (if (f/failed? r)
       r

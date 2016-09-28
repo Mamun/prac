@@ -24,7 +24,7 @@
 (defn validate-param-spec! [tm-coll]
   (reduce (fn [acc v]
             (if-let [vali (:dadysql.core/param-spec v)]
-              (let [w (do-spec-validate vali (:dadysql.core/input-param v))]
+              (let [w (do-spec-validate vali (:dadysql.core/input v))]
                 (if (f/failed? w)
                   (reduced w)
                   (conj acc v))
@@ -34,7 +34,7 @@
 
 
 
-(defmulti do-param (fn [_ _ fmt] (:dadysql.core/pformat fmt)))
+(defmulti do-param (fn [_ _ fmt] (:dadysql.core/input-format fmt)))
 
 
 (defmethod do-param :dadysql.core/format-map
@@ -43,7 +43,7 @@
         input (p/apply-param-proc params :dadysql.core/format-map tm-coll param-m)]
     (if (f/failed? input)
       input
-      (mapv (fn [m] (assoc m :dadysql.core/input-param input)) tm-coll))))
+      (mapv (fn [m] (assoc m :dadysql.core/input input)) tm-coll))))
 
 
 (defmethod do-param :dadysql.core/format-nested
@@ -54,7 +54,7 @@
                        (j/do-disjoin (get-in tm-coll [0 :dadysql.core/join])))]
     (if (f/failed? input)
       input
-      (mapv (fn [m] (assoc m :dadysql.core/input-param ((:dadysql.core/model m) input))) tm-coll))))
+      (mapv (fn [m] (assoc m :dadysql.core/input ((:dadysql.core/model m) input))) tm-coll))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;; Processing impl  ;;;;;;;;;;;;;;;;;;;;;;;;
@@ -150,7 +150,7 @@
   (let [w (-> (:dadysql.core/join root)
               (j/get-source-relational-key-value root-result))]
     (mapv (fn [r]
-            (update-in r [:dadysql.core/input-param] merge w)
+            (update-in r [:dadysql.core/input] merge w)
             ) more-tm)))
 
 
@@ -192,7 +192,7 @@
 
 (defn get-process [n-processor request-m]
   ;(println "Request format" request-m)
-  (let [rformat (:dadysql.core/rformat request-m)
+  (let [rformat (:dadysql.core/output-format request-m)
         input-steps (node->xf :input n-processor)
         exec (fn [tm-coll]
                (do-node-process tm-coll n-processor :sql-executor))]

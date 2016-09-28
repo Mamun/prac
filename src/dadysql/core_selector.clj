@@ -96,7 +96,7 @@
     (into [] (map :dadysql.core/name) w)))
 
 
-(defn validate-input!
+#_(defn validate-input!
   [req-m]
   (if (sp/valid? :dadysql.core/input req-m)
     req-m
@@ -120,13 +120,13 @@
   [_ {:keys [name group] :as request-m}]
   (let [dfmat (if (or group
                       (sequential? name))
-                {:dadysql.core/pformat :dadysql.core/format-map
-                 :dadysql.core/rformat :dadysql.core/format-nested-join}
-                {:dadysql.core/pformat :dadysql.core/format-map
-                 :dadysql.core/rformat :one})
+                {:dadysql.core/input-format :dadysql.core/format-map
+                 :dadysql.core/output-format :dadysql.core/format-nested-join}
+                {:dadysql.core/input-format :dadysql.core/format-map
+                 :dadysql.core/output-format :one})
         request-m (merge dfmat request-m)
         request-m (if group
-                    (assoc request-m :dadysql.core/rformat :dadysql.core/format-nested-join)
+                    (assoc request-m :dadysql.core/output-format :dadysql.core/format-nested-join)
                     request-m)]
     request-m))
 
@@ -135,15 +135,15 @@
   [_ {:keys [group name] :as request-m}]
   (let [d (if (or group
                   (sequential? name))
-            {:dadysql.core/pformat :dadysql.core/format-nested
-             :dadysql.core/rformat :dadysql.core/format-nested}
-            {:dadysql.core/pformat :dadysql.core/format-map
-             :dadysql.core/rformat :one})
+            {:dadysql.core/input-format :dadysql.core/format-nested
+             :dadysql.core/output-format :dadysql.core/format-nested}
+            {:dadysql.core/input-format :dadysql.core/format-map
+             :dadysql.core/output-format :one})
         request-m (merge d request-m)
         request-m (if group
                     (-> request-m
-                        (assoc :dadysql.core/pformat :dadysql.core/format-nested)
-                        (assoc :dadysql.core/rformat :dadysql.core/format-nested))
+                        (assoc :dadysql.core/input-format :dadysql.core/format-nested)
+                        (assoc :dadysql.core/output-format :dadysql.core/format-nested))
                     request-m)]
     request-m))
 
@@ -151,8 +151,8 @@
 (defmethod assoc-format :db-seq
   [_ request-m]
   (-> request-m
-      (assoc :dadysql.core/pformat :dadysql.core/format-map)
-      (assoc :dadysql.core/rformat :dadysql.core/format-value)))
+      (assoc :dadysql.core/input-format :dadysql.core/format-map)
+      (assoc :dadysql.core/output-format :dadysql.core/format-value)))
 
 
 
@@ -187,7 +187,7 @@
   (let [m (f/try->> req-m
                     (sc/validate-input!)
                     (assoc-format t))
-        rformat (:dadysql.core/rformat m)]
+        rformat (:dadysql.core/output-format m)]
     (clojure.pprint/pprint m)
 
     (f/try-> tms

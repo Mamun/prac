@@ -160,35 +160,6 @@
 (s/def :dadysql.core/compiler-input-spec (clojure.spec/cat :global (s/? :dadysql.core/global) :module (s/* :dadysql.core/module)))
 
 
-(s/def :dadysql.core/output any?)
-;(defonce output-key :output)
-;(defonce input-key :input)
-
-(s/def :dadysql.core/input-param any?)
-
-(s/def :dadysql.core/format-nested any?)
-(s/def :dadysql.core/format-nested-array any?)
-(s/def :dadysql.core/format-nested-join any?)
-;(def nested-map-format :nested)
-;(def nested-array-format :nested-array)
-;(def nested-join-format :nested-join)
-
-(s/def :dadysql.core/format-map any?)
-;(def map-format :map)
-(s/def :dadysql.core/format-array any?)
-;(def array-format :array)
-;(def value-format :value)
-(s/def :dadysql.core/format-value any?)
-
-
-(s/def :dadysql.core/rformat #{:dadysql.core/format-nested :dadysql.core/format-nested-array :dadysql.core/format-nested-join
-                               :dadysql.core/format-map :dadysql.core/format-array :dadysql.core/format-value})
-(s/def :dadysql.core/pformat #{:dadysql.core/format-nested :dadysql.core/format-map})
-
-(s/def :dadysql.core/params map?)
-
-(s/def :dadysql.core/input (s/keys :req-un [(or :dadysql.core/name :dadysql.core/group)]
-                                   :opt-un [:dadysql.core/params :dadysql.core/pformat :dadysql.core/rformat]))
 
 
 
@@ -249,7 +220,7 @@
 
   (s/explain :dadysql.core/input {:name    [:get-employee-detail]
                                   :group   :load-dept
-                                  :dadysql.core/pformat :map
+                                  :dadysql.core/input-format :map
                                   :params  {}})
 
   )

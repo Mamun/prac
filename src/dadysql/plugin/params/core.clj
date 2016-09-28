@@ -135,7 +135,7 @@
     (let [[_ _ v] p-value]
       ((:generator this) :name v))))
 
-;:name v :params {} :dadysql.core/rformat :as-sequence
+;:name v :params {} :dadysql.core/output-format :as-sequence
 
 (defn assoc-param-path
   [data root-path param-coll]

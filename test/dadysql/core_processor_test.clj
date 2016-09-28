@@ -97,7 +97,7 @@
 ;(has-dml-type?-test)
 
 
-(deftest validate-input!-test
+#_(deftest validate-input!-test
   (testing "test validate-input! "
     (let [w {:name :get-dept-by-id}]
       (is (= (validate-input! w) w))))
@@ -132,11 +132,11 @@
   (testing "test default-request"
     (are [a e]
       (= a e)
-      (assoc-format :pull {:name :get-dept-by-id}) {:dadysql.core/pformat :dadysql.core/format-map, :dadysql.core/rformat :one, :name :get-dept-by-id}
-      (assoc-format :pull {:name [:get-dept-by-id]}) {:dadysql.core/pformat :dadysql.core/format-map, :dadysql.core/rformat :dadysql.core/format-nested-join, :name [:get-dept-by-id]}
-      (assoc-format :push {:name :get-dept-by-id}) {:dadysql.core/pformat :dadysql.core/format-map, :dadysql.core/rformat :one, :name :get-dept-by-id}
-      (assoc-format :push {:name [:get-dept-by-id]}) {:dadysql.core/pformat :dadysql.core/format-nested, :dadysql.core/rformat :dadysql.core/format-nested, :name [:get-dept-by-id]}
-      (assoc-format :db-seq {:name :get-dept-by-id}) {:dadysql.core/pformat :dadysql.core/format-map, :dadysql.core/rformat :dadysql.core/format-value, :name :get-dept-by-id})))
+      (assoc-format :pull {:name :get-dept-by-id}) {:dadysql.core/input-format :dadysql.core/format-map, :dadysql.core/output-format :one, :name :get-dept-by-id}
+      (assoc-format :pull {:name [:get-dept-by-id]}) {:dadysql.core/input-format :dadysql.core/format-map, :dadysql.core/output-format :dadysql.core/format-nested-join, :name [:get-dept-by-id]}
+      (assoc-format :push {:name :get-dept-by-id}) {:dadysql.core/input-format :dadysql.core/format-map, :dadysql.core/output-format :one, :name :get-dept-by-id}
+      (assoc-format :push {:name [:get-dept-by-id]}) {:dadysql.core/input-format :dadysql.core/format-nested, :dadysql.core/output-format :dadysql.core/format-nested, :name [:get-dept-by-id]}
+      (assoc-format :db-seq {:name :get-dept-by-id}) {:dadysql.core/input-format :dadysql.core/format-map, :dadysql.core/output-format :dadysql.core/format-value, :name :get-dept-by-id})))
 
 
 #_(deftest commit?-test

@@ -73,7 +73,7 @@
       (t/pull (t/read-file "tie.edn2.sql")
               {:name   [:get-dept-by-id]
                :params {:id "sdf"}}
-              ;:dadysql.core/rformat :map
+              ;:dadysql.core/output-format :map
               )
       (clojure.pprint/pprint))
 
@@ -119,7 +119,7 @@
       (t/pull (t/read-file "tie.edn.sql")
               {:name   [:get-employee-detail]
                :params {:id 1}}
-              ;:dadysql.core/rformat :nested-join
+              ;:dadysql.core/output-format :nested-join
               )
       (clojure.pprint/pprint))
 
@@ -129,7 +129,7 @@
       (t/pull (t/read-file "tie.edn.sql")
               :gname :load-employee
               :params {:id 1}
-              ;:dadysql.core/rformat :nested-join
+              ;:dadysql.core/output-format :nested-join
               )
       (clojure.pprint/pprint))
 
@@ -141,7 +141,7 @@
         (t/push! (t/read-file "tie.edn.sql")
                  {:name   :create-dept
                   :params v}
-                 ;:dadysql.core/rformat :as-sequence
+                 ;:dadysql.core/output-format :as-sequence
                  )
         (clojure.pprint/pprint)))
 
@@ -198,7 +198,7 @@
   (-> @td/ds
       (t/pull (t/read-file "tie.edn.sql")
               :name [:gen-dept :gen-empl]
-              ;:dadysql.core/rformat :map
+              ;:dadysql.core/output-format :map
               )
       (clojure.pprint/pprint))
 
@@ -206,7 +206,7 @@
   (-> @td/ds
       (t/pull (t/read-file "tie.edn.sql")
               :name :gen-dept
-              :dadysql.core/rformat value-format)
+              :dadysql.core/output-format value-format)
       (clojure.pprint/pprint))
 
   ;; Update department name
@@ -248,7 +248,7 @@
       (t/pull (t/read-file "tie.edn.sql")
               :name :get-employee-by-id
               :params {:id 1}
-              :dadysql.core/rformat :array
+              :dadysql.core/output-format :array
               )
       (clojure.pprint/pprint))
 
@@ -266,7 +266,7 @@
                  :name [:create-employee :create-employee-detail]
                  :params employee
                  ;:iormat as-model
-                 ;:dadysql.core/rformat as-model
+                 ;:dadysql.core/output-format as-model
                  )
         (clojure.pprint/pprint)
         )
