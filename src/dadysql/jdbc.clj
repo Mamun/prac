@@ -25,7 +25,7 @@
 
 
 (defn- filter-processor
-  [process r ]
+  [process r]
   (if (= (:dadysql.core/output-format r) :dadysql.core/format-value)
     (c/remove-type process :output)
     process))
@@ -35,7 +35,7 @@
   (f/try-> tms
            (get-in [:_global_ :dadysql.core/process-context-key] [])
            (filter-processor request-m)
-           (c/add-child-one (ce/sql-executor-node ds tms  :dadysql.plugin.sql.jdbc-io/parallel))))
+           (c/add-child-one (ce/sql-executor-node ds tms :dadysql.plugin.sql.jdbc-io/parallel))))
 
 
 
@@ -49,44 +49,38 @@
                                          (gen-pull-fn ds tms))))))
 
 
-(defn do-run
-  [node tms req-m]
-  (let [proc (tie/get-process node req-m)
-        rformat (:dadysql.core/output-format req-m) ]
-    (f/try-> tms
-             (dc/select-name req-m)
-             (dc/assoc-result-format rformat)
-             (tie/do-param node req-m)
-             (tie/validate-param-spec!)
-             (proc))))
-
-
 
 (defn pull
   "Read or query value from database. It will return as model map
    ds: datasource
    "
   [ds tms req-m]
-  (let [r (f/try->> req-m
-                    (sc/validate-input!)
-                    (dc/assoc-format :pull))]
-    (if (f/failed? r)
-      r
-      (f/try-> (select-pull-node ds tms r)
-               (do-run tms r)))))
+  (if-let [r (f/failed? (sc/validate-input! req-m))]
+    r
+    (let [req-m (dc/assoc-format :pull req-m)
+          node (select-pull-node ds tms req-m)]
+      (f/try-> tms
+               (dc/select-name req-m)
+               (dc/assoc-result-format req-m)
+               (tie/do-param node req-m)
+               (tie/validate-param-spec!)
+               (tie/run-process node req-m)))))
 
 
 
 (defn push!
   "Create, update or delete value in database. DB O/P will be run within transaction. "
   [ds tms req-m]
-  (let [r (f/try->> req-m
-                    (sc/validate-input!)
-                    (dc/assoc-format :push))]
-    (if (f/failed? r)
-      r
-      (f/try-> (select-push-node pull ds tms)
-               (do-run tms r)))))
+  (if-let [r (f/failed? (sc/validate-input! req-m))]
+    r
+    (let [req-m (dc/assoc-format :push req-m)
+          node (select-push-node pull ds tms)]
+      (f/try-> tms
+               (dc/select-name req-m)
+               (dc/assoc-result-format req-m)
+               (tie/do-param node req-m)
+               (tie/validate-param-spec!)
+               (tie/run-process node req-m)))))
 
 
 

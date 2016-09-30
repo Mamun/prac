@@ -15,12 +15,6 @@
 
 
 
-
-
-
-
-
-
   #_(s/valid? (s/or :name string?
                   :id   integer?) :keyowrd)
 
@@ -102,15 +96,15 @@
   ;; for join data
   (-> @td/ds
       (t/pull (t/read-file "tie.edn.sql")
-              :name [:get-dept-by-id :get-dept-employee]
-              :params {:id 1})
+              {:name   [:get-dept-by-id :get-dept-employee]
+               :params {:id 1}})
       (clojure.pprint/pprint))
 
 
   (-> @td/ds
       (t/pull (t/read-file "tie.edn.sql")
-              :name [:get-employee-by-id :get-employee-dept :get-employee-detail]
-              :params {:id 1}
+              {:name   [:get-employee-by-id :get-employee-dept :get-employee-detail]
+               :params {:id 1}}
               )
       (clojure.pprint/pprint))
 

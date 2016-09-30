@@ -190,13 +190,14 @@
 
 
 
-(defn get-process [n-processor request-m]
+(defn run-process [tm-coll n-processor request-m]
   ;(println "Request format" request-m)
   (let [rformat (:dadysql.core/output-format request-m)
         input-steps (node->xf :input n-processor)
         exec (fn [tm-coll]
-               (do-node-process tm-coll n-processor :sql-executor))]
-    (-> exec
-        (warp-node-process input-steps)
-        (warp-output-node-process n-processor rformat))))
+               (do-node-process tm-coll n-processor :sql-executor))
+        proc (-> exec
+                 (warp-node-process input-steps)
+                 (warp-output-node-process n-processor rformat))]
+    (proc tm-coll)))
 

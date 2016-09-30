@@ -157,8 +157,8 @@
 
 
 (defn do-result1
-  [format m]
-  (condp = format
+  [m req-m ]
+  (condp = (:dadysql.core/output-format req-m)
     :dadysql.core/format-map
     (dissoc m :dadysql.core/result)
     :dadysql.core/format-array
@@ -173,8 +173,8 @@
 
 
 (defn assoc-result-format
-  [tm-coll format]
-  (mapv (fn [m] (do-result1 format m)) tm-coll))
+  [tm-coll req-m]
+  (mapv (fn [m] (do-result1 m req-m )) tm-coll))
 
 
 
