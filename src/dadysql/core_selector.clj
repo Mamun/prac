@@ -1,7 +1,5 @@
 (ns dadysql.core-selector
   (:require
-    [clojure.spec :as sp]
-    [dadysql.spec-core :as sc]
     [dady.common :as cc]
     [dady.fail :as f]
     [clojure.set]))
@@ -113,57 +111,11 @@
 
 
 
-(defmulti assoc-format (fn [t _] t))
-
-
-(defmethod assoc-format :pull
-  [_ {:keys [name group] :as request-m}]
-  (let [dfmat (if (or group
-                      (sequential? name))
-                {:dadysql.core/input-format  :dadysql.core/format-map
-                 :dadysql.core/output-format :dadysql.core/format-nested-join}
-                {:dadysql.core/input-format  :dadysql.core/format-map
-                 :dadysql.core/output-format :one})
-        request-m (merge dfmat request-m)
-        request-m (if group
-                    (assoc request-m :dadysql.core/output-format :dadysql.core/format-nested-join)
-                    request-m)]
-    request-m))
-
-
-(defmethod assoc-format :push
-  [_ {:keys [group name] :as request-m}]
-  (let [d (if (or group
-                  (sequential? name))
-            {:dadysql.core/input-format  :dadysql.core/format-nested
-             :dadysql.core/output-format :dadysql.core/format-nested}
-            {:dadysql.core/input-format  :dadysql.core/format-map
-             :dadysql.core/output-format :one})
-        request-m (merge d request-m)
-        request-m (if group
-                    (-> request-m
-                        (assoc :dadysql.core/input-format :dadysql.core/format-nested)
-                        (assoc :dadysql.core/output-format :dadysql.core/format-nested))
-                    request-m)]
-    request-m))
-
-
-(defmethod assoc-format :db-seq
-  [_ request-m]
-  (-> request-m
-      (assoc :dadysql.core/input-format :dadysql.core/format-map)
-      (assoc :dadysql.core/output-format :dadysql.core/format-value)))
-
-
 
 (defn do-result1
   [m req-m ]
-  (condp = (:dadysql.core/output-format req-m)
-    :dadysql.core/format-map
-    (dissoc m :dadysql.core/result)
-    :dadysql.core/format-array
-    (assoc m :dadysql.core/result #{:dadysql.core/array})
-    :dadysql.core/format-value
+  (condp = (:dadysql.core/op req-m)
+    :db-seq
     (-> m
         (assoc :dadysql.core/model (:dadysql.core/name m))
         (assoc :dadysql.core/result #{:dadysql.core/single :dadysql.core/array})
@@ -178,12 +130,6 @@
 
 
 
-(defn select-name-for [req-m type tms]
-  (let [rformat (-> (assoc-format type req-m)
-                    (:dadysql.core/output-format req-m))]
-    (f/try-> tms
-             (select-name req-m)
-             (assoc-result-format rformat))))
 
 
 
@@ -192,7 +138,7 @@
 
   (require '[dadysql.jdbc :as t])
 
-  (-> {:name   [:create-dept]
+  #_(-> {:name   [:create-dept]
        :params {:department [{:dept_name "Software dept "}
                              {:dept_name "Hardware dept"}]}}
 
@@ -201,7 +147,7 @@
 
 
 
-  (-> {:name   [:get-dept-by-ids]
+  #_(-> {:name   [:get-dept-by-ids]
        :params {:id [1 2 112]}}
 
       (select-name-for :pull (t/read-file "tie.edn.sql"))

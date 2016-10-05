@@ -128,15 +128,7 @@
 
 
 
-(deftest default-request-test
-  (testing "test default-request"
-    (are [a e]
-      (= a e)
-      (assoc-format :pull {:name :get-dept-by-id}) {:dadysql.core/input-format :dadysql.core/format-map, :dadysql.core/output-format :one, :name :get-dept-by-id}
-      (assoc-format :pull {:name [:get-dept-by-id]}) {:dadysql.core/input-format :dadysql.core/format-map, :dadysql.core/output-format :dadysql.core/format-nested-join, :name [:get-dept-by-id]}
-      (assoc-format :push {:name :get-dept-by-id}) {:dadysql.core/input-format :dadysql.core/format-map, :dadysql.core/output-format :one, :name :get-dept-by-id}
-      (assoc-format :push {:name [:get-dept-by-id]}) {:dadysql.core/input-format :dadysql.core/format-nested, :dadysql.core/output-format :dadysql.core/format-nested, :name [:get-dept-by-id]}
-      (assoc-format :db-seq {:name :get-dept-by-id}) {:dadysql.core/input-format :dadysql.core/format-map, :dadysql.core/output-format :dadysql.core/format-value, :name :get-dept-by-id})))
+
 
 
 #_(deftest commit?-test

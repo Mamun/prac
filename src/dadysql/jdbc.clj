@@ -26,27 +26,27 @@
 
 (defn- filter-processor
   [process r]
-  (if (= (:dadysql.core/output-format r) :dadysql.core/format-value)
+  (if (= (:dadysql.core/op r) :db-seq)
     (c/remove-type process :output)
     process))
 
 
-(defn select-pull-node [ds tms request-m]
-  (f/try-> tms
-           (get-in [:_global_ :dadysql.core/process-context-key] [])
-           (filter-processor request-m)
-           (c/add-child-one (ce/sql-executor-node ds tms :dadysql.plugin.sql.jdbc-io/parallel))))
 
+(defn select-node [ds tms request-m & {:keys [callback]}]
+  (condp = (:dadysql.core/op request-m)
+    :push
+    (f/try-> tms
+             (get-in [:_global_ :dadysql.core/process-context-key] [])
+             (c/remove-type :output)
+             (c/add-child-one (ce/sql-executor-node ds tms :dadysql.plugin.sql.jdbc-io/transaction))
+             (p/assoc-param-ref-gen (fn [& {:as m}]
+                                      (->> (assoc m :dadysql.core/op :db-seq)
+                                           (callback ds tms)))))
+    (f/try-> tms
+             (get-in [:_global_ :dadysql.core/process-context-key] [])
+             (filter-processor request-m)
+             (c/add-child-one (ce/sql-executor-node ds tms :dadysql.plugin.sql.jdbc-io/parallel)))))
 
-
-(defn select-push-node [gen-pull-fn ds tms]
-  (f/try-> tms
-           (get-in [:_global_ :dadysql.core/process-context-key] [])
-           (c/remove-type :output)
-           (c/add-child-one (ce/sql-executor-node ds tms :dadysql.plugin.sql.jdbc-io/transaction))
-           (p/assoc-param-ref-gen (fn [& {:as m}]
-                                    (->> (dc/assoc-format :db-seq m)
-                                         (gen-pull-fn ds tms))))))
 
 
 
@@ -57,8 +57,8 @@
   [ds tms req-m]
   (if-let [r (f/failed? (sc/validate-input! req-m))]
     r
-    (let [req-m (dc/assoc-format :pull req-m)
-          node (select-pull-node ds tms req-m)]
+    (let [req-m (merge {:dadysql.core/op :pull} req-m)
+          node (select-node ds tms req-m)]
       (f/try-> tms
                (dc/select-name req-m)
                (dc/assoc-result-format req-m)
@@ -73,8 +73,8 @@
   [ds tms req-m]
   (if-let [r (f/failed? (sc/validate-input! req-m))]
     r
-    (let [req-m (dc/assoc-format :push req-m)
-          node (select-push-node pull ds tms)]
+    (let [req-m (merge {:dadysql.core/op :push} req-m)
+          node (select-node ds tms req-m :callback pull)]
       (f/try-> tms
                (dc/select-name req-m)
                (dc/assoc-result-format req-m)
