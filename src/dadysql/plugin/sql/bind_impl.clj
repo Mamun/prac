@@ -1,9 +1,7 @@
 (ns dadysql.plugin.sql.bind-impl
   (:use [dady.proto])
-  (:require #_[dadysql.spec :refer :all]
-            [dady.fail :as f]
-            [dady.common :as cc]
-    #_[schema.core :as s]))
+  (:require [dady.fail :as f]
+            [dady.common :as cc]))
 
 
 (defn validate-input-not-empty!
@@ -72,21 +70,8 @@
       m)))
 
 
-#_(defn get-vali-type
-    [coll id]
-    (->> coll
-         (filter #(and
-                   (= id (first %))
-                   (= validation-type-key (second %))))
-         (map #(nth % 2))
-         (first)))
-
-
-
 (defn get-place-holder
   [type v]
-  ;(println "----" type)
-  ;(println "----" v)
   (if (and (sequential? v)
            (= #'clojure.core/vector? type))
     (clojure.string/join ", " (repeat (count v) "?"))
@@ -146,56 +131,6 @@
 
 
 
-#_(defn dml-type
-    [v]
-    (println v)
-    (let [w (-> v
-                (first)
-                (clojure.string/trim)
-                (clojure.string/lower-case)
-                (clojure.string/split #"\s+")
-                (first)
-                (keyword))]
-
-      (condp = w
-        :select :dadysql.core/dml-select
-        :update :dadysql.core/dml-update
-        :insert :dadysql.core/dml-insert
-        :delete :dadysql.core/dml-delete
-        :call :dadysql.core/dml-call
-        (throw (ex-info "Undefined dml op" {:for v})))
-      ))
-
-;insert
-;(dml-type ["select * from p where "])
-
-;(def sql-param-regex #"\w*:[\w|\-|#]+")
-
-
-#_(defn sql-str-emit
-    [sql-str]
-    (->> (re-seq sql-param-regex sql-str)
-         (transduce (comp (map read-string)) conj)
-         (reduce (fn [acc v]
-                   (let [w (cc/as-lower-case-keyword v)
-                         sql-str-w (-> (first acc)
-                                       (clojure.string/replace-first (re-pattern (cc/as-string v)) (cc/as-string w)))]
-                     (-> (assoc-in acc [0] sql-str-w)
-                         (conj w)))
-                   ) [sql-str])))
-
-
-#_(defn sql-emit
-    [sql-str]
-    (let [p (comp (filter not-empty)
-                  (map sql-str-emit)
-                  (map (fn [v] {:dadysql.core/sql     v
-                                :dadysql.core/dml-key (dml-type v)})))
-          sql (clojure.string/split (clojure.string/trim sql-str) #";")]
-      (->> (transduce p conj [] sql)
-           (mapv (fn [i m]
-                   (assoc m :dadysql.core/index i)
-                   ) (range)))))
 
 
 (defbranch SqlKey [cname ccoll corder])
@@ -277,18 +212,3 @@
 
 
 
-#_(defn- not-blank? [^String v]
-    (not (clojure.string/blank? v)))
-
-
-#_(extend-protocol INodeCompiler
-    SqlKey
-    (-spec [this]
-      `{(schema.core/required-key ~(:cname this))
-        (schema.core/both schema.core/Str
-                          (schema.core/pred (fn [v#]
-                                              (not (clojure.string/blank? v#))
-                                              ) 'not-blank?))})
-    #_(-spec-valid? [this v] (s/validate (-spec this) v))
-    (-emit [_ w]
-      (sql-emit w)))

@@ -1,49 +1,18 @@
 (ns dadysql.plugin.common-impl
   (:require
-
     [dady.fail :as f]
     [dady.proto :refer :all]))
 
 
-
-(defleaf DocKey [lanme])
-(defleaf NameKey [lname])
-(defleaf ModelKey [lname])
-(defleaf GroupKey [lname])
-(defleaf TimeoutKey [lname])
-(defleaf CommitKey [lname])
-(defleaf SkipKey [lname])
 (defleaf ColumnKey [lname lorder ptype])
 (defleaf ResultKey [lname lorder ptype])
 
-
-(defn new-doc-key []
-  (DocKey. :dadysql.core/doc))
-
-(defn new-name-key []
-  (NameKey. :dadysql.core/name))
-
-(defn new-model-key []
-  (ModelKey. :dadysql.core/model))
-
-(defn new-group-key []
-  (GroupKey. :dadysql.core/group))
-
-(defn new-timeout-key []
-  (TimeoutKey. :dadysql.core/timeout))
-
-(defn new-commit-key []
-  (CommitKey. :dadysql.core/commit))
-
-(defn new-skip-key []
-  (SkipKey. :dadysql.core/skip))
 
 (defn new-column-key []
   (ColumnKey. :clojure.core/column 5 :output))
 
 (defn new-result-key []
   (ResultKey. :dadysql.core/result 10 :output))
-
 
 
 

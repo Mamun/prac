@@ -121,8 +121,8 @@
 
   (-> @td/ds
       (t/pull (t/read-file "tie.edn.sql")
-              :gname :load-employee
-              :params {:id 1}
+              {:group  :load-employee
+               :params {:id 1}}
               ;:dadysql.core/output-format :nested-join
               )
       (clojure.pprint/pprint))

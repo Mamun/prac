@@ -1,11 +1,8 @@
 (ns dadysql.plugin.params.core
   (:use [dady.proto])
-  (:require #_[dadysql.spec :refer :all]
-            [dady.common :as cc]
+  (:require [dady.common :as cc]
             [dady.fail :as f]
-            [dadysql.plugin.util :as ccu]
-    #_[clojure.spec :as sp]
-    #_[schema.core :as s]))
+            [dadysql.plugin.util :as ccu]))
 
 
 (defbranch ParamKey [cname ccoll corder])
@@ -13,8 +10,6 @@
 (defleaf ParamRefKey [cname corder])
 (defleaf ParamRefFunKey [cname corder])
 (defleaf ParamRefGenKey [cname corder generator])
-
-;(extend-as-branch ParamKey :ccoll)
 
 
 (defn new-param-key
@@ -34,49 +29,21 @@
           (ParamRefGenKey. :dadysql.core/ref-gen 3 temp-generator)))
 
 
-#_(defn get-child-spec [coll-node]
-    (->> coll-node
-         (reduce (fn [acc node]
-                   (->> acc
-                        (cons (spec node))
-                        (cons (node-name node)))
-                   ) (list))
-         (cons 'clojure.spec/alt)
-         (list)
-         (cons 'clojure.spec/*)))
-
-
 
 (defn assoc-param-ref-gen [root-node generator]
-
-
   (let [p [:dadysql.core/param :dadysql.core/ref-gen]
         p-index (node-path root-node p)]
-    ; (println "p-index" p-index)
-    ;    (clojure.pprint/pprint root-node)
     (if p-index
       (assoc-in root-node (conj p-index :generator) generator)
       root-node)))
 
 
-#_(defn debug [m]
-    (println "--deug ")
-    (clojure.pprint/pprint m)
-    (println "debgi finished")
-    m
-    )
-
 (defn process-batch
   [child-coll input ks-coll]
   (let [pm (group-by-node-name child-coll)]
-    ; (clojure.pprint/pprint pm)
-    ; (clojure.pprint/pprint ks-coll)
     (->> ks-coll
-         ;     (debug)
          (sort-by (fn [[_ n]]
-                    ;(println n)
                     (-porder (n pm))))
-
          (reduce (fn [acc-input ks]
                    (let [[src n] ks
                          p (partial -pprocess (n pm))

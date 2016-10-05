@@ -3,7 +3,7 @@
             [clojure.walk :as w]))
 
 
-(defn update-ns
+#_(defn update-ns
   "Doc "
   [ns-str spec-list]
   (w/postwalk (fn [v]
@@ -14,7 +14,7 @@
                 ) spec-list))
 
 
-(defmacro in-spec
+#_(defmacro in-spec
   ""
   [n & content]
   (let [content (update-ns n content)]
@@ -53,6 +53,8 @@
 
 (comment
 
+#_(map inc [1 2 3])
+
   " I have different type of Model in my domain like User, Credit.
     I would like to define spec of the Model in one place but not different clj/cljs file.
     I don't want to create one clj file for one model. Because Clojure namespaces are very similar to Java packages.
@@ -70,6 +72,10 @@
 
 
     "
+
+
+  (println "Hello")
+
 
   )
 
