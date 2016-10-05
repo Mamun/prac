@@ -7,7 +7,7 @@
 ;(defonce output-key :output)
 ;(defonce input-key :input)
 
-(s/def :dadysql.core/input any?)
+(s/def :dadysql.core/input map?)
 
 (s/def :dadysql.core/format-nested any?)
 (s/def :dadysql.core/format-nested-array any?)
@@ -28,10 +28,10 @@
                                :dadysql.core/format-map :dadysql.core/format-array :dadysql.core/format-value})
 (s/def :dadysql.core/input-format #{:dadysql.core/format-nested :dadysql.core/format-map})
 
-(s/def :dadysql.core/params map?)
+#_(s/def :dadysql.core/input map?)
 
 (s/def :dadysql.core/user-input (s/keys :req [(or :dadysql.core/name :dadysql.core/group)]
-                                        :opt [:dadysql.core/params :dadysql.core/input-format :dadysql.core/output-format]))
+                                        :opt [:dadysql.core/input :dadysql.core/input-format :dadysql.core/output-format]))
 
 
 

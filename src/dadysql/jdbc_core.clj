@@ -47,7 +47,7 @@
 
 (defmethod do-param :dadysql.core/format-map
   [tm-coll node request-m]
-  (let [params (:dadysql.core/params request-m)
+  (let [params (:dadysql.core/input request-m)
         param-m (c/get-child node :dadysql.core/param)
         input (p/apply-param-proc params :dadysql.core/format-map tm-coll param-m)]
     (if (f/failed? input)
@@ -57,7 +57,7 @@
 
 (defmethod do-param :dadysql.core/format-nested
   [tm-coll node request-m]
-  (let [params (:dadysql.core/params request-m)
+  (let [params (:dadysql.core/input request-m)
         param-m (c/get-child node :dadysql.core/param)
         input (f/try-> params
                        (p/apply-param-proc :dadysql.core/format-nested tm-coll param-m)

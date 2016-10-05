@@ -94,11 +94,6 @@
     (into [] (map :dadysql.core/name) w)))
 
 
-#_(defn validate-input!
-    [req-m]
-    (if (sp/valid? :dadysql.core/input req-m)
-      req-m
-      (f/fail (sp/explain-data :dadysql.core/input req-m))))
 
 
 (defn select-name [tms req-m]

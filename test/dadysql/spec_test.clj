@@ -60,7 +60,7 @@
 
 #_(gen/sample (gen/fmap (fn [w]
                           (into [] (into #{} w)))
-                        (gen/such-that not-empty (s/gen :dadysql.core/params))))
+                        (gen/such-that not-empty (s/gen :dadysql.core/input))))
 
 ;(params-spec-test)
 ;
@@ -158,7 +158,7 @@
 
 
     (gen/sample
-      (gen/bind (s/gen :dadysql.core/params)
+      (gen/bind (s/gen :dadysql.core/input)
                 (fn [v]
                   (println v)
                   {:a v}
@@ -170,20 +170,20 @@
 
 
 
-    (s/gen :dadysql.core/params)
+    (s/gen :dadysql.core/input)
 
 
 
 
     (gen/generate
-      (gen/bind (s/gen :dadysql.core/params) (fn [v]
+      (gen/bind (s/gen :dadysql.core/input) (fn [v]
                                                (println v)
                                                [:a]
                                                )))
 
     (gen/sample (gen/fmap (fn [w]
                             (into [] (into #{} w)))
-                          (gen/such-that not-empty (s/gen :dadysql.core/params))))
+                          (gen/such-that not-empty (s/gen :dadysql.core/input))))
 
 
     (gen/sample (gen/fmap (fn [w]

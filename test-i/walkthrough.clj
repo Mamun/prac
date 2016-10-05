@@ -96,14 +96,14 @@
   (-> @td/ds
       (t/pull (t/read-file "tie.edn.sql")
               {:dadysql.core/name   [:get-dept-by-id :get-dept-employee]
-               :dadysql.core/params {:id 1}})
+               :dadysql.core/input {:id 1}})
       (clojure.pprint/pprint))
 
 
   (-> @td/ds
       (t/pull (t/read-file "tie.edn.sql")
               {:dadysql.core/name   [:get-employee-by-id :get-employee-dept :get-employee-detail]
-               :dadysql.core/params {:id 1}}
+               :dadysql.core/input {:id 1}}
               )
       (clojure.pprint/pprint))
 
@@ -111,7 +111,7 @@
   (-> @td/ds
       (t/pull (t/read-file "tie.edn.sql")
               {:dadysql.core/name   [:get-employee-detail]
-               :dadysql.core/params {:id 1}}
+               :dadysql.core/input {:id 1}}
               ;:dadysql.core/output-format :nested-join
               )
       (clojure.pprint/pprint))
@@ -121,7 +121,7 @@
   (-> @td/ds
       (t/pull (t/read-file "tie.edn.sql")
               {:dadysql.core/group  :load-employee
-               :dadysql.core/params {:id 1}}
+               :dadysql.core/input {:id 1}}
               ;:dadysql.core/output-format :nested-join
               )
       (clojure.pprint/pprint))
@@ -133,7 +133,7 @@
     (-> @td/ds
         (t/push! (t/read-file "tie.edn.sql")
                  {:dadysql.core/name   :create-dept
-                  :dadysql.core/params v}
+                  :dadysql.core/input v}
                  ;:dadysql.core/output-format :as-sequence
                  )
         (clojure.pprint/pprint)))
@@ -146,7 +146,7 @@
     (-> @td/ds
         (t/push! (t/read-file "tie.edn.sql")
                  {:dadysql.core/name   [:create-dept]
-                  :dadysql.core/params d}
+                  :dadysql.core/input d}
 
                  )
         (clojure.pprint/pprint)))
