@@ -47,7 +47,7 @@
 
 
 #_(dadysql/pull "/"
-               :name :get-dept-by-id
+               :dadysql.core/name :get-dept-by-id
                :params {:id 1}
                :callback (fn [v]
                            (print v)
@@ -63,7 +63,7 @@
 (defcard-dadysql get-dept-by-id
                 "**With name keyword**"
                 dadysql/pull
-                {:name   :get-dept-by-id
+                {:dadysql.core/name   :get-dept-by-id
                  :params {:id 1}})
 
 
@@ -71,7 +71,7 @@
 #_(defcard-dadysql employee-by-id
                   "**Join example**"
                   dadysql/pull
-                  :name [:get-employee-by-id :get-employee-dept]
+                  :dadysql.core/name [:get-employee-by-id :get-employee-dept]
                   :params {:id 1})
 
 
@@ -96,14 +96,14 @@
 (defcard-dadysql dept-list
                 "Load dept list as array  "
                 dadysql/pull
-                :name [:get-dept-list])
+                :dadysql.core/name [:get-dept-list])
 
 
 
 #_(defcard-dadysql insert-dept
                   "Create department  "
                   dadysql/push!
-                  :name [:create-dept]
+                  :dadysql.core/name [:create-dept]
                   :params {:department {:dept_name "Call Center 9"}})
 
 
@@ -114,7 +114,7 @@
 #_(defcard-dadysql create-employee
                   "Create employee  "
                   dadysql/push! "/"
-                  :name [:create-employee :create-employee-detail]
+                  :dadysql.core/name [:create-employee :create-employee-detail]
                   :params {:employee {:firstname       "Schwan"
                                       :lastname        "Ragg"
                                       :dept_id         1
@@ -128,7 +128,7 @@
 #_(go
     (print
       (<! (dadysql/pull "/"
-                       :name :get-dept-by-id
+                       :dadysql.core/name :get-dept-by-id
                        :params {:id 1}
                        ))))
 

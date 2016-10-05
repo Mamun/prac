@@ -102,7 +102,8 @@
 
 
 (defn select-name [tms req-m]
-  (let [{:keys [group name]} req-m
+  (let [name  (:dadysql.core/name req-m)
+        group (:dadysql.core/group req-m)
         name (if group
                (select-name-for-groups tms group name)
                name)
@@ -113,9 +114,9 @@
 
 
 (defn do-result1
-  [m req-m ]
+  [m req-m]
   (condp = (:dadysql.core/op req-m)
-    :db-seq
+    :dadysql.core/op-db-seq
     (-> m
         (assoc :dadysql.core/model (:dadysql.core/name m))
         (assoc :dadysql.core/result #{:dadysql.core/single :dadysql.core/array})
@@ -124,9 +125,9 @@
 
 
 
-(defn assoc-result-format
+(defn init-db-seq-op
   [tm-coll req-m]
-  (mapv (fn [m] (do-result1 m req-m )) tm-coll))
+  (mapv (fn [m] (do-result1 m req-m)) tm-coll))
 
 
 
@@ -138,28 +139,28 @@
 
   (require '[dadysql.jdbc :as t])
 
-  #_(-> {:name   [:create-dept]
-       :params {:department [{:dept_name "Software dept "}
-                             {:dept_name "Hardware dept"}]}}
+  #_(-> {:dadysql.core/name   [:create-dept]
+         :params {:department [{:dept_name "Software dept "}
+                               {:dept_name "Hardware dept"}]}}
 
-      (select-name-for :push (t/read-file "tie.edn.sql"))
-      )
+        (select-name-for :dadysql.core/op-push! (t/read-file "tie.edn.sql"))
+        )
 
 
 
-  #_(-> {:name   [:get-dept-by-ids]
-       :params {:id [1 2 112]}}
+  #_(-> {:dadysql.core/name   [:get-dept-by-ids]
+         :params {:id [1 2 112]}}
 
-      (select-name-for :pull (t/read-file "tie.edn.sql"))
-      )
+        (select-name-for :dadysql.core/op-pull (t/read-file "tie.edn.sql"))
+        )
 
 
 
   (select2 (t/read-file "tie.edn.sql")
-           {:name   [:create-dept]
+           {:dadysql.core/name   [:create-dept]
             :params {:department [{:dept_name "Software dept "}
                                   {:dept_name "Hardware dept"}]}}
-           :push)
+           :dadysql.core/op-push!)
 
   )
 

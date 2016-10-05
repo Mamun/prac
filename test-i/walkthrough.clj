@@ -15,7 +15,7 @@
 
 
 
-  #_(s/valid? (s/or :name string?
+  #_(s/valid? (s/or :dadysql.core/name string?
                   :id   integer?) :keyowrd)
 
   ;; Create database table and init data
@@ -41,13 +41,13 @@
   ;; Simple pull
   (-> @td/ds
       (t/pull (t/read-file "tie.edn.sql")
-              {:name :get-dept-list}) )
+              {:dadysql.core/name :get-dept-list}) )
 
 
   ;;With model name when name as vector
   (-> @td/ds
       (t/pull (t/read-file "tie.edn.sql")
-              {:name [:get-dept-list]})
+              {:dadysql.core/name [:get-dept-list]})
       (clojure.pprint/pprint)
       )
 
@@ -55,9 +55,8 @@
 
   (-> @td/ds
       (t/pull (t/read-file "tie.edn.sql")
-              {:name [:get-dept-list :get-employee-list]})
+              {:dadysql.core/name [:get-dept-list :get-employee-list]})
       (clojure.pprint/pprint))
-
 
 
 
@@ -65,7 +64,7 @@
   ;; with params
   (-> @td/ds
       (t/pull (t/read-file "tie.edn2.sql")
-              {:name   [:get-dept-by-id]
+              {:dadysql.core/name   [:get-dept-by-id]
                :params {:id "sdf"}}
               ;:dadysql.core/output-format :map
               )
@@ -80,7 +79,7 @@
 
   (-> @td/ds
       (t/pull (t/read-file "tie.edn.sql")
-              {:name   [:get-dept-by-ids]
+              {:dadysql.core/name   [:get-dept-by-ids]
                :params {:id (list 1 2 3)}})
       (clojure.pprint/pprint))
 
@@ -88,7 +87,7 @@
 
   (-> @td/ds
       (t/pull (t/read-file "tie.edn.sql")
-              {:name   [:get-dept-by-ids]
+              {:dadysql.core/name   [:get-dept-by-ids]
                :params {:id [1 2 112]}})
       (clojure.pprint/pprint))
 
@@ -96,23 +95,23 @@
   ;; for join data
   (-> @td/ds
       (t/pull (t/read-file "tie.edn.sql")
-              {:name   [:get-dept-by-id :get-dept-employee]
-               :params {:id 1}})
+              {:dadysql.core/name   [:get-dept-by-id :get-dept-employee]
+               :dadysql.core/params {:id 1}})
       (clojure.pprint/pprint))
 
 
   (-> @td/ds
       (t/pull (t/read-file "tie.edn.sql")
-              {:name   [:get-employee-by-id :get-employee-dept :get-employee-detail]
-               :params {:id 1}}
+              {:dadysql.core/name   [:get-employee-by-id :get-employee-dept :get-employee-detail]
+               :dadysql.core/params {:id 1}}
               )
       (clojure.pprint/pprint))
 
 
   (-> @td/ds
       (t/pull (t/read-file "tie.edn.sql")
-              {:name   [:get-employee-detail]
-               :params {:id 1}}
+              {:dadysql.core/name   [:get-employee-detail]
+               :dadysql.core/params {:id 1}}
               ;:dadysql.core/output-format :nested-join
               )
       (clojure.pprint/pprint))
@@ -121,8 +120,8 @@
 
   (-> @td/ds
       (t/pull (t/read-file "tie.edn.sql")
-              {:group  :load-employee
-               :params {:id 1}}
+              {:dadysql.core/group  :load-employee
+               :dadysql.core/params {:id 1}}
               ;:dadysql.core/output-format :nested-join
               )
       (clojure.pprint/pprint))
@@ -133,8 +132,8 @@
   (let [v {:dept_name "Call Center Munich"}]
     (-> @td/ds
         (t/push! (t/read-file "tie.edn.sql")
-                 {:name   :create-dept
-                  :params v}
+                 {:dadysql.core/name   :create-dept
+                  :dadysql.core/params v}
                  ;:dadysql.core/output-format :as-sequence
                  )
         (clojure.pprint/pprint)))
@@ -146,8 +145,8 @@
   (let [d {:department {:dept_name "Call Center Munich 2"}}]
     (-> @td/ds
         (t/push! (t/read-file "tie.edn.sql")
-                 {:name   [:create-dept]
-                  :params d}
+                 {:dadysql.core/name   [:create-dept]
+                  :dadysql.core/params d}
 
                  )
         (clojure.pprint/pprint)))
@@ -160,7 +159,7 @@
   (let [d {:dept_name "Call Center Munich 2"}]
     (-> @td/ds
         (t/push! (t/read-file "tie.edn.sql")
-                 :name :insert-dept
+                 :dadysql.core/name :insert-dept
                  :params d)
         (clojure.pprint/pprint)))
 
@@ -170,7 +169,7 @@
                         {:dept_name "Hardware dept"}]}]
     (-> @td/ds
         (t/push! (t/read-file "tie.edn.sql")
-                 :name [:insert-dept]
+                 :dadysql.core/name [:insert-dept]
                  :params d)
         (clojure.pprint/pprint)))
 
@@ -179,7 +178,7 @@
   ;; Check all depts
   (-> @td/ds
       (t/pull (t/read-file "tie.edn.sql")
-              {:name [:get-dept-list]})
+              {:dadysql.core/name [:get-dept-list]})
       (clojure.pprint/pprint))
 
 
@@ -191,7 +190,7 @@
   ;; for single result
   (-> @td/ds
       (t/pull (t/read-file "tie.edn.sql")
-              :name [:gen-dept :gen-empl]
+              :dadysql.core/name [:gen-dept :gen-empl]
               ;:dadysql.core/output-format :map
               )
       (clojure.pprint/pprint))
@@ -199,7 +198,7 @@
 
   (-> @td/ds
       (t/pull (t/read-file "tie.edn.sql")
-              :name :gen-dept
+              :dadysql.core/name :gen-dept
               :dadysql.core/output-format value-format)
       (clojure.pprint/pprint))
 
@@ -207,7 +206,7 @@
   (let [d {:department {:dept_name "Call Center Munich 1" :transaction_id 0 :id 1}}]
     (-> @td/ds
         (t/push! (t/read-file "tie.edn.sql")
-                 :name [:update-dept]
+                 :dadysql.core/name [:update-dept]
                  :params d)
         (clojure.pprint/pprint)))
 
@@ -215,7 +214,7 @@
     (-> @td/ds
         (t/push! (t/read-file "tie.edn.sql")
                  {
-                  :name   :update-dept
+                  :dadysql.core/name   :update-dept
                   :params d})
         (clojure.pprint/pprint)))
 
@@ -224,7 +223,7 @@
   (let [input {:department {:id [101 102]}}]
     (-> @td/ds
         (t/push! (t/read-file "tie.edn.sql")
-                 :name [:delete-dept]
+                 :dadysql.core/name [:delete-dept]
                  :params input)
         (clojure.pprint/pprint)))
 
@@ -234,13 +233,13 @@
 
   (-> @td/ds
       (t/pull (t/read-file "tie.edn.sql")
-              :name [:get-employee-list])
+              :dadysql.core/name [:get-employee-list])
       (clojure.pprint/pprint))
 
 
   (-> @td/ds
       (t/pull (t/read-file "tie.edn.sql")
-              :name :get-employee-by-id
+              :dadysql.core/name :get-employee-by-id
               :params {:id 1}
               :dadysql.core/output-format :array
               )
@@ -257,7 +256,7 @@
                                                :country "Germany"}}}]
     (-> @td/ds
         (t/push! (t/read-file "tie.edn.sql")
-                 :name [:create-employee :create-employee-detail]
+                 :dadysql.core/name [:create-employee :create-employee-detail]
                  :params employee
                  ;:iormat as-model
                  ;:dadysql.core/output-format as-model
@@ -275,7 +274,7 @@
   ;; read all meeting
   (-> {:datasource @conn}
       (t/pull (t/read-file "tie.edn.sql")
-              {:name [:get-meeting-list]})
+              {:dadysql.core/name [:get-meeting-list]})
       (clojure.pprint/pprint))
 
 
@@ -286,7 +285,7 @@
     (->
       @td/ds
       (t/push! (t/read-file "tie.edn.sql")
-               {:name   [:create-meeting]
+               {:dadysql.core/name   [:create-meeting]
                 :params meeting})
       (clojure.pprint/pprint)
       )
@@ -298,7 +297,7 @@
     (->
       (t/read-file "tie.edn.sql")
       (t/push! @td/ds
-               {:name   [:create-meeting :create-employee-meeting]
+               {:dadysql.core/name   [:create-meeting :create-employee-meeting]
                 :params meeting})
       (clojure.pprint/pprint)
       )
@@ -318,7 +317,7 @@
                                        :id                     2}]}}]
     (-> (t/read-file "tie.edn.sql")
         (t/push! @td/ds
-                 :name [:create-meeting :create-employee-meeting]
+                 :dadysql.core/name [:create-meeting :create-employee-meeting]
                  :params meeting)
         (clojure.pprint/pprint)))
 

@@ -30,8 +30,8 @@
 
 (s/def :dadysql.core/params map?)
 
-(s/def :dadysql.core/user-input (s/keys :req-un [(or :dadysql.core/name :dadysql.core/group)]
-                                        :opt-un [:dadysql.core/params :dadysql.core/input-format :dadysql.core/output-format]))
+(s/def :dadysql.core/user-input (s/keys :req [(or :dadysql.core/name :dadysql.core/group)]
+                                        :opt [:dadysql.core/params :dadysql.core/input-format :dadysql.core/output-format]))
 
 
 
@@ -44,11 +44,11 @@
 
 (comment
 
-  (s/valid? :dadysql.core/user-input {:name   [:get-employee-detail]
+  (s/valid? :dadysql.core/user-input {:dadysql.core/name   [:get-employee-detail]
                                       :params {:id 1}})
 
 
-  (s/explain :dadysql.core/user-input {:name                      [:get-employee-detail]
+  (s/explain :dadysql.core/user-input {:dadysql.core/name                      [:get-employee-detail]
                                        :group                     :load-dept
                                        :dadysql.core/param-format :map
                                        :params                    {}})

@@ -5,7 +5,7 @@
             [dady.common :as cc]
             [dady.fail :as f]
             [dady.proto :refer :all]
-            #_[dadysql.spec :refer :all]
+    #_[dadysql.spec :refer :all]
             [clojure.tools.logging :as log]))
 
 
@@ -217,11 +217,20 @@
           result-coll)))))
 
 
-(defn sql-executor-node
+
+(defn sql-execute [ds tms type]
+  (fn [tm-coll]
+    (execute ds tm-coll :type type :tms tms)))
+
+
+
+
+
+#_(defn sql-executor-node
   [ds tms type]
   (let [f (fn [m-coll]
             (execute ds m-coll :type type :tms tms))]
-    (fn-as-node-processor f :name :sql-executor)))
+    (fn-as-node-processor f :dadysql.core/name :sql-executor)))
 
 
 (comment

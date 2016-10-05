@@ -34,21 +34,21 @@
 
 
 (defn disptach-input-format [req-m]
-  (cond (and
-          (= :push (:dadysql.core/op req-m))
-          (or (:group req-m)
-              (sequential? (:name req-m))))
-        :dadysql.core/format-nested
-        :else
-        :dadysql.core/format-map))
+  (if (and
+        (= :dadysql.core/op-push! (:dadysql.core/op req-m))
+        (or (:dadysql.core/group req-m)
+            (sequential? (:dadysql.core/name req-m))))
+    :dadysql.core/format-nested
+    :dadysql.core/format-map))
 
 
-(defmulti do-param (fn [_ _ req-m] (disptach-input-format req-m)  #_(:dadysql.core/input-format fmt)))
+(defmulti do-param (fn [_ _ req-m] (disptach-input-format req-m)))
 
 
 (defmethod do-param :dadysql.core/format-map
-  [tm-coll node {:keys [params]}]
-  (let [param-m (c/get-child node :dadysql.core/param)
+  [tm-coll node request-m]
+  (let [params (:dadysql.core/params request-m)
+        param-m (c/get-child node :dadysql.core/param)
         input (p/apply-param-proc params :dadysql.core/format-map tm-coll param-m)]
     (if (f/failed? input)
       input
@@ -56,8 +56,9 @@
 
 
 (defmethod do-param :dadysql.core/format-nested
-  [tm-coll node {:keys [params]}]
-  (let [param-m (c/get-child node :dadysql.core/param)
+  [tm-coll node request-m]
+  (let [params (:dadysql.core/params request-m)
+        param-m (c/get-child node :dadysql.core/param)
         input (f/try-> params
                        (p/apply-param-proc :dadysql.core/format-nested tm-coll param-m)
                        (j/do-disjoin (get-in tm-coll [0 :dadysql.core/join])))]
@@ -119,32 +120,53 @@
               (:dadysql.core/output v))))
 
 
+
+(defn dispatch-output-format [req-m]
+  (cond (and
+          (= :dadysql.core/op-pull (:dadysql.core/op req-m))
+          (or (:dadysql.core/group req-m)
+              (sequential? (:dadysql.core/name req-m))))
+        :dadysql.core/format-nested-join
+
+        (= :dadysql.core/op-db-seq (:dadysql.core/op req-m))
+        :dadysql.core/format-value
+
+        (= :dadysql.core/op-push! (:dadysql.core/op req-m))
+        (if (or (:dadysql.core/group req-m)
+                (sequential? (:dadysql.core/name req-m)))
+          :dadysql.core/format-map
+          :one)
+
+        :else
+        :dadysql.core/format-map))
+
+
 (defn format-output
-  [tm-coll format]
-
-  (cond
-    (= :one format)
-    (f/try-> tm-coll first :dadysql.core/output)
-    (= :dadysql.core/format-value format)
-    (do
-      (f/try-> tm-coll first :dadysql.core/output (get-in [1 0])))
-    :else
-    (let [xf (comp (map into-model-map))]
-      (into {} xf tm-coll))))
-
-
+  [tm-coll req-m]
+  (let [format (dispatch-output-format req-m)]
+    (cond
+      (= :one format)
+      (f/try-> tm-coll first :dadysql.core/output)
+      (= :dadysql.core/format-value format)
+      (do
+        (f/try-> tm-coll first :dadysql.core/output (get-in [1 0])))
+      :else
+      (let [xf (comp (map into-model-map))]
+        (into {} xf tm-coll)))))
 
 
-(defmulti warp-output-node-process (fn [_ _ format] format))
+
+
+(defmulti warp-output-node-process (fn [_ _ req-m] (dispatch-output-format req-m)))
 
 
 (defmethod warp-output-node-process :default
-  [handler n-processor format]
+  [handler n-processor req-m]
   (fn [tm-coll]
     (f/try-> tm-coll
              (handler)
              (do-node-process n-processor :output)
-             (format-output format))))
+             (format-output req-m))))
 
 
 (defn- is-join-pull
@@ -198,36 +220,14 @@
         (handler))))
 
 
-(defn get-output-format [req-m]
-  (cond (and
-          (= :pull (:dadysql.core/op req-m))
-          (or (:group req-m)
-              (sequential? (:name req-m))))
-
-        :dadysql.core/format-nested-join
-        (= :db-seq (:dadysql.core/op req-m))
-        :dadysql.core/format-value
-
-        (= :push (:dadysql.core/op req-m))
-        (if (or (:group req-m)
-                (sequential? (:name req-m)))
-          :dadysql.core/format-map
-          :one)
-
-
-        :else
-        :dadysql.core/format-map))
-
-
 
 (defn run-process [tm-coll n-processor request-m]
-  ;(println "Request format" request-m)
-  (let [rformat (get-output-format request-m)
+  (let [
         input-steps (node->xf :input n-processor)
-        exec (fn [tm-coll]
+        exec (:dadysql.core/sql-executor request-m) #_(fn [tm-coll]
                (do-node-process tm-coll n-processor :sql-executor))
         proc (-> exec
                  (warp-node-process input-steps)
-                 (warp-output-node-process n-processor rformat))]
+                 (warp-output-node-process n-processor request-m))]
     (proc tm-coll)))
 

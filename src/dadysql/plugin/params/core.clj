@@ -17,7 +17,7 @@
   (ParamKey. :dadysql.core/param childs order))
 
 
-(defn temp-generator [_ _]
+(defn temp-generator [_ ]
   -1)
 
 
@@ -100,9 +100,9 @@
          (:dadysql.core/ref-gen)))
   (-pprocess [this p-value _]
     (let [[_ _ v] p-value]
-      ((:generator this) :name v))))
+      ((:generator this) {:dadysql.core/name v}))))
 
-;:name v :params {} :dadysql.core/output-format :as-sequence
+;:dadysql.core/name v :params {} :dadysql.core/output-format :as-sequence
 
 (defn assoc-param-path
   [data root-path param-coll]

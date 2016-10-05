@@ -50,7 +50,7 @@
                   (select-keys [:gname :dadysql.core/output-format :dadysql.core/input-format])
                   (as-keyword-value))]
     (-> other
-        (assoc :name q-name)
+        (assoc :dadysql.core/name q-name)
         (assoc :params r-params)
         (filter-nil-value))))
 

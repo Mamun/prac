@@ -14,35 +14,35 @@
 
 (deftest pull-test
   (testing "test pull for sequence "
-    (let [v (pull (td/get-ds) (td/get-tms) {:name [:gen-dept]})]
+    (let [v (pull (td/get-ds) (td/get-tms) {:dadysql.core/name [:gen-dept]})]
       (is (not (nil? v)))))
 
   (testing "testing pull "
 
     (is (= (pull (td/get-ds) (td/get-tms)
-                 {:name   :get-dept-by-id
+                 {:dadysql.core/name   :get-dept-by-id
                   :params {:id 1}})
            {:id 1, :transaction_id 0, :dept_name "Business"}))
 
     (is (= (pull (td/get-ds) (td/get-tms)
-                 {:name   [:get-dept-by-id]
+                 {:dadysql.core/name   [:get-dept-by-id]
                   :params {:id 1}})
            {:department {:id 1, :transaction_id 0, :dept_name "Business"}}))
 
-    (is (= (pull (td/get-ds) (td/get-tms) {:name [:get-dept-list]})
+    (is (= (pull (td/get-ds) (td/get-tms) {:dadysql.core/name [:get-dept-list]})
            {:department [[:id :transaction_id :dept_name]
                          [1 0 "Business"]
                          [2 0 "Marketing"]
                          [3 0 "HR"]]}))
 
-    (is (= (pull (td/get-ds) (td/get-tms) {:name :get-dept-list})
+    (is (= (pull (td/get-ds) (td/get-tms) {:dadysql.core/name :get-dept-list})
            [[:id :transaction_id :dept_name]
             [1 0 "Business"]
             [2 0 "Marketing"]
             [3 0 "HR"]]))
 
     (is (= (pull (td/get-ds) (td/get-tms)
-                 {:name   [:get-employee-by-id :get-employee-dept]
+                 {:dadysql.core/name   [:get-employee-by-id :get-employee-dept]
                   :params {:id 1}})
            {:employee
             {:id             1,
@@ -53,7 +53,7 @@
              :department     {:id 1, :transaction_id 0, :dept_name "Business"}}}))
 
     (is (= (pull (td/get-ds) (td/get-tms)
-                 {:name   [:get-employee-by-id :get-employee-dept :get-employee-detail :get-employee-meeting]
+                 {:dadysql.core/name   [:get-employee-by-id :get-employee-dept :get-employee-detail :get-employee-meeting]
                   :params {:id 1}})
            {:employee {:id              1,
                        :transaction_id  0,
@@ -115,17 +115,17 @@
   (testing "testing push! "
 
     (is (= (push! (td/get-ds) (td/get-tms)
-                  {:name   :create-dept
+                  {:dadysql.core/name   :create-dept
                    :params {:dept_name "Support "}})
            [1]))
 
     (is (= (push! (td/get-ds) (td/get-tms)
-                  {:name   [:create-dept]
+                  {:dadysql.core/name   [:create-dept]
                    :params {:department {:dept_name "IT"}}})
            {:department [1]}))
 
     (is (= (push! (td/get-ds) (td/get-tms)
-                  {:name   [:create-employee :create-employee-detail]
+                  {:dadysql.core/name   [:create-employee :create-employee-detail]
                    :params {:employee {:firstname       "Schwan"
                                        :lastname        "Ragg"
                                        :dept_id         1
@@ -136,7 +136,7 @@
            {:employee [1] :employee-detail [1]}))
 
     (is (= (push! (td/get-ds) (td/get-tms)
-                  {:name   [:create-meeting :create-employee-meeting]
+                  {:dadysql.core/name   [:create-meeting :create-employee-meeting]
                    :params {:meeting {:subject  "Hello Meeting for IT"
                                       :employee [{:current_transaction_id 1,
                                                   :dept_id                2,
@@ -151,7 +151,7 @@
            {:meeting [1], :employee-meeting [1 1]}))
 
     (is (= (push! (td/get-ds) (td/get-tms)
-                  {:name   [:create-meeting :create-employee-meeting]
+                  {:dadysql.core/name   [:create-meeting :create-employee-meeting]
                    :params {:meeting {:subject  "Hello Meeting for Manager"
                                       :employee {:id 112}}}})
            {:meeting [1], :employee-meeting [1]}))
@@ -159,16 +159,16 @@
 
 
     (is (= (push! (td/get-ds) (td/get-tms)
-                  {:name   :update-dept
+                  {:dadysql.core/name   :update-dept
                    :params {:dept_name "Call Center Munich 1" :transaction_id 0 :id 1}})
            [1]))
 
     (is (= (push! (td/get-ds) (td/get-tms)
-                  {:name   [:update-dept]
+                  {:dadysql.core/name   [:update-dept]
                    :params {:department {:dept_name "Call Center Munich 1" :transaction_id 0 :id 1}}})
            {:department [1]}))
     (is (= (push! (td/get-ds) (td/get-tms)
-                  {:name   [:delete-dept]
+                  {:dadysql.core/name   [:delete-dept]
                    :params {:department {:id 1 }}})
            {:department [1]}))
     ))
