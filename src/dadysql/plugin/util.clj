@@ -1,13 +1,6 @@
 (ns dadysql.plugin.util
   (:require
-
-            [dady.fail :as f]
-            [clojure.set]
-            [dady.common :as cc]
-            [dadysql.plugin.join.join-impl :as j]))
-
-
-
+    [clojure.set]))
 
 
 (defn empty-path

@@ -1,9 +1,8 @@
 (ns dadysql.plugin.params.core
-  ;(:use [dady.proto])
   (:require [dady.common :as cc]
             [dady.fail :as f]
+            [dadysql.plugin.join.core :as ji]
             [dadysql.plugin.util :as ccu]))
-
 
 
 (defn temp-generator [_]
@@ -68,15 +67,47 @@
 
 
 
-(defn param-exec [generator]
-  (fn [rinput input-format tm-coll]
-    (let [r (param-paths input-format tm-coll rinput)]
-      (reduce (fn [acc-input path]
-                (let [rv (do-param1 generator path acc-input)
-                      [src] path]
-                  (if (f/failed? rv)
-                    (reduced rv)
-                    (assoc-in acc-input src rv)))
-                ) rinput r))))
+(defn param-exec [rinput param-paths generator]
+  (reduce (fn [acc-input path]
+            (let [rv (do-param1 generator path acc-input)
+                  [src] path]
+              (if (f/failed? rv)
+                (reduced rv)
+                (assoc-in acc-input src rv)))
+            ) rinput param-paths))
+
+
+(defn disptach-input-format [req-m]
+  (if (and
+        (= :dadysql.core/op-push! (:dadysql.core/op req-m))
+        (or (:dadysql.core/group req-m)
+            (sequential? (:dadysql.core/name req-m))))
+    :dadysql.core/format-nested
+    :dadysql.core/format-map))
+
+
+(defmulti bind-input (fn [req-m _ _] (disptach-input-format req-m)))
+
+
+(defmethod bind-input :dadysql.core/format-map
+  [request-m gen tm-coll]
+  (let [input (:dadysql.core/input request-m)
+        param-path (param-paths :dadysql.core/format-map tm-coll input)
+        input (param-exec input param-path gen)]
+    (if (f/failed? input)
+      input
+      (mapv (fn [m] (assoc m :dadysql.core/input input)) tm-coll))))
+
+
+(defmethod bind-input :dadysql.core/format-nested
+  [request-m gen tm-coll]
+  (let [input (:dadysql.core/input request-m)
+        param-path (param-paths :dadysql.core/format-map tm-coll input)
+        input (f/try-> input
+                       (param-exec param-path gen)
+                       (ji/do-disjoin (get-in tm-coll [0 :dadysql.core/join])))]
+    (if (f/failed? input)
+      input
+      (mapv (fn [m] (assoc m :dadysql.core/input ((:dadysql.core/model m) input))) tm-coll))))
 
 

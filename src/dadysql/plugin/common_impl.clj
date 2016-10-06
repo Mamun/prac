@@ -1,19 +1,6 @@
 (ns dadysql.plugin.common-impl
   (:require
-    [dady.fail :as f]
-    ))
-
-
-;(defleaf ColumnKey [lname lorder ptype])
-;(defleaf ResultKey [lname lorder ptype])
-
-
-#_(defn new-column-key []
-  (ColumnKey. :clojure.core/column 5 :output))
-
-#_(defn new-result-key []
-  (ResultKey. :dadysql.core/result 10 :output))
-
+    [dady.fail :as f]))
 
 
 (defn do-result
@@ -57,22 +44,5 @@
              (map clojure.set/rename-keys output)
              (into [])
              (assoc tm :dadysql.core/output))))))
-
-
-#_(extend-protocol INodeProcessor
-  ColumnKey
-  (-lorder [this] (:lorder this))
-  (-process-type [this] (:ptype this))
-  (-process? [_ _] true)
-  (-process [_ m] (do-column m))
-  ResultKey
-  (-lorder [this] (:lorder this))
-  (-process-type [this] (:ptype this))
-  (-process? [_ _] true)
-  (-process [_ m] (do-result m)))
-
-
-
-
 
 

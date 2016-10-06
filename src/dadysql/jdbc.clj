@@ -30,18 +30,16 @@
     r
     (let [op-m {:dadysql.core/op :dadysql.core/op-pull}
           sql-exec (ce/sql-execute ds tms :dadysql.plugin.sql.jdbc-io/parallel)
-          p-exec (pi/param-exec (fn [m]
-                                  (->> (assoc m :dadysql.core/op :dadysql.core/op-db-seq)
-                                       (pull ds tms))))
+          gen (fn [_] 1)
           req-m (-> op-m
                     (merge req-m)
-                    (assoc :dadysql.core/sql-exec sql-exec)
-                    (assoc :dadysql.core/param-exec p-exec))]
+                    (assoc :dadysql.core/sql-exec sql-exec))
+          bind-input (pi/bind-input req-m gen)]
       (f/try-> tms
                (dc/select-name req-m)
                (dc/init-db-seq-op req-m)
-               (tie/do-param req-m)
-               (tie/validate-param-spec!)
+               (bind-input)
+               (tie/validate-input-spec!)
                (tie/run-process req-m)))))
 
 
@@ -52,17 +50,17 @@
   (if-let [r (f/failed? (sc/validate-input! req-m))]
     r
     (let [sql-exec (ce/sql-execute ds tms :dadysql.plugin.sql.jdbc-io/transaction)
-          p-exec (pi/param-exec (fn [m]
-                                  (->> (assoc m :dadysql.core/op :dadysql.core/op-db-seq)
-                                       (pull ds tms))))
+          gen (fn [m]
+                (->> (assoc m :dadysql.core/op :dadysql.core/op-db-seq)
+                     (pull ds tms)))
           req-m (-> req-m
                     (assoc :dadysql.core/op :dadysql.core/op-push!)
-                    (assoc :dadysql.core/sql-exec sql-exec)
-                    (assoc :dadysql.core/param-exec p-exec))]
+                    (assoc :dadysql.core/sql-exec sql-exec))
+          bind-input (partial pi/bind-input req-m gen)]
       (f/try-> tms
                (dc/select-name req-m)
-               (tie/do-param req-m)
-               (tie/validate-param-spec!)
+               (bind-input)
+               (tie/validate-input-spec!)
                (tie/run-process req-m)))))
 
 

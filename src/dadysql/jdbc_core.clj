@@ -23,7 +23,7 @@
 
 
 
-(defn validate-param-spec! [tm-coll]
+(defn validate-input-spec! [tm-coll]
   (reduce (fn [acc v]
             (if-let [vali (:dadysql.core/param-spec v)]
               (let [w (do-spec-validate vali (:dadysql.core/input v))]
@@ -34,38 +34,6 @@
             ) [] tm-coll))
 
 
-(defn disptach-input-format [req-m]
-  (if (and
-        (= :dadysql.core/op-push! (:dadysql.core/op req-m))
-        (or (:dadysql.core/group req-m)
-            (sequential? (:dadysql.core/name req-m))))
-    :dadysql.core/format-nested
-    :dadysql.core/format-map))
-
-
-(defmulti do-param (fn [_ req-m] (disptach-input-format req-m)))
-
-
-(defmethod do-param :dadysql.core/format-map
-  [tm-coll request-m]
-  (let [params (:dadysql.core/input request-m)
-        param-exec (:dadysql.core/param-exec request-m)
-        input (param-exec params :dadysql.core/format-map tm-coll)]
-    (if (f/failed? input)
-      input
-      (mapv (fn [m] (assoc m :dadysql.core/input input)) tm-coll))))
-
-
-(defmethod do-param :dadysql.core/format-nested
-  [tm-coll request-m]
-  (let [params (:dadysql.core/input request-m)
-        param-exec (:dadysql.core/param-exec request-m)
-        input (f/try-> params
-                       (param-exec :dadysql.core/format-nested tm-coll)
-                       (ji/do-disjoin (get-in tm-coll [0 :dadysql.core/join])))]
-    (if (f/failed? input)
-      input
-      (mapv (fn [m] (assoc m :dadysql.core/input ((:dadysql.core/model m) input))) tm-coll))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;; Processing impl  ;;;;;;;;;;;;;;;;;;;;;;;;

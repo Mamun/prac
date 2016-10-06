@@ -19,7 +19,7 @@
                   :dadysql.core/group       :load-dept,
                   :dadysql.core/index       0,
                   :dadysql.core/input {:id 1}}]
-          r (validate-param-spec! input)]
+          r (validate-input-spec! input)]
       (is (= r input)))))
 
 
