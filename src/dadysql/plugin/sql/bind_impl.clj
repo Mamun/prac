@@ -1,5 +1,5 @@
 (ns dadysql.plugin.sql.bind-impl
-  (:use [dady.proto])
+
   (:require [dady.fail :as f]
             [dady.common :as cc]))
 
@@ -111,8 +111,11 @@
          (assoc tm :dadysql.core/sql))))
 
 
+(defmulti sql-bind (fn [tm] (:dadysql.core/dml-key tm)))
 
-(defn do-default-proc
+
+(defmethod sql-bind
+  :default
   [tm]
   (f/try-> tm
            validate-input-not-empty!
@@ -121,7 +124,8 @@
            default-proc))
 
 
-(defn do-insert-proc
+(defmethod sql-bind
+  :dadysql.core/dml-insert
   [tm]
   (f/try-> tm
            validate-input-not-empty!
@@ -131,27 +135,33 @@
 
 
 
+#_(defn sql-bind-impl [tm-coll]
+  (transduce (map sql-bind) conj tm-coll))
 
 
-(defbranch SqlKey [cname ccoll corder])
-(defleaf InsertSqlKey [cname corder])
-(defleaf UpdateSqlKey [cname corder])
-(defleaf DeleteSqlKey [cname corder])
-(defleaf SelectSqlKey [cname corder])
-(defleaf CallSqlKey [cname corder])
 
 
-(defn new-sql-key [order coll]
-  (SqlKey. :dadysql.core/sql coll order))
 
 
-(defn new-childs-key []
-  (vector
-    (InsertSqlKey. :dadysql.core/dml-insert 0)
-    (UpdateSqlKey. :dadysql.core/dml-update 1)
-    (DeleteSqlKey. :dadysql.core/dml-delete 2)
-    (SelectSqlKey. :dadysql.core/dml-select 3)
-    (CallSqlKey. :dadysql.core/dml-call 4)))
+;(defbranch SqlKey [cname ccoll corder])
+;(defleaf InsertSqlKey [cname corder])
+;(defleaf UpdateSqlKey [cname corder])
+;(defleaf DeleteSqlKey [cname corder])
+;(defleaf SelectSqlKey [cname corder])
+;(defleaf CallSqlKey [cname corder])
+
+
+#_(defn new-sql-key [order coll]
+    (SqlKey. :dadysql.core/sql coll order))
+
+
+#_(defn new-childs-key []
+    (vector
+      (InsertSqlKey. :dadysql.core/dml-insert 0)
+      (UpdateSqlKey. :dadysql.core/dml-update 1)
+      (DeleteSqlKey. :dadysql.core/dml-delete 2)
+      (SelectSqlKey. :dadysql.core/dml-select 3)
+      (CallSqlKey. :dadysql.core/dml-call 4)))
 
 
 #_(defn debug [v]
@@ -161,53 +171,53 @@
     v
     )
 
-(defn batch-process [childs m]
+#_(defn batch-process [childs m]
 
-  ;(clojure.pprint/pprint m)
+    ;(clojure.pprint/pprint m)
 
-  (let [p (-> (group-by-node-name childs)
-              ;           (debug)
-              (get (:dadysql.core/dml-key m)))]
-    (-process p m)))
+    (let [p (-> (group-by-node-name childs)
+                ;           (debug)
+                (get (:dadysql.core/dml-key m)))]
+      (-process p m)))
 
 
-(extend-protocol INodeProcessor
-  SqlKey
-  (-lorder [this] (:corder this))
-  (-process-type [_] :input)
-  (-process [this m]
-    (batch-process (:ccoll this) m))
-  InsertSqlKey
-  (-lorder [this] (:corder this))
-  (-process-type [_] :input)
-  (-process? [_ m] (= :dadysql.core/dml-insert (:dadysql.core/dml-key m)))
-  (-process [_ m]
-    (do-insert-proc m))
-  UpdateSqlKey
-  (-lorder [this] (:corder this))
-  (-process-type [_] :input)
-  (-process? [_ m] (= :dadysql.core/dml-update (:dadysql.core/dml-key m)))
-  (-process [_ m]
-    (do-default-proc m))
-  SelectSqlKey
-  (-lorder [this] (:corder this))
-  (-process-type [_] :input)
-  (-process? [_ m] (do
-                     (= :dadysql.core/dml-select (:dadysql.core/dml-key m))))
-  (-process [_ m]
-    (do-default-proc m))
-  DeleteSqlKey
-  (-lorder [this] (:corder this))
-  (-process-type [_] :input)
-  (-process? [_ m] (= :dadysql.core/dml-delete (:dadysql.core/dml-key m)))
-  (-process [_ m]
-    (do-default-proc m))
-  CallSqlKey
-  (-lorder [this] (:corder this))
-  (-process-type [_] :input)
-  (-process? [_ m] (= :dadysql.core/dml-call (:dadysql.core/dml-key m)))
-  (-process [_ m]
-    (do-default-proc m)))
+#_(extend-protocol INodeProcessor
+    SqlKey
+    (-lorder [this] (:corder this))
+    (-process-type [_] :input)
+    (-process [this m]
+      (batch-process (:ccoll this) m))
+    InsertSqlKey
+    (-lorder [this] (:corder this))
+    (-process-type [_] :input)
+    (-process? [_ m] (= :dadysql.core/dml-insert (:dadysql.core/dml-key m)))
+    (-process [_ m]
+      (do-insert-proc m))
+    UpdateSqlKey
+    (-lorder [this] (:corder this))
+    (-process-type [_] :input)
+    (-process? [_ m] (= :dadysql.core/dml-update (:dadysql.core/dml-key m)))
+    (-process [_ m]
+      (do-default-proc m))
+    SelectSqlKey
+    (-lorder [this] (:corder this))
+    (-process-type [_] :input)
+    (-process? [_ m] (do
+                       (= :dadysql.core/dml-select (:dadysql.core/dml-key m))))
+    (-process [_ m]
+      (do-default-proc m))
+    DeleteSqlKey
+    (-lorder [this] (:corder this))
+    (-process-type [_] :input)
+    (-process? [_ m] (= :dadysql.core/dml-delete (:dadysql.core/dml-key m)))
+    (-process [_ m]
+      (do-default-proc m))
+    CallSqlKey
+    (-lorder [this] (:corder this))
+    (-process-type [_] :input)
+    (-process? [_ m] (= :dadysql.core/dml-call (:dadysql.core/dml-key m)))
+    (-process [_ m]
+      (do-default-proc m)))
 
 
 

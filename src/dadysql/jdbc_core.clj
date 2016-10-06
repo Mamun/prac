@@ -2,9 +2,11 @@
   (:require
     [clojure.spec :as s]
     [dady.fail :as f]
-    [dadysql.plugin.join.core :as j]
-    [dadysql.plugin.params.core :as p]
-    [dady.proto :as c]))
+    [dadysql.plugin.join.core :as ji]
+
+    [dadysql.plugin.sql.bind-impl :as bi]
+    [dadysql.plugin.common-impl :as ci]
+    ))
 
 
 
@@ -27,8 +29,7 @@
               (let [w (do-spec-validate vali (:dadysql.core/input v))]
                 (if (f/failed? w)
                   (reduced w)
-                  (conj acc v))
-                )
+                  (conj acc v)))
               (conj acc v))
             ) [] tm-coll))
 
@@ -42,45 +43,32 @@
     :dadysql.core/format-map))
 
 
-(defmulti do-param (fn [_ _ req-m] (disptach-input-format req-m)))
+(defmulti do-param (fn [_ req-m] (disptach-input-format req-m)))
 
 
 (defmethod do-param :dadysql.core/format-map
-  [tm-coll node request-m]
+  [tm-coll request-m]
   (let [params (:dadysql.core/input request-m)
-        param-m (c/get-child node :dadysql.core/param)
-        input (p/apply-param-proc params :dadysql.core/format-map tm-coll param-m)]
+        param-exec (:dadysql.core/param-exec request-m)
+        input (param-exec params :dadysql.core/format-map tm-coll)]
     (if (f/failed? input)
       input
       (mapv (fn [m] (assoc m :dadysql.core/input input)) tm-coll))))
 
 
 (defmethod do-param :dadysql.core/format-nested
-  [tm-coll node request-m]
+  [tm-coll request-m]
   (let [params (:dadysql.core/input request-m)
-        param-m (c/get-child node :dadysql.core/param)
+        param-exec (:dadysql.core/param-exec request-m)
         input (f/try-> params
-                       (p/apply-param-proc :dadysql.core/format-nested tm-coll param-m)
-                       (j/do-disjoin (get-in tm-coll [0 :dadysql.core/join])))]
+                       (param-exec :dadysql.core/format-nested tm-coll)
+                       (ji/do-disjoin (get-in tm-coll [0 :dadysql.core/join])))]
     (if (f/failed? input)
       input
       (mapv (fn [m] (assoc m :dadysql.core/input ((:dadysql.core/model m) input))) tm-coll))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;; Processing impl  ;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-(defn node->xf [type n-processor]
-  (condp = type
-    :input
-    (->> (c/remove-child n-processor :dadysql.core/param)
-         (c/as-xf-process :input)
-         (apply f/comp-xf-until))
-    :output
-    (apply comp (c/as-xf-process :output n-processor))
-    :sql-executor
-    (c/get-child n-processor :sql-executor)
-    (throw (ex-info "Node process not found for " {:type type}))))
 
 
 
@@ -91,24 +79,6 @@
               (reduced v)
               acc)
             ) tm-coll tm-coll))
-
-
-
-(defn- do-node-process
-  [tm-coll n-processor type]
-  (if (f/failed? tm-coll)
-    tm-coll
-    (if-let [r (f/failed? (coll-failed? tm-coll))]
-      r
-      (condp = type
-        :output
-        (transduce (node->xf :output n-processor) conj tm-coll)
-        :sql-executor
-        (c/node-process (node->xf :sql-executor n-processor) tm-coll)
-
-        tm-coll))))
-
-
 
 
 
@@ -155,17 +125,32 @@
         (into {} xf tm-coll)))))
 
 
+(defn- do-output-process
+  [tm-coll req-m]
+  (if (or (f/failed? tm-coll)
+          (= (:dadysql.core/op req-m)
+             :dadysql.core/op-push!)
+          (= (:dadysql.core/op req-m)
+             :dadysql.core/op-db-seq))
+    tm-coll
+    (if-let [r (f/failed? (coll-failed? tm-coll))]
+      r
+      (let [xf (comp (map ci/do-column)
+                     (map ci/do-result))]
+        (transduce xf conj tm-coll)))))
 
 
-(defmulti warp-output-node-process (fn [_ _ req-m] (dispatch-output-format req-m)))
+
+
+(defmulti warp-output-node-process (fn [_ req-m] (dispatch-output-format req-m)))
 
 
 (defmethod warp-output-node-process :default
-  [handler n-processor req-m]
+  [handler req-m]
   (fn [tm-coll]
     (f/try-> tm-coll
              (handler)
-             (do-node-process n-processor :output)
+             (do-output-process req-m)
              (format-output req-m))))
 
 
@@ -179,7 +164,7 @@
 (defn- merge-relation-param
   [root-result root more-tm]
   (let [w (-> (:dadysql.core/join root)
-              (j/get-source-relational-key-value root-result))]
+              (ji/get-source-relational-key-value root-result))]
     (mapv (fn [r]
             (update-in r [:dadysql.core/input] merge w)
             ) more-tm)))
@@ -196,8 +181,8 @@
 
 
 (defmethod warp-output-node-process :dadysql.core/format-nested-join
-  [handler n-processor _]
-  (let [rf (warp-output-node-process handler n-processor :default)]
+  [handler _]
+  (let [rf (warp-output-node-process handler :default)]
     (fn [tm-coll]
       (if (not (is-join-pull tm-coll))
         (rf tm-coll)
@@ -209,25 +194,14 @@
                      (merge-relation-param root more-tm)
                      (rf)
                      (merge root-output)
-                     (j/do-join (:dadysql.core/join root)))))))))
+                     (ji/do-join (:dadysql.core/join root)))))))))
 
 
 
-(defn warp-node-process
-  [handler steps]
-  (fn [tm-coll]
-    (-> (transduce steps conj tm-coll)
-        (handler))))
-
-
-
-(defn run-process [tm-coll n-processor request-m]
-  (let [
-        input-steps (node->xf :input n-processor)
-        exec (:dadysql.core/sql-executor request-m) #_(fn [tm-coll]
-               (do-node-process tm-coll n-processor :sql-executor))
+(defn run-process [tm-coll request-m]
+  (let [exec (:dadysql.core/sql-exec request-m)
+        tm-coll (transduce (map bi/sql-bind) conj tm-coll)
         proc (-> exec
-                 (warp-node-process input-steps)
-                 (warp-output-node-process n-processor request-m))]
+                 (warp-output-node-process request-m))]
     (proc tm-coll)))
 

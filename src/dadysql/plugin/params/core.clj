@@ -1,108 +1,14 @@
 (ns dadysql.plugin.params.core
-  (:use [dady.proto])
+  ;(:use [dady.proto])
   (:require [dady.common :as cc]
             [dady.fail :as f]
             [dadysql.plugin.util :as ccu]))
 
 
-(defbranch ParamKey [cname ccoll corder])
-(defleaf ParamRefConKey [cname corder])
-(defleaf ParamRefKey [cname corder])
-(defleaf ParamRefFunKey [cname corder])
-(defleaf ParamRefGenKey [cname corder generator])
 
-
-(defn new-param-key
-  [order childs]
-  (ParamKey. :dadysql.core/param childs order))
-
-
-(defn temp-generator [_ ]
+(defn temp-generator [_]
   -1)
 
-
-(defn new-child-keys
-  []
-  (vector (ParamRefConKey. :dadysql.core/ref-con 0)
-          (ParamRefKey. :dadysql.core/ref-key 1)
-          (ParamRefFunKey. :dadysql.core/ref-fn-key 2)
-          (ParamRefGenKey. :dadysql.core/ref-gen 3 temp-generator)))
-
-
-
-(defn assoc-param-ref-gen [root-node generator]
-  (let [p [:dadysql.core/param :dadysql.core/ref-gen]
-        p-index (node-path root-node p)]
-    (if p-index
-      (assoc-in root-node (conj p-index :generator) generator)
-      root-node)))
-
-
-(defn process-batch
-  [child-coll input ks-coll]
-  (let [pm (group-by-node-name child-coll)]
-    (->> ks-coll
-         (sort-by (fn [[_ n]]
-                    (-porder (n pm))))
-         (reduce (fn [acc-input ks]
-                   (let [[src n] ks
-                         p (partial -pprocess (n pm))
-                         rv (f/try! p ks acc-input)]
-                     (if (f/failed? rv)
-                       (reduced rv)
-                       (assoc-in acc-input src rv)))
-                   ) input))))
-
-
-;(instance? Object )
-;(clojure.spec/valid?  instance? 0)
-
-
-
-(extend-protocol IParamNodeProcessor
-  ParamKey
-  (-pprocess-type [_] :input)
-  (-porder [this] (:lorder this))
-  (-pprocess? [this m] true)
-  (-pprocess [this p-value m]
-    (process-batch (:ccoll this) m p-value))
-  ParamRefConKey
-  (-porder [this] (:lorder this))
-  (-pprocess? [_ m]
-    (->> (group-by second (:dadysql.core/param m))
-         (:dadysql.core/ref-con)))
-  (-pprocess [_ p-value m]
-    (let [[_ _ v] p-value]
-      v))
-  ParamRefKey
-  (-porder [this] (:lorder this))
-  (-pprocess? [_ m]
-    (->> (group-by second (:dadysql.core/param m))
-         (:dadysql.core/ref-key)))
-  (-pprocess [_ p-value m]
-    (let [[s _ k] p-value]
-      (->> (cc/replace-last-in-vector s k)
-           (get-in m))))
-  ParamRefFunKey
-  (-porder [this] (:lorder this))
-  (-pprocess? [_ m]
-    (->> (group-by second (:dadysql.core/param m))
-         (:dadysql.core/ref-fn-key)))
-  (-pprocess [_ p-value m]
-    (let [[s _ f k] p-value]
-      (->> (cc/replace-last-in-vector s k)
-           (get-in m)
-           (f))))
-  ParamRefGenKey
-  (-porder [this] (:lorder this))
-  (-pprocess? [_ m]
-    (->> (group-by second (:dadysql.core/param m))
-         (:dadysql.core/ref-gen)))
-  (-pprocess [this p-value _]
-    (let [[_ _ v] p-value]
-      ((:generator this) {:dadysql.core/name v}))))
-
-;:dadysql.core/name v :params {} :dadysql.core/output-format :as-sequence
 
 (defn assoc-param-path
   [data root-path param-coll]
@@ -139,7 +45,38 @@
        (assoc-param-path param-m (ccu/empty-path))))
 
 
-(defn apply-param-proc
-  [rinput input-format tm-coll param-imp]
-  (let [r (param-paths input-format tm-coll rinput)]
-    (-pprocess param-imp r rinput)))
+
+(defn do-param1 [generator path m]
+  (condp = (second path)
+    :dadysql.core/ref-con
+    (let [[_ _ v] path]
+      v)
+    :dadysql.core/ref-key
+    (let [[s _ k] path]
+      (->> (cc/replace-last-in-vector s k)
+           (get-in m)))
+    :dadysql.core/ref-fn-key
+    (let [[s _ f k] path]
+      (->> (cc/replace-last-in-vector s k)
+           (get-in m)
+           (f)))
+    :dadysql.core/ref-gen
+    (let [[_ _ v] path]
+      (generator {:dadysql.core/name v}))
+    m))
+
+
+
+
+(defn param-exec [generator]
+  (fn [rinput input-format tm-coll]
+    (let [r (param-paths input-format tm-coll rinput)]
+      (reduce (fn [acc-input path]
+                (let [rv (do-param1 generator path acc-input)
+                      [src] path]
+                  (if (f/failed? rv)
+                    (reduced rv)
+                    (assoc-in acc-input src rv)))
+                ) rinput r))))
+
+

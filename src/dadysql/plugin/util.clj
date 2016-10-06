@@ -1,6 +1,6 @@
 (ns dadysql.plugin.util
   (:require
-            [dady.proto :refer :all]
+
             [dady.fail :as f]
             [clojure.set]
             [dady.common :as cc]

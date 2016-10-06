@@ -4,8 +4,6 @@
             [clojure.java.jdbc :as jdbc]
             [dady.common :as cc]
             [dady.fail :as f]
-            [dady.proto :refer :all]
-    #_[dadysql.spec :refer :all]
             [clojure.tools.logging :as log]))
 
 

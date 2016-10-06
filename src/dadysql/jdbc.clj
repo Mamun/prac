@@ -8,43 +8,16 @@
     [dadysql.jdbc-core :as tie]
     [dadysql.spec-core :as sc]
     [dadysql.compiler.core :as fr]
-    [dadysql.plugin.factory :as imp]
-    [dady.proto :as c]
     [dady.fail :as f]
     [dadysql.plugin.sql.jdbc-io :as ce]
-    [dadysql.plugin.params.core :as p]))
+    [dadysql.plugin.params.core :as pi]))
 
 
 (defn read-file
-  ([file-name] (read-file file-name (imp/new-root-node)))
+  ([file-name] (read-file file-name nil #_(imp/new-root-node)))
   ([file-name pc]
    (-> (fr/read-file file-name)
-       (assoc-in [:_global_ :dadysql.core/file-name] file-name)
-       (assoc-in [:_global_ :dadysql.core/process-context-key] pc))))
-
-
-
-(defn- filter-processor
-  [process r]
-  (if (= (:dadysql.core/op r) :dadysql.core/op-db-seq)
-    (c/remove-type process :output)
-    process))
-
-
-
-(defn select-node [tms request-m]
-  (let [callback (:dadysql.core/callback request-m)]
-    (condp = (:dadysql.core/op request-m)
-      :dadysql.core/op-push!
-      (f/try-> tms
-               (get-in [:_global_ :dadysql.core/process-context-key] [])
-               (c/remove-type :output)
-               (p/assoc-param-ref-gen (fn [m]
-                                        (->> (assoc m :dadysql.core/op :dadysql.core/op-db-seq)
-                                             (callback)))))
-      (f/try-> tms
-               (get-in [:_global_ :dadysql.core/process-context-key] [])
-               (filter-processor request-m)))))
+       (assoc-in [:_global_ :dadysql.core/file-name] file-name))))
 
 
 
@@ -57,16 +30,19 @@
     r
     (let [op-m {:dadysql.core/op :dadysql.core/op-pull}
           sql-exec (ce/sql-execute ds tms :dadysql.plugin.sql.jdbc-io/parallel)
+          p-exec (pi/param-exec (fn [m]
+                                  (->> (assoc m :dadysql.core/op :dadysql.core/op-db-seq)
+                                       (pull ds tms))))
           req-m (-> op-m
                     (merge req-m)
-                    (assoc :dadysql.core/sql-executor sql-exec))
-          node (select-node tms req-m)]
+                    (assoc :dadysql.core/sql-exec sql-exec)
+                    (assoc :dadysql.core/param-exec p-exec))]
       (f/try-> tms
                (dc/select-name req-m)
                (dc/init-db-seq-op req-m)
-               (tie/do-param node req-m)
+               (tie/do-param req-m)
                (tie/validate-param-spec!)
-               (tie/run-process node req-m)))))
+               (tie/run-process req-m)))))
 
 
 
@@ -76,16 +52,18 @@
   (if-let [r (f/failed? (sc/validate-input! req-m))]
     r
     (let [sql-exec (ce/sql-execute ds tms :dadysql.plugin.sql.jdbc-io/transaction)
+          p-exec (pi/param-exec (fn [m]
+                                  (->> (assoc m :dadysql.core/op :dadysql.core/op-db-seq)
+                                       (pull ds tms))))
           req-m (-> req-m
                     (assoc :dadysql.core/op :dadysql.core/op-push!)
-                    (assoc :dadysql.core/sql-executor sql-exec)
-                    (assoc :dadysql.core/callback (partial pull ds tms)))
-          node (select-node tms req-m)]
+                    (assoc :dadysql.core/sql-exec sql-exec)
+                    (assoc :dadysql.core/param-exec p-exec))]
       (f/try-> tms
                (dc/select-name req-m)
-               (tie/do-param node req-m)
+               (tie/do-param req-m)
                (tie/validate-param-spec!)
-               (tie/run-process node req-m)))))
+               (tie/run-process req-m)))))
 
 
 

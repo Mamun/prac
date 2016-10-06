@@ -7,7 +7,7 @@
 
 (defrecord JoinKey [cname corder])
 
-(defn new-join-key []
+#_(defn new-join-key []
   (map->JoinKey {:cname  :dadysql.core/join
                  :corder 2}))
 

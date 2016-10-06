@@ -190,7 +190,8 @@
   ;; for single result
   (-> @td/ds
       (t/pull (t/read-file "tie.edn.sql")
-              :dadysql.core/name [:gen-dept :gen-empl]
+              {
+               :dadysql.core/name [:gen-dept :gen-empl]}
               ;:dadysql.core/output-format :map
               )
       (clojure.pprint/pprint))
@@ -206,8 +207,9 @@
   (let [d {:department {:dept_name "Call Center Munich 1" :transaction_id 0 :id 1}}]
     (-> @td/ds
         (t/push! (t/read-file "tie.edn.sql")
-                 :dadysql.core/name [:update-dept]
-                 :params d)
+                 {
+                  :dadysql.core/name [:update-dept]
+                  :dadysql.core/input            d})
         (clojure.pprint/pprint)))
 
   (let [d {:dept_name "Call Center Munich 1" :transaction_id 0 :id 2}]
