@@ -163,10 +163,3 @@
 
 
 
-
-#_(defn do-data-disjoin
-    [routput j-coll]
-    (if (or (cc/-failed? routput)
-            (empty? j-coll))
-      routput
-      (do-disjoin j-coll routput)))

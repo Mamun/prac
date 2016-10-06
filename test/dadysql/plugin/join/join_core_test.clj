@@ -1,8 +1,6 @@
-(ns dadysql.plugin.join.join-impl-test
+(ns dadysql.plugin.join.join-core-test
   (:use [clojure.test])
-  (:require [dadysql.plugin.join.core :refer :all]
-            [dadysql.plugin.join.join-impl :refer :all]
-            ))
+  (:require [dadysql.plugin.join.core :refer :all]))
 
 
 (comment
@@ -334,7 +332,7 @@
 ;(run-tests)
 ;(do-disjoin-test-1)
 
-(deftest group-by-join-src-test
+#_(deftest group-by-join-src-test
   (testing "test group-by-join-src "
     (let [v [[:tab :id :dadysql.core/one-many :tab1 :tab-id]]
           expected-result {:tab {:dadysql.core/join [[:tab :id :dadysql.core/one-many :tab1 :tab-id]]}}
@@ -347,7 +345,7 @@
 
 ;(filter-join-key-coll-test)
 
-(deftest join-emission-batch-test
+#_(deftest join-emission-batch-test
   (testing "test join-emission-batch "
     (let [join [[:tab :ID :dadysql.core/one-many :tab2 :tab-id]
                 [:tab :id :dadysql.core/one-many :tab3 :tab-ID]

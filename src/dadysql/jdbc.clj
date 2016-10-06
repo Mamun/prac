@@ -34,7 +34,7 @@
           req-m (-> op-m
                     (merge req-m)
                     (assoc :dadysql.core/sql-exec sql-exec))
-          bind-input (pi/bind-input req-m gen)]
+          bind-input (partial pi/bind-input req-m gen)]
       (f/try-> tms
                (dc/select-name req-m)
                (dc/init-db-seq-op req-m)
