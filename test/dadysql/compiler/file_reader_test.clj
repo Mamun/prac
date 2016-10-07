@@ -1,10 +1,10 @@
 (ns dadysql.compiler.file-reader-test
   (:use [clojure.test]
 
-        [dadysql.jdbc-core]
+        [dadysql.core]
 
         [dadysql.compiler.file-reader])
-  (:require [dadysql.jdbc-core :as tie]))
+  (:require [dadysql.core :as tie]))
 
 
 

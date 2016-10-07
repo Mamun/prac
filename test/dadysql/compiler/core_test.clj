@@ -1,7 +1,7 @@
 (ns dadysql.compiler.core-test
   (:use [clojure.test]
         [dadysql.compiler.core :as r]
-        [dadysql.jdbc-core :as c]
+        [dadysql.core :as c]
         [dadysql.spec]
         [dady.common]
         [dadysql.compiler.test-data])

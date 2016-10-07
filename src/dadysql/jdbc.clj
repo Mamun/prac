@@ -4,13 +4,12 @@
   (:require
     [clojure.tools.logging :as log]
     [clojure.java.jdbc :as jdbc]
-    [dadysql.core-selector :as dc]
-    [dadysql.jdbc-core :as tie]
-    [dadysql.spec-core :as sc]
+    [dadysql.selector :as dc]
+    [dadysql.core :as tie]
     [dadysql.compiler.core :as fr]
     [dady.fail :as f]
-    [dadysql.plugin.sql-io-impl :as ce]
-    [dadysql.plugin.param-impl :as pi]))
+    [dadysql.plugin.sql-io-impl :as ce]))
+
 
 
 (defn read-file
@@ -26,7 +25,7 @@
    ds: datasource
    "
   [ds tms req-m]
-  (if-let [r (f/failed? (sc/validate-input! req-m))]
+  (if-let [r (f/failed? (tie/validate-input! req-m))]
     r
     (let [op-m {:dadysql.core/op :dadysql.core/op-pull}
           sql-exec (ce/sql-execute ds tms :dadysql.plugin.sql.jdbc-io/parallel)
@@ -43,7 +42,7 @@
 (defn push!
   "Create, update or delete value in database. DB O/P will be run within transaction. "
   [ds tms req-m]
-  (if-let [r (f/failed? (sc/validate-input! req-m))]
+  (if-let [r (f/failed? (tie/validate-input! req-m))]
     r
     (let [sql-exec (ce/sql-execute ds tms :dadysql.plugin.sql.jdbc-io/transaction)
           gen (fn [m]

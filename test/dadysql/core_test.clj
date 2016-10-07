@@ -1,6 +1,6 @@
-(ns dadysql.jdbc-core-test
+(ns dadysql.core-test
   (:use [clojure.test])
-  (:require [dadysql.jdbc-core :refer :all]
+  (:require [dadysql.core :refer :all]
             ;[dadysql.plugin.factory :refer :all]
             [dadysql.plugin.param-impl :as p]
             [dadysql.plugin.util :as cu]))

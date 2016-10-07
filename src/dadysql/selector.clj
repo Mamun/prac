@@ -1,4 +1,4 @@
-(ns dadysql.core-selector
+(ns dadysql.selector
   (:require
     [dady.common :as cc]
     [dady.fail :as f]
