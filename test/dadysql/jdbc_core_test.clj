@@ -24,28 +24,6 @@
 
 
 
-(deftest do-param-test
-  (testing "do param test"
-    (let [tm-coll [{:dadysql.core/name       :get-dept-by-id,
-                    :dadysql.core/sql        ["select * from department where id = ?" 1],
-                    :dadysql.core/model      :department,
-                    :dadysql.core/result     #{:single},
-                    :dadysql.core/param-spec :get-dept-by-id/spec,
-                    :dadysql.core/timeout    2000,
-                    :dadysql.core/dml-key    :dadysql.core/dml-select,
-                    :dadysql.core/join       [],
-                    :dadysql.core/group      :load-dept,
-                    :dadysql.core/index      0}]
-          r (do-param tm-coll  {:dadysql.core/input-format :dadysql.core/format-map
-                                                                        :params  {:id 4}})]
-      (is (= (get-in r [0 :dadysql.core/input]) {:id 4})))))
-
-
-
-(comment
-
-  (do-param-test)
-  )
 
 ;(apply-validation-test!)
 

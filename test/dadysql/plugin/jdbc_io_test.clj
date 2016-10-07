@@ -1,4 +1,4 @@
-(ns dadysql.plugin.sql.jdbc-io-test
+(ns dadysql.plugin.jdbc-io-test
   (:use [clojure.test]
         [dady.fail]
         [dadysql.plugin.jdbc-io])

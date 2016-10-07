@@ -33,12 +33,11 @@
           gen (fn [_] 1)
           req-m (-> op-m
                     (merge req-m)
-                    (assoc :dadysql.core/sql-exec sql-exec))
-          bind-input (partial pi/bind-input req-m gen)]
+                    (assoc :dadysql.core/sql-exec sql-exec))]
       (f/try-> tms
                (dc/select-name req-m)
                (dc/init-db-seq-op req-m)
-               (bind-input)
+               (pi/bind-input req-m gen)
                (tie/validate-input-spec!)
                (tie/run-process req-m)))))
 
@@ -55,11 +54,10 @@
                      (pull ds tms)))
           req-m (-> req-m
                     (assoc :dadysql.core/op :dadysql.core/op-push!)
-                    (assoc :dadysql.core/sql-exec sql-exec))
-          bind-input (partial pi/bind-input req-m gen)]
+                    (assoc :dadysql.core/sql-exec sql-exec))]
       (f/try-> tms
                (dc/select-name req-m)
-               (bind-input)
+               (pi/bind-input req-m gen)
                (tie/validate-input-spec!)
                (tie/run-process req-m)))))
 

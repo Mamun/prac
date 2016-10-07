@@ -4,36 +4,36 @@
 
 
 #_(defn update-ns
-  "Doc "
-  [ns-str spec-list]
-  (w/postwalk (fn [v]
-                (if (and (keyword? v)
-                         (= (namespace v) (str *ns*)))
-                  (keyword (str ns-str "/" (name v)))
-                  v)
-                ) spec-list))
+    "Doc "
+    [ns-str spec-list]
+    (w/postwalk (fn [v]
+                  (if (and (keyword? v)
+                           (= (namespace v) (str *ns*)))
+                    (keyword (str ns-str "/" (name v)))
+                    v)
+                  ) spec-list))
 
 
 #_(defmacro in-spec
-  ""
-  [n & content]
-  (let [content (update-ns n content)]
-    `(do
-       (clojure.core/in-ns '~(symbol n))
-       (clojure.core/refer 'clojure.core)
-       (clojure.core/require '[clojure.spec :as ~(symbol 's)])
-       ~@content
-       nil)))
+    ""
+    [n & content]
+    (let [content (update-ns n content)]
+      `(do
+         (clojure.core/in-ns '~(symbol n))
+         (clojure.core/refer 'clojure.core)
+         (clojure.core/require '[clojure.spec :as ~(symbol 's)])
+         ~@content
+         nil)))
 
 
 #_(in-spec User
-  (s/def ::id string?)
-  (s/def ::spec (s/keys :req-un [::id])))
+           (s/def ::id string?)
+           (s/def ::spec (s/keys :req-un [::id])))
 
 
 #_(in-spec Credit
-  (s/def ::no number?)
-  (s/def ::spec (s/keys :req-un [::id])))
+           (s/def ::no number?)
+           (s/def ::spec (s/keys :req-un [::id])))
 
 
 
@@ -53,7 +53,7 @@
 
 (comment
 
-#_(map inc [1 2 3])
+  #_(map inc [1 2 3])
 
   " I have different type of Model in my domain like User, Credit.
     I would like to define spec of the Model in one place but not different clj/cljs file.
@@ -75,7 +75,6 @@
 
 
   (println "Hello")
-
 
   )
 

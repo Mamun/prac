@@ -25,7 +25,7 @@
 
 
 (s/def :dadysql.core/output-format #{:dadysql.core/format-nested :dadysql.core/format-nested-array :dadysql.core/format-nested-join
-                               :dadysql.core/format-map :dadysql.core/format-array :dadysql.core/format-value})
+                                     :dadysql.core/format-map :dadysql.core/format-array :dadysql.core/format-value})
 (s/def :dadysql.core/input-format #{:dadysql.core/format-nested :dadysql.core/format-map})
 
 #_(s/def :dadysql.core/input map?)
@@ -44,11 +44,11 @@
 
 (comment
 
-  (s/valid? :dadysql.core/user-input {:dadysql.core/name   [:get-employee-detail]
-                                      :params {:id 1}})
+  (s/valid? :dadysql.core/user-input {:dadysql.core/name [:get-employee-detail]
+                                      :params            {:id 1}})
 
 
-  (s/explain :dadysql.core/user-input {:dadysql.core/name                      [:get-employee-detail]
+  (s/explain :dadysql.core/user-input {:dadysql.core/name         [:get-employee-detail]
                                        :group                     :load-dept
                                        :dadysql.core/param-format :map
                                        :params                    {}})

@@ -1,4 +1,4 @@
-(ns dadysql.plugin.join.join-core-test
+(ns dadysql.plugin.join-core-test
   (:use [clojure.test])
   (:require [dadysql.plugin.join-impl :refer :all]))
 

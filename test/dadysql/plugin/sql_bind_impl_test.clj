@@ -1,4 +1,4 @@
-(ns dadysql.plugin.sql.bind-test
+(ns dadysql.plugin.sql-bind-impl-test
   (:use [clojure.test]
         [dady.fail]
         [dadysql.compiler.util])
@@ -10,6 +10,11 @@
     #_[dadysql.spec :refer :all]))
 
 
+(comment
+  (run-tests)
+
+  )
+
 (deftest bind-sql-params-test
   (testing "test bind-sql-params "
     (let [m {:dadysql.core/sql     ["select * from dual param = :a and param3 = :b" :a :b]
@@ -19,8 +24,8 @@
                            :dadysql.core/dml-key :dadysql.core/dml-select,
                            :dadysql.core/input                {:a 3, :b 4}}
 
-          proc (new-sql-key 0 (new-childs-key))
-          actual-result (node-process proc m)]
+
+          actual-result (sql-bind  m)]
       (is (= expected-result
              actual-result
              )))))

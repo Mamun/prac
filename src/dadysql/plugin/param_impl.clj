@@ -56,6 +56,7 @@
            (get-in m)))
     :dadysql.core/ref-fn-key
     (let [[s _ f k] path]
+
       (->> (cc/replace-last-in-vector s k)
            (get-in m)
            (f)))
@@ -67,14 +68,15 @@
 
 
 
-(defn param-exec [rinput param-paths generator]
-  (reduce (fn [acc-input path]
-            (let [rv (do-param1 generator path acc-input)
-                  [src] path]
-              (if (f/failed? rv)
-                (reduced rv)
-                (assoc-in acc-input src rv)))
-            ) rinput param-paths))
+(defn param-exec [tm-coll rinput input-format generator]
+  (let [param-paths (param-paths input-format tm-coll rinput)]
+    (reduce (fn [acc-input path]
+              (let [rv (do-param1 generator path acc-input)
+                    [src] path]
+                (if (f/failed? rv)
+                  (reduced rv)
+                  (assoc-in acc-input src rv)))
+              ) rinput param-paths)))
 
 
 (defn disptach-input-format [req-m]
@@ -86,25 +88,23 @@
     :dadysql.core/format-map))
 
 
-(defmulti bind-input (fn [req-m _ _] (disptach-input-format req-m)))
+(defmulti bind-input (fn [_ request-m _] (disptach-input-format request-m)))
 
 
 (defmethod bind-input :dadysql.core/format-map
-  [request-m gen tm-coll]
+  [tm-coll request-m gen]
   (let [input (:dadysql.core/input request-m)
-        param-path (param-paths :dadysql.core/format-map tm-coll input)
-        input (param-exec input param-path gen)]
+        input (param-exec tm-coll input :dadysql.core/format-map gen)]
     (if (f/failed? input)
       input
       (mapv (fn [m] (assoc m :dadysql.core/input input)) tm-coll))))
 
 
 (defmethod bind-input :dadysql.core/format-nested
-  [request-m gen tm-coll]
+  [tm-coll request-m gen]
   (let [input (:dadysql.core/input request-m)
-        param-path (param-paths :dadysql.core/format-map tm-coll input)
+        input (param-exec tm-coll input :dadysql.core/format-nested gen)
         input (f/try-> input
-                       (param-exec param-path gen)
                        (ji/do-disjoin (get-in tm-coll [0 :dadysql.core/join])))]
     (if (f/failed? input)
       input

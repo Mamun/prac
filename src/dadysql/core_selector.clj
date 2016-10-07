@@ -97,7 +97,7 @@
 
 
 (defn select-name [tms req-m]
-  (let [name  (:dadysql.core/name req-m)
+  (let [name (:dadysql.core/name req-m)
         group (:dadysql.core/group req-m)
         name (if group
                (select-name-for-groups tms group name)
@@ -134,17 +134,17 @@
 
   (require '[dadysql.jdbc :as t])
 
-  #_(-> {:dadysql.core/name   [:create-dept]
-         :params {:department [{:dept_name "Software dept "}
-                               {:dept_name "Hardware dept"}]}}
+  #_(-> {:dadysql.core/name [:create-dept]
+         :params            {:department [{:dept_name "Software dept "}
+                                          {:dept_name "Hardware dept"}]}}
 
         (select-name-for :dadysql.core/op-push! (t/read-file "tie.edn.sql"))
         )
 
 
 
-  #_(-> {:dadysql.core/name   [:get-dept-by-ids]
-         :params {:id [1 2 112]}}
+  #_(-> {:dadysql.core/name [:get-dept-by-ids]
+         :params            {:id [1 2 112]}}
 
         (select-name-for :dadysql.core/op-pull (t/read-file "tie.edn.sql"))
         )
@@ -152,9 +152,9 @@
 
 
   (select2 (t/read-file "tie.edn.sql")
-           {:dadysql.core/name   [:create-dept]
-            :params {:department [{:dept_name "Software dept "}
-                                  {:dept_name "Hardware dept"}]}}
+           {:dadysql.core/name [:create-dept]
+            :params            {:department [{:dept_name "Software dept "}
+                                             {:dept_name "Hardware dept"}]}}
            :dadysql.core/op-push!)
 
   )

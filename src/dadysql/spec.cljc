@@ -218,10 +218,10 @@
                                  :params {:id 1}})
 
 
-  (s/explain :dadysql.core/input {:name    [:get-employee-detail]
-                                  :group   :load-dept
+  (s/explain :dadysql.core/input {:name                      [:get-employee-detail]
+                                  :group                     :load-dept
                                   :dadysql.core/input-format :map
-                                  :params  {}})
+                                  :params                    {}})
 
   )
 

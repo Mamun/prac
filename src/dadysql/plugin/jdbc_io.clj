@@ -225,10 +225,10 @@
 
 
 #_(defn sql-executor-node
-  [ds tms type]
-  (let [f (fn [m-coll]
-            (execute ds m-coll :type type :tms tms))]
-    (fn-as-node-processor f :dadysql.core/name :sql-executor)))
+    [ds tms type]
+    (let [f (fn [m-coll]
+              (execute ds m-coll :type type :tms tms))]
+      (fn-as-node-processor f :dadysql.core/name :sql-executor)))
 
 
 (comment

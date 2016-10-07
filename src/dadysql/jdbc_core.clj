@@ -32,11 +32,7 @@
             ) [] tm-coll))
 
 
-
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;; Processing impl  ;;;;;;;;;;;;;;;;;;;;;;;;
-
-
 
 (defn- coll-failed?
   [tm-coll]
@@ -58,23 +54,25 @@
 
 
 (defn dispatch-output-format [req-m]
-  (cond (and
-          (= :dadysql.core/op-pull (:dadysql.core/op req-m))
-          (or (:dadysql.core/group req-m)
-              (sequential? (:dadysql.core/name req-m))))
-        :dadysql.core/format-nested-join
+  (cond
+    (= :dadysql.core/op-pull (:dadysql.core/op req-m))
+    (if
+      (or (:dadysql.core/group req-m)
+          (sequential? (:dadysql.core/name req-m)))
+      :dadysql.core/format-nested-join
+      :one)
 
-        (= :dadysql.core/op-db-seq (:dadysql.core/op req-m))
-        :dadysql.core/format-value
+    (= :dadysql.core/op-db-seq (:dadysql.core/op req-m))
+    :dadysql.core/format-value
 
-        (= :dadysql.core/op-push! (:dadysql.core/op req-m))
-        (if (or (:dadysql.core/group req-m)
-                (sequential? (:dadysql.core/name req-m)))
-          :dadysql.core/format-map
-          :one)
+    (= :dadysql.core/op-push! (:dadysql.core/op req-m))
+    (if (or (:dadysql.core/group req-m)
+            (sequential? (:dadysql.core/name req-m)))
+      :dadysql.core/format-map
+      :one)
 
-        :else
-        :dadysql.core/format-map))
+    :else
+    :dadysql.core/format-map))
 
 
 (defn format-output
