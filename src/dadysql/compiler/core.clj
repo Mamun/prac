@@ -185,29 +185,31 @@
 
 (defn do-compile [coll]
   (u/validate-input-spec! coll)
-  (let [coll (key->nskey coll alais-map)]
-;    (clojure.pprint/pprint coll)
-
-
-    (u/validate-distinct-name! coll)
-    (u/validate-name-sql! coll)
-    (u/validate-name-model! coll)
-    (u/validate-extend-key! coll)
-    (u/validate-join-key! coll)
-    (let [{:keys [modules global reserve]} (do-grouping coll)
-          global (compile-one-config global)
-          modules (compile-batch global modules)
-          reserve (reserve-compile reserve)
-          global (dissoc global :dadysql.core/extend)
-          w (concat [global] modules reserve)]
-      (load-param-spec (:dadysql.core/spec-file global) w)
-      (->> w
-           (into {} (map into-name-map))))))
+  (u/validate-distinct-name! coll)
+  (u/validate-name-sql! coll)
+  (u/validate-name-model! coll)
+  (u/validate-extend-key! coll)
+  (u/validate-join-key! coll)
+  (let [{:keys [modules global reserve]} (do-grouping coll)
+        global (compile-one-config global)
+        modules (compile-batch global modules)
+        reserve (reserve-compile reserve)
+        global (dissoc global :dadysql.core/extend)
+        w (concat [global] modules reserve)]
+    (load-param-spec (:dadysql.core/spec-file global) w)
+    (->> w
+         (into {} (map into-name-map)))))
 
 
 
-(defn read-file [file-name]
+(defn read-file* [file-name]
   (do-compile (fr/read-file file-name)))
+
+
+(defn read-file [file-name ]
+  (-> (fr/read-file file-name)
+      (key->nskey alais-map)
+      (do-compile )))
 
 
 
@@ -218,9 +220,10 @@
   ;(symbol "asdf")
   ;(clojure.set/rename-keys {:a 3} {:b :v})
 
-  (->> (fr/read-file "tie.edn3.sql")
+  (-> (read-file "tie.edn3.sql")
+      ;(key->nskey alais-map)
        ;  (postwalk-rename-key  )
-       (do-compile)
+       ;(do-compile)
        ;  (s/explain-data :dadysql.core/compiler-input-spec )
        (clojure.pprint/pprint)
        )

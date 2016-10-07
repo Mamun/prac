@@ -81,27 +81,21 @@
               (fn [] (s/gen #{{:id :empl_id}
                               {:dept_id :id}}))))
 
-;(defonce result-array-key :array)
-;(defonce result-single-key :single)
-
-(s/def :dadysql.core/array (s/spec #(= :array %)))
-(s/def :dadysql.core/single (s/spec #(= :single %)))
-(s/def :dadysql.core/result (s/every #{:array :single} :kind set?))
+(s/def :dadysql.core/result (s/every #{:dadysql.core/array :dadysql.core/single} :kind set?))
 
 
 (s/def :dadysql.core/read-only? boolean?)
 
 
-(s/def :dadysql.core/one-one (s/spec #(= :1-1 %)))
-(s/def :dadysql.core/one-many (s/spec #(= :1-n %)))
-(s/def :dadysql.core/many-one (s/spec #(= :n-1 %)))
-(s/def :dadysql.core/many-many (s/spec #(= :n-n %)))
+(def one-* #{:dadysql.core/one-one
+             :dadysql.core/one-many
+             :dadysql.core/many-one})
 
 (s/def :dadysql.core/join-one
-  (s/tuple keyword? keyword? (s/spec #{:1-1 :1-n :n-1}) keyword? keyword?))
+  (s/tuple keyword? keyword? (s/spec one-*) keyword? keyword?))
 
 (s/def :dadysql.core/join-many
-  (s/tuple keyword? keyword? (s/spec #{:n-n}) keyword? keyword? (s/tuple keyword? keyword? keyword?)))
+  (s/tuple keyword? keyword? (s/spec #{:dadysql.core/many-many}) keyword? keyword? (s/tuple keyword? keyword? keyword?)))
 
 (s/def :dadysql.core/join
   (s/with-gen
@@ -138,23 +132,23 @@
 
 (s/def :dadysql.core/param-spec (s/and keyword? ns-keyword?))
 
-(s/def :dadysql.core/common (s/keys :opt-un [:dadysql.core/timeout :dadysql.core/column :dadysql.core/result :dadysql.core/param :dadysql.core/param-spec]))
+(s/def :dadysql.core/common (s/keys :opt [:dadysql.core/timeout :dadysql.core/column :dadysql.core/result :dadysql.core/param :dadysql.core/param-spec]))
 
 
 (s/def :dadysql.core/extend
-  (s/every-kv keyword? (s/merge (s/keys :opt-un [:dadysql.core/model]) :dadysql.core/common)))
+  (s/every-kv keyword? (s/merge (s/keys :opt [:dadysql.core/model]) :dadysql.core/common)))
 
 
 (s/def :dadysql.core/module (s/merge
                               :dadysql.core/common
-                              (s/keys :req-un [:dadysql.core/name :dadysql.core/sql]
-                                      :opt-un [:dadysql.core/model :dadysql.core/skip :dadysql.core/group :dadysql.core/commit :dadysql.core/extend])))
+                              (s/keys :req [:dadysql.core/name :dadysql.core/sql]
+                                      :opt [:dadysql.core/model :dadysql.core/skip :dadysql.core/group :dadysql.core/commit :dadysql.core/extend])))
 
 
 (s/def :dadysql.core/spec-file symbol?)
 
-(s/def :dadysql.core/global (s/keys :req-un [:dadysql.core/name]
-                                    :opt-un [:dadysql.core/timeout :dadysql.core/read-only? :dadysql.core/tx-prop :dadysql.core/file-reload :dadysql.core/reserve-name :dadysql.core/join :dadysql.core/spec-file]))
+(s/def :dadysql.core/global (s/keys :req [:dadysql.core/name]
+                                    :opt [:dadysql.core/timeout :dadysql.core/read-only? :dadysql.core/tx-prop :dadysql.core/file-reload :dadysql.core/reserve-name :dadysql.core/join :dadysql.core/spec-file]))
 
 
 (s/def :dadysql.core/compiler-input-spec (clojure.spec/cat :global (s/? :dadysql.core/global) :module (s/* :dadysql.core/module)))
