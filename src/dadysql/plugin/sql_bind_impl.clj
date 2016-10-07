@@ -133,4 +133,8 @@
            insert-proc))
 
 
+(defn sql-bind-batch [tm-coll]
+  (transduce (map sql-bind) conj tm-coll))
+
+
 

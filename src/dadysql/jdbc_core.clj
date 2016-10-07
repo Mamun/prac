@@ -56,10 +56,7 @@
 
 
 
-(defmulti do-output (fn [_ req-m]
-                      (do
-                  ;      (println "----" req-m)
-                        (:dadysql.core/op req-m))))
+(defmulti do-output (fn [_ req-m] (:dadysql.core/op req-m)))
 
 
 (defmethod do-output
@@ -90,7 +87,7 @@
                    (map into-model-map)) tm-coll)))
 
 
-(defn warp-do-output1 [handler req-m]
+(defn warp-do-output [handler req-m]
   (fn [tm-coll]
     (f/try-> tm-coll
              (handler)
@@ -98,31 +95,17 @@
 
 
 
-(defn dispathch-output [req-m]
+
+(defn- is-join-pull?
+  [tm-coll req-m]
   (if (and
         (= :dadysql.core/op-pull (:dadysql.core/op req-m))
         (or (:dadysql.core/group req-m)
-            (sequential? (:dadysql.core/name req-m))))
-    :dadysql.core/format-nested-join))
-
-(defmulti warp-do-output (fn [_ req-m] (dispathch-output req-m)))
-
-
-(defmethod warp-do-output :default
-  [handler req-m]
-  (warp-do-output1 handler req-m)
-
-  #_(fn [tm-coll]
-    (f/try-> tm-coll
-             (handler)
-             (do-output req-m))))
-
-
-(defn- is-join-pull?
-  [tm-coll]
-  (if (and (not-empty (:dadysql.core/join (first tm-coll)))
-           (not (nil? (rest tm-coll))))
+            (sequential? (:dadysql.core/name req-m)))
+        (not-empty (:dadysql.core/join (first tm-coll)))
+        (not (nil? (rest tm-coll))))
     true false))
+
 
 
 (defn- merge-relation-param
@@ -144,23 +127,22 @@
 
 
 
-(defmethod warp-do-output :dadysql.core/format-nested-join
+(defn warp-do-output-join
   [handler req-m]
-  (let [rf (warp-do-output1 handler req-m)]
-    (fn [tm-coll]
-      (if (not (is-join-pull? tm-coll))
-        (rf tm-coll)
-        (let [[root & more-tm] tm-coll
-              root-output (rf [root])]
-          (if (not-continue? root-output)
-            root-output
-            (f/try-> root-output
-                     (merge-relation-param root more-tm)
-                     (rf)
-                     (merge root-output)
-                     (ji/do-join (:dadysql.core/join root)))))))))
+  (fn [tm-coll]
+    (if (not (is-join-pull? tm-coll req-m))
+      (handler tm-coll)
+      (let [[root & more-tm] tm-coll
+            root-output (handler [root])]
+        (if (not-continue? root-output)
+          root-output
+          (f/try-> root-output
+                   (merge-relation-param root more-tm)
+                   (handler)
+                   (merge root-output)
+                   (ji/do-join (:dadysql.core/join root))))))))
 
-
+;;sql bind needs to call with in warp-do-join process
 (defn warp-bind-sql [handler request-m]
   (fn [tm-coll]
     (->> tm-coll
@@ -168,19 +150,11 @@
          (handler))))
 
 
-
-#_(defn run-process2 [tm-coll request-m]
-    (let [proc (-> (:dadysql.core/sql-exec request-m)
-                   (warp-bind-sql request-m)
-                   (warp-do-output request-m))]
-      (proc tm-coll)))
-
-
-
 (defn do-execute [req-m tms]
   (let [handler (-> (:dadysql.core/sql-exec req-m)
                     (warp-bind-sql req-m)
-                    (warp-do-output req-m))
+                    (warp-do-output req-m)
+                    (warp-do-output-join req-m))
         gen (:dadysql.core/callback req-m)]
     (f/try-> tms
              (dc/select-name req-m)
@@ -188,5 +162,3 @@
              (pi/bind-input req-m gen)
              (validate-input-spec!)
              (handler))))
-
-
