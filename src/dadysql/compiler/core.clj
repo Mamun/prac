@@ -1,12 +1,8 @@
 (ns dadysql.compiler.core
-  (:require [dadysql.spec :refer :all]
-            [dadysql.spec]
+  (:require [dadysql.compiler.spec :refer :all]
             [dady.common :as cc]
             [dadysql.compiler.util :as u]
-            [clojure.tools.reader.edn :as edn]
             [dadysql.compiler.file-reader :as fr]
-            [clojure.spec :as s]
-
             [clojure.spec :as sp]))
 
 
@@ -47,7 +43,6 @@
                        :reserve
                        :modules))))))
 
-;(s/valid? (s/every integer?) [1 2 3])
 
 (defn group-by-config-key
   [coll]
@@ -176,7 +171,7 @@
   (if spec-file
     (require (symbol spec-file) :reload))
   (doseq [r (filter keyword? (map :dadysql.core/param-spec coll))]
-    (if (nil? (s/get-spec r))
+    (if (nil? (sp/get-spec r))
       (throw (ex-info "Spec not found " {:spec r})))))
 
 
@@ -191,6 +186,9 @@
 (defn do-compile [coll]
   (u/validate-input-spec! coll)
   (let [coll (key->nskey coll alais-map)]
+;    (clojure.pprint/pprint coll)
+
+
     (u/validate-distinct-name! coll)
     (u/validate-name-sql! coll)
     (u/validate-name-model! coll)
@@ -220,11 +218,11 @@
   ;(symbol "asdf")
   ;(clojure.set/rename-keys {:a 3} {:b :v})
 
-  (->> (fr/read-file "tie.edn.sql")
+  (->> (fr/read-file "tie.edn3.sql")
        ;  (postwalk-rename-key  )
        (do-compile)
        ;  (s/explain-data :dadysql.core/compiler-input-spec )
-       ;(clojure.pprint/pprint)
+       (clojure.pprint/pprint)
        )
 
   (->> (fr/read-file "tie.edn2.sql")

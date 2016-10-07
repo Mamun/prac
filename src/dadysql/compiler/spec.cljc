@@ -1,4 +1,4 @@
-(ns dadysql.spec
+(ns dadysql.compiler.spec
   (:require [clojure.spec :as s]))
 
 ;(defonce global-key :_global_)

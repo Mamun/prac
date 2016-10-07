@@ -1,4 +1,4 @@
-(ns dadysql.spec-test
+(ns dadysql.compiler.spec-test
   (:use [clojure.test]
         [dadysql.compiler.test-data]
         [dadysql.compiler.core])

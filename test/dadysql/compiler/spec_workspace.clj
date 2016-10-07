@@ -18,6 +18,25 @@
 
 
 
+(s/def :person/fname string?)
+(s/def :person/lname string?)
+(s/def :customer/id int?)
+
+
+(s/def :person/name (s/merge
+                      (s/keys :req-un [:person/lname :person/fname])
+                      (s/map-of #{:lname :fname} any?)))
+
+
+(s/def :app/customer (s/merge
+                       :person/name
+                       (s/keys :req-un [:customer/id])
+                       (s/map-of #{:lname :fname :id} any?)))
+
+
+(s/explain-str :person/name {:lname "Max" :fname "Musterman"})
+(s/explain-str :app/customer {:lname "Max" :fname "Musterman" :id 9})
+
 
 
 
@@ -29,7 +48,7 @@
 
 
 
-  (st/check `adder )
+  (st/check `adder)
 
 
 
