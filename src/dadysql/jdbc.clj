@@ -9,7 +9,7 @@
     [dadysql.spec-core :as sc]
     [dadysql.compiler.core :as fr]
     [dady.fail :as f]
-    [dadysql.plugin.jdbc-io :as ce]
+    [dadysql.plugin.sql-io-impl :as ce]
     [dadysql.plugin.param-impl :as pi]))
 
 
@@ -30,16 +30,13 @@
     r
     (let [op-m {:dadysql.core/op :dadysql.core/op-pull}
           sql-exec (ce/sql-execute ds tms :dadysql.plugin.sql.jdbc-io/parallel)
-          gen (fn [_] 1)
-          req-m (-> op-m
-                    (merge req-m)
-                    (assoc :dadysql.core/sql-exec sql-exec))]
-      (f/try-> tms
-               (dc/select-name req-m)
-               (dc/init-db-seq-op req-m)
-               (pi/bind-input req-m gen)
-               (tie/validate-input-spec!)
-               (tie/run-process req-m)))))
+          gen (fn [_] 1)]
+      (-> op-m
+          (merge req-m)
+          (assoc :dadysql.core/callback gen)
+          (assoc :dadysql.core/sql-exec sql-exec)
+          (tie/do-execute tms)))))
+
 
 
 
@@ -51,15 +48,12 @@
     (let [sql-exec (ce/sql-execute ds tms :dadysql.plugin.sql.jdbc-io/transaction)
           gen (fn [m]
                 (->> (assoc m :dadysql.core/op :dadysql.core/op-db-seq)
-                     (pull ds tms)))
-          req-m (-> req-m
-                    (assoc :dadysql.core/op :dadysql.core/op-push!)
-                    (assoc :dadysql.core/sql-exec sql-exec))]
-      (f/try-> tms
-               (dc/select-name req-m)
-               (pi/bind-input req-m gen)
-               (tie/validate-input-spec!)
-               (tie/run-process req-m)))))
+                     (pull ds tms)))]
+      (-> req-m
+          (assoc :dadysql.core/op :dadysql.core/op-push!)
+          (assoc :dadysql.core/callback gen)
+          (assoc :dadysql.core/sql-exec sql-exec)
+          (tie/do-execute tms)))))
 
 
 
