@@ -147,10 +147,10 @@
 
 
 
-(defmulti execute (fn [_ _ & {:keys [type]}] type))
+(defmulti sql-execute (fn [_ _ & {:keys [type]}] type))
 
 
-(defmethod execute
+(defmethod sql-execute
   :default
   [ds m-coll & _]
   (let [handler (-> (partial jdbc-handler ds)
@@ -161,7 +161,7 @@
         (transduce conj m-coll))))
 
 
-(defmethod execute
+(defmethod sql-execute
   :dadysql.plugin.sql.jdbc-io/parallel
   [ds m-coll & _]
   (let [handler (-> (partial jdbc-handler ds)
@@ -177,7 +177,7 @@
          (async/<!!))))
 
 
-(defmethod execute
+(defmethod sql-execute
   :dadysql.plugin.sql.jdbc-io/serial-until-failed
   [ds m-coll & _]
   (let [handler (-> (partial jdbc-handler ds)
@@ -195,7 +195,7 @@
     :dadysql.plugin.sql.jdbc-io/serial))
 
 
-(defmethod execute
+(defmethod sql-execute
   :dadysql.plugin.sql.jdbc-io/transaction
   [ds m-coll & {:keys [tms]}]
   (let [tx-prop (apply hash-map (get-in tms [:_global_ :dadysql.core/tx-prop]))
@@ -204,21 +204,21 @@
         commit-type (commit-type m-coll)
         exec-type (execute-type commit-type)]
     (if (has-transaction? ds)
-      (execute ds m-coll :type exec-type)
+      (sql-execute ds m-coll :type exec-type)
       (jdbc/with-db-transaction
         [t-conn ds
          :isolation isolation
          :read-only? read-only?]
-        (let [result-coll (execute t-conn m-coll :type exec-type)]
+        (let [result-coll (sql-execute t-conn m-coll :type exec-type)]
           (when (is-rollback? commit-type read-only? result-coll)
             (jdbc/db-set-rollback-only! t-conn))
           result-coll)))))
 
 
 
-(defn sql-execute [ds tms type]
+(defn warp-sql-execute [ds tms type]
   (fn [tm-coll]
-    (execute ds tm-coll :type type :tms tms)))
+    (sql-execute ds tm-coll :type type :tms tms)))
 
 
 
@@ -227,7 +227,7 @@
 #_(defn sql-executor-node
     [ds tms type]
     (let [f (fn [m-coll]
-              (execute ds m-coll :type type :tms tms))]
+              (sql-execute ds m-coll :type type :tms tms))]
       (fn-as-node-processor f :dadysql.core/name :sql-executor)))
 
 
@@ -254,8 +254,8 @@
                     :dadysql.core/input
                                           {:subject "Hello Meeting for IT", :meeting_id 109},
                     :dadysql.core/name    :create-meeting}]]
-      (->> (execute (td/get-ds) @td/ds meeting :tms (t/read-file "tie.edn.sql")
-                    :type :dadysql.plugin.sql.jdbc-io/transaction)
+      (->> (sql-execute (td/get-ds) @td/ds meeting :tms (t/read-file "tie.edn.sql")
+                        :type :dadysql.plugin.sql.jdbc-io/transaction)
            (clojure.pprint/pprint)))
 
     )

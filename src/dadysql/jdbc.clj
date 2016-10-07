@@ -28,11 +28,11 @@
   (if-let [r (f/failed? (tie/validate-input! req-m))]
     r
     (let [op-m {:dadysql.core/op :dadysql.core/op-pull}
-          sql-exec (ce/sql-execute ds tms :dadysql.plugin.sql.jdbc-io/parallel)
+          sql-exec (ce/warp-sql-execute ds tms :dadysql.plugin.sql.jdbc-io/parallel)
           gen (fn [_] 1)]
       (-> op-m
           (merge req-m)
-          (assoc :dadysql.core/callback gen)
+          (assoc :dadysql.core/pull gen)
           (assoc :dadysql.core/sql-exec sql-exec)
           (tie/do-execute tms)))))
 
@@ -44,13 +44,13 @@
   [ds tms req-m]
   (if-let [r (f/failed? (tie/validate-input! req-m))]
     r
-    (let [sql-exec (ce/sql-execute ds tms :dadysql.plugin.sql.jdbc-io/transaction)
+    (let [sql-exec (ce/warp-sql-execute ds tms :dadysql.plugin.sql.jdbc-io/transaction)
           gen (fn [m]
                 (->> (assoc m :dadysql.core/op :dadysql.core/op-db-seq)
                      (pull ds tms)))]
       (-> req-m
           (assoc :dadysql.core/op :dadysql.core/op-push!)
-          (assoc :dadysql.core/callback gen)
+          (assoc :dadysql.core/pull gen)
           (assoc :dadysql.core/sql-exec sql-exec)
           (tie/do-execute tms)))))
 

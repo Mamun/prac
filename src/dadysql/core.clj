@@ -202,10 +202,10 @@
                     (warp-bind-sql req-m)
                     (warp-do-output req-m)
                     (warp-do-output-join req-m))
-        gen (:dadysql.core/callback req-m)]
+        pull-fn (:dadysql.core/pull req-m)]
     (f/try-> tms
              (dc/select-name req-m)
              (dc/init-db-seq-op req-m)
-             (pi/bind-input req-m gen)
+             (pi/bind-input req-m pull-fn)
              (validate-input-spec!)
              (handler))))
