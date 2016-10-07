@@ -3,7 +3,7 @@
         [dady.fail]
         [dadysql.compiler.util])
   (:require                                                 ;[dadysql.plugin.sql-bind-impl :refer :all]
-    [dadysql.plugin.sql.bind-impl :refer :all]
+    [dadysql.plugin.sql-bind-impl :refer :all]
     ;[dadysql.plugin.sql-util :refer :all]
 
     [dady.proto :refer :all]

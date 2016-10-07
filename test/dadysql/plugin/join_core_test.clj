@@ -1,6 +1,6 @@
 (ns dadysql.plugin.join.join-core-test
   (:use [clojure.test])
-  (:require [dadysql.plugin.join.core :refer :all]))
+  (:require [dadysql.plugin.join-impl :refer :all]))
 
 
 (comment

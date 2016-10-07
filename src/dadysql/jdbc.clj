@@ -9,8 +9,8 @@
     [dadysql.spec-core :as sc]
     [dadysql.compiler.core :as fr]
     [dady.fail :as f]
-    [dadysql.plugin.sql.jdbc-io :as ce]
-    [dadysql.plugin.params.core :as pi]))
+    [dadysql.plugin.jdbc-io :as ce]
+    [dadysql.plugin.param-impl :as pi]))
 
 
 (defn read-file

@@ -1,7 +1,7 @@
-(ns dadysql.plugin.params.core
+(ns dadysql.plugin.param-impl
   (:require [dady.common :as cc]
             [dady.fail :as f]
-            [dadysql.plugin.join.core :as ji]
+            [dadysql.plugin.join-impl :as ji]
             [dadysql.plugin.util :as ccu]))
 
 

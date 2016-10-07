@@ -2,7 +2,7 @@
   (:use [clojure.test])
   (:require [dadysql.jdbc-core :refer :all]
             ;[dadysql.plugin.factory :refer :all]
-            [dadysql.plugin.params.core :as p]
+            [dadysql.plugin.param-impl :as p]
             [dadysql.plugin.util :as cu]))
 
 

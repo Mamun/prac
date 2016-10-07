@@ -1,4 +1,4 @@
-(ns dadysql.plugin.params.core-test
+(ns dadysql.plugin.params.param-impl-test
   (:use [clojure.test]
         [dady.fail])
   (:require
@@ -6,7 +6,7 @@
 
     ;[dady.node-proto :as p]
 
-    [dadysql.plugin.params.core :refer :all]
+    [dadysql.plugin.param-impl :refer :all]
     #_[dadysql.spec :refer :all]
     [dady.common :refer :all]
     [clojure.spec :as sp]))

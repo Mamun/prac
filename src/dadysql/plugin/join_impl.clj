@@ -1,4 +1,4 @@
-(ns dadysql.plugin.join.core
+(ns dadysql.plugin.join-impl
   (:require [dady.common :as cc]
             [dady.fail :as f]
             [dadysql.plugin.util :as cu]

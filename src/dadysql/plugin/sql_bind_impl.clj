@@ -1,4 +1,4 @@
-(ns dadysql.plugin.sql.bind-impl
+(ns dadysql.plugin.sql-bind-impl
   (:require [dady.fail :as f]
             [dady.common :as cc]))
 

@@ -2,11 +2,9 @@
   (:require
     [clojure.spec :as s]
     [dady.fail :as f]
-    [dadysql.plugin.join.core :as ji]
-
-    [dadysql.plugin.sql.bind-impl :as bi]
-    [dadysql.plugin.common-impl :as ci]
-    ))
+    [dadysql.plugin.join-impl :as ji]
+    [dadysql.plugin.sql-bind-impl :as bi]
+    [dadysql.plugin.common-impl :as ci]))
 
 
 
