@@ -50,12 +50,12 @@
 
 (deftest params-spec-test
   (testing "test params spec "
-    (let [v [[:next_transaction_id :ref-fn-key 'inc :transaction_id]]
-          r (s/conform :dadysql.core/param v)]
+    (let [v [[:next_transaction_id :dadysql.core/param-ref-fn-key 'inc :transaction_id]]
+          r (s/conform :dadysql.core/param-coll v)]
       (is (not= :clojure.spec/invalid r))))
   (testing "test params spec for invalid case "
-    (let [v [[:next_transaction_id :ref-fn-key 'inc "transaction_id"]]
-          r (s/conform :dadysql.core/param v)]
+    (let [v [[:next_transaction_id :dadysql.core/param-ref-fn-key 'inc "transaction_id"]]
+          r (s/conform :dadysql.core/param-coll v)]
       (is (= :clojure.spec/invalid r)))))
 
 #_(gen/sample (gen/fmap (fn [w]
@@ -68,15 +68,15 @@
 
 (deftest join-spec-test
   (testing "test join spec"
-    (let [v [[:department :id :1-n :employee :dept_id]
-             [:employee :id :1-1 :employee-detail :employee_id]
-             [:employee :id :n-n :meeting :meeting_id [:employee-meeting :employee_id :meeting_id]]]
+    (let [v [[:department :id :dadysql.core/join-one-many :employee :dept_id]
+             [:employee :id :dadysql.core/join-one-one :employee-detail :employee_id]
+             [:employee :id :dadysql.core/join-many-many :meeting :meeting_id [:employee-meeting :employee_id :meeting_id]]]
           r (s/conform :dadysql.core/join v)]
       (is (not= :clojure.spec/invalid r))))
   (testing "test join spec for invalid missing n-n key "
-    (let [v [[:department :id :1-n :employee :dept_id]
-             [:employee :id :1-1 :employee-detail :employee_id]
-             [:employee :id :n-n :meeting :meeting_id [:employee-meeting :employee_id]]]
+    (let [v [[:department :id :dadysql.core/join-one-many :employee :dept_id]
+             [:employee :id :dadysql.core/join-one-one :employee-detail :employee_id]
+             [:employee :id :dadysql.core/join-many-many :meeting :meeting_id [:employee-meeting :employee_id]]]
           r (s/conform :dadysql.core/join v)]
       (is (= :clojure.spec/invalid r)))))
 
@@ -112,7 +112,7 @@
                 (f/read-file)
                 )
           actual-result (s/conform :dadysql.core/compiler-input-spec w)]
-      ; (clojure.pprint/pprint actual-result)
+ ;      (clojure.pprint/pprint actual-result)
       (is (not= :clojure.spec/invalid actual-result)))))
 
 
@@ -121,7 +121,7 @@
 
 
 
-
+;(not= :clojure.spec/invalid :clojure.spec/invalid)
 
 
 ;(run-tests)

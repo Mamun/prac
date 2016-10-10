@@ -16,12 +16,12 @@
         (f/failed? output)
         tm
         (and (empty? output)
-             (contains? result :dadysql.core/single))
+             (contains? result :dadysql.core/result-single))
         (assoc tm :dadysql.core/output {})
-        (and (contains? result :dadysql.core/array)
-             (contains? result :dadysql.core/single))
+        (and (contains? result :dadysql.core/result-array)
+             (contains? result :dadysql.core/result-single))
         (assoc tm :dadysql.core/output [(first output) (second output)])
-        (contains? result :dadysql.core/single)
+        (contains? result :dadysql.core/result-single)
         (assoc tm :dadysql.core/output (first output))
         :else tm))))
 

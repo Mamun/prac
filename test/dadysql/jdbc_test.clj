@@ -49,7 +49,7 @@
           2000 (get-in w [:get-dept-by-id :dadysql.core/timeout])
           ;["select * from department where id = :id " :id] (get-in w [:get-dept-by-id :dadysql.core/sql])
        ;   [[:id :type (resolve 'int?) "Id will be Long "]] (get-in w [:get-dept-by-id validation-key])
-          [[:department :id :dadysql.core/one-many :employee :dept_id]] (get-in w [:get-dept-by-id :dadysql.core/join])
+          [[:department :id :dadysql.core/join-one-many :employee :dept_id]] (get-in w [:get-dept-by-id :dadysql.core/join])
 
           #_[[:id :type #'clojure.core/vector? "Id will be sequence"]
            [:id :contain #'clojure.core/int? "Id contain will be Long "]]
@@ -70,14 +70,14 @@
           (= expected actual)
 
           ;join test
-          [[:employee :id :dadysql.core/one-one :employee-detail :employee_id]
+          [[:employee :id :dadysql.core/join-one-one :employee-detail :employee_id]
            [:employee
             :id
-            :dadysql.core/many-many
+            :dadysql.core/join-many-many
             :meeting
             :meeting_id
             [:employee-meeting :employee_id :meeting_id]]
-           [:employee :dept_id :dadysql.core/many-one :department :id]] (get-in w [:get-dept-employee :dadysql.core/join]))
+           [:employee :dept_id :dadysql.core/join-many-one :department :id]] (get-in w [:get-dept-employee :dadysql.core/join]))
 
         (are [expected actual]
           (= expected actual)
@@ -85,7 +85,7 @@
           :meeting (get-in w [:create-meeting :dadysql.core/model])
           [[:meeting
             :meeting_id
-            :dadysql.core/many-many
+            :dadysql.core/join-many-many
             :employee
             :id
             [:employee-meeting :meeting_id :employee_id]]] (get-in w [:get-meeting-by-id :dadysql.core/join])))))

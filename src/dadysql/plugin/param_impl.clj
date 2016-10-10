@@ -25,10 +25,10 @@
   [_ [root-m & child-m] param-m]
   (let [model-name (get root-m :dadysql.core/model)
         rp (ccu/get-path param-m model-name)
-        rpp (assoc-param-path param-m rp (:dadysql.core/param root-m))
+        rpp (assoc-param-path param-m rp (:dadysql.core/param-coll root-m))
         cpp (for [c child-m
                   :let [crp (ccu/get-path param-m rp (:dadysql.core/model c))]
-                  p (assoc-param-path param-m crp (:dadysql.core/param c))]
+                  p (assoc-param-path param-m crp (:dadysql.core/param-coll c))]
               p)]
     (-> []
         (into rpp)
@@ -38,7 +38,7 @@
 (defmethod param-paths
   :dadysql.core/format-map
   [_ tm-coll param-m]
-  (->> (map :dadysql.core/param tm-coll)
+  (->> (map :dadysql.core/param-coll tm-coll)
        (reduce concat)
        (cc/distinct-with-range 1)
        (assoc-param-path param-m (ccu/empty-path))))
@@ -47,20 +47,20 @@
 
 (defn do-param1 [generator path m]
   (condp = (second path)
-    :dadysql.core/ref-con
+    :dadysql.core/param-ref-con
     (let [[_ _ v] path]
       v)
-    :dadysql.core/ref-key
+    :dadysql.core/param-ref-key
     (let [[s _ k] path]
       (->> (cc/replace-last-in-vector s k)
            (get-in m)))
-    :dadysql.core/ref-fn-key
+    :dadysql.core/param-ref-fn-key
     (let [[s _ f k] path]
 
       (->> (cc/replace-last-in-vector s k)
            (get-in m)
            (f)))
-    :dadysql.core/ref-gen
+    :dadysql.core/param-ref-gen
     (let [[_ _ v] path]
       (generator {:dadysql.core/name v}))
     m))

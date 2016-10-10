@@ -75,7 +75,7 @@
                        w1)
 
         module-m (dissoc module-m :dadysql.core/name :dadysql.core/model :dadysql.core/sql :dadysql.core/extend :dadysql.core/doc)
-        f-config (select-keys f-config [:dadysql.core/param :dadysql.core/param-spec :dadysql.core/timeout])]
+        f-config (select-keys f-config [:dadysql.core/param-coll :dadysql.core/param-spec :dadysql.core/timeout])]
     (merge-with compiler-merge f-config module-m w2)))
 
 
@@ -85,7 +85,7 @@
        (apply dissoc m)))
 
 
-(def skip-key-for-call [:dadysql.core/join :dadysql.core/param-spec :dadysql.core/param])
+(def skip-key-for-call [:dadysql.core/join :dadysql.core/param-spec :dadysql.core/param-coll])
 (def skip-key-for-others [:dadysql.core/result :clojure.core/column])
 
 
@@ -108,7 +108,7 @@
   (->> (keys m)
        (reduce (fn [acc k]
                  (condp = k
-                   :dadysql.core/param (update-in acc [k] (fn [w] (cc/distinct-with-range 2 w)))
+                   :dadysql.core/param-coll (update-in acc [k] (fn [w] (cc/distinct-with-range 2 w)))
                    acc)
                  ) m)))
 
@@ -117,7 +117,7 @@
   (-> m
       (assoc :dadysql.core/dml-key (u/dml-type (:dadysql.core/sql m)))
       (update-in [:dadysql.core/sql] u/sql-str-emit)
-      (cc/update-if-contains [:dadysql.core/param] #(mapv u/param-emit %))))
+      (cc/update-if-contains [:dadysql.core/param-coll] #(mapv u/param-emit %))))
 
 
 
@@ -228,9 +228,11 @@
        (clojure.pprint/pprint)
        )
 
-  (->> (fr/read-file "tie.edn2.sql")
-       (do-compile)
+  (->> (read-file "tie.edn2.sql")
        #_(s/conform :dadysql.compiler.spec/compiler-input-spec))
+
+  (->> (read-file "tie.edn.sql"))
+
 
 
   (sp/registry)

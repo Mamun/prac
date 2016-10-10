@@ -7,6 +7,7 @@
 
 (defn validate-input-spec! [coll]
   (let [w (s/conform :dadysql.core/compiler-input-spec coll)]
+    ;(println "----w" w)
     (if (= w :clojure.spec/invalid)
       (do
         (println (s/explain :dadysql.core/compiler-input-spec coll))
@@ -70,7 +71,7 @@
 
 (defn find-join-model [[s-tab _ join-key d-tab _ [r-tab]]]
   (condp = join-key
-    :dadysql.core/many-many [d-tab s-tab r-tab]
+    :dadysql.core/join-many-many [d-tab s-tab r-tab]
     [d-tab s-tab]))
 
 
@@ -209,10 +210,10 @@
   [join-coll]
   (let [f (fn [[s-tab s-id join-key d-tab d-id [r-tab r-id r-id2] :as j]]
             (condp = join-key
-              :dadysql.core/one-one [d-tab d-id :dadysql.core/one-one s-tab s-id]
-              :dadysql.core/one-many [d-tab d-id :dadysql.core/many-one s-tab s-id]
-              :dadysql.core/many-one [d-tab d-id :dadysql.core/one-many s-tab s-id]
-              :dadysql.core/many-many [d-tab d-id :dadysql.core/many-many s-tab s-id [r-tab r-id2 r-id]]
+              :dadysql.core/join-one-one [d-tab d-id :dadysql.core/join-one-one s-tab s-id]
+              :dadysql.core/join-one-many [d-tab d-id :dadysql.core/join-many-one s-tab s-id]
+              :dadysql.core/join-many-one [d-tab d-id :dadysql.core/join-one-many s-tab s-id]
+              :dadysql.core/join-many-many [d-tab d-id :dadysql.core/join-many-many s-tab s-id [r-tab r-id2 r-id]]
               j))]
     (->> (map f join-coll)
          (concat join-coll)
@@ -308,7 +309,7 @@
 
 (defn param-emit [w]
   (condp = (second w)
-    :dadysql.core/ref-fn-key (assoc w 2 (resolve (nth w 2)))
+    :dadysql.core/param-ref-fn-key (assoc w 2 (resolve (nth w 2)))
     w))
 
 

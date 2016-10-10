@@ -10,7 +10,7 @@
   (reduce (fn [acc j1]
             (let [[s st rel _ dt [_ sdt _]] j1
                   w (keys (cc/group-by-value st (s data-m)))]
-              (if (= rel :dadysql.core/many-many)
+              (if (= rel :dadysql.core/join-many-many)
                 (merge acc {sdt w})
                 (merge acc {dt w})))
             ) {} j-coll))
@@ -19,7 +19,7 @@
 (defn group-by-target-entity-key-one
   ""
   [[_ _ rel d dt [n nst _]] data-m]
-  (if (= rel :dadysql.core/many-many)
+  (if (= rel :dadysql.core/join-many-many)
     {d {nst (cc/group-by-value nst (get data-m n))}}
     {d {dt (cc/group-by-value dt (get data-m d))}}))
 
@@ -37,7 +37,7 @@
 (defn get-target-relational-key-value
   [target-rel-data-m data-m [s st rel d dt [_ nst _]]]
   (let [s-value (get-in data-m (conj s st))]
-    (if (= :dadysql.core/many-many rel)
+    (if (= :dadysql.core/join-many-many rel)
       (get-in target-rel-data-m [d nst s-value])
       (get-in target-rel-data-m [d dt s-value]))))
 
@@ -99,7 +99,7 @@
 (defn split-join-n-n-key
   [j-coll]
   (split-with (fn [[_ _ rel]]
-                (if (= rel :dadysql.core/many-many)
+                (if (= rel :dadysql.core/join-many-many)
                   true
                   false))
               j-coll))
@@ -107,7 +107,7 @@
 
 (defn group-by-target-entity-one
   [data j]
-  (if (= :dadysql.core/many-many (nth j 2))
+  (if (= :dadysql.core/join-many-many (nth j 2))
     (let [[st stc _ dt dtc [rdt s d]] j]
       {rdt [{s (get-in data (conj st stc))
              d (get-in data (conj dt dtc))}]})

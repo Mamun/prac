@@ -79,14 +79,14 @@
 
 (deftest filter-join-key-coll-test
   (testing "test filter-join-key-coll"
-    (let [j [[:d-tab :d-id :dadysql.core/one-one :s-tab :s-id]]
+    (let [j [[:d-tab :d-id :dadysql.core/join-one-one :s-tab :s-id]]
           model [:s-tab]
           actual-result (filter-join-key-coll j model)
-          expected-result [[:d-tab :d-id :dadysql.core/one-one :s-tab :s-id]]]
+          expected-result [[:d-tab :d-id :dadysql.core/join-one-one :s-tab :s-id]]]
       (is (= actual-result
              expected-result))))
   (testing "test filter-join-key "
-    (let [j [[:d-tab :d-id :dadysql.core/one-one :s-tab :s-id]]
+    (let [j [[:d-tab :d-id :dadysql.core/join-one-one :s-tab :s-id]]
           model [:s-tab2]
           actual-result (filter-join-key-coll j model)
           expected-result []]

@@ -31,7 +31,7 @@
   [join model-coll]
   (->> join
        (filter (fn [[_ _ rel d-table _ nr]]
-                 (if (= rel :dadysql.core/many-many)
+                 (if (= rel :dadysql.core/join-many-many)
                    (some #{(first nr)} model-coll)
                    (some #{d-table} model-coll))))
        (into [])))
@@ -114,7 +114,7 @@
     :dadysql.core/op-db-seq
     (-> m
         (assoc :dadysql.core/model (:dadysql.core/name m))
-        (assoc :dadysql.core/result #{:dadysql.core/single :dadysql.core/array})
+        (assoc :dadysql.core/result #{:dadysql.core/result-single :dadysql.core/result-array})
         (assoc :dadysql.core/dml-key :dadysql.core/dml-select))
     m))
 

@@ -55,8 +55,8 @@
   [commit-type read-only result-coll]
   (cond
     (= true read-only) true
-    (= commit-type :dadysql.core/none) true
-    (and (= commit-type :dadysql.core/all)
+    (= commit-type :dadysql.core/commit-none) true
+    (and (= commit-type :dadysql.core/commit-all)
          (f/failed? result-coll)) true
     :else false))
 
@@ -73,15 +73,15 @@
   (let [p (comp
             (filter #(not= :dadysql.core/dml-select (:dadysql.core/dml-key %)))
             (map #(:dadysql.core/commit %))
-            (map #(or % :dadysql.core/all)))
+            (map #(or % :dadysql.core/commit-all)))
         commits (into [] p tm-coll)]
     ;(println commits)
     (if (empty? commits)
-      :dadysql.core/none
-      (or (some #{:dadysql.core/none} commits)
-          (some #{:dadysql.core/all} commits)
-          (cc/contain-all? commits :dadysql.core/any)
-          :dadysql.core/none))))
+      :dadysql.core/commit-none
+      (or (some #{:dadysql.core/commit-none} commits)
+          (some #{:dadysql.core/commit-all} commits)
+          (cc/contain-all? commits :dadysql.core/commit-any)
+          :dadysql.core/commit-none))))
 
 
 (defn read-only?
@@ -100,7 +100,7 @@
         result (:dadysql.core/result tm)]
     (condp = dml-type
       :dadysql.core/dml-select
-      (if (contains? result :dadysql.core/array)
+      (if (contains? result :dadysql.core/result-array)
         (jdbc/query ds sql :as-arrays? true :identifiers clojure.string/lower-case)
         (jdbc/query ds sql :as-arrays? false :identifiers clojure.string/lower-case))
       :dadysql.core/dml-insert
@@ -190,7 +190,7 @@
 
 
 (defn execute-type [commit-type]
-  (if (= :dadysql.core/all commit-type)
+  (if (= :dadysql.core/commit-all commit-type)
     :dadysql.plugin.sql.jdbc-io/serial-until-failed
     :dadysql.plugin.sql.jdbc-io/serial))
 
@@ -244,12 +244,12 @@
                                           ["insert into meeting (meeting_id, subject) values (?, ?)"
                                            [109 "Hello Meeting for IT"]],
                     :dadysql.core/timeout 1000,
-                    :dadysql.core/commit  :dadysql.core/all,
+                    :dadysql.core/commit  :dadysql.core/commit-all,
                     :dadysql.core/dml-key :dadysql.core/dml-insert,
                     :dadysql.core/join    [],
                     :dadysql.core/group   :create-meeting,
                     :dadysql.core/model   :meeting,
-                    :dadysql.core/param   [[:meeting_id :dadysql.core/ref-gen :gen-meet]],
+                    :dadysql.core/param-coll   [[:meeting_id :dadysql.core/param-ref-gen :gen-meet]],
                     :dadysql.core/index   0,
                     :dadysql.core/input
                                           {:subject "Hello Meeting for IT", :meeting_id 109},
