@@ -1,5 +1,8 @@
 (ns dadysql.compiler.spec
-  (:require [clojure.spec :as s]))
+  (:require [clojure.spec :as s]
+            [clojure.spec :as s]
+            [clojure.spec :as s]
+            [clojure.spec :as s]))
 
 ;(defonce global-key :_global_)
 
@@ -84,11 +87,30 @@
 
 (s/def :dadysql.core/param-spec (s/and keyword? ns-keyword?))
 
-(s/def :dadysql.core/common (s/keys :opt [:dadysql.core/timeout :dadysql.core/column :dadysql.core/result :dadysql.core/param-coll :dadysql.core/param-spec]))
+(s/def :dadysql.core/common
+  (s/merge
+    (s/keys :opt [:dadysql.core/timeout
+                  :dadysql.core/column
+                  :dadysql.core/result
+                  :dadysql.core/param-coll
+                  :dadysql.core/param-spec])))
+
 
 
 (s/def :dadysql.core/extend
   (s/every-kv keyword? (s/merge (s/keys :opt [:dadysql.core/model]) :dadysql.core/common)))
+
+
+
+(comment
+
+  (s/exercise :dadysql.core/common)
+
+  (clojure.pprint/pprint
+    (s/exercise :dadysql.core/extend 1))
+
+  )
+
 
 
 (s/def :dadysql.core/module (s/merge
@@ -150,8 +172,7 @@
                 :param-spec   :dadysql.core/param-spec
 
                 :extend       :dadysql.core/extend
-                :spec-file    :dadysql.core/spec-file
-                })
+                :spec-file    :dadysql.core/spec-file})
 
 
 
