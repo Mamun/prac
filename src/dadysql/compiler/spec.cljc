@@ -6,12 +6,11 @@
 ;(defonce process-context-key :process-context)
 
 
-(s/def :dadysql.core/dml-select (s/spec #(= :select %)))
-(s/def :dadysql.core/dml-insert any?)
-(s/def :dadysql.core/dml-update any?)
-(s/def :dadysql.core/dml-delete any?)
-(s/def :dadysql.core/dml-call any?)
-(s/def :dadysql.core/dml-type any?)
+(s/def :dadysql.core/dml #{:dadysql.core/dml-select
+                           :dadysql.core/dml-insert
+                           :dadysql.core/dml-update
+                           :dadysql.core/dml-delete
+                           :dadysql.core/dml-call})
 
 
 (s/def :dadysql.core/commit #{:dadysql.core/commit-all
@@ -139,7 +138,7 @@
                 :any          :dadysql.core/commit-any
                 :none         :dadysql.core/commit-none
 
-                :dml-type     :dadysql.core/dml-type
+                :dml-type     :dadysql.core/dml
                 :index        :dadysql.core/index
 
                 :skip         :dadysql.core/skip
@@ -160,13 +159,13 @@
 
 (comment
 
-  (s/valid? :dadysql.core/input {:name   [:get-employee-detail]
+  (s/valid? :dadysql.core/param {:name   [:get-employee-detail]
                                  :params {:id 1}})
 
 
-  (s/explain :dadysql.core/input {:name                      [:get-employee-detail]
+  (s/explain :dadysql.core/param {:name                      [:get-employee-detail]
                                   :group                     :load-dept
-                                  :dadysql.core/input-format :map
+                                  :dadysql.core/param-format :map
                                   :params                    {}})
 
   )

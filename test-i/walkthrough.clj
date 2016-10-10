@@ -96,14 +96,14 @@
   (-> @td/ds
       (t/pull (t/read-file "tie.edn.sql")
               {:dadysql.core/name   [:get-dept-by-id :get-dept-employee]
-               :dadysql.core/input {:id 1}})
+               :dadysql.core/param {:id 1}})
       (clojure.pprint/pprint))
 
 
   (-> @td/ds
       (t/pull (t/read-file "tie.edn.sql")
               {:dadysql.core/name   [:get-employee-by-id :get-employee-dept :get-employee-detail]
-               :dadysql.core/input {:id 1}}
+               :dadysql.core/param {:id 1}}
               )
       (clojure.pprint/pprint))
 
@@ -111,7 +111,7 @@
   (-> @td/ds
       (t/pull (t/read-file "tie.edn.sql")
               {:dadysql.core/name   [:get-employee-detail]
-               :dadysql.core/input {:id 1}}
+               :dadysql.core/param {:id 1}}
               ;:dadysql.core/output-format :nested-join
               )
       (clojure.pprint/pprint))
@@ -121,7 +121,7 @@
   (-> @td/ds
       (t/pull (t/read-file "tie.edn.sql")
               {:dadysql.core/group  :load-employee
-               :dadysql.core/input {:id 1}}
+               :dadysql.core/param {:id 1}}
               ;:dadysql.core/output-format :nested-join
               )
       (clojure.pprint/pprint))
@@ -133,7 +133,7 @@
     (-> @td/ds
         (t/push! (t/read-file "tie.edn.sql")
                  {:dadysql.core/name   :create-dept
-                  :dadysql.core/input v}
+                  :dadysql.core/param v}
                  ;:dadysql.core/output-format :as-sequence
                  )
         (clojure.pprint/pprint)))
@@ -146,7 +146,7 @@
     (-> @td/ds
         (t/push! (t/read-file "tie.edn.sql")
                  {:dadysql.core/name   [:create-dept]
-                  :dadysql.core/input d}
+                  :dadysql.core/param d}
 
                  )
         (clojure.pprint/pprint)))
@@ -209,7 +209,7 @@
         (t/push! (t/read-file "tie.edn.sql")
                  {
                   :dadysql.core/name [:update-dept]
-                  :dadysql.core/input            d})
+                  :dadysql.core/param            d})
         (clojure.pprint/pprint)))
 
   (let [d {:dept_name "Call Center Munich 1" :transaction_id 0 :id 2}]

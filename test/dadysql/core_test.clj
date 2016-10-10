@@ -18,7 +18,7 @@
                   :dadysql.core/join        [],
                   :dadysql.core/group       :load-dept,
                   :dadysql.core/index       0,
-                  :dadysql.core/input {:id 1}}]
+                  :dadysql.core/param {:id 1}}]
           r (validate-input-spec! input)]
       (is (= r input)))))
 

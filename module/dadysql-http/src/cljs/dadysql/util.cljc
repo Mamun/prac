@@ -38,7 +38,7 @@
     [request-m]
     (#?(:clj  cc/try->
         :cljs try->) request-m
-                     (select-keys [:gname :name :params :dadysql.core/input-format :dadysql.core/output-format :input :accept :output])
+                     (select-keys [:gname :name :params :dadysql.core/param-format :dadysql.core/output-format :input :accept :output])
                      (cc/validate-input!)
                      (merge-default)))
 

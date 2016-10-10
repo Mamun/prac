@@ -251,7 +251,7 @@
                     :dadysql.core/model   :meeting,
                     :dadysql.core/param-coll   [[:meeting_id :dadysql.core/param-ref-gen :gen-meet]],
                     :dadysql.core/index   0,
-                    :dadysql.core/input
+                    :dadysql.core/param
                                           {:subject "Hello Meeting for IT", :meeting_id 109},
                     :dadysql.core/name    :create-meeting}]]
       (->> (sql-execute (td/get-ds) @td/ds meeting :tms (t/read-file "tie.edn.sql")

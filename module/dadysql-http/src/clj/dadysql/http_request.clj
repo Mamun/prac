@@ -44,10 +44,10 @@
 
 (defmethod request-format u/url-endpoint
   [_ params]
-  (let [r-params (dissoc params u/dadysql-name :dadysql.core/output-format :dadysql.core/input-format :gname)
+  (let [r-params (dissoc params u/dadysql-name :dadysql.core/output-format :dadysql.core/param-format :gname)
         q-name (c/as-keyword-batch (u/dadysql-name params))
         other (-> params
-                  (select-keys [:gname :dadysql.core/output-format :dadysql.core/input-format])
+                  (select-keys [:gname :dadysql.core/output-format :dadysql.core/param-format])
                   (as-keyword-value))]
     (-> other
         (assoc :dadysql.core/name q-name)

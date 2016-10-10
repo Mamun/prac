@@ -13,7 +13,7 @@
 
 (s/def :dadysql.core/output any?)
 
-(s/def :dadysql.core/input map?)
+(s/def :dadysql.core/param map?)
 
 (s/def :dadysql.core/format-nested any?)
 (s/def :dadysql.core/format-nested-array any?)
@@ -25,12 +25,11 @@
 
 (s/def :dadysql.core/output-format #{:dadysql.core/format-nested :dadysql.core/format-nested-array :dadysql.core/format-nested-join
                                      :dadysql.core/format-map :dadysql.core/format-array :dadysql.core/format-value})
-(s/def :dadysql.core/input-format #{:dadysql.core/format-nested :dadysql.core/format-map})
+(s/def :dadysql.core/param-format #{:dadysql.core/format-nested :dadysql.core/format-map})
 
-#_(s/def :dadysql.core/input map?)
 
 (s/def :dadysql.core/user-input (s/keys :req [(or :dadysql.core/name :dadysql.core/group)]
-                                        :opt [:dadysql.core/input :dadysql.core/input-format :dadysql.core/output-format]))
+                                        :opt [:dadysql.core/param :dadysql.core/param-format :dadysql.core/output-format]))
 
 
 
@@ -74,7 +73,7 @@
 (defn validate-input-spec! [tm-coll]
   (reduce (fn [acc v]
             (if-let [vali (:dadysql.core/param-spec v)]
-              (let [w (do-spec-validate vali (:dadysql.core/input v))]
+              (let [w (do-spec-validate vali (:dadysql.core/param v))]
                 (if (f/failed? w)
                   (reduced w)
                   (conj acc v)))
@@ -160,7 +159,7 @@
   (let [w (-> (:dadysql.core/join root)
               (ji/get-source-relational-key-value root-result))]
     (mapv (fn [r]
-            (update-in r [:dadysql.core/input] merge w)
+            (update-in r [:dadysql.core/param] merge w)
             ) more-tm)))
 
 

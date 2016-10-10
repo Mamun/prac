@@ -30,9 +30,9 @@
                       :dadysql.core/join       [],
                       :dadysql.core/group      :load-dept,
                       :dadysql.core/index      0}]
-            r (do-param tm-coll {:dadysql.core/input-format :dadysql.core/format-map
+            r (do-param tm-coll {:dadysql.core/param-format :dadysql.core/format-map
                                  :params                    {:id 4}})]
-        (is (= (get-in r [0 :dadysql.core/input]) {:id 4})))))
+        (is (= (get-in r [0 :dadysql.core/param]) {:id 4})))))
 
 
 

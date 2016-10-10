@@ -93,21 +93,21 @@
 
 (defmethod bind-input :dadysql.core/format-map
   [tm-coll request-m gen]
-  (let [input (:dadysql.core/input request-m)
+  (let [input (:dadysql.core/param request-m)
         input (param-exec tm-coll input :dadysql.core/format-map gen)]
     (if (f/failed? input)
       input
-      (mapv (fn [m] (assoc m :dadysql.core/input input)) tm-coll))))
+      (mapv (fn [m] (assoc m :dadysql.core/param input)) tm-coll))))
 
 
 (defmethod bind-input :dadysql.core/format-nested
   [tm-coll request-m gen]
-  (let [input (:dadysql.core/input request-m)
+  (let [input (:dadysql.core/param request-m)
         input (param-exec tm-coll input :dadysql.core/format-nested gen)
         input (f/try-> input
                        (ji/do-disjoin (get-in tm-coll [0 :dadysql.core/join])))]
     (if (f/failed? input)
       input
-      (mapv (fn [m] (assoc m :dadysql.core/input ((:dadysql.core/model m) input))) tm-coll))))
+      (mapv (fn [m] (assoc m :dadysql.core/param ((:dadysql.core/model m) input))) tm-coll))))
 
 
