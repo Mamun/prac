@@ -39,93 +39,61 @@
 
 
 
-(defn dispatch-type [m]
+(defn do-format [m]
   (cond
     (and (keyword? (:dadysql.core/name m))
          (keyword? (:dadysql.core/model m)))
-    :keyword
+    (mapv vector
+          (range)
+          (:dadysql.core/sql m)
+          (repeat (:dadysql.core/name m))
+          (repeat (:dadysql.core/model m)))
+
     (and (sequential? (:dadysql.core/name m))
          (sequential? (:dadysql.core/model m)))
-    :sequential
+    (mapv vector
+          (range)
+          (:dadysql.core/sql m)
+          (:dadysql.core/name m)
+          (:dadysql.core/model m))
+
     (and (sequential? (:dadysql.core/name m))
          (keyword? (:dadysql.core/model m)))
-    :keyword-sequential
-
-    (sequential? (:dadysql.core/name m))
-    :name-sequential
-    (keyword? (:dadysql.core/name m))
-    :name-keyword))
-
-
-(defmulti map-name-model-sql (fn [m] (dispatch-type m)))
-
-
-(defmethod map-name-model-sql
-  :name-keyword
-  [m]
-  (let [sql (-> (:dadysql.core/sql m)
-                (first)
-                )]
-    [(-> m
-         (assoc :dadysql.core/index 0)
-         (assoc :dadysql.core/dml (dml-type sql))
-         (assoc :dadysql.core/sql (sql-str-emit sql)))]))
-
-
-(defmethod map-name-model-sql
-  :name-sequential
-  [m]
-  (mapv (fn [i s n]
-          {:dadysql.core/name  n
-           :dadysql.core/index i
-           :dadysql.core/dml   (dml-type s)
-           :dadysql.core/sql   (sql-str-emit s)})
-        (range)
-        (get-in m [:dadysql.core/sql])
-        (get-in m [:dadysql.core/name])))
-
-
-
-(defmethod map-name-model-sql
-  :keyword
-  [m]
-  (let [sql (-> (:dadysql.core/sql m)
-                (first)
-                )]
-    [(-> m
-         (assoc :dadysql.core/index 0)
-         (assoc :dadysql.core/dml (dml-type sql))
-         (assoc :dadysql.core/sql (sql-str-emit sql)))]))
-
-
-(defmethod map-name-model-sql
-  :sequential
-  [m]
-  (do
-    (mapv (fn [i s n m]
-            {:dadysql.core/name  n
-             :dadysql.core/dml   (dml-type s)
-             :dadysql.core/index i
-             :dadysql.core/sql   (sql-str-emit s)
-             :dadysql.core/model m})
+    (mapv vector
           (range)
           (get-in m [:dadysql.core/sql])
           (get-in m [:dadysql.core/name])
-          (get-in m [:dadysql.core/model]))))
+          (repeat (:dadysql.core/model m)))
 
-
-(defmethod map-name-model-sql
-  :keyword-sequential
-  [m]
-  (do
-    (mapv (fn [i n s]
-            (let [sql (sql-str-emit s)]
-              {:dadysql.core/index i
-               :dadysql.core/name  n
-               :dadysql.core/dml   (dml-type s)
-               :dadysql.core/sql   sql
-               :dadysql.core/model (get-in m [:dadysql.core/model])}))
+    (sequential? (:dadysql.core/name m))
+    (mapv vector
           (range)
-          (get-in m [:dadysql.core/name])
-          (get-in m [:dadysql.core/sql]))))
+          (:dadysql.core/sql m)
+          (:dadysql.core/name m)
+          (repeat (:dadysql.core/model m)))
+
+    (keyword? (:dadysql.core/name m))
+    (mapv vector
+          (range)
+          (:dadysql.core/sql m)
+          (repeat (:dadysql.core/name m))
+          (repeat (:dadysql.core/model m)))))
+
+
+(defn- map-sql [[i s n m]]
+  {:dadysql.core/name  n
+   :dadysql.core/dml   (dml-type s)
+   :dadysql.core/index i
+   :dadysql.core/sql   (sql-str-emit s)
+   :dadysql.core/model m})
+
+
+(defn map-sql-with-name-model
+  [m]
+  (->> m
+       (do-format)
+       (mapv map-sql)))
+
+
+
 

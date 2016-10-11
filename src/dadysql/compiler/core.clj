@@ -5,7 +5,7 @@
             [dadysql.compiler.file-reader :as fr]
             [dadysql.compiler.core-sql :as sql]
             [clojure.spec :as sp]
-
+            [dadysql.compiler.core-inheritance :as ci]
             [clojure.spec :as s]))
 
 
@@ -24,11 +24,6 @@
    :dadysql.core/tx-prop     [:isolation :serializable :read-only? true]})
 
 
-(defn compiler-merge
-  [old new]
-  (cond (map? new) (merge old new)
-        (vector? new) (into (empty old) (concat new old))
-        :else (or new old)))
 
 
 (defn reserve-regex []
@@ -63,23 +58,6 @@
     (hash-map :global f-global :reserve reserve :modules modules)))
 
 
-(defn do-merge
-  [w module-m f-config]
-  (let [name-v (get w :dadysql.core/name)
-        w1 (merge-with compiler-merge
-                       (get-in f-config [:dadysql.core/extend name-v])
-                       (get-in module-m [:dadysql.core/extend name-v])
-                       w)
-
-        model-v (get w1 :dadysql.core/model)
-        w2 (merge-with compiler-merge
-                       (get-in f-config [:dadysql.core/extend model-v])
-                       (get-in module-m [:dadysql.core/extend model-v])
-                       w1)
-
-        module-m (dissoc module-m :dadysql.core/name :dadysql.core/model :dadysql.core/sql :dadysql.core/extend :dadysql.core/doc)
-        f-config (select-keys f-config [:dadysql.core/param-coll :dadysql.core/param-spec :dadysql.core/timeout])]
-    (merge-with compiler-merge f-config module-m w2)))
 
 
 (defn do-skip
@@ -123,9 +101,9 @@
 
 
 (defn compile-one [m global-m]
-  (let [model-m (sql/map-name-model-sql (select-keys m [:dadysql.core/name :dadysql.core/model :dadysql.core/sql]))]
+  (let [model-m (sql/map-sql-with-name-model m)]
     (reduce (fn [acc v]
-              (->> (do-merge v m global-m)
+              (->> (ci/do-inheritance v m global-m)
                    (remove-duplicate)
                    (do-merge-default)
                    (compiler-emit)

@@ -2,7 +2,10 @@
   (:use [clojure.test]
         [dadysql.compiler.core-sql]))
 
+(comment
 
+  (run-tests)
+  )
 
 (deftest map-name-model-sql-test
   (testing "test name map sql "
@@ -12,7 +15,7 @@
                     ["call next value for seq_dept"
                      "call next value for seq_empl"
                      "call next value for seq_meet"]}
-          actual-result (map-name-model-sql w)]
+          actual-result (map-sql-with-name-model w)]
       (is (not-empty actual-result))))
 
   (testing "test name map sql "
@@ -21,14 +24,14 @@
                    ["call next value for seq_dept"
                     "call next value for seq_empl"
                     "call next value for seq_meet"]}
-          actual-result (map-name-model-sql w)]
+          actual-result (map-sql-with-name-model w)]
    ;   (clojure.pprint/pprint actual-result)
       (is (not-empty actual-result))))
 
   (testing "test name map sql "
     (let [w {:dadysql.core/name :gen-dept,
              :dadysql.core/sql  ["select * from dual "]}
-          actual-result (map-name-model-sql w)]
+          actual-result (map-sql-with-name-model w)]
 
 
       (is (not-empty actual-result)))))
