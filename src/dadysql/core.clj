@@ -11,6 +11,11 @@
 
 
 
+(s/def :dadysql.core/exec-total-time int?)
+(s/def :dadysql.core/exec-start-time int?)
+(s/def :dadysql.core/query-exception string?)
+
+
 (s/def :dadysql.core/output any?)
 
 (s/def :dadysql.core/param map?)

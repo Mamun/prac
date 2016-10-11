@@ -13,7 +13,7 @@
 
 (defn validate-input-type!
   [m]
-  (let [dml-type (:dadysql.core/dml-key m)
+  (let [dml-type (:dadysql.core/dml m)
         input (:dadysql.core/param m)
         sql (:dadysql.core/sql m)]
     (if (and (not= dml-type :dadysql.core/dml-insert)
@@ -34,7 +34,7 @@
                             :city
                             :state
                             :country],
-     :dadysql.core/dml-key :dadysql.core/dml-insert,
+     :dadysql.core/dml :dadysql.core/dml-insert,
      :input                [{:street      "Schwan",
                              :city        "Munich",
                              :state       "Bayern",
@@ -110,7 +110,7 @@
          (assoc tm :dadysql.core/sql))))
 
 
-(defmulti sql-bind (fn [tm] (:dadysql.core/dml-key tm)))
+(defmulti sql-bind (fn [tm] (:dadysql.core/dml tm)))
 
 
 (defmethod sql-bind

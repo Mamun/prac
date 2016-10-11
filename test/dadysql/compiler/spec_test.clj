@@ -91,15 +91,19 @@
 
 (deftest spec-test
   (testing "test do-compile "
-    (let [r (s/conform :dadysql.core/compiler-input-spec do-compile-input-data)]
+    (let [r (s/conform :dadysql.core/compiler-spec do-compile-input-data)]
       (is (not= :clojure.spec/invalid r)))))
 
 
+;(spec-test)
+
 (comment
+
+  ;(s/explain-str :dadysql.core/compiler-spec do-compile-input-data)
 
   ;(s/conform :tie-edn/get-dept-by-id {:id "asdf"})
 
-  (s/valid? :dadysql.core/compiler-input-spec do-compile-input-data2)
+
   )
 
 
@@ -111,7 +115,7 @@
     (let [w (-> "tie.edn.sql"
                 (f/read-file)
                 )
-          actual-result (s/conform :dadysql.core/compiler-input-spec w)]
+          actual-result (s/conform :dadysql.core/compiler-spec w)]
  ;      (clojure.pprint/pprint actual-result)
       (is (not= :clojure.spec/invalid actual-result)))))
 
@@ -125,7 +129,6 @@
 
 
 ;(run-tests)
-
 
 ;(spec-file-test)
 
@@ -143,7 +146,7 @@
 
     (gen/generate (s/gen :dadysql.core/global))
 
-    (gen/generate (s/gen :dadysql.core/compiler-input-spec))
+    (gen/generate (s/gen :dadysql.core/compiler-spec))
 
 
     (gen/sample
@@ -202,7 +205,7 @@
 
     (->> "tie.edn.sql"
          (f/read-file)
-         (s/explain :dadysql.core/compiler-input-spec)
+         (s/explain :dadysql.core/compiler-spec)
 
          )
 
@@ -212,7 +215,7 @@
 
 
 
-    (gen/generate (s/gen :dadysql.core/compiler-input-spec))
+    (gen/generate (s/gen :dadysql.core/compiler-spec))
 
     )
 

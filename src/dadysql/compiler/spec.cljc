@@ -1,8 +1,5 @@
 (ns dadysql.compiler.spec
-  (:require [clojure.spec :as s]
-            [clojure.spec :as s]
-            [clojure.spec :as s]
-            [clojure.spec :as s]))
+  (:require [clojure.spec :as s]))
 
 ;(defonce global-key :_global_)
 
@@ -19,12 +16,6 @@
 (s/def :dadysql.core/commit #{:dadysql.core/commit-all
                               :dadysql.core/commit-none
                               :dadysql.core/commit-any})
-
-
-
-(s/def :dadysql.core/exec-total-time int?)
-(s/def :dadysql.core/exec-start-time int?)
-(s/def :dadysql.core/query-exception string?)
 
 
 
@@ -47,14 +38,18 @@
 (s/def :dadysql.core/doc string?)
 (s/def :dadysql.core/timeout pos-int?)
 
-(s/def :dadysql.core/name (s/or :one keyword? :many (s/coll-of keyword? :kind vector? :distinct true)))
+(s/def :dadysql.core/name
+  (s/or :one keyword?
+        :many (s/coll-of keyword? :kind vector? :distinct true)))
 
 (s/def :dadysql.core/index int?)
 
 
 (s/def :dadysql.core/sql (s/every string? :kind vector?))
 
-(s/def :dadysql.core/model (s/or :one keyword? :many (s/coll-of keyword? :kind vector?)))
+(s/def :dadysql.core/model
+  (s/or :one keyword?
+        :many (s/coll-of keyword? :kind vector?)))
 
 (s/def :dadysql.core/skip (s/every keyword? :kind set?))
 
@@ -67,7 +62,7 @@
 (s/def :dadysql.core/join
   (clojure.spec/*
     (clojure.spec/alt
-      :one (s/tuple keyword? keyword? #{:dadysql.core/join-one-one :dadysql.core/join-one-many :dadysql.core/join-many-one} keyword? keyword?)
+      :one  (s/tuple keyword? keyword? #{:dadysql.core/join-one-one :dadysql.core/join-one-many :dadysql.core/join-many-one} keyword? keyword?)
       :many (s/tuple keyword? keyword? #{:dadysql.core/join-many-many} keyword? keyword? (s/tuple keyword? keyword? keyword?)))))
 
 
@@ -125,54 +120,15 @@
                                     :opt [:dadysql.core/timeout :dadysql.core/read-only? :dadysql.core/tx-prop :dadysql.core/file-reload :dadysql.core/reserve-name :dadysql.core/join :dadysql.core/spec-file]))
 
 
-(s/def :dadysql.core/compiler-input-spec (clojure.spec/cat :global (s/? :dadysql.core/global) :module (s/* :dadysql.core/module)))
+(s/def :dadysql.core/compiler-spec
+  (clojure.spec/cat
+    :global (s/? :dadysql.core/global)
+    :module (s/* :dadysql.core/module)))
 
 
 
 
 
-(def alais-map {:doc          :dadysql.core/doc
-                :timeout      :dadysql.core/timeout
-                :reserve-name :dadysql.core/reserve-name
-                :file-reload  :dadysql.core/file-reload
-                :tx-prop      :dadysql.core/tx-prop
-
-
-
-                :join         :dadysql.core/join
-                :1-1          :dadysql.core/join-one-one
-                :1-n          :dadysql.core/join-one-many
-                :n-1          :dadysql.core/join-many-one
-                :n-n          :dadysql.core/join-many-many
-
-                :name         :dadysql.core/name
-                :model        :dadysql.core/model
-                :group        :dadysql.core/group
-                :column       :dadysql.core/column
-                :sql          :dadysql.core/sql
-
-                :result       :dadysql.core/result
-                :array        :dadysql.core/result-array
-                :single       :dadysql.core/result-single
-
-                :commit       :dadysql.core/commit
-                :all          :dadysql.core/commit-all
-                :any          :dadysql.core/commit-any
-                :none         :dadysql.core/commit-none
-
-                :dml-type     :dadysql.core/dml
-                :index        :dadysql.core/index
-
-                :skip         :dadysql.core/skip
-                :param        :dadysql.core/param-coll
-                :ref-con      :dadysql.core/param-ref-con
-                :ref-key      :dadysql.core/param-ref-key
-                :ref-fn-key   :dadysql.core/param-ref-fn-key
-                :ref-gen      :dadysql.core/param-ref-gen
-                :param-spec   :dadysql.core/param-spec
-
-                :extend       :dadysql.core/extend
-                :spec-file    :dadysql.core/spec-file})
 
 
 

@@ -41,7 +41,7 @@
   [coll]
   (let [model-key-coll (mapv :dadysql.core/model coll)
         p (comp
-            (cc/xf-skip-type #(= :dadysql.core/dml-call (:dadysql.core/dml-key %)))
+            (cc/xf-skip-type #(= :dadysql.core/dml-call (:dadysql.core/dml %)))
             (map #(update-in % [:dadysql.core/join] filter-join-key-coll model-key-coll)))]
     (transduce p conj [] coll)))
 
@@ -115,7 +115,7 @@
     (-> m
         (assoc :dadysql.core/model (:dadysql.core/name m))
         (assoc :dadysql.core/result #{:dadysql.core/result-single :dadysql.core/result-array})
-        (assoc :dadysql.core/dml-key :dadysql.core/dml-select))
+        (assoc :dadysql.core/dml :dadysql.core/dml-select))
     m))
 
 

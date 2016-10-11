@@ -71,7 +71,7 @@
   "Return commit type if not found return commit-none-key  "
   [tm-coll]
   (let [p (comp
-            (filter #(not= :dadysql.core/dml-select (:dadysql.core/dml-key %)))
+            (filter #(not= :dadysql.core/dml-select (:dadysql.core/dml %)))
             (map #(:dadysql.core/commit %))
             (map #(or % :dadysql.core/commit-all)))
         commits (into [] p tm-coll)]
@@ -95,7 +95,7 @@
 
 (defn jdbc-handler
   [ds tm]
-  (let [dml-type (:dadysql.core/dml-key tm)
+  (let [dml-type (:dadysql.core/dml tm)
         sql (:dadysql.core/sql tm)
         result (:dadysql.core/result tm)]
     (condp = dml-type
@@ -245,7 +245,7 @@
                                            [109 "Hello Meeting for IT"]],
                     :dadysql.core/timeout 1000,
                     :dadysql.core/commit  :dadysql.core/commit-all,
-                    :dadysql.core/dml-key :dadysql.core/dml-insert,
+                    :dadysql.core/dml :dadysql.core/dml-insert,
                     :dadysql.core/join    [],
                     :dadysql.core/group   :create-meeting,
                     :dadysql.core/model   :meeting,

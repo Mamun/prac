@@ -3,7 +3,8 @@
             [dady.common :as cc]
             [dadysql.compiler.util :as u]
             [dadysql.compiler.file-reader :as fr]
-            [clojure.spec :as sp]))
+            [clojure.spec :as sp]
+            [clojure.spec :as s]))
 
 
 
@@ -91,7 +92,7 @@
 
 (defn do-skip-for-dml-type
   [m]
-  (condp = (:dadysql.core/dml-key m)
+  (condp = (:dadysql.core/dml m)
     :dadysql.core/dml-select m
     :dadysql.core/dml-call (apply dissoc m skip-key-for-call)
     (apply dissoc m skip-key-for-others)))
@@ -115,7 +116,7 @@
 
 (defn compiler-emit [m]
   (-> m
-      (assoc :dadysql.core/dml-key (u/dml-type (:dadysql.core/sql m)))
+      (assoc :dadysql.core/dml (u/dml-type (:dadysql.core/sql m)))
       (update-in [:dadysql.core/sql] u/sql-str-emit)
       (cc/update-if-contains [:dadysql.core/param-coll] #(mapv u/param-emit %))))
 
@@ -175,12 +176,6 @@
       (throw (ex-info "Spec not found " {:spec r})))))
 
 
-(defn key->nskey
-  [m mk]
-  (clojure.walk/postwalk (fn [x]
-                           (if-let [v (get mk x)]
-                             v
-                             x)) m))
 
 
 (defn do-compile [coll]
@@ -202,13 +197,8 @@
 
 
 
-(defn read-file* [file-name]
-  (do-compile (fr/read-file file-name)))
-
-
 (defn read-file [file-name ]
   (-> (fr/read-file file-name)
-      (key->nskey alais-map)
       (do-compile )))
 
 
@@ -220,13 +210,16 @@
   ;(symbol "asdf")
   ;(clojure.set/rename-keys {:a 3} {:b :v})
 
-  (-> (read-file "tie.edn3.sql")
-      ;(key->nskey alais-map)
-       ;  (postwalk-rename-key  )
+  (->>
+      (key->nskey (fr/read-file "tie.edn3.sql") alais-map)
+      (s/conform :dadysql.core/compiler-spec )
        ;(do-compile)
-       ;  (s/explain-data :dadysql.core/compiler-input-spec )
+       ;  (s/explain-data :dadysql.core/compiler-spec )
        (clojure.pprint/pprint)
        )
+
+  (clojure.pprint/pprint
+    (s/exercise :dadysql.core/compiler-spec 1))
 
   (->> (read-file "tie.edn2.sql")
        #_(s/conform :dadysql.compiler.spec/compiler-input-spec))

@@ -1,8 +1,56 @@
 (ns dadysql.compiler.file-reader
   (:require [clojure.java.io :as io]
-            [clojure.spec :as s]
-            [clojure.tools.reader.edn :as edn]
-    #_[dadysql.spec :refer :all]))
+            [clojure.tools.reader.edn :as edn]))
+
+
+(def alais-map {:doc          :dadysql.core/doc
+                :timeout      :dadysql.core/timeout
+                :reserve-name :dadysql.core/reserve-name
+                :file-reload  :dadysql.core/file-reload
+                :tx-prop      :dadysql.core/tx-prop
+
+                :join         :dadysql.core/join
+                :1-1          :dadysql.core/join-one-one
+                :1-n          :dadysql.core/join-one-many
+                :n-1          :dadysql.core/join-many-one
+                :n-n          :dadysql.core/join-many-many
+
+                :name         :dadysql.core/name
+                :model        :dadysql.core/model
+                :group        :dadysql.core/group
+                :column       :dadysql.core/column
+                :sql          :dadysql.core/sql
+
+                :result       :dadysql.core/result
+                :array        :dadysql.core/result-array
+                :single       :dadysql.core/result-single
+
+                :commit       :dadysql.core/commit
+                :all          :dadysql.core/commit-all
+                :any          :dadysql.core/commit-any
+                :none         :dadysql.core/commit-none
+
+                :dml-type     :dadysql.core/dml
+                :index        :dadysql.core/index
+
+                :skip         :dadysql.core/skip
+                :param        :dadysql.core/param-coll
+                :ref-con      :dadysql.core/param-ref-con
+                :ref-key      :dadysql.core/param-ref-key
+                :ref-fn-key   :dadysql.core/param-ref-fn-key
+                :ref-gen      :dadysql.core/param-ref-gen
+                :param-spec   :dadysql.core/param-spec
+
+                :extend       :dadysql.core/extend
+                :spec-file    :dadysql.core/spec-file})
+
+
+(defn key->nskey
+  [m mk]
+  (clojure.walk/postwalk (fn [x]
+                           (if-let [v (get mk x)]
+                             v
+                             x)) m))
 
 
 (defn- tie-file-reader
@@ -44,7 +92,8 @@
   (-> file-name
       (tie-file-reader)
       (map-sql-tag)
-      (reverse)))
+      (reverse)
+      (key->nskey alais-map)))
 
 
 

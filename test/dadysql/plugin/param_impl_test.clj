@@ -26,7 +26,7 @@
                       :dadysql.core/result     #{:single},
                       :dadysql.core/param-spec :get-dept-by-id/spec,
                       :dadysql.core/timeout    2000,
-                      :dadysql.core/dml-key    :dadysql.core/dml-select,
+                      :dadysql.core/dml    :dadysql.core/dml-select,
                       :dadysql.core/join       [],
                       :dadysql.core/group      :load-dept,
                       :dadysql.core/index      0}]
