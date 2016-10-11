@@ -132,7 +132,11 @@
 
 
 
-
+(defn validate-input-spec! [coll]
+  (let [w (s/conform :dadysql.core/compiler-spec coll)]
+    (if (= w :clojure.spec/invalid)
+      (do
+        (throw (ex-info "Compile failed " (s/explain-data :dadysql.core/compiler-spec coll)))))))
 
 
 

@@ -1,10 +1,11 @@
 (ns dadysql.compiler.core
-  (:require [dadysql.compiler.spec :refer :all]
+  (:require [dadysql.compiler.spec :as cs]
             [dady.common :as cc]
             [dadysql.compiler.util :as u]
             [dadysql.compiler.file-reader :as fr]
             [dadysql.compiler.core-sql :as sql]
             [clojure.spec :as sp]
+
             [clojure.spec :as s]))
 
 
@@ -174,7 +175,7 @@
 
 
 (defn do-compile [coll]
-  (u/validate-input-spec! coll)
+  (cs/validate-input-spec! coll)
   (u/validate-distinct-name! coll)
   (u/validate-name-sql! coll)
   (u/validate-name-model! coll)
