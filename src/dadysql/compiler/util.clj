@@ -1,8 +1,7 @@
 (ns dadysql.compiler.util
   (:require [clojure.spec :as s]
             [dadysql.compiler.spec]
-            [clojure.string]
-            [dady.common :as dc]))
+            [clojure.string]))
 
 
 (defn validate-input-spec! [coll]
@@ -102,98 +101,64 @@
 
 
 
-(comment
-
-
-
-  (->> [[:department :id :1-n :employee :dept_id]
-        [:employee :id :1-1 :employee-detail :employee_id]
-        [:employee :id :n-n :meeting :meeting_id [:employee-meeting :employee_id :meeting_id]]]
-
-       (find-join-model-batch)
-
-       )
-
-
-
-
-  [[[[:department :id :1-n :employee :dept_id]
-     [:employee :id :1-1 :employee-detail :employee_id]
-     [:employee :id :n-n :meeting :meeting_id [:employee-meeting :employee_id :meeting_id]]] nil]
-   [nil [:department :department :employee :meeting :employee-meeting]]]
-
-  (let [w [[[[:department :id :1-n :employee :dept_id]
-             [:employee :id :1-1 :employee-detail :employee_id]
-             [:employee :id :n-n :meeting :meeting_id [:employee-meeting :employee_id :meeting_id]]]]
-           [nil]]
-        w1 (->> w
-                ;(apply concat)
-                ;(apply concat)
-                )]
-    w1
-
-    )
-
-  )
-
 
 ;;;;;;;;;;;;;;;;;;;
 
 
 
-(defn map-name-model-sql [m]
-  ;(clojure.pprint/pprint m )
-  (cond
+#_(defn map-name-model-sql [m]
+    ;(clojure.pprint/pprint m )
+    (cond
 
-    (and (keyword? (:dadysql.core/name m))
-         (keyword? (:dadysql.core/model m)))
-    (do
-      [(-> m
-           (assoc :dadysql.core/index 0)
-           (update-in [:dadysql.core/sql] first))])
+      (and (keyword? (:dadysql.core/name m))
+           (keyword? (:dadysql.core/model m)))
+      (do
+        [(-> m
+             (assoc :dadysql.core/index 0)
+             (update-in [:dadysql.core/sql] first))])
 
-    (and (sequential? (:dadysql.core/name m))
-         (sequential? (:dadysql.core/model m)))
-    (do
-      (mapv (fn [i s n m]
+      (and (sequential? (:dadysql.core/name m))
+           (sequential? (:dadysql.core/model m)))
+      (do
+        (mapv (fn [i s n m]
+                {:dadysql.core/name  n
+                 :dadysql.core/index i
+                 :dadysql.core/sql   s
+                 :dadysql.core/model m})
+              (range)
+              (get-in m [:dadysql.core/sql])
+              (get-in m [:dadysql.core/name])
+              (get-in m [:dadysql.core/model])))
+
+      (and (sequential? (:dadysql.core/name m))
+           (keyword? (:dadysql.core/model m)))
+      (do
+        (mapv (fn [i n s]
+                {:dadysql.core/index i
+                 :dadysql.core/name  n
+                 :dadysql.core/sql   s
+                 :dadysql.core/model (get-in m [:dadysql.core/model])})
+              (range)
+              (get-in m [:dadysql.core/name])
+              (get-in m [:dadysql.core/sql])))
+
+      (sequential? (:dadysql.core/name m))
+      (mapv (fn [i s n]
               {:dadysql.core/name  n
                :dadysql.core/index i
-               :dadysql.core/sql   s
-               :dadysql.core/model m})
+               :dadysql.core/sql   s})
             (range)
             (get-in m [:dadysql.core/sql])
-            (get-in m [:dadysql.core/name])
-            (get-in m [:dadysql.core/model])))
+            (get-in m [:dadysql.core/name]))
 
-    (and (sequential? (:dadysql.core/name m))
-         (keyword? (:dadysql.core/model m)))
-    (do
-      (mapv (fn [i n s]
-              {:dadysql.core/index i
-               :dadysql.core/name  n
-               :dadysql.core/sql   s
-               :dadysql.core/model (get-in m [:dadysql.core/model])})
-            (range)
-            (get-in m [:dadysql.core/name])
-            (get-in m [:dadysql.core/sql])))
+      (keyword? (:dadysql.core/name m))
+      [(-> m
+           (assoc :dadysql.core/index 0)
+           (update-in [:dadysql.core/sql] first))]
 
-    (sequential? (:dadysql.core/name m))
-    (mapv (fn [i s n]
-            {:dadysql.core/name  n
-             :dadysql.core/index i
-             :dadysql.core/sql   s})
-          (range)
-          (get-in m [:dadysql.core/sql])
-          (get-in m [:dadysql.core/name]))
-
-    (keyword? (:dadysql.core/name m))
-    [(-> m
-         (assoc :dadysql.core/index 0)
-         (update-in [:dadysql.core/sql] first))]
-
-    :else
-    (do
-      (throw (ex-info "Does not match " m)))))
+      :else
+      (do
+        (throw (ex-info "Does not match " m)))))
 
 
 
@@ -201,7 +166,7 @@
 
 
 
-(def as-lower-case-keyword (comp keyword clojure.string/lower-case name))
+
 
 
 ;;;;;;;;;;;;;;;;,Join emit ;
@@ -234,74 +199,15 @@
 
 (defn join-emit [j-coll]
   (->> j-coll
-       ;(join-emission-batch)
        (map-reverse-join)
        (group-by-join-src)))
 
 
 ;;;;;;;;;;;;;;;;,,Emit sql ;;;;;;
-#_(defn dml-type
-    [v]
-    ;(println v)
-    (-> v
-
-        (clojure.string/trim)
-        (clojure.string/lower-case)
-        (clojure.string/split #"\s+")
-        (first)
-        (keyword)))
-
-(defn dml-type
-  [v]
-  ;(println v)
-  (let [w (-> v
-              ; (first)
-              (clojure.string/trim)
-              (clojure.string/lower-case)
-              (clojure.string/split #"\s+")
-              (first)
-              (keyword))]
-
-    (condp = w
-      :select :dadysql.core/dml-select
-      :update :dadysql.core/dml-update
-      :insert :dadysql.core/dml-insert
-      :delete :dadysql.core/dml-delete
-      :call :dadysql.core/dml-call
-      (throw (ex-info "Undefined dml op" {:for v})))
-    ))
 
 
 
-(def sql-param-regex #"\w*:[\w|\-|#]+")
 
-
-(defn sql-str-emit
-  [sql-str]
-  (->> (re-seq sql-param-regex sql-str)
-       (transduce (comp (map read-string)) conj)
-       (reduce (fn [acc v]
-                 (let [w (as-lower-case-keyword v)
-                       sql-str-w (-> (first acc)
-                                     (clojure.string/replace-first (re-pattern (dc/as-string v)) (dc/as-string w)))]
-                   (-> (assoc-in acc [0] sql-str-w)
-                       (conj w)))
-                 ) [sql-str])))
-
-
-#_(defn sql-emit
-    [sql-str]
-    (let [p (comp (filter not-empty)
-                  (map sql-str-emit)
-                  (map (fn [v] {:dadysql.core/sql v
-                                dml-key           (dml-type v)})))
-          sql (-> (clojure.string/trim sql-str)
-                  (clojure.string/lower-case)
-                  (clojure.string/split #";"))]
-      (->> (transduce p conj [] sql)
-           (mapv (fn [i m]
-                   (assoc m index i)
-                   ) (range)))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;
@@ -313,13 +219,6 @@
     w))
 
 
-
-
-#_(defn validation-emit [v]
-    (condp = (second v)
-      validation-type-key (assoc v 2 (resolve (nth v 2)))
-      validation-contain-key (assoc v 2 (resolve (nth v 2)))
-      v))
 
 
 

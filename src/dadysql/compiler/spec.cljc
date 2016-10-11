@@ -1,10 +1,6 @@
 (ns dadysql.compiler.spec
   (:require [clojure.spec :as s]))
 
-;(defonce global-key :_global_)
-
-;(defonce process-context-key :process-context)
-
 
 (s/def :dadysql.core/dml #{:dadysql.core/dml-select
                            :dadysql.core/dml-insert
@@ -80,7 +76,15 @@
 (defn ns-keyword? [v]
   (if (namespace v) true false))
 
-(s/def :dadysql.core/param-spec (s/and keyword? ns-keyword?))
+(s/def :dadysql.core/param-spec #_(s/map-of keyword? resolve? ) (s/and keyword? ns-keyword?))
+
+(comment
+
+  (s/exercise :dadysql.core/param-spec 1)
+
+  )
+
+
 
 (s/def :dadysql.core/common
   (s/merge

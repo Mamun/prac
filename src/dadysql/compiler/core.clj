@@ -3,6 +3,7 @@
             [dady.common :as cc]
             [dadysql.compiler.util :as u]
             [dadysql.compiler.file-reader :as fr]
+            [dadysql.compiler.core-sql :as sql]
             [clojure.spec :as sp]
             [clojure.spec :as s]))
 
@@ -116,18 +117,12 @@
 
 (defn compiler-emit [m]
   (-> m
-      (assoc :dadysql.core/dml (u/dml-type (:dadysql.core/sql m)))
-      (update-in [:dadysql.core/sql] u/sql-str-emit)
       (cc/update-if-contains [:dadysql.core/param-coll] #(mapv u/param-emit %))))
 
 
 
 (defn compile-one [m global-m]
-
-  ; (clojure.pprint/pprint m )
-  (let [;m (edn/read-string (clojure.string/lower-case (str m)))
-        model-m (u/map-name-model-sql (select-keys m [:dadysql.core/name :dadysql.core/model :dadysql.core/sql]))]
-    ; (println model-m)
+  (let [model-m (sql/map-name-model-sql (select-keys m [:dadysql.core/name :dadysql.core/model :dadysql.core/sql]))]
     (reduce (fn [acc v]
               (->> (do-merge v m global-m)
                    (remove-duplicate)
@@ -197,9 +192,9 @@
 
 
 
-(defn read-file [file-name ]
+(defn read-file [file-name]
   (-> (fr/read-file file-name)
-      (do-compile )))
+      (do-compile)))
 
 
 
@@ -211,12 +206,12 @@
   ;(clojure.set/rename-keys {:a 3} {:b :v})
 
   (->>
-      (key->nskey (fr/read-file "tie.edn3.sql") alais-map)
-      (s/conform :dadysql.core/compiler-spec )
-       ;(do-compile)
-       ;  (s/explain-data :dadysql.core/compiler-spec )
-       (clojure.pprint/pprint)
-       )
+    (key->nskey (fr/read-file "tie.edn3.sql") alais-map)
+    (s/conform :dadysql.core/compiler-spec)
+    ;(do-compile)
+    ;  (s/explain-data :dadysql.core/compiler-spec )
+    (clojure.pprint/pprint)
+    )
 
   (clojure.pprint/pprint
     (s/exercise :dadysql.core/compiler-spec 1))

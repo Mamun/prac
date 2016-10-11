@@ -35,28 +35,6 @@
 
 ;(bind-sql-params-test)
 
-(deftest sql-str-emit-test
-  (testing "test sql-emission-single"
-    (let [w "select * from dual param = :A and param3 = :b"
-          actual-result (sql-str-emit w)
-          expected-result ["select * from dual param = :a and param3 = :b" :a :b]]
-      ;     (println actual-result)
-      (is (= expected-result
-             actual-result))))
-  (testing "test sql-emission-single"
-    (let [w "select * from dual param = :a-b and param3 = :b-c"
-          actual-result (sql-str-emit w)
-          expected-result ["select * from dual param = :a-b and param3 = :b-c" :a-b :b-c]]
-      ;     (println actual-result)
-      (is (= expected-result
-             actual-result))))
-  (testing "test sql-emission-single"
-    (let [w "select * from dual param# = :param# and param3 = :b-c"
-          actual-result (sql-str-emit w)
-          expected-result ["select * from dual param# = :param# and param3 = :b-c" :param# :b-c]]
-      ;     (println actual-result)
-      (is (= expected-result
-             actual-result)))))
 
 ;(sql-str-emit-test)
 
@@ -153,13 +131,6 @@
 ;(split-sql-params-test)
 
 
-(deftest dml-type-test
-  (testing "test dml-type "
-    (let [t "select * from p where "
-          actual-result (dml-type t)
-          expected-result :dadysql.core/dml-select]
-      (is (= actual-result
-             expected-result)))))
 
 
 
