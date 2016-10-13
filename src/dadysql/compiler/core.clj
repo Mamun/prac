@@ -1,11 +1,13 @@
 (ns dadysql.compiler.core
   (:require [dadysql.compiler.spec :as cs]
+            [clojure.walk :as w]
             [dady.common :as cc]
             [dadysql.compiler.util :as u]
             [dadysql.compiler.file-reader :as fr]
             [dadysql.compiler.core-sql :as sql]
             [clojure.spec :as sp]
             [dadysql.compiler.core-inheritance :as ci]
+            [dadysql.compiler.spec-builder :as sb]
             [clojure.spec :as s]))
 
 
@@ -94,9 +96,12 @@
                  ) m)))
 
 
-(defn compiler-emit [m]
-  (-> m
-      (cc/update-if-contains [:dadysql.core/param-coll] #(mapv u/param-emit %))))
+(defn compiler-resolve [coll]
+  (w/postwalk (fn [v]
+                (if (symbol? v)
+                  (resolve v)
+                  v)
+                ) coll))
 
 
 
@@ -106,7 +111,6 @@
               (->> (ci/do-inheritance v m global-m)
                    (remove-duplicate)
                    (do-merge-default)
-                   (compiler-emit)
                    (do-skip)
                    (do-skip-for-dml-type)
                    (conj acc))
@@ -141,39 +145,30 @@
   (hash-map (:dadysql.core/name v) v))
 
 
-
-(defn load-param-spec [spec-file coll]
-  (if spec-file
-    (require (symbol spec-file) :reload))
-  (doseq [r (filter keyword? (map :dadysql.core/param-spec coll))]
-    (if (nil? (sp/get-spec r))
-      (throw (ex-info "Spec not found " {:spec r})))))
-
-
-
-
-(defn do-compile [coll]
+(defn do-compile [coll file-name]
   (cs/validate-input-spec! coll)
   (u/validate-distinct-name! coll)
   (u/validate-name-sql! coll)
   (u/validate-name-model! coll)
   (u/validate-extend-key! coll)
   (u/validate-join-key! coll)
-  (let [{:keys [modules global reserve]} (do-grouping coll)
+  (let [coll (compiler-resolve coll)
+        {:keys [modules global reserve]} (do-grouping coll)
         global (compile-one-config global)
         modules (compile-batch global modules)
         reserve (reserve-compile reserve)
         global (dissoc global :dadysql.core/extend)
-        w (concat [global] modules reserve)]
-    (load-param-spec (:dadysql.core/spec-file global) w)
+        w (concat [global] modules reserve)
+        w (mapv #(sb/load-param-spec file-name %) w)]
     (->> w
          (into {} (map into-name-map)))))
 
 
 
+
 (defn read-file [file-name]
   (-> (fr/read-file file-name)
-      (do-compile)))
+      (do-compile file-name)))
 
 
 
@@ -183,9 +178,29 @@
   ;(symbol 'he-hcsdf)
   ;(symbol "asdf")
   ;(clojure.set/rename-keys {:a 3} {:b :v})
+  ;(as-parent-ns "tie.edn.sql")
+
+  (clojure.string/split "tie.edn.sql" #"\.")
+
+  (
+    (->
+      (read-file "tie.edn3.sql")
+      (second)
+      (second)
+      (get-in [:dadysql.core/param-coll 0 2])
+
+      #_(clojure.pprint/pprint))
+    2
+    )
+
+  (-> (read-file "tie3.edn.sql")
+      (clojure.pprint/pprint)
+      )
+
+
 
   (->>
-    (key->nskey (fr/read-file "tie.edn3.sql") alais-map)
+    ((fr/read-file "tie3.edn.sql") alais-map)
     (s/conform :dadysql.core/compiler-spec)
     ;(do-compile)
     ;  (s/explain-data :dadysql.core/compiler-spec )
@@ -195,14 +210,15 @@
   (clojure.pprint/pprint
     (s/exercise :dadysql.core/compiler-spec 1))
 
-  (->> (read-file "tie.edn2.sql")
+  (->> (read-file "tie3.edn.sql")
        #_(s/conform :dadysql.compiler.spec/compiler-input-spec))
 
-  (->> (read-file "tie.edn.sql"))
+  (do (read-file "tie.edn.sql")
+      nil)
 
 
-
-  (sp/registry)
+  (:hello.get-dept-by-id/spec
+    (sp/registry))
   ;(clojure.set/rename-keys {:a 3 :b 4} {:a :tr/c})
 
 

@@ -27,7 +27,7 @@ call next value for seq_meet;
 {:doc "General select statement. Name is used to identify each query, Abstract timeout will override with timeout here  "
  :name  [:get-dept-list :get-dept-by-ids :get-employee-list :get-meeting-list :get-employee-meeting-list]
  :model [:department :department :employee :meeting :employee-meeting]
- :extend {:get-dept-by-ids {:param-spec :get-dept-by-ids/spec
+ :extend {:get-dept-by-ids {:param-spec {:id (s/coll-of int? :kind vector?) }
                             :result #{:array}}}
  :timeout 5000
  :result #{:array}
@@ -52,7 +52,7 @@ select * from employee_meeting LIMIT :limit OFFSET :offset;
           :get-employee-dept   {:result #{:single}}
           :get-employee-detail {:result #{:single}}
           :get-employee-meeting {:result #{:array}}}
- :param-spec :int-id/spec
+ :param-spec {:id int?}
  }*/
 select * from employee where id = :id;
 select d.* from department d, employee e where e.id=:id and d.id = e.dept_id;
@@ -81,11 +81,11 @@ select e.*, em.employee_id from employee e, employee_meeting em where em.meeting
  :model [:department :employee ]
  :group :load-dept
  :extend {:get-dept-by-id {:timeout 2000
-                      :param-spec :get-dept-by-id/spec
+                      :param-spec {:id int?}
                       :result #{:single}}
          }
  :timeout 5000
- :param-spec :get-dept-by-id/spec
+ :param-spec {:id int?}
  }*/
 select * from department where id = :id ;
 select * from employee where dept_id = :id;

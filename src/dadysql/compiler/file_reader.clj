@@ -1,5 +1,6 @@
 (ns dadysql.compiler.file-reader
   (:require [clojure.java.io :as io]
+            [clojure.walk :as w]
             [clojure.tools.reader.edn :as edn]))
 
 
@@ -47,7 +48,7 @@
 
 (defn key->nskey
   [m mk]
-  (clojure.walk/postwalk (fn [x]
+  (w/postwalk (fn [x]
                            (if-let [v (get mk x)]
                              v
                              x)) m))

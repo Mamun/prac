@@ -63,9 +63,9 @@
 
   ;; with params
   (-> @td/ds
-      (t/pull (t/read-file "tie.edn2.sql")
+      (t/pull (t/read-file "tie2.edn.sql")
               {:dadysql.core/name   [:get-dept-by-id]
-               :params {:id "sdf"}}
+               :dadysql.core/param {:id "sdf"}}
               ;:dadysql.core/output-format :map
               )
       (clojure.pprint/pprint))

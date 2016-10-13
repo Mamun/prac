@@ -134,7 +134,7 @@
 ;;;;;;;;;;;;;;;;;;;;;
 
 
-(defn param-emit [w]
+#_(defn param-emit [w]
   (condp = (second w)
     :dadysql.core/param-ref-fn-key (assoc w 2 (resolve (nth w 2)))
     w))

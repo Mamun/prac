@@ -15,7 +15,7 @@
 {:doc "General select statement. Name is used to identify each query, Abstract timeout will override with timeout here  "
  :name  [:get-dept-list :get-dept-by-ids :get-employee-list :get-meeting-list :get-employee-meeting-list :get-dept-by-id]
  :model [:department :department :employee :meeting :employee-meeting :department]
- :extend {:get-dept-by-id {:param-spec :get-dept-by-id/spec}
+ :extend {:get-dept-by-id {:param-spec {:id (s/coll-of int?) } }
           :get-dept-list {:result #{:array}}}
  :timeout 5000
  :result #{:array}

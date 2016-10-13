@@ -21,11 +21,12 @@
  :model [:department :employee ]
  :group :load-dept
  :extend {:get-dept-by-id {:timeout 2000
-                      :param-spec :get-dept-by-id/spec
-                      :result #{:single}}
+                           :param [[:next_transaction_id :ref-fn-key inc :transaction_id]]
+                           :param-spec {:id (s/coll-of int? :kind vector?)}
+                           :result #{:single}}
          }
  :timeout 5000
- :param-spec :get-dept-by-id/spec
+ :param-spec {:id int?}
  }*/
 select * from department where id = :id ;
 select * from employee where dept_id = :id;

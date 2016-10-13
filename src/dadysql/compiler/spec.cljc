@@ -1,5 +1,7 @@
 (ns dadysql.compiler.spec
-  (:require [clojure.spec :as s]))
+  (:require [clojure.spec :as s]
+            [clojure.walk :as w]
+            [clojure.walk :as w]))
 
 
 (s/def :dadysql.core/dml #{:dadysql.core/dml-select
@@ -15,8 +17,24 @@
 
 
 
+
 (defn resolve? [v]
-  (if (resolve v) true false))
+  (w/postwalk (fn [w]
+                (if (symbol? w)
+                  (if (resolve w)
+                    w
+                    (throw
+                      (ex-info (str "Could not resolve symbole " w)
+                               {:causes             w
+                                }))
+
+                    )
+                  w)
+
+                ) v)
+
+
+  #_(if (resolve v) true false))
 
 
 (s/def :dadysql.core/tx-prop (s/cat :ck #{:isolation}
@@ -76,7 +94,7 @@
 (defn ns-keyword? [v]
   (if (namespace v) true false))
 
-(s/def :dadysql.core/param-spec #_(s/map-of keyword? resolve? ) (s/and keyword? ns-keyword?))
+(s/def :dadysql.core/param-spec (s/map-of keyword? resolve? ) #_(s/and keyword? ns-keyword?) )
 
 (comment
 
