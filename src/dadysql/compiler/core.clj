@@ -159,7 +159,7 @@
         reserve (reserve-compile reserve)
         global (dissoc global :dadysql.core/extend)
         w (concat [global] modules reserve)
-        w (mapv #(sb/load-param-spec file-name %) w)]
+        w (mapv #(sb/eval-param-spec file-name %) w)]
     (->> w
          (into {} (map into-name-map)))))
 
@@ -184,7 +184,7 @@
 
   (
     (->
-      (read-file "tie.edn3.sql")
+      (read-file "tie3.edn.sql")
       (second)
       (second)
       (get-in [:dadysql.core/param-coll 0 2])
@@ -194,8 +194,28 @@
     )
 
   (-> (read-file "tie3.edn.sql")
-      (clojure.pprint/pprint)
+      ;(:get-dept-by-id)
+      (get-in [:get-dept-by-id :dadysql.core/param-spec-defined :id])
+      (eval)
+      (s/form)
+      ;(first )
+      ;(eval)
+      ;(name)
+      ;(clojure.pprint/pprint)
       )
+
+
+  (-> (read-file "tie3.edn.sql")
+      ;(:get-dept-by-id)
+      (get-in [  :get-dept-employee :dadysql.core/param-spec-defined :id])
+      (eval)
+      ;(s/form)
+      ;(first )
+
+      ;(name)
+
+      )
+
 
 
 

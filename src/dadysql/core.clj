@@ -77,7 +77,7 @@
 
 (defn validate-input-spec! [tm-coll]
   (reduce (fn [acc v]
-            (if-let [vali (:dadysql.core/spec v)]
+            (if-let [vali (:dadysql.core/param-spec v)]
               (let [w (do-spec-validate vali (:dadysql.core/param v))]
                 (if (f/failed? w)
                   (reduced w)

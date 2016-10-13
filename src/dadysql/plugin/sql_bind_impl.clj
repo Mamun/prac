@@ -1,5 +1,6 @@
 (ns dadysql.plugin.sql-bind-impl
   (:require [dady.fail :as f]
+            [clojure.spec :as s]
             [dady.common :as cc]))
 
 
@@ -69,10 +70,18 @@
       m)))
 
 
+(defn is-coll? [v]
+  (let [w (s/form (eval v )) ]
+    (if (and (coll? w)
+             (= (name (first w)) "every"))
+      true
+      false)))
+
+
 (defn get-place-holder
   [type v]
   (if (and (sequential? v)
-           (= #'clojure.core/vector? type))
+           (is-coll? type))
     (clojure.string/join ", " (repeat (count v) "?"))
     "?"))
 
@@ -87,10 +96,10 @@
   (let [[sql-str & sql-params] (:dadysql.core/sql tm)
         input (:dadysql.core/param tm)
         ;todo Need to find type using sql str
-        validation nil                                      ; (validation-key tm)
+        param-spec (:dadysql.core/param-spec-defined tm)
         rf (fn [sql-coll p-key]
              (let [p-value (cc/as-sequential (p-key input))
-                   w (-> nil
+                   w (-> (p-key param-spec)
                          (get-place-holder p-value)
                          (update-sql-str (first sql-coll) p-key))
                    q-str (assoc sql-coll 0 w)]

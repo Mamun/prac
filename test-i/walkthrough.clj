@@ -1,10 +1,8 @@
 (ns walkthrough
   (:require [clojure.java.jdbc :as jdbc]
             [dadysql.jdbc :as t]
-            ;[dadysql.spec :refer :all]
             [test-data :as td]
-            [clojure.spec :as s]
-            ))
+            [clojure.spec :as s]))
 
 
 
@@ -64,8 +62,8 @@
   ;; with params
   (-> @td/ds
       (t/pull (t/read-file "tie2.edn.sql")
-              {:dadysql.core/name   [:get-dept-by-id]
-               :dadysql.core/param {:id "sdf"}}
+              {:dadysql.core/name  [:get-dept-by-id]
+               :dadysql.core/param {:id [1]}}
               ;:dadysql.core/output-format :map
               )
       (clojure.pprint/pprint))
@@ -80,7 +78,7 @@
   (-> @td/ds
       (t/pull (t/read-file "tie.edn.sql")
               {:dadysql.core/name   [:get-dept-by-ids]
-               :params {:id (list 1 2 3)}})
+               :dadysql.core/param {:id [ 1 2 3] }})
       (clojure.pprint/pprint))
 
 
@@ -88,7 +86,7 @@
   (-> @td/ds
       (t/pull (t/read-file "tie.edn.sql")
               {:dadysql.core/name   [:get-dept-by-ids]
-               :params {:id [1 2 112]}})
+               :dadysql.core/param {:id [1 2 112]}})
       (clojure.pprint/pprint))
 
 

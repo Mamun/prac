@@ -26,34 +26,39 @@
         (list 's/def k v))
       m)))
 
+
 (defn as-parent-ns [file-name]
   (-> (clojure.string/split file-name #"\.")
       (first)
       (keyword)))
 
 
-(defn load-param-spec [file-name m]
+(defn eval-param-spec [file-name m]
   (if (contains? m :dadysql.core/param-spec)
     (let [parent-ns (as-parent-ns file-name)
           n (:dadysql.core/name m)
           ns [parent-ns n]
-          w (:dadysql.core/param-spec m)
-          w (->> (namespace-key ns w)
-                 (build-sepc ns))
           k (as-key [parent-ns n :spec])]
-      (eval w)
-      (assoc m :dadysql.core/spec k))
+
+      (->> (:dadysql.core/param-spec m)
+           (namespace-key ns )
+           (build-sepc ns)
+           (eval )
+           )
+      (assoc m :dadysql.core/param-spec k
+               :dadysql.core/param-spec-defined (:dadysql.core/param-spec m) ))
     m))
 
 
-(defn find-registry [f-name]
-  (w/postwalk (fn [v]
-                (if (map? v)
-                  (into {} (filter (fn [[k v]]
-                                     (clojure.string/includes? (str k) (str f-name))
-                                     ) v))
-                  v)
-                ) (s/registry)))
+(defn registry-by-namespace [n-name]
+  (->> (s/registry)
+       (w/postwalk (fn [v]
+                     (if (map? v)
+                       (->> v
+                            (filter (fn [[k _]]
+                                      (clojure.string/includes? (str k) (str n-name))))
+                            (into {}))
+                       v)))))
 
 
 
@@ -80,9 +85,21 @@
   (:hello.get-by-id/spec
     (s/registry))
 
-  (find-registry :tie3)
+  (registry-by-namespace :tie3)
 
 
-  (s/explain :tie3.get-dept-by-id/spec {:id [1 2 3 "asdf"]} )
+  (s/explain :tie3.get-dept-by-id/spec {:id [1 2 3 "asdf"]})
+
+
+
+
+  (->
+    (#'clojure.spec/coll-of
+      #'clojure.core/int?
+      :kind
+      #'clojure.core/vector?)
+    (first )
+    ;(name )
+    )
 
   )
