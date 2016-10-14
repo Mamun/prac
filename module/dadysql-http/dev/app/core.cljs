@@ -3,6 +3,7 @@
             [devcards.core]
             [ajax.core :as a]
             [sablono.core :as sab]
+            [reagent.core :as reagent]
             [cognitect.transit :as t]
             [dadysql.re-frame :as re]
             [re-frame.core :as r]
@@ -23,25 +24,31 @@
 
 ;(re/clear-store)
 
+(defn reagent-component-example []
+  (let [s (r/subscribe (re/sub-path :get-employee-list))]
+    (fn []
+      [:div (pr-str @s)]
+      )))
+
 
 (defcard my-first-card
-         (sab/html [:h1 "Devcards is freaking awesome!"]))
+         (reagent/as-element [reagent-component-example]))
 
-(let [s (r/subscribe (re/sub-path)) ]
+(let [s (r/subscribe (re/sub-path))]
   (defcard All
            "all view "
            s))
 
 
 
-(let [s (r/subscribe (re/sub-path re/error-path) ) ]
+(let [s (r/subscribe (re/sub-path re/error-path))]
   (defcard Error
            "Error view "
            s))
 
 
 
-(let [s (r/subscribe (re/sub-path :get-employee-list)) ]
+(let [s (r/subscribe (re/sub-path :get-employee-list))]
   (defcard Hello
            "Date view "
            s))
@@ -62,7 +69,7 @@
 
 
 
-(->> (re/build-request {:dadysql.core/name       [:get-employee-by-id :get-employee-dept :get-employee-detail]
+(->> (re/build-request {:dadysql.core/name  [:get-employee-by-id :get-employee-dept :get-employee-detail]
                         :dadysql.core/param {:id 1}})
      (dadysql/pull))
 
@@ -74,11 +81,11 @@
 
 ;(re/clear-store re/error-path)
 
-#_(->> (re/build-request :ajax1 {:a 3})
-     (a/GET "/api"))
+(->> (re/build-request :get-request {:a 3})
+       (a/GET "/api"))
 
 #_(->> (re/build-request :ajax4 {:a 3})
-     (a/POST "/api/hello"))
+       (a/POST "/api/hello"))
 
 ;(a/GET "")
 
@@ -114,12 +121,12 @@
 
 
 #_(dadysql/pull "/"
-               :dadysql.core/name :get-dept-by-id
-               :params {:id 1}
-               :callback (fn [v]
-                           (print v)
+                :dadysql.core/name :get-dept-by-id
+                :params {:id 1}
+                :callback (fn [v]
+                            (print v)
 
-                           ))
+                            ))
 
 
 #_(defcard my-first-card
@@ -128,66 +135,66 @@
 ;(devcards.core/start-devcard-ui!)
 
 #_(defcard-dadysql get-dept-by-id
-                  "**With name keyword**"
-                  dadysql/pull
-                  {:dadysql.core/name   :get-dept-by-id
-                   :dadysql.core/params {:id 1}})
+                   "**With name keyword**"
+                   dadysql/pull
+                   {:dadysql.core/name   :get-dept-by-id
+                    :dadysql.core/params {:id 1}})
 
 
 #_(defcard-dadysql employee-by-id
-                  "**Join example**"
-                  dadysql/pull
-                  :dadysql.core/name [:get-employee-by-id :get-employee-dept]
-                  :params {:id 1})
+                   "**Join example**"
+                   dadysql/pull
+                   :dadysql.core/name [:get-employee-by-id :get-employee-dept]
+                   :params {:id 1})
 
 
 #_(defcard-dadysql load-dept
-                  "**Load Department 2**  "
-                  dadysql/pull
-                  {:gname  :load-dept
-                   :params {:id 1}})
+                   "**Load Department 2**  "
+                   dadysql/pull
+                   {:gname  :load-dept
+                    :params {:id 1}})
 
 
 #_(defcard-dadysql load-employee
-                  "**Load Employee**  "
-                  dadysql/pull
-                  {:gname  :load-employee
-                   :params {:id 1}})
+                   "**Load Employee**  "
+                   dadysql/pull
+                   {:gname  :load-employee
+                    :params {:id 1}})
 
 
 #_(defcard-dadysql dept-list
-                  "Load dept list as array  "
-                  dadysql/pull
-                  {:dadysql.core/name [:get-dept-list]})
+                   "Load dept list as array  "
+                   dadysql/pull
+                   {:dadysql.core/name [:get-dept-list]})
 
 
 #_(defcard-dadysql insert-dept
-                  "Create department  "
-                  dadysql/push!
-                  :dadysql.core/name [:create-dept]
-                  :params {:department {:dept_name "Call Center 9"}})
+                   "Create department  "
+                   dadysql/push!
+                   :dadysql.core/name [:create-dept]
+                   :params {:department {:dept_name "Call Center 9"}})
 
 
 #_(defcard-dadysql create-employee
-                  "Create employee  "
-                  dadysql/push! "/"
-                  :dadysql.core/name [:create-employee :create-employee-detail]
-                  :params {:employee {:firstname       "Schwan"
-                                      :lastname        "Ragg"
-                                      :dept_id         1
-                                      :employee-detail {:street  "Schwan",
-                                                        :city    "Munich",
-                                                        :state   "Bayern",
-                                                        :country "Germany"}}})
+                   "Create employee  "
+                   dadysql/push! "/"
+                   :dadysql.core/name [:create-employee :create-employee-detail]
+                   :params {:employee {:firstname       "Schwan"
+                                       :lastname        "Ragg"
+                                       :dept_id         1
+                                       :employee-detail {:street  "Schwan",
+                                                         :city    "Munich",
+                                                         :state   "Bayern",
+                                                         :country "Germany"}}})
 
 
 
 #_(go
     (print
       (<! (dadysql/pull "/"
-                       :dadysql.core/name :get-dept-by-id
-                       :params {:id 1}
-                       ))))
+                        :dadysql.core/name :get-dept-by-id
+                        :params {:id 1}
+                        ))))
 
 
 ;(set! devcards.core/test-timeout 5000)
