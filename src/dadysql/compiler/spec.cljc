@@ -1,7 +1,7 @@
 (ns dadysql.compiler.spec
   (:require [clojure.spec :as s]
             [clojure.walk :as w]
-            [clojure.walk :as w]))
+            [clojure.spec :as s]))
 
 
 (s/def :dadysql.core/dml #{:dadysql.core/dml-select
@@ -18,23 +18,6 @@
 
 
 
-(defn resolve? [v]
-  (w/postwalk (fn [w]
-                (if (symbol? w)
-                  (if (resolve w)
-                    w
-                    (throw
-                      (ex-info (str "Could not resolve symbole " w)
-                               {:causes             w
-                                }))
-
-                    )
-                  w)
-
-                ) v)
-
-
-  #_(if (resolve v) true false))
 
 
 (s/def :dadysql.core/tx-prop (s/cat :ck #{:isolation}
@@ -76,7 +59,7 @@
 (s/def :dadysql.core/join
   (clojure.spec/*
     (clojure.spec/alt
-      :one  (s/tuple keyword? keyword? #{:dadysql.core/join-one-one :dadysql.core/join-one-many :dadysql.core/join-many-one} keyword? keyword?)
+      :one (s/tuple keyword? keyword? #{:dadysql.core/join-one-one :dadysql.core/join-one-many :dadysql.core/join-many-one} keyword? keyword?)
       :many (s/tuple keyword? keyword? #{:dadysql.core/join-many-many} keyword? keyword? (s/tuple keyword? keyword? keyword?)))))
 
 
@@ -85,7 +68,7 @@
   (clojure.spec/*
     (clojure.spec/alt
       :ref-con (clojure.spec/tuple keyword? #{:dadysql.core/param-ref-con} any?)
-      :ref-fn-key (clojure.spec/tuple keyword? #{:dadysql.core/param-ref-fn-key} resolve? keyword?)
+      :ref-fn-key (clojure.spec/tuple keyword? #{:dadysql.core/param-ref-fn-key} ifn? keyword?)
       :ref-gen (clojure.spec/tuple keyword? #{:dadysql.core/param-ref-gen} keyword?)
       :ref-key (clojure.spec/tuple keyword? #{:dadysql.core/param-ref-key} keyword?))))
 
@@ -94,7 +77,20 @@
 (defn ns-keyword? [v]
   (if (namespace v) true false))
 
-(s/def :dadysql.core/param-spec (s/map-of keyword? resolve? ) #_(s/and keyword? ns-keyword?) )
+
+(defn clj-spec? [v]
+  (let [v (eval v)]
+    (if (and (not (keyword? v))
+             (or (ifn? v)
+                 (clojure.spec/spec? v)
+                 (clojure.spec/regex? v)))
+      true
+      false)))
+
+
+(s/def :dadysql.core/param-spec (s/map-of keyword? clj-spec?))
+
+
 
 (comment
 
@@ -154,6 +150,7 @@
   (let [w (s/conform :dadysql.core/compiler-spec coll)]
     (if (= w :clojure.spec/invalid)
       (do
+        (println (s/explain-str :dadysql.core/compiler-spec coll))
         (throw (ex-info "Compile failed " (s/explain-data :dadysql.core/compiler-spec coll)))))))
 
 

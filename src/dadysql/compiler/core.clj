@@ -1,6 +1,5 @@
 (ns dadysql.compiler.core
   (:require [dadysql.compiler.spec :as cs]
-            [clojure.walk :as w]
             [dady.common :as cc]
             [dadysql.compiler.util :as u]
             [dadysql.compiler.file-reader :as fr]
@@ -96,14 +95,6 @@
                  ) m)))
 
 
-(defn compiler-resolve [coll]
-  (w/postwalk (fn [v]
-                (if (symbol? v)
-                  (resolve v)
-                  v)
-                ) coll))
-
-
 
 (defn compile-one [m global-m]
   (let [model-m (sql/map-sql-with-name-model m)]
@@ -145,15 +136,19 @@
   (hash-map (:dadysql.core/name v) v))
 
 
+(defn do-validation [coll]
+  (do
+    (cs/validate-input-spec! coll)
+    (u/validate-distinct-name! coll)
+    (u/validate-name-sql! coll)
+    (u/validate-name-model! coll)
+    (u/validate-extend-key! coll)
+    (u/validate-join-key! coll)))
+
+
 (defn do-compile [coll file-name]
-  (cs/validate-input-spec! coll)
-  (u/validate-distinct-name! coll)
-  (u/validate-name-sql! coll)
-  (u/validate-name-model! coll)
-  (u/validate-extend-key! coll)
-  (u/validate-join-key! coll)
-  (let [coll (compiler-resolve coll)
-        {:keys [modules global reserve]} (do-grouping coll)
+  (do-validation coll)
+  (let [{:keys [modules global reserve]} (do-grouping coll)
         global (compile-one-config global)
         modules (compile-batch global modules)
         reserve (reserve-compile reserve)
@@ -162,8 +157,6 @@
         w (mapv #(sb/eval-param-spec file-name %) w)]
     (->> w
          (into {} (map into-name-map)))))
-
-
 
 
 (defn read-file [file-name]
@@ -184,12 +177,12 @@
 
   (
     (->
-      (read-file "tie3.edn.sql")
-      (second)
-      (second)
-      (get-in [:dadysql.core/param-coll 0 2])
+      (read-file "tie.edn.sql")
+      ;(second)
+      ;(second)
+      ;(get-in [:dadysql.core/param-coll 0 2])
 
-      #_(clojure.pprint/pprint))
+      (clojure.pprint/pprint))
     2
     )
 

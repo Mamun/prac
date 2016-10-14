@@ -1,6 +1,7 @@
 (ns dadysql.compiler.file-reader
   (:require [clojure.java.io :as io]
             [clojure.walk :as w]
+            [clojure.spec :as s]
             [clojure.tools.reader.edn :as edn]))
 
 
@@ -49,9 +50,9 @@
 (defn key->nskey
   [m mk]
   (w/postwalk (fn [x]
-                           (if-let [v (get mk x)]
-                             v
-                             x)) m))
+                (if-let [v (get mk x)]
+                  v
+                  x)) m))
 
 
 (defn- tie-file-reader
@@ -87,6 +88,13 @@
             ) (list) w))
 
 
+(defn compiler-resolve [coll]
+  (w/postwalk (fn [v]
+                (if (symbol? v)
+                  (resolve v)
+                  v)
+                ) coll))
+
 
 (defn read-file
   [file-name]
@@ -94,14 +102,32 @@
       (tie-file-reader)
       (map-sql-tag)
       (reverse)
+      (compiler-resolve)
       (key->nskey alais-map)))
 
 
 
 (comment
 
+  ;(var? [int?])
 
-  (require '[tie_edn])
+  ;(var? :a)
+
+  ;(var? #'clojure.spec/coll-of)
+
+  ;(coll? {1 2})
+
+  (->> (read-file "tie2.edn.sql")
+       (s/conform :dadysql.core/compiler-spec )
+       (clojure.pprint/pprint) )
+
+
+
+  (->
+    (read-file "tie3.edn.sql")
+    (clojure.pprint/pprint) )
+
+  ;(require '[tie_edn])
 
 
 

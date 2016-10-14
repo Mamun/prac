@@ -57,6 +57,11 @@
       (clojure.pprint/pprint))
 
 
+  (-> (t/read-file "tie2.edn.sql")
+      (:get-dept-by-id)
+      (:dadysql.core/param-spec)
+      (s/explain-str {:id 2} )
+      )
 
 
   ;; with params

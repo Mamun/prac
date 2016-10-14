@@ -80,10 +80,16 @@
 
 (defn get-place-holder
   [type v]
-  (if (and (sequential? v)
-           (is-coll? type))
-    (clojure.string/join ", " (repeat (count v) "?"))
-    "?"))
+  (if type
+    (if (and (sequential? v)
+
+             (is-coll? type))
+      (clojure.string/join ", " (repeat (count v) "?"))
+      "?")
+    "?"
+    )
+
+  )
 
 
 (defn update-sql-str
@@ -96,7 +102,7 @@
   (let [[sql-str & sql-params] (:dadysql.core/sql tm)
         input (:dadysql.core/param tm)
         ;todo Need to find type using sql str
-        param-spec (:dadysql.core/param-spec-defined tm)
+        param-spec (or (:dadysql.core/param-spec-defined tm) {})
         rf (fn [sql-coll p-key]
              (let [p-value (cc/as-sequential (p-key input))
                    w (-> (p-key param-spec)

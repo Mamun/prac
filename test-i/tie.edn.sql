@@ -5,7 +5,6 @@
  :timeout 1000
  :reserve-name #{:create-ddl :drop-ddl :init-data}
  :tx-prop [:isolation :serializable :read-only? true]
- :spec-file tie-edn
  :join [[:department :id :1-n :employee :dept_id]
         [:employee :id :1-1 :employee-detail :employee_id]
         [:employee :id :n-n :meeting :meeting_id [:employee-meeting :employee_id :meeting_id]]]
@@ -27,7 +26,7 @@ call next value for seq_meet;
 {:doc "General select statement. Name is used to identify each query, Abstract timeout will override with timeout here  "
  :name  [:get-dept-list :get-dept-by-ids :get-employee-list :get-meeting-list :get-employee-meeting-list]
  :model [:department :department :employee :meeting :employee-meeting]
- :extend {:get-dept-by-ids {:param-spec {:id (s/coll-of int? :kind vector?) }
+ :extend {:get-dept-by-ids {:param-spec {:id (clojure.spec/coll-of int? :kind vector?) }
                             :result #{:array}}}
  :timeout 5000
  :result #{:array}
@@ -81,8 +80,8 @@ select e.*, em.employee_id from employee e, employee_meeting em where em.meeting
  :model [:department :employee ]
  :group :load-dept
  :extend {:get-dept-by-id {:timeout 2000
-                      :param-spec {:id int?}
-                      :result #{:single}}
+                           :param-spec {:id int?}
+                           :result #{:single}}
          }
  :timeout 5000
  :param-spec {:id int?}

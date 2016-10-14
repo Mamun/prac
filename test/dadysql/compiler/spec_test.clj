@@ -50,11 +50,12 @@
 
 (deftest params-spec-test
   (testing "test params spec "
-    (let [v [[:next_transaction_id :dadysql.core/param-ref-fn-key 'inc :transaction_id]]
+    (let [v [[:next_transaction_id :dadysql.core/param-ref-fn-key inc :transaction_id]]
           r (s/conform :dadysql.core/param-coll v)]
+
       (is (not= :clojure.spec/invalid r))))
   (testing "test params spec for invalid case "
-    (let [v [[:next_transaction_id :dadysql.core/param-ref-fn-key 'inc "transaction_id"]]
+    (let [v [[:next_transaction_id :dadysql.core/param-ref-fn-key inc "transaction_id"]]
           r (s/conform :dadysql.core/param-coll v)]
       (is (= :clojure.spec/invalid r)))))
 
@@ -65,6 +66,9 @@
 ;(params-spec-test)
 ;
 
+;(run-tests)
+
+;(ifn? inc)
 
 (deftest join-spec-test
   (testing "test join spec"
@@ -110,13 +114,13 @@
 ;(spec-test)
 
 
-(deftest spec-test2
+#_(deftest spec-test2
   (testing "test do compile file "
     (let [w (-> "tie.edn.sql"
-                (f/read-file)
-                )
+                (f/read-file))
           actual-result (s/conform :dadysql.core/compiler-spec w)]
- ;      (clojure.pprint/pprint actual-result)
+
+       (clojure.pprint/pprint (s/explain-str :dadysql.core/compiler-spec w) )
       (is (not= :clojure.spec/invalid actual-result)))))
 
 

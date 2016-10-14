@@ -6,7 +6,7 @@
             [dadysql.plugin.util :as cu]))
 
 
-(deftest validate-param-spec!-test
+#_(deftest validate-param-spec!-test
   (testing "testing apply validation "
     (let [input [{:dadysql.core/name        :get-dept-by-id,
                   :dadysql.core/sql         ["select * from department where id = ?" 1],
@@ -19,7 +19,7 @@
                   :dadysql.core/group       :load-dept,
                   :dadysql.core/index       0,
                   :dadysql.core/param {:id 1}}]
-          r (validate-input-spec! input)]
+          r (validate-param-spec! input)]
       (is (= r input)))))
 
 

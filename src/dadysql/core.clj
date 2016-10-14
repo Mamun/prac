@@ -75,7 +75,7 @@
 
 
 
-(defn validate-input-spec! [tm-coll]
+(defn validate-param-spec! [tm-coll]
   (reduce (fn [acc v]
             (if-let [vali (:dadysql.core/param-spec v)]
               (let [w (do-spec-validate vali (:dadysql.core/param v))]
@@ -211,5 +211,5 @@
              (dc/select-name req-m)
              (dc/init-db-seq-op req-m)
              (pi/bind-input req-m pull-fn)
-             (validate-input-spec!)
+             (validate-param-spec!)
              (handler))))

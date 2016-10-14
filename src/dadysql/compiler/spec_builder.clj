@@ -20,10 +20,10 @@
 
 (defn build-sepc [ns-coll m]
   (cons
-    (list 's/def (as-key (conj ns-coll :spec)) (list 's/keys :req-un (into [] (keys m))))
+    (list 'clojure.spec/def (as-key (conj ns-coll :spec)) (list 'clojure.spec/keys :req-un (into [] (keys m))))
     (map
       (fn [[k v]]
-        (list 's/def k v))
+        (list 'clojure.spec/def k v))
       m)))
 
 
