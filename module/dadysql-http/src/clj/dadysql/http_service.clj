@@ -7,7 +7,6 @@
             [ring.middleware.format-response :as fr]
             [dady.fail :as f]
             [dadysql.util :as u]
-            [dadysql.jdbc :as tj]
             [dadysql.http-request :as req]
             [dadysql.http-response :as res]))
 
@@ -45,23 +44,23 @@
     u/url-endpoint))
 
 
-(defn pull
-  [ds tms ring-request]
-  (let [type (endpoint-type ring-request)
-        req (req/as-request ring-request type)]
-    (response
-      (f/try->> req
-                (tj/pull ds tms)
-                (res/as-response type req)))))
+(defn warp-pull [handler]
+  (fn [ring-request]
+    (let [type (endpoint-type ring-request)
+          req (req/as-request ring-request type)]
+      (response
+        (f/try->> req
+                  (handler)
+                  (res/as-response type req))))))
 
+(defn warp-push [handler]
+  (fn [ring-request]
+    (let [type (endpoint-type ring-request)
+          req (req/as-request ring-request type)]
+      (response
+        (f/try->> req
+                  (handler))))))
 
-(defn push
-  [ds tms ring-request]
-  (let [type (endpoint-type ring-request)
-        req (req/as-request ring-request type)]
-    (response
-      (f/try->> req
-                (tj/push! ds tms)))))
 
 
 (defn warp-log-request

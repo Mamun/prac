@@ -3,30 +3,12 @@
             [dadysql.util :as u]))
 
 
-#_(defn default-dadysql-params
-    []
-    {:input  :keyword
-     :output :keyword
-     :accept "application/transit+json"})
-
-
-(defn default-ajax-params
-  [ajax-m]
-  (-> (merge {:method          :post
-              :headers         {}
-              :format          (a/transit-request-format)
-              :response-format (a/transit-response-format)
-              :handler         (fn [v] (js/console.log (str v)))
-              :error-handler   (fn [v] (js/console.log (str v)))}
-             ajax-m)
-      #_(update-in [:params] (fn [v] (merge (default-dadysql-params) v)))))
-
-
-(defn build-ajax-request
-  [params]
-  {:params        params
-   :handler       (fn [v] (js/console.log (str v)))
-   :error-handler (fn [v] (js/console.log (str v)))})
+(def default-request {:method          :post
+                      :headers         {}
+                      :format          (a/transit-request-format)
+                      :response-format (a/transit-response-format)
+                      :handler         (fn [v] (js/console.log (str v)))
+                      :error-handler   (fn [v] (js/console.log (str v)))})
 
 
 (def csrf-headers {"Accept" "application/transit+json"
@@ -36,7 +18,7 @@
 
 (defn pull
   ([url ajax-m]
-   (->> (default-ajax-params ajax-m)
+   (->> (merge default-request ajax-m)
         (a/POST (str (or url "") "/pull"))))
   ([ajax-m]
    (pull "" ajax-m)))
@@ -44,7 +26,7 @@
 
 (defn push!
   ([url ajax-m]
-   (->> (default-ajax-params ajax-m)
+   (->> (merge default-request ajax-m)
         (a/POST (str (or url "") "/push"))))
   ([ajax-m]
    (push! "" ajax-m)))

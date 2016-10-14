@@ -4,8 +4,8 @@
   :license {:name "Eclipse Public License"
             :url  "http://www.eclipse.org/legal/epl-v10.html"}
 
-  :dependencies [[org.clojure/clojure "1.9.0-alpha10" :scope "provided"]
-                 [org.clojure/clojurescript "1.7.228" :scope "provided"]
+  :dependencies [[org.clojure/clojure "1.9.0-alpha13" :scope "provided"]
+                 [org.clojure/clojurescript "1.9.229" :scope "provided"]
                  [ring "1.4.0" :scope "provided"]
                  [ring-middleware-format "0.6.0"
                   :exclusions [ring
@@ -13,17 +13,18 @@
                                org.clojure/tools.reader]]
                  [dadysql "0.1.0-alpha-SNAPSHOT" :scope "provided"]
                  [cljs-ajax "0.5.2"]
-                 [reagent "0.6.0-alpha" :scope "provided"]
+                 [reagent "0.6.0" :scope "provided"]
                  [re-frame "0.7.0-alpha-3" :scope "provided"]
                  [devcards "0.2.1-5" :scope "provided"]]
 
-  :plugins [[lein-cljsbuild "1.1.1"]]
+  :plugins [[lein-cljsbuild "1.1.1"]
+            [lein-figwheel "0.5.8"]
+            [lein-doo "0.1.6"]]
 
   :min-lein-version "2.5.3"
   :source-paths ["src/clj" "src/cljs"]
   ;:test-paths ["test/clj"]
   :clean-targets ^{:protect false} [:target-path :compile-path "dev-resources/public/js"]
-
 
   :figwheel {:server-port    3001                           ;; default
              :css-dirs       ["dev-resources/public/css"]   ;; watch and update CSS
@@ -38,16 +39,11 @@
                                :asset-path           "js/compiled/out"
                                :output-dir           "dev-resources/public/js/compiled/out"
                                :output-to            "dev-resources/public/js/compiled/app.js"
-                               :source-map-timestamp true
-
-                               }}}}
+                               :source-map-timestamp true}}}}
 
   :profiles {:dev {:repl-options   {:port 4555}
                    :source-paths   [ "dev"]
                    :resource-paths ["../../test-i" "dev-resources"]
-
-                   :plugins        [[lein-figwheel "0.5.0-6"]
-                                    [lein-doo "0.1.6"]]
                    :dependencies   [[ring/ring-defaults "0.2.0"]
                                     [compojure "1.1.6"]
                                     [org.immutant/web "2.1.3" ;; default Web server

@@ -3,57 +3,53 @@
   (:require [re-frame.core :as r]))
 
 
-(def r-store-key :_rkey_)
-(def error-path :_error_path_)
-(def clear-r-store-key :_clear_rkey_)
+(defn get-path
+  ([] [:dadysql/path] )
+  ([p] [:dadysql/path p]))
+
+
+(defn get-error-path
+  ([] [:dadysql/path :dadysql/error-path] )
+  ([v] [:dadysql/path :dadysql/error-path v]))
 
 
 ;; Clear error from here
 (r/register-handler
-  :clear-error
+  :dadysql/clear-error
   (fn [db [_ v]]
-    (assoc-in db [r-store-key error-path] nil)))
+    (update-in db [:dadysql/path] dissoc :dadysql/error-path)))
 
 
 ;; Clear all value from here
 (r/register-handler
-  clear-r-store-key
+  :dadysql/clear-path
   (fn [db [_ v]]
     (if v
-      (assoc-in db [r-store-key v] nil)
-      (assoc-in db [r-store-key] nil))))
+      (assoc-in db [:dadysql/path v] nil)
+      (assoc-in db [:dadysql/path] nil))))
 
 
 
 ;;Store all value here
 (r/register-handler
-  r-store-key
+  :dadysql/path
   (fn [db [p [cp v]]]
     (assoc-in db [p cp] v)))
 
 
 (r/register-sub
-  r-store-key
+  :dadysql/path
   (fn [db path] (do (reaction (get-in @db path)))))
 
 
-(defn subscribe
-  ([] (subscribe []))
-  ([v]
-   (let [p (into [r-store-key] v)]
-     (r/subscribe p))))
-
-
-(defn dispatch [v]
-  (r/dispatch [r-store-key v]))
-
-
 (defn find-subscribe-key
-  [{:keys [gname name]}]
-  (let [n (if (sequential? name)
+  [input-request]
+  (let [name (:dadysql.core/name input-request)
+        group (:dadysql.core/group input-request)
+        n (if (sequential? name)
             (first name)
             name)]
-    (or gname n)))
+    (or group n)))
 
 
 (defn as-dispatch
@@ -61,23 +57,24 @@
   (fn [[v e]]
     (if v
       (do
-        (r/dispatch [:clear-error])
-        (dispatch [subscribe-key v]))
-      (dispatch [error-path {subscribe-key e}]))))
+        (r/dispatch [:dadysql/clear-error])
+        (r/dispatch [:dadysql/path [subscribe-key v]]))
+      (r/dispatch [:dadysql/path [:dadysql/error-path {subscribe-key e}]]))))
+
 
 
 (defn clear-store [& k-list]
   (if (empty? k-list)
-    (r/dispatch [clear-r-store-key])
+    (r/dispatch [:dadysql/clear-path])
     (doseq [k k-list]
-      (r/dispatch [clear-r-store-key k]))))
+      (r/dispatch [:dadysql/clear-path k]))))
 
 
-(defn build-ajax-request
+(defn build-request
   ([subscribe-key param-m]
    (let []
      {:params        param-m
       :handler       (as-dispatch subscribe-key)
       :error-handler (as-dispatch subscribe-key)}))
   ([param-m]
-   (build-ajax-request (find-subscribe-key param-m) param-m)))
+   (build-request (find-subscribe-key param-m) param-m)))

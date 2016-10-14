@@ -60,11 +60,7 @@
 
 ;(devcards.core/start-devcard-ui!)
 
-(defcard-dadysql get-dept-by-id
-                "**With name keyword**"
-                dadysql/pull
-                {:dadysql.core/name   :get-dept-by-id
-                 :params {:id 1}})
+
 
 
 
@@ -77,26 +73,15 @@
 
 
 
-(defcard-dadysql load-dept
-                "**Load Department 2**  "
-                dadysql/pull
-                {:gname  :load-dept
-                 :params {:id 1}})
-
-
-(defcard-dadysql load-employee
-                "**Load Employee**  "
-                dadysql/pull
-                :gname :load-employee
-                :params {:id 1})
 
 
 
 
-(defcard-dadysql dept-list
-                "Load dept list as array  "
-                dadysql/pull
-                :dadysql.core/name [:get-dept-list])
+
+
+
+
+
 
 
 

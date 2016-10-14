@@ -1,15 +1,14 @@
 (ns ring.middleware.dadysql
   (:require [clojure.tools.logging :as log]
             [dady.fail :as f]
-            #_[dadysql.spec :as c]
             [dadysql.http-service :as h]
             [dadysql.jdbc :as tj]))
 
 
 (defn- reload-tms
   ([tms-atom ds]
-   (when (get-in @tms-atom [c/global-key :dadysql.core/file-reload ])
-     (f/try->> (get-in @tms-atom [c/global-key :dadysql.core/file-name])
+   (when (get-in @tms-atom [:_global_ :dadysql.core/file-reload ])
+     (f/try->> (get-in @tms-atom [:_global_ :dadysql.core/file-name])
                (tj/read-file)
                (tj/validate-dml! ds)
                (reset! tms-atom)))
@@ -50,13 +49,17 @@
         (let [ds (or (:ds req) @ds)
               tms (or (:tms req)
                       (try! reload-tms tms ds))
-              handler (h/warp-default (partial h/pull ds tms))]
+              handler (-> (partial tj/pull ds tms)
+                          (h/warp-pull)
+                          (h/warp-default ))]
           (handler req))
         push-path
         (let [ds (or (:ds req) @ds)
               tms (or (:tms req)
                       (try! reload-tms tms ds))
-              handler (h/warp-default (partial h/push ds tms))]
+              handler (-> (partial tj/push! ds tms)
+                          (h/warp-push)
+                          (h/warp-default ))]
           (handler req))
         (do
           (handler req))))))

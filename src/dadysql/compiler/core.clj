@@ -119,13 +119,13 @@
                  ) m)))
 
 
-(defmulti compile (fn [type _ _] type))
-(def compile-module (partial compile :modules))
-(def compile-global (partial compile :global))
-(def compile-reserve (partial compile :reserve))
+(defmulti compile-m (fn [type _ _] type))
+(def compile-module (partial compile-m :modules))
+(def compile-global (partial compile-m :global))
+(def compile-reserve (partial compile-m :reserve))
 
 
-(defmethod compile
+(defmethod compile-m
   :modules
   [_ tm global-m]
   (let [model-m (sql/map-sql-with-name-model tm)]
@@ -140,7 +140,7 @@
 
 
 
-(defmethod compile
+(defmethod compile-m
   :global
   [_ tm _]
   (let [v (->> (get-in tm [:dadysql.core/join])
@@ -152,7 +152,7 @@
         (assoc :dadysql.core/extend w))))
 
 
-(defmethod compile
+(defmethod compile-m
   :reserve
   [_ tm _]
   (update-in tm [:dadysql.core/sql] (fn [v] (clojure.string/join ";" v))))

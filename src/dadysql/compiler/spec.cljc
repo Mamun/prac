@@ -1,8 +1,6 @@
 (ns dadysql.compiler.spec
   (:require [clojure.spec :as s]
-            [clojure.walk :as w]
-            [clojure.spec :as s]))
-
+            [clojure.walk :as w]))
 
 (s/def :dadysql.core/dml #{:dadysql.core/dml-select
                            :dadysql.core/dml-insert
@@ -14,11 +12,6 @@
 (s/def :dadysql.core/commit #{:dadysql.core/commit-all
                               :dadysql.core/commit-none
                               :dadysql.core/commit-any})
-
-
-
-
-
 
 (s/def :dadysql.core/tx-prop (s/cat :ck #{:isolation}
                                     :cv (s/spec #{:none :read-committed :read-uncommitted :repeatable-read :serializable})
@@ -183,7 +176,7 @@
       m)))
 
 
-(defn as-parent-ns [file-name]
+(defn file->ns [file-name]
   (-> (clojure.string/split file-name #"\.")
       (first)
       (keyword)))
@@ -191,7 +184,7 @@
 
 (defn eval-param-spec [file-name m]
   (if (contains? m :dadysql.core/param-spec)
-    (let [parent-ns (as-parent-ns file-name)
+    (let [parent-ns (file->ns file-name)
           n (:dadysql.core/name m)
           ns [parent-ns n]
           k (as-key [parent-ns n :spec])]
@@ -214,6 +207,8 @@
                                       (clojure.string/includes? (str k) (str n-name))))
                             (into {}))
                        v)))))
+
+
 
 
 (comment

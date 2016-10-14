@@ -34,7 +34,7 @@
   (-> (routes
         (GET "/" _ (ser/ok-response {:a3 3}))
         (GET "/1" _ (ser/ok-response {:a3 3}))
-        (GET "/2" req (ser/pull @ds-atom @tms-atom req))
+        ;(GET "/2" req (ser/pull @ds-atom @tms-atom req))
         (POST "/hello" _ (ser/ok-response {:a 7})))
       (ser/warp-default)))
 

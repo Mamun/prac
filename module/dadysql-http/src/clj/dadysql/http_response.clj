@@ -4,9 +4,6 @@
             [dadysql.util :as u]))
 
 
-
-
-
 (defn response-stringify
   [req response]
   (if (= :string (:output req))

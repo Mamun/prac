@@ -5,13 +5,12 @@
     ;[sablono.core :as sab]
             [cognitect.transit :as t]
             [dadysql.re-frame :as re]
+            [re-frame.core :as r]
             [cljs.core.async :refer [<! >! timeout chan]])
   (:require-macros
     [cljs.core.async.macros :refer [go]]
     [devcards.core :as dc :refer [defcard deftest defcard-rg]]
-    [cljs.test :refer [is testing async]]
-    [dadysql.devcard :refer [defcard-dadysql]]
-    ))
+    [cljs.test :refer [is testing async]]))
 
 
 (defn fig-reload []
@@ -25,37 +24,50 @@
 ;(re/clear-store)
 
 
-(let [s (re/subscribe [])]
+(let [s (r/subscribe (re/get-path) ) ]
   (defcard All
            "all view "
            s))
 
 
 
-(let [s (re/subscribe [re/error-path :get-employee-list])]
+(let [s (r/subscribe (re/get-error-path) ) ]
   (defcard Error
            "Error view "
            s))
 
 
 
-(let [s (re/subscribe [:get-employee-list])]
+(let [s (r/subscribe (re/get-path :get-employee-list) ) ]
   (defcard Hello
            "Date view "
            s))
+
+;(re/clear-store)
 
 ;(re/build-request {:dadysql.core/name :get-employee-list})
 
 
 ;(js/alert "Hello")
 
-(->> (re/build-ajax-request {:dadysql.core/name :get-employee-list})
+
+
+
+(->> (re/build-request {:dadysql.core/name [:get-employee-list]})
      (dadysql/pull))
 
-(->> (re/build-ajax-request :ajax1 {:a 3})
+
+
+
+(->> (re/build-request {:dadysql.core/name       [:get-employee-by-id :get-employee-dept :get-employee-detail]
+                        :dadysql.core/param {:id 1}})
+     (dadysql/pull))
+
+
+#_(->> (re/build-request :ajax1 {:a 3})
      (a/GET "/api"))
 
-(->> (re/build-ajax-request :ajax4 {:a 3})
+#_(->> (re/build-request :ajax4 {:a 3})
      (a/POST "/api/hello"))
 
 ;(a/GET "")
@@ -109,7 +121,7 @@
                   "**With name keyword**"
                   dadysql/pull
                   {:dadysql.core/name   :get-dept-by-id
-                   :params {:id 1}})
+                   :dadysql.core/params {:id 1}})
 
 
 #_(defcard-dadysql employee-by-id

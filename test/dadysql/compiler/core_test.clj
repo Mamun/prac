@@ -40,7 +40,7 @@
 
 
   (->> (r/default-config)
-       (r/compile compile-one-data2))
+       (r/compile-m compile-one-data2))
 
   )
 
