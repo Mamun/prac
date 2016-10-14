@@ -1,4 +1,4 @@
-(ns dadysql.compiler.util
+(ns dadysql.compiler.validation
   (:require [clojure.string]))
 
 
@@ -92,36 +92,6 @@
 
 ;;;;;;;;;;;;;;;;,Join emit ;
 
-(defn map-reverse-join
-  [join-coll]
-  (let [f (fn [[s-tab s-id join-key d-tab d-id [r-tab r-id r-id2] :as j]]
-            (condp = join-key
-              :dadysql.core/join-one-one [d-tab d-id :dadysql.core/join-one-one s-tab s-id]
-              :dadysql.core/join-one-many [d-tab d-id :dadysql.core/join-many-one s-tab s-id]
-              :dadysql.core/join-many-one [d-tab d-id :dadysql.core/join-one-many s-tab s-id]
-              :dadysql.core/join-many-many [d-tab d-id :dadysql.core/join-many-many s-tab s-id [r-tab r-id2 r-id]]
-              j))]
-    (->> (map f join-coll)
-         (concat join-coll)
-         (distinct)
-         (sort-by first)
-         (into []))))
-
-
-(defn group-by-join-src
-  [join-coll]
-  (->> join-coll
-       (group-by first)
-       (map (fn [[k coll]]
-              {k {:dadysql.core/join coll}}))
-       (into {})))
-
-
-
-(defn join-emit [j-coll]
-  (->> j-coll
-       (map-reverse-join)
-       (group-by-join-src)))
 
 
 ;;;;;;;;;;;;;;;;,,Emit sql ;;;;;;

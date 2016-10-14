@@ -17,7 +17,7 @@
 (deftest compile-one-test
   (testing "test compile-one "
     (let [config (r/default-config)
-          actual-result (r/compile-one compile-one-data config)]
+          actual-result (r/compile-module compile-one-data config)]
       (is (= actual-result
              compile-one-expected-result))))
   (testing "test compile-one"
@@ -27,7 +27,7 @@
              :dadysql.core/sql  ["call next value for seq_dept"
                                  "call next value for seq_empl"
                                  "call next value for seq_meet"]}
-          actual-result (->> (compile-one w config))]
+          actual-result (->> (compile-module w config))]
       (is (not (empty? actual-result))))))
 
 
@@ -40,7 +40,7 @@
 
 
   (->> (r/default-config)
-       (r/compile-one compile-one-data2))
+       (r/compile compile-one-data2))
 
   )
 

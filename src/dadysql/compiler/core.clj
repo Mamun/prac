@@ -1,12 +1,10 @@
 (ns dadysql.compiler.core
   (:require [dadysql.compiler.spec :as cs]
             [dady.common :as cc]
-            [dadysql.compiler.util :as u]
+            [dadysql.compiler.validation :as u]
             [dadysql.compiler.file-reader :as fr]
             [dadysql.compiler.core-sql :as sql]
-            [clojure.spec :as sp]
             [dadysql.compiler.core-inheritance :as ci]
-            [dadysql.compiler.spec-builder :as sb]
             [clojure.spec :as s]))
 
 
@@ -56,7 +54,33 @@
         f-global (or (first global) {})
         {:keys [reserve modules]} (-> (get-in f-global [:dadysql.core/reserve-name])
                                       (group-by-reserve-key modules))]
-    (hash-map :global f-global :reserve reserve :modules modules)))
+    (hash-map :global [f-global] :reserve reserve :modules modules)))
+
+
+
+(defn map-reverse-join
+  [join-coll]
+  (let [f (fn [[s-tab s-id join-key d-tab d-id [r-tab r-id r-id2] :as j]]
+            (condp = join-key
+              :dadysql.core/join-one-one [d-tab d-id :dadysql.core/join-one-one s-tab s-id]
+              :dadysql.core/join-one-many [d-tab d-id :dadysql.core/join-many-one s-tab s-id]
+              :dadysql.core/join-many-one [d-tab d-id :dadysql.core/join-one-many s-tab s-id]
+              :dadysql.core/join-many-many [d-tab d-id :dadysql.core/join-many-many s-tab s-id [r-tab r-id2 r-id]]
+              j))]
+    (->> (map f join-coll)
+         (concat join-coll)
+         (distinct)
+         (sort-by first)
+         (into []))))
+
+
+(defn group-by-join-src
+  [join-coll]
+  (->> join-coll
+       (group-by first)
+       (map (fn [[k coll]]
+              {k {:dadysql.core/join coll}}))
+       (into {})))
 
 
 
@@ -79,7 +103,7 @@
     (apply dissoc m skip-key-for-others)))
 
 
-(defn do-merge-default
+(defn assoc-default-key
   [m]
   (if (:dadysql.core/model m)
     m
@@ -95,13 +119,20 @@
                  ) m)))
 
 
+(defmulti compile (fn [type _ _] type))
+(def compile-module (partial compile :modules))
+(def compile-global (partial compile :global))
+(def compile-reserve (partial compile :reserve))
 
-(defn compile-one [m global-m]
-  (let [model-m (sql/map-sql-with-name-model m)]
+
+(defmethod compile
+  :modules
+  [_ tm global-m]
+  (let [model-m (sql/map-sql-with-name-model tm)]
     (reduce (fn [acc v]
-              (->> (ci/do-inheritance v m global-m)
+              (->> (ci/do-inheritance v tm global-m)
                    (remove-duplicate)
-                   (do-merge-default)
+                   (assoc-default-key)
                    (do-skip)
                    (do-skip-for-dml-type)
                    (conj acc))
@@ -109,26 +140,24 @@
 
 
 
-(defn compile-batch [global-m m-coll]
-  (reduce (fn [acc m]
-            (reduce conj acc (compile-one m global-m))
-            ) [] m-coll))
-
-
-(defn compile-one-config [tm]
-  (let [v (get-in tm [:dadysql.core/join])
-        v (u/join-emit v)
+(defmethod compile
+  :global
+  [_ tm _]
+  (let [v (->> (get-in tm [:dadysql.core/join])
+               (map-reverse-join)
+               (group-by-join-src))
         w (merge-with merge v (get-in tm [:dadysql.core/extend]))]
     (-> tm
         (dissoc :dadysql.core/join)
         (assoc :dadysql.core/extend w))))
 
 
-(defn reserve-compile [coll]
-  (mapv (fn [m]
-          (-> m
-              (update-in [:dadysql.core/sql] (fn [v] (clojure.string/join ";" v))))
-          ) coll))
+(defmethod compile
+  :reserve
+  [_ tm _]
+  (update-in tm [:dadysql.core/sql] (fn [v] (clojure.string/join ";" v))))
+
+
 
 
 (defn into-name-map
@@ -149,13 +178,12 @@
 (defn do-compile [coll file-name]
   (do-validation coll)
   (let [{:keys [modules global reserve]} (do-grouping coll)
-        global (compile-one-config global)
-        modules (compile-batch global modules)
-        reserve (reserve-compile reserve)
-        global (dissoc global :dadysql.core/extend)
-        w (concat [global] modules reserve)
-        w (mapv #(sb/eval-param-spec file-name %) w)]
-    (->> w
+        global (first (mapv #(compile-global % nil) global))
+        modules (apply concat (mapv #(compile-module % global) modules))
+        reserve (mapv #(compile-reserve % nil) reserve)
+        global (dissoc global :dadysql.core/extend)]
+    (->> (concat [global] modules reserve)
+         (mapv #(cs/eval-param-spec file-name %))
          (into {} (map into-name-map)))))
 
 
@@ -200,7 +228,7 @@
 
   (-> (read-file "tie3.edn.sql")
       ;(:get-dept-by-id)
-      (get-in [  :get-dept-employee :dadysql.core/param-spec-defined :id])
+      (get-in [:get-dept-employee :dadysql.core/param-spec-defined :id])
       (eval)
       ;(s/form)
       ;(first )
