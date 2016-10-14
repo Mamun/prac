@@ -2,7 +2,7 @@
   (:require [dadysql.client :as dadysql]
             [devcards.core]
             [ajax.core :as a]
-    ;[sablono.core :as sab]
+            [sablono.core :as sab]
             [cognitect.transit :as t]
             [dadysql.re-frame :as re]
             [re-frame.core :as r]
@@ -24,21 +24,24 @@
 ;(re/clear-store)
 
 
-(let [s (r/subscribe (re/get-path) ) ]
+(defcard my-first-card
+         (sab/html [:h1 "Devcards is freaking awesome!"]))
+
+(let [s (r/subscribe (re/sub-path)) ]
   (defcard All
            "all view "
            s))
 
 
 
-(let [s (r/subscribe (re/get-error-path) ) ]
+(let [s (r/subscribe (re/sub-path re/error-path) ) ]
   (defcard Error
            "Error view "
            s))
 
 
 
-(let [s (r/subscribe (re/get-path :get-employee-list) ) ]
+(let [s (r/subscribe (re/sub-path :get-employee-list)) ]
   (defcard Hello
            "Date view "
            s))
@@ -50,8 +53,8 @@
 
 ;(js/alert "Hello")
 
-
-
+(r/dispatch (re/store-path re/error-path {:error "Error"}))
+;(r/dispatch (re/dispatch-path [:Check  {:error "Error"}]))
 
 (->> (re/build-request {:dadysql.core/name [:get-employee-list]})
      (dadysql/pull))
@@ -63,6 +66,13 @@
                         :dadysql.core/param {:id 1}})
      (dadysql/pull))
 
+;(r/dispatch (re/clear-path re/error-path) )
+
+;(r/dispatch (re/clear-path :get-employee-by-id ) )
+
+;(r/dispatch (re/clear-path  ) )
+
+;(re/clear-store re/error-path)
 
 #_(->> (re/build-request :ajax1 {:a 3})
      (a/GET "/api"))

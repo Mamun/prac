@@ -2,43 +2,40 @@
   (:require-macros [reagent.ratom :refer [reaction]])
   (:require [re-frame.core :as r]))
 
+(def error-path :dadysql/error-path)
 
-(defn get-path
-  ([] [:dadysql/path] )
-  ([p] [:dadysql/path p]))
-
-
-(defn get-error-path
-  ([] [:dadysql/path :dadysql/error-path] )
-  ([v] [:dadysql/path :dadysql/error-path v]))
+(defn sub-path
+  ([] [:dadysql/store] )
+  ([p] [:dadysql/store p]))
 
 
-;; Clear error from here
-(r/register-handler
-  :dadysql/clear-error
-  (fn [db [_ v]]
-    (update-in db [:dadysql/path] dissoc :dadysql/error-path)))
+(defn store-path [k v]
+  [:dadysql/store [k v]])
+
+
+(defn clear-path
+  ([]  [:dadysql/clear-store] )
+  ([k] [:dadysql/clear-store k]))
 
 
 ;; Clear all value from here
 (r/register-handler
-  :dadysql/clear-path
+  :dadysql/clear-store
   (fn [db [_ v]]
     (if v
-      (assoc-in db [:dadysql/path v] nil)
-      (assoc-in db [:dadysql/path] nil))))
-
+      (update-in db [:dadysql/store ] dissoc v)
+      (assoc-in db [:dadysql/store] nil))))
 
 
 ;;Store all value here
 (r/register-handler
-  :dadysql/path
+  :dadysql/store
   (fn [db [p [cp v]]]
     (assoc-in db [p cp] v)))
 
 
 (r/register-sub
-  :dadysql/path
+  :dadysql/store
   (fn [db path] (do (reaction (get-in @db path)))))
 
 
@@ -52,22 +49,18 @@
     (or group n)))
 
 
-(defn as-dispatch
+
+(defn- as-dispatch
   [subscribe-key]
   (fn [[v e]]
     (if v
       (do
-        (r/dispatch [:dadysql/clear-error])
-        (r/dispatch [:dadysql/path [subscribe-key v]]))
-      (r/dispatch [:dadysql/path [:dadysql/error-path {subscribe-key e}]]))))
+        (r/dispatch (clear-path error-path) )
+        (r/dispatch [:dadysql/store [subscribe-key v]]))
+      (r/dispatch [:dadysql/store [:dadysql/error-path {subscribe-key e}]]))))
 
 
 
-(defn clear-store [& k-list]
-  (if (empty? k-list)
-    (r/dispatch [:dadysql/clear-path])
-    (doseq [k k-list]
-      (r/dispatch [:dadysql/clear-path k]))))
 
 
 (defn build-request
