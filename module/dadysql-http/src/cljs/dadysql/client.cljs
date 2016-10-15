@@ -5,27 +5,6 @@
 
 
 
-(defn find-subscribe-key
-  [input-request]
-  (let [name (:dadysql.core/name input-request)
-        group (:dadysql.core/group input-request)
-        n (if (sequential? name)
-            (first name)
-            name)]
-    (or group n)))
-
-
-
-(defn build-request
-  ([subscribe-key param-m]
-   (let []
-     {:params        param-m
-      :handler       #(r/mutate-store subscribe-key %)
-      :error-handler #(r/mutate-store subscribe-key %)}))
-  ([param-m]
-   (build-request (find-subscribe-key param-m) param-m)))
-
-
 (def default-request {:method          :post
                       :headers         {}
                       :format          (a/transit-request-format)

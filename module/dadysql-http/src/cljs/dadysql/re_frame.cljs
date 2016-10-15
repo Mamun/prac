@@ -6,20 +6,6 @@
 (def error-path :dadysql/error-path)
 
 
-#_(defn sub-path
-    ([] [:dadysql/store])
-    ([p] [:dadysql/store p]))
-
-
-#_(defn store-path [k v]
-    [:dadysql/store [k v]])
-
-
-#_(defn clear-path
-    ([] [:dadysql/clear-store])
-    ([k] [:dadysql/clear-store k]))
-
-
 ;; Clear all value from here
 (r/register-handler
   :dadysql/clear-store
@@ -53,11 +39,29 @@
   (mutate-store s-key [v nil]))
 
 
-(defn subscribe
-  [path]
+(defn subscribe [path]
   (r/subscribe (into [:dadysql/store] path)))
 
 
-(defn clear-store
-  [path]
+(defn clear-store [path]
   (r/dispatch (into [:dadysql/clear-store] path)))
+
+
+(defn find-subscribe-key
+  [input-request]
+  (let [name (:dadysql.core/name input-request)
+        group (:dadysql.core/group input-request)
+        n (if (sequential? name)
+            (first name)
+            name)]
+    (or group n)))
+
+
+
+(defn build-request
+  ([subscribe-key param-m]
+   {:params        param-m
+    :handler       #(mutate-store subscribe-key %)
+    :error-handler #(mutate-store subscribe-key %)})
+  ([param-m]
+   (build-request (find-subscribe-key param-m) param-m)))

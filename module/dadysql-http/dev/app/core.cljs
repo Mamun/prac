@@ -65,13 +65,13 @@
 ;(r/dispatch (re/store-path re/error-path {:error "Error"}))
 ;(r/dispatch (re/dispatch-path [:Check  {:error "Error"}]))
 
-(->> (dadysql/build-request {:dadysql.core/name [:get-employee-list]})
+(->> (re/build-request {:dadysql.core/name [:get-employee-list]})
      (dadysql/pull))
 
 
 
 
-(->> (dadysql/build-request {:dadysql.core/name  [:get-employee-by-id :get-employee-dept :get-employee-detail]
+(->> (re/build-request {:dadysql.core/name  [:get-employee-by-id :get-employee-dept :get-employee-detail]
                         :dadysql.core/param {:id 1}})
      (dadysql/pull))
 
@@ -83,7 +83,7 @@
 
 ;(re/clear-store re/error-path)
 
-(->> (dadysql/build-request :get-request {:a 3})
+(->> (re/build-request :get-request {:a 3})
        (a/GET "/api"))
 
 #_(->> (re/build-request :ajax4 {:a 3})
