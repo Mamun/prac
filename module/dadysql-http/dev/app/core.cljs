@@ -2,11 +2,10 @@
   (:require [dadysql.client :as dadysql]
             [devcards.core]
             [ajax.core :as a]
-            [sablono.core :as sab]
+            ;[sablono.core :as sab]
             [reagent.core :as reagent]
-            [cognitect.transit :as t]
             [dadysql.re-frame :as re]
-            [re-frame.core :as r]
+         ;   [re-frame.core :as r]
             [cljs.core.async :refer [<! >! timeout chan]])
   (:require-macros
     [cljs.core.async.macros :refer [go]]
@@ -25,51 +24,54 @@
 ;(re/clear-store)
 
 (defn reagent-component-example []
-  (let [s (r/subscribe (re/sub-path :get-employee-list))]
+  (let [s (re/subscribe [:get-employee-list])]
     (fn []
       [:div (pr-str @s)]
       )))
 
 
+
+
 (defcard my-first-card
          (reagent/as-element [reagent-component-example]))
 
-(let [s (r/subscribe (re/sub-path))]
+(let [s (re/subscribe [] )]
   (defcard All
            "all view "
            s))
 
 
 
-(let [s (r/subscribe (re/sub-path re/error-path))]
+(let [s (re/subscribe [re/error-path])]
   (defcard Error
            "Error view "
            s))
 
 
 
-(let [s (r/subscribe (re/sub-path :get-employee-list))]
+(let [s (re/subscribe [:get-employee-list :employee])]
   (defcard Hello
            "Date view "
            s))
 
-;(re/clear-store)
+
+;(re/clear-store [])
 
 ;(re/build-request {:dadysql.core/name :get-employee-list})
 
 
 ;(js/alert "Hello")
 
-(r/dispatch (re/store-path re/error-path {:error "Error"}))
+;(r/dispatch (re/store-path re/error-path {:error "Error"}))
 ;(r/dispatch (re/dispatch-path [:Check  {:error "Error"}]))
 
-(->> (re/build-request {:dadysql.core/name [:get-employee-list]})
+(->> (dadysql/build-request {:dadysql.core/name [:get-employee-list]})
      (dadysql/pull))
 
 
 
 
-(->> (re/build-request {:dadysql.core/name  [:get-employee-by-id :get-employee-dept :get-employee-detail]
+(->> (dadysql/build-request {:dadysql.core/name  [:get-employee-by-id :get-employee-dept :get-employee-detail]
                         :dadysql.core/param {:id 1}})
      (dadysql/pull))
 
@@ -81,7 +83,7 @@
 
 ;(re/clear-store re/error-path)
 
-(->> (re/build-request :get-request {:a 3})
+(->> (dadysql/build-request :get-request {:a 3})
        (a/GET "/api"))
 
 #_(->> (re/build-request :ajax4 {:a 3})

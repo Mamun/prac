@@ -2,20 +2,22 @@
   (:require-macros [reagent.ratom :refer [reaction]])
   (:require [re-frame.core :as r]))
 
+
 (def error-path :dadysql/error-path)
 
-(defn sub-path
-  ([] [:dadysql/store] )
-  ([p] [:dadysql/store p]))
+
+#_(defn sub-path
+    ([] [:dadysql/store])
+    ([p] [:dadysql/store p]))
 
 
-(defn store-path [k v]
-  [:dadysql/store [k v]])
+#_(defn store-path [k v]
+    [:dadysql/store [k v]])
 
 
-(defn clear-path
-  ([]  [:dadysql/clear-store] )
-  ([k] [:dadysql/clear-store k]))
+#_(defn clear-path
+    ([] [:dadysql/clear-store])
+    ([k] [:dadysql/clear-store k]))
 
 
 ;; Clear all value from here
@@ -23,7 +25,7 @@
   :dadysql/clear-store
   (fn [db [_ v]]
     (if v
-      (update-in db [:dadysql/store ] dissoc v)
+      (update-in db [:dadysql/store] dissoc v)
       (assoc-in db [:dadysql/store] nil))))
 
 
@@ -39,35 +41,23 @@
   (fn [db path] (do (reaction (get-in @db path)))))
 
 
-(defn find-subscribe-key
-  [input-request]
-  (let [name (:dadysql.core/name input-request)
-        group (:dadysql.core/group input-request)
-        n (if (sequential? name)
-            (first name)
-            name)]
-    (or group n)))
+(defn mutate-store [s-key [v e]]
+  (if v
+    (do
+      (r/dispatch [:dadysql/clear-store error-path])
+      (r/dispatch [:dadysql/store [s-key v]]))
+    (r/dispatch [:dadysql/store [:dadysql/error-path {s-key e}]])))
 
 
-
-(defn- as-dispatch
-  [subscribe-key]
-  (fn [[v e]]
-    (if v
-      (do
-        (r/dispatch (clear-path error-path) )
-        (r/dispatch [:dadysql/store [subscribe-key v]]))
-      (r/dispatch [:dadysql/store [:dadysql/error-path {subscribe-key e}]]))))
+(defn ok-mutate [s-key v]
+  (mutate-store s-key [v nil]))
 
 
+(defn subscribe
+  [path]
+  (r/subscribe (into [:dadysql/store] path)))
 
 
-
-(defn build-request
-  ([subscribe-key param-m]
-   (let []
-     {:params        param-m
-      :handler       (as-dispatch subscribe-key)
-      :error-handler (as-dispatch subscribe-key)}))
-  ([param-m]
-   (build-request (find-subscribe-key param-m) param-m)))
+(defn clear-store
+  [path]
+  (r/dispatch (into [:dadysql/clear-store] path)))
