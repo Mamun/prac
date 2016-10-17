@@ -16,4 +16,4 @@
   (app/init-state)
   (figwheel/start-figwheel!))
 
-(def browser-repl figwheel/cljs-repl)
+(defn cljs-repl [] (figwheel/cljs-repl))

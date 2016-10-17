@@ -15,7 +15,7 @@
                  [cljs-ajax "0.5.2"]
                  [reagent "0.6.0" :scope "provided"]
                  [re-frame "0.7.0-alpha-3" :scope "provided"]
-                 [devcards "0.2.1-5" :scope "provided"]]
+                 ]
 
   :plugins [[lein-cljsbuild "1.1.1"]
             [lein-figwheel "0.5.8"]
@@ -41,10 +41,12 @@
                                :output-to            "dev-resources/public/js/compiled/app.js"
                                :source-map-timestamp true}}}}
 
-  :profiles {:dev {:repl-options   {:port 4555}
+  :profiles {:dev {:repl-options   {:port 4555
+                                    :nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}
                    :source-paths   [ "dev"]
                    :resource-paths ["../../test-i" "dev-resources"]
-                   :dependencies   [[ring/ring-defaults "0.2.0"]
+                   :dependencies   [[devcards "0.2.1-5" ]
+                                    [ring/ring-defaults "0.2.0"]
                                     [compojure "1.1.6"]
                                     [org.immutant/web "2.1.3" ;; default Web server
                                      :exclusions [ch.qos.logback/logback-core

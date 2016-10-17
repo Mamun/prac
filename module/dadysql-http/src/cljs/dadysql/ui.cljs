@@ -1,11 +1,11 @@
 (ns dadysql.ui
   (:require
-    [dady.walk :as w]
+   ; [dady.walk :as w]
     [dadysql.util :as tu]
-    [devcards.util.edn-renderer :as d]))
+    #_[devcards.util.edn-renderer :as d]))
 
 
-(defn show-edn [edn-data]
+#_(defn show-edn [edn-data]
   (-> (w/postwalk-replace-value-with tu/as-str edn-data)
       (d/html-edn)))
 
