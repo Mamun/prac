@@ -1,8 +1,7 @@
 (ns app.core
   (:use compojure.core)
   (:require [ring.util.response :as resp]
-
-            [dadysql.http-service :as ser]
+            [dadysql.http-service :as dhttp]
             [ring.middleware.dadysql :as t]
             [ring.middleware.defaults :refer :all]
             [compojure.route :as route]
@@ -25,21 +24,32 @@
     (reset! ds-atom {:datasource (ComboPooledDataSource.)}))
   (when (nil? @tms-atom)
     (f/try->> (tj/read-file "tie.edn.sql")
-               (tj/db-do @ds-atom [:create-ddl :init-data])
-               (tj/validate-dml! @ds-atom)
-               (reset! tms-atom))))
+              (tj/db-do @ds-atom [:create-ddl :init-data])
+              (tj/validate-dml! @ds-atom)
+              (reset! tms-atom))))
+
+
+(comment
+
+
+  (tj/pull @ds-atom @tms-atom  {:dadysql.core/name :get-dept-by-id, :dadysql.core/param {:id 2}} )
+
+  (tj/pull @ds-atom @tms-atom  {:dadysql.core/name :get-dept-by-id
+                                :dadysql.core/param {:id "1"} } )
+
+  @tms-atom
+  ds-atom
+  (init-state)
+  )
 
 
 (defn api-routes []
   (-> (routes
-        (GET "/" _ (ser/ok-response {:a3 3}))
-        (GET "/1" _ (ser/ok-response {:a3 3}))
+        (GET "/" _ (dhttp/ok-response {:a3 3}))
+        (GET "/1" _ (dhttp/ok-response {:a3 3}))
         ;(GET "/2" req (ser/pull @ds-atom @tms-atom req))
-        (POST "/hello" _ (ser/ok-response {:a 7})))
-      (ser/warp-default)))
-
-#_(defroutes api-routes
-             (GET "/" [] (hs/ok-response {:result "Hello from api called "})))
+        (POST "/hello" _ (dhttp/ok-response {:a 7})))
+      (dhttp/warp-default)))
 
 
 (defroutes app-routes
@@ -54,7 +64,8 @@
   (fn [req]
     ;(log/info "Request -----------------" req)
     (let [w (handler req)]
-     ; (log/info "Response -----------------" w)
+      ; (log/info "Response -----------------" w)
+      (println "---" w)
       w
       )
     ))

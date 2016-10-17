@@ -68,6 +68,9 @@
 (->> (re/build-request {:dadysql.core/name [:get-employee-list]})
      (dadysql/pull))
 
+(->> (re/build-request {:dadysql.core/name  :get-dept-by-id
+                        :dadysql.core/param {:id 1}})
+     (dadysql/pull))
 
 
 

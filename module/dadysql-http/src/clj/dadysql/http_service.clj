@@ -1,14 +1,21 @@
 (ns dadysql.http-service
   (:require [clojure.tools.logging :as log]
+            [clojure.walk :as w]
             [ring.middleware.params :as p]
             [ring.middleware.multipart-params :as mp]
             [ring.middleware.keyword-params :as kp]
             [ring.middleware.format-params :as fp]
             [ring.middleware.format-response :as fr]
             [dady.fail :as f]
-            [dadysql.util :as u]
-            [dadysql.http-request :as req]
-            [dadysql.http-response :as res]))
+            [dady.walk :as dw]
+            [dady.common :as c]
+            [dadysql.http-util :as u]))
+
+
+(defn debug [v]
+  (do
+    (log/info "############################# debug " v)
+    v))
 
 
 (defn- http-response [v]
@@ -18,19 +25,19 @@
 
 
 (defn ok-response [v]
-  (-> [v nil]
-      (http-response)))
+  (http-response [v nil]))
 
 
 (defn error-response [e]
-  (-> [nil e]
-      (http-response)))
+  (http-response [nil e]))
 
 
 (defn response
   [m]
   (if (f/failed? m)
-    (error-response (into {} m))
+    (do
+      (log/info "failed response " (into {} m))
+      (error-response (str (into {} m))))
     (ok-response m)))
 
 
@@ -40,34 +47,114 @@
         (= request-method :post)
         (or (clojure.string/includes? content-type "transit")
             (clojure.string/includes? content-type "json")))
-    u/api-endpoint
-    u/url-endpoint))
+    :dadysql/api-endpoint
+    :dadysql/url-endpoint))
+
+
+(defn as-namespace-keyword [m]
+  (let [v {:name          :dadysql.core/name
+           :group         :dadysql.core/group
+           :output-format :dadysql.core/output-format
+           :param-format  :dadysql.core/param-format}]
+    (w/postwalk (fn [x]
+                  (if-let [v (get v x)]
+                    v
+                    x)) m)))
+
+
+
+(defmulti request-format (fn [t _] (endpoint-type t)))
+
+
+(defmethod request-format :dadysql/api-endpoint
+  [_ params]
+  (-> params
+      (update-in [:name] c/as-keyword-batch)
+      (u/filter-nil-value)))
+
+;;Strill need to case to type
+(defmethod request-format :dadysql/url-endpoint
+  [_ params]
+  (let [params (clojure.walk/keywordize-keys params)
+        r-params (dissoc params
+                         :dadysql.core/name
+                         :dadysql.core/group
+                         :dadysql.core/output-format
+                         :dadysql.core/param-format)
+        q-name (c/as-keyword-batch (:dadysql.core/name params))
+        other (-> params
+                  (select-keys [:dadysql.core/group :dadysql.core/output-format :dadysql.core/param-format])
+                  (u/as-keyword-value))]
+    (-> other
+        (assoc :dadysql.core/name q-name)
+        (assoc :dadysql.core/param r-params)
+        (u/filter-nil-value))))
+
+
+
+(defmulti resposne-format (fn [t _] (endpoint-type t)))
+
+
+(defmethod resposne-format :dadysql/api-endpoint
+  [_ output]
+  output)
+
+
+(defmethod resposne-format :dadysql/url-endpoint
+  [_ output]
+  (->> output
+       (dw/postwalk-replace-value-with u/as-str)
+       (dw/postwalk-replace-key-with dw/keyword->str)))
+
+
+
+(defn is-valid?
+  [params]
+  (if params
+    params
+    (f/fail "No params is set in http request")))
+
+
+
+;(def {:dadysql} )
+
+
+(defn pull-handler [api-handler ring-request]
+  (f/try->> ring-request
+            (:params)
+            (is-valid?)
+            (as-namespace-keyword)
+            (request-format ring-request)
+            (api-handler)
+            (resposne-format ring-request)))
+
+
+(defn push-handler [api-handler ring-request]
+  (f/try->> ring-request
+            (:params)
+            (is-valid?)
+            (as-namespace-keyword)
+            (request-format ring-request)
+            (api-handler)))
+
+
 
 
 (defn warp-pull [handler]
   (fn [ring-request]
-    (let [type (endpoint-type ring-request)
-          req (req/as-request ring-request type)]
-      (response
-        (f/try->> req
-                  (handler)
-                  (res/as-response type req))))))
+    (response (pull-handler handler ring-request))))
+
 
 (defn warp-push [handler]
   (fn [ring-request]
-    (let [type (endpoint-type ring-request)
-          req (req/as-request ring-request type)]
-      (response
-        (f/try->> req
-                  (handler))))))
-
+    (response (push-handler handler ring-request))))
 
 
 (defn warp-log-request
   [handler log?]
   (fn [req]
     (when log?
-      (log/info "After warp-log-request  ---------------" req))
+        (log/info "After warp-log-request  ---------------" (:params req)))
     (handler req)))
 
 

@@ -67,7 +67,7 @@
     (reduce (fn [acc w]
               (if (s/valid? spec w)
                 (conj acc w)
-                (reduced (f/fail (s/explain-data spec w))))
+                (reduced (f/fail (s/explain-str spec w))))
               ) (empty v) v)
     (if (s/valid? spec v)
       v

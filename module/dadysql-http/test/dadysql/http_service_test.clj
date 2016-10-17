@@ -17,29 +17,6 @@
 
 
 
-#_(deftest pull-test
-  (testing "pull test "
-    (let [handler (partial tj/pull @td/ds @td/tms)
-          res (->> {:params         {:name :get-dept-list}
-
-                    :content-type   "transit"}
-                   )
-          res ((warp-pull handler) res)]
-      (clojure.pprint/pprint res)
-      (is (= 1 1
-
-             ))))
-  (testing "pull test "
-    (let [handler (partial tj/pull @td/ds @td/tms)
-          res (->> {:params         {:name :get-dept-list}
-                    :request-method :post
-                    :content-type   "transit"}
-                   )
-          res ((warp-pull handler) res)]
-      ; (println res)
-      (is (= 1 1
-
-             )))))
 
 
 (comment

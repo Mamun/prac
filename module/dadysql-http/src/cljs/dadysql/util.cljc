@@ -3,10 +3,8 @@
       [(:require [cognitect.transit :as t])]))
 
 
-(def dadysql-param :params)
+;(def dadysql-param :params)
 (def dadysql-name :name)
-(def url-endpoint :default)
-(def api-endpoint :api)
 
 
 #?(:clj
