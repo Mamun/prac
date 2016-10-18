@@ -2,6 +2,7 @@
   (:require [clojure.java.jdbc :as jdbc]
             [dadysql.jdbc :as t]
             [test-data :as td]
+            [dadysql.compiler.spec :as cs]
             [clojure.spec :as s]))
 
 
@@ -12,6 +13,7 @@
 (comment
 
 
+  (cs/gen-spec :hello (vals (t/read-file "tie.edn.sql")))
 
   #_(s/valid? (s/or :dadysql.core/name string?
                   :id   integer?) :keyowrd)
@@ -99,8 +101,13 @@
   (-> @td/ds
       (t/pull (t/read-file "tie.edn.sql")
               {:dadysql.core/name   [:get-dept-by-id :get-dept-employee]
-               :dadysql.core/param {:id 1}})
+               :dadysql.core/param {:id 1 }})
       (clojure.pprint/pprint))
+
+  (do
+    (t/read-file "tie.edn.sql")
+    nil
+    )
 
 
   (-> @td/ds

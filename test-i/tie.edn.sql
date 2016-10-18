@@ -80,7 +80,6 @@ select e.*, em.employee_id from employee e, employee_meeting em where em.meeting
  :model [:department :employee ]
  :group :load-dept
  :extend {:get-dept-by-id {:timeout 2000
-                           :param-spec {:id int?}
                            :result #{:single}}
          }
  :timeout 5000

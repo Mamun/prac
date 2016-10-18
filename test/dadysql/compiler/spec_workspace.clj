@@ -39,6 +39,21 @@
 
 
 
+(s/def :get-name/id string?)
+
+(s/def :get-name/spec (s/keys :req-un [:get-name/id]) )
+
+(s/explain :get-name/spec {:id "hello"})
+
+
+(s/def :get-name-details/postcode string?)
+(s/def :get-name-details/spec (s/keys :req-un [:get-name-details/postcode]) )
+
+(s/explain (s/merge :get-name/spec :get-name-details/spec) {:id "sdf" :postcode "asdf"} )
+
+
+
+
 
 
 (comment

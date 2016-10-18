@@ -2,6 +2,7 @@
   (:require
     [clojure.spec :as s]
     [dady.fail :as f]
+    [dady.spec :as ds]
     [dadysql.selector :as dc]
     [dadysql.plugin.join-impl :as ji]
     [dadysql.plugin.sql-bind-impl :as bi]
@@ -62,28 +63,6 @@
 
 
 
-(defn do-spec-validate [spec v]
-  (if (sequential? v)
-    (reduce (fn [acc w]
-              (if (s/valid? spec w)
-                (conj acc w)
-                (reduced (f/fail (s/explain-str spec w))))
-              ) (empty v) v)
-    (if (s/valid? spec v)
-      v
-      (f/fail (s/explain-data spec v)))))
-
-
-
-(defn validate-param-spec! [tm-coll]
-  (reduce (fn [acc v]
-            (if-let [vali (:dadysql.core/param-spec v)]
-              (let [w (do-spec-validate vali (:dadysql.core/param v))]
-                (if (f/failed? w)
-                  (reduced w)
-                  (conj acc v)))
-              (conj acc v))
-            ) [] tm-coll))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;; Processing impl  ;;;;;;;;;;;;;;;;;;;;;;;;
@@ -201,6 +180,19 @@
          (handler))))
 
 
+
+(defn validate-param-spec [tm-coll req-m]
+  (let [param-spec (condp = (:dadysql.core/op req-m)
+                     :dadysql.core/op-push
+                     (:dadysql.core/spec (first tm-coll))
+                     (ds/merge-spec (map :dadysql.core/spec tm-coll)))]
+    (if-not (s/valid? param-spec (:dadysql.core/param req-m))
+      (f/fail (s/explain-str param-spec (:dadysql.core/param req-m)))
+      tm-coll)))
+
+
+
+
 (defn do-execute [req-m tms]
   (let [handler (-> (:dadysql.core/sql-exec req-m)
                     (warp-bind-sql req-m)
@@ -209,7 +201,7 @@
         pull-fn (:dadysql.core/pull req-m)]
     (f/try-> tms
              (dc/select-name req-m)
+             (validate-param-spec req-m)
              (dc/init-db-seq-op req-m)
              (pi/bind-input req-m pull-fn)
-             (validate-param-spec!)
              (handler))))

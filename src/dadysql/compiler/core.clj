@@ -183,7 +183,7 @@
         reserve (mapv #(compile-reserve % nil) reserve)
         global (dissoc global :dadysql.core/extend)]
     (->> (concat [global] modules reserve)
-         (mapv #(cs/eval-param-spec file-name %))
+         (cs/eval-param-spec-batch file-name )
          (into {} (map into-name-map)))))
 
 

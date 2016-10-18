@@ -34,6 +34,12 @@
 
   (tj/pull @ds-atom @tms-atom  {:dadysql.core/name :get-dept-by-id, :dadysql.core/param {:id 2}} )
 
+
+  (int?)
+
+  (:get-dept-by-id @tms-atom)
+
+
   (tj/pull @ds-atom @tms-atom  {:dadysql.core/name :get-dept-by-id
                                 :dadysql.core/param {:id "1"} } )
 
