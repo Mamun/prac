@@ -156,14 +156,11 @@
 
 
 
-(defn eval-param-spec [parent-ns m]
+(defn assoc-param-spec [parent-ns m]
   (if-not (contains? m :dadysql.core/param-spec)
     m
-    (let [n (ds/add-ns-to-keyword
-              :spec
-              parent-ns
-              (:dadysql.core/name m))]
-      (assoc m :dadysql.core/spec n))))
+    (->> (ds/add-ns-to-keyword :spec parent-ns (:dadysql.core/name m))
+         (assoc m :dadysql.core/spec))))
 
 
 
@@ -180,7 +177,7 @@
   (let [f-k (ds/filename-as-keyword file-name)
         s-m (gen-spec f-k coll)]
     (ds/eval-spec s-m)
-    (mapv #(eval-param-spec f-k %) coll)))
+    (mapv #(assoc-param-spec f-k %) coll)))
 
 
 

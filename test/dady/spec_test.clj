@@ -1,15 +1,53 @@
 (ns dady.spec-test
   (:use [dady.spec]
-        )
-  (:require [clojure.spec :as s])
-  )
+        [clojure.test])
+  (:require [clojure.spec :as s]))
 
+
+(deftest map->spec-test
+  (testing "testing map->spec "
+    (let [v {:get-by-id   {:id (var int?)}
+             :get-by-name {:name (var string?)}}
+          e-result (list (clojure.spec/def
+                           :emp.get-by-id/spec
+                           (clojure.spec/keys :req-un [:emp.get-by-id/id]))
+                         (clojure.spec/def :emp.get-by-id/id #'clojure.core/int?)
+                         (clojure.spec/def
+                           :emp.get-by-name/spec
+                           (clojure.spec/keys :req-un [:emp.get-by-name/name]))
+                         (clojure.spec/def :emp.get-by-name/name #'clojure.core/string?))
+          a-result (map->spec :emp v)
+          r (= e-result a-result)]
+      (is (not (nil? a-result))))))
+
+
+;(map->spec-test)
 
 
 
 (comment
 
+
+  #_(is
+      (= (var int?) (var int?)))
+
   (comment
+
+
+
+
+    (=
+      (list (clojure.spec/def :emp.get-by-id/spec (clojure.spec/keys :req-un [:emp.get-by-id/id]))
+            (clojure.spec/def :emp.get-by-id/id #'clojure.core/int?)
+            (clojure.spec/def :emp.get-by-name/spec (clojure.spec/keys :req-un [:emp.get-by-name/name]))
+            (clojure.spec/def :emp.get-by-name/name #'clojure.core/string?))
+
+      (list (clojure.spec/def :emp.get-by-id/spec (clojure.spec/keys :req-un [:emp.get-by-id/id]))
+            (clojure.spec/def :emp.get-by-id/id #'clojure.core/int?)
+            (clojure.spec/def :emp.get-by-name/spec (clojure.spec/keys :req-un [:emp.get-by-name/name]))
+            (clojure.spec/def :emp.get-by-name/name #'clojure.core/string?)))
+
+
 
 
     (build-ns-keyword :a :b)
@@ -28,12 +66,13 @@
                               :name (var string?)}
           :get-details-by-id {:id (var int?)}}
          (as-ns-key-format :tie)
-         (build-spec-batch))
+         (build-spec-batch)
+
+         )
 
 
-    (->> {:get-by-id   {:id (var int?) :id2 (var int?) :id3 (var int?) :id4 (var int?)}
-          :get-by-name {:name (var string?)}
-          }
+    (->> {:get-by-id   {:id (var int?)}
+          :get-by-name {:name (var string?)}}
          (map->spec :emp)
          ;(apply concat)
          ;(eval-spec)
@@ -53,10 +92,10 @@
 
 
     (->> (list (clojure.spec/def :emp.get-by-name/name #'clojure.core/string?)
-               (clojure.spec/def :emp.get-by-id/id     #'clojure.core/int?)
-               (clojure.spec/def :emp.get-by-id/pid     #'clojure.core/int?)
+               (clojure.spec/def :emp.get-by-id/id #'clojure.core/int?)
+               (clojure.spec/def :emp.get-by-id/pid #'clojure.core/int?)
                ;(clojure.spec/def :emp.get-by-id/pid3     #'clojure.core/int?)
-               #_(clojure.spec/def :emp.get-by-id/check   (clojure.spec/keys :req-un [:emp.get-by-id/id]))
+               #_(clojure.spec/def :emp.get-by-id/check (clojure.spec/keys :req-un [:emp.get-by-id/id]))
                #_(clojure.spec/def :emp.get-by-name/check (clojure.spec/keys :req-un [:emp.get-by-name/name]))
                )
          (eval))
