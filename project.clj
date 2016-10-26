@@ -4,7 +4,7 @@
   :license {:alias "Eclipse Public License"
             :url   "http://www.eclipse.org/legal/epl-v10.html"}
   ;:offline? true
-
+ :source-paths ["src" "src-jvm"]
   :dependencies  [[org.clojure/clojure "1.9.0-alpha13"]
                   ;    [org.clojure/core.async "0.1.346.0-17112a-alpha"]
                  [org.clojure/core.async "0.2.382"]

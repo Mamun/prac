@@ -1,6 +1,7 @@
 (ns dadysql.core
   (:require
     [clojure.spec :as s]
+    [dadysql.spec]
     [dady.fail :as f]
     [dady.spec :as ds]
     [dadysql.selector :as dc]
@@ -12,30 +13,6 @@
 
 
 
-(s/def :dadysql.core/exec-total-time int?)
-(s/def :dadysql.core/exec-start-time int?)
-(s/def :dadysql.core/query-exception string?)
-
-
-(s/def :dadysql.core/output any?)
-
-(s/def :dadysql.core/param map?)
-
-(s/def :dadysql.core/format-nested any?)
-(s/def :dadysql.core/format-nested-array any?)
-(s/def :dadysql.core/format-nested-join any?)
-
-(s/def :dadysql.core/format-map any?)
-(s/def :dadysql.core/format-array any?)
-(s/def :dadysql.core/format-value any?)
-
-(s/def :dadysql.core/output-format #{:dadysql.core/format-nested :dadysql.core/format-nested-array :dadysql.core/format-nested-join
-                                     :dadysql.core/format-map :dadysql.core/format-array :dadysql.core/format-value})
-(s/def :dadysql.core/param-format #{:dadysql.core/format-nested :dadysql.core/format-map})
-
-
-(s/def :dadysql.core/user-input (s/keys :req [(or :dadysql.core/name :dadysql.core/group)]
-                                        :opt [:dadysql.core/param :dadysql.core/param-format :dadysql.core/output-format]))
 
 
 

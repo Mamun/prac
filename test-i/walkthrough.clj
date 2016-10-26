@@ -337,13 +337,13 @@
 
   ;;;; Check sql tracking
 
-  (t/start-tracking :hello
+  #_(t/start-tracking :hello
                     (fn [v]
                       (clojure.pprint/pprint v)))
 
-  (t/stop-tracking :hello)
+  #_(t/stop-tracking :hello)
 
-  (t/start-sql-execution)
+  #_(t/start-sql-execution)
 
 
 
