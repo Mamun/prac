@@ -1,4 +1,4 @@
-(ns dadysql.compiler.file-reader
+(ns dadysql.file-reader
   (:require [clojure.java.io :as io]
             [clojure.walk :as w]
             [clojure.spec :as s]

@@ -1,6 +1,7 @@
 (ns walkthrough
   (:require [clojure.java.jdbc :as jdbc]
             [dadysql.jdbc :as t]
+            [dadysql.sql-io-impl :as io]
             [test-data :as td]
             [dadysql.compiler.spec :as cs]
             [clojure.spec :as s]))
@@ -19,17 +20,17 @@
                   :id   integer?) :keyowrd)
 
   ;; Create database table and init data
-  (do
-    (td/get-ds)
-    (-> (td/get-ds)
-        (t/db-do  [:create-ddl :init-data] (t/read-file "tie.edn.sql"))))
+  (->> {:dadysql.core/name [:create-ddl :init-data]}
+       (t/select-name (t/read-file "tie.edn.sql") )
+       (io/db-do (td/get-ds) ))
+
 
 
   (-> @td/ds
       (t/db-do  [:drop-ddl] (t/read-file "tie.edn.sql")))
 
   ;; Validate all sql statment with database
-  (-> (t/validate-dml! @td/ds (t/get-dml (t/read-file "tie.edn.sql")))
+  (-> (t/validate-dml! @td/ds (t/get-all-sql (t/read-file "tie.edn.sql")))
       (clojure.pprint/pprint))
 
 

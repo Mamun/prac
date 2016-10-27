@@ -2,7 +2,7 @@
   (:require [dadysql.compiler.spec :as cs]
             [dady.common :as cc]
             [dadysql.compiler.validation :as u]
-            [dadysql.compiler.file-reader :as fr]
+
             [dadysql.compiler.core-sql :as sql]
             [dadysql.compiler.core-inheritance :as ci]
             [clojure.spec :as s]))
@@ -187,9 +187,6 @@
          (into {} (map into-name-map)))))
 
 
-(defn read-file [file-name]
-  (-> (fr/read-file file-name)
-      (do-compile file-name)))
 
 
 

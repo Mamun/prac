@@ -1,4 +1,4 @@
-(ns dadysql.plugin.sql-io-impl
+(ns dadysql.sql-io-impl
   (:import [java.util.Date]
            [java.util.concurrent.TimeUnit])
   (:require [clojure.set]
@@ -6,78 +6,11 @@
             [clojure.java.jdbc :as jdbc]
             [dady.common :as cc]
             [dady.fail :as f]
+            [dadysql.tracking :as dt]
             [clojure.tools.logging :as log]))
 
 
 ;@todo will be private
-(defonce tracking-fns (atom {}))
-
-
-(defn start-tracking
-  [name callback]
-  {:pre [(keyword? name)
-         (fn? callback)]}
-  (swap! tracking-fns assoc-in [name] callback)
-  nil)
-
-
-(defn stop-tracking
-  [name]
-  {:pre [(keyword? name)]}
-  (swap! tracking-fns #(dissoc % name))
-  nil)
-
-
-(defn stop-all-tracking
-  []
-  (reset! tracking-fns {})
-  nil)
-
-
-(defn- as-date [milliseconds]
-    (if milliseconds
-      (java.util.Date. milliseconds)))
-
-
-(defn- execution-log
-    [tm-coll]
-    (let [v (mapv #(select-keys % [:dadysql.core/sql :dadysql.core/exec-total-time :dadysql.core/exec-start-time]) tm-coll)
-          w (mapv (fn [t]
-                    (update-in t [:dadysql.core/exec-start-time] (fn [o] (str (as-date o))))
-                    ) v)]
-      (log/info w)))
-
-
-(defn start-sql-execution-log
-    "Start sql execution log with sql statement, total duration and time"
-    []
-    (start-tracking :_sql-execution_ execution-log))
-
-
-(defn stop-sql-execution-log
-    "Stop sql execution log "
-    []
-    (stop-tracking :_sql-execution_))
-
-
-(defn notify-async-tracking
-  [tm-coll]
-  (do
-    (go
-      (let [t-fns (vals @tracking-fns)]
-        (when (< 0 (count t-fns))
-          (doseq [f t-fns]
-            (f tm-coll)))))
-    tm-coll))
-
-
-(defn warp-tracking [handler]
-  (fn [m]
-    (do
-      (notify-async-tracking
-        (handler m)))))
-
-
 
 (defn is-rollback?
   [commit-type read-only result-coll]
@@ -183,7 +116,7 @@
   [ds m-coll & _]
   (let [handler (-> (partial jdbc-handler ds)
                     (warp-map-output)
-                    (warp-tracking)
+                    (dt/warp-tracking)
                     )]
     (-> (map handler)
         (transduce conj m-coll))))
@@ -194,7 +127,7 @@
   [ds m-coll & _]
   (let [handler (-> (partial jdbc-handler ds)
                     (warp-map-output)
-                    (warp-tracking)
+                    (dt/warp-tracking)
                     (warp-async-go))]
     (->> m-coll
          (map #(handler %))
@@ -210,7 +143,7 @@
   [ds m-coll & _]
   (let [handler (-> (partial jdbc-handler ds)
                     (warp-map-output)
-                    (warp-tracking))]
+                    (dt/warp-tracking))]
     (-> (map handler)
         (f/comp-xf-until)
         (transduce conj m-coll))))
@@ -250,13 +183,28 @@
 
 
 
+(defn validate-dml! [ds sql-str-coll]
+  (jdbc/with-db-connection
+    [conn ds]
+    (doseq [str sql-str-coll]
+      (jdbc/prepare-statement (:connection conn) str)))
+  #_(let [str-coll (get-dml tms)]
+
+    (log/info (format "checking %d dml statement is done " (count str-coll)))
+    tms))
+
+(defn db-do [ds sql-str-coll]
+  (try
+    (doseq [m sql-str-coll]
+      (when-let [sql (get-in m [:dadysql.core/sql])]
+        (log/info "db do with " sql)
+        (jdbc/db-do-commands ds sql)))
+    (catch Exception e
+      (do
+        (log/error e)
+        (f/fail {:detail e})))))
 
 
-#_(defn sql-executor-node
-    [ds tms type]
-    (let [f (fn [m-coll]
-              (sql-execute ds m-coll :type type :tms tms))]
-      (fn-as-node-processor f :dadysql.core/name :sql-executor)))
 
 
 (comment
@@ -269,19 +217,19 @@
                                (list 1)
                                )]
     (let [meeting [{:dadysql.core/sql
-                                          ["insert into meeting (meeting_id, subject) values (?, ?)"
-                                           [109 "Hello Meeting for IT"]],
-                    :dadysql.core/timeout 1000,
-                    :dadysql.core/commit  :dadysql.core/commit-all,
-                    :dadysql.core/dml :dadysql.core/dml-insert,
-                    :dadysql.core/join    [],
-                    :dadysql.core/group   :create-meeting,
-                    :dadysql.core/model   :meeting,
-                    :dadysql.core/param-coll   [[:meeting_id :dadysql.core/param-ref-gen :gen-meet]],
-                    :dadysql.core/index   0,
+                                             ["insert into meeting (meeting_id, subject) values (?, ?)"
+                                              [109 "Hello Meeting for IT"]],
+                    :dadysql.core/timeout    1000,
+                    :dadysql.core/commit     :dadysql.core/commit-all,
+                    :dadysql.core/dml        :dadysql.core/dml-insert,
+                    :dadysql.core/join       [],
+                    :dadysql.core/group      :create-meeting,
+                    :dadysql.core/model      :meeting,
+                    :dadysql.core/param-coll [[:meeting_id :dadysql.core/param-ref-gen :gen-meet]],
+                    :dadysql.core/index      0,
                     :dadysql.core/param
-                                          {:subject "Hello Meeting for IT", :meeting_id 109},
-                    :dadysql.core/name    :create-meeting}]]
+                                             {:subject "Hello Meeting for IT", :meeting_id 109},
+                    :dadysql.core/name       :create-meeting}]]
       (->> (sql-execute (td/get-ds) @td/ds meeting :tms (t/read-file "tie.edn.sql")
                         :type :dadysql.plugin.sql.jdbc-io/transaction)
            (clojure.pprint/pprint)))
@@ -298,8 +246,5 @@
   #_(defn stop-tracking
       [name]
       (ce/stop-tracking name))
-
-
-
 
   )

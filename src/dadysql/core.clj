@@ -14,8 +14,6 @@
 
 
 
-
-
 (defn validate-input!
   [req-m]
   (if (s/valid? :dadysql.core/user-input req-m)

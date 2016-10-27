@@ -16,7 +16,7 @@
                              :dadysql.core/dml :dadysql.core/dml-select}
                :create-dual {:dadysql.core/sql ["insert into dual value (a )"]
                              :dadysql.core/dml :dadysql.core/dml-select}}
-          actual-result (get-dml tms)
+          actual-result (get-all-sql tms)
           expected-result ["select * from tab where tab = ?"]]
       (is (= expected-result
              actual-result)))))

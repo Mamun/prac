@@ -1,12 +1,8 @@
-(ns dadysql.compiler.file-reader-test
+(ns dadysql.file-reader-test
   (:use [clojure.test]
-
         [dadysql.core]
-
-        [dadysql.compiler.file-reader])
+        [dadysql.file-reader])
   (:require [dadysql.core :as tie]))
-
-
 
 
 (deftest map-sql-tag-test
