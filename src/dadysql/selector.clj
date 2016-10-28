@@ -73,7 +73,7 @@
           (empty? tm-map))
       (f/fail (format " %s Name not found" (str name-key-coll)))
       (is-reserve? tms name-key-coll)
-      tm-map
+      (vals tm-map)
       :else
       (f/try-> tm-map
                (validate-name! name-key-coll)
@@ -96,14 +96,6 @@
 
 
 
-(defn select-name [tms req-m]
-  (let [name (:dadysql.core/name req-m)
-        group (:dadysql.core/group req-m)
-        name (if group
-               (select-name-for-groups tms group name)
-               name)
-        tm-coll (select-name-by-name-coll tms name)]
-    tm-coll))
 
 
 

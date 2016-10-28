@@ -1,7 +1,6 @@
 (ns dadysql.plugin.sql-io-impl
   (:require [clojure.set]
             [clojure.core.async :as async :refer [<! >! <!! chan alt! go go-loop onto-chan sliding-buffer]]
-            [dadysql.jdbc-io :as jio]
             [dady.common :as cc]
             [dady.fail :as f]
             [dadysql.plugin.sql-io-tracking :as dt]
@@ -52,7 +51,7 @@
                          :dadysql.core/exec-total-time total
                          :dadysql.core/exec-start-time stm))
               tm-coll
-              r )))))
+              r)))))
 
 
 (defn warp-tracking [handler]
@@ -80,13 +79,13 @@
 
 
 
-(defmulti sql-io (fn [_ _ {:keys [type]}] type))
+(defmulti apply-sql-io (fn [_ _ type] type))
 
 
-(defmethod sql-io
+(defmethod apply-sql-io
   :default
-  [ds m-coll _]
-  (let [handler (-> (partial jio/jdbc-handler ds)
+  [h m-coll _]
+  (let [handler (-> h
                     (warp-io-execption)
                     (warp-map-output)
                     (warp-tracking))]
@@ -94,10 +93,10 @@
         (transduce conj m-coll))))
 
 
-(defmethod sql-io
+(defmethod apply-sql-io
   :dadysql.plugin.sql.jdbc-io/parallel
-  [ds m-coll _]
-  (let [handler (-> (partial jio/jdbc-handler ds)
+  [h m-coll _]
+  (let [handler (-> h
                     (warp-io-execption)
                     (warp-map-output)
                     (warp-tracking)
@@ -111,12 +110,10 @@
          (async/<!!))))
 
 
-(defmethod sql-io
+(defmethod apply-sql-io
   :dadysql.plugin.sql.jdbc-io/batch
-  [ds tm-coll m]
-  (let [batch-handler (fn [tm-coll]
-                        (jio/jdbc-handler-batch ds tm-coll m))
-        handler (-> batch-handler
+  [h tm-coll _]
+  (let [handler (-> h
                     (warp-io-execption)
                     (warp-map-output-batch)
                     (warp-tracking))]
@@ -169,11 +166,6 @@
 
 
 
-(defn warp-sql-execute [ds tms type]
-  (fn [tm-coll]
-    (->> (global-info-m tms tm-coll)
-         (merge {:type type} )
-         (sql-io ds tm-coll ))))
 
 
 
@@ -204,8 +196,8 @@
                     :dadysql.core/param
                                              {:subject "Hello Meeting for IT", :meeting_id 109},
                     :dadysql.core/name       :create-meeting}]]
-      (->> (sql-io (td/get-ds) @td/ds meeting :tms (t/read-file "tie.edn.sql")
-                   :type :dadysql.plugin.sql.jdbc-io/transaction)
+      (->> (apply-sql-io (td/get-ds) @td/ds meeting :tms (t/read-file "tie.edn.sql")
+                         :type :dadysql.plugin.sql.jdbc-io/transaction)
            (clojure.pprint/pprint)))
 
     )

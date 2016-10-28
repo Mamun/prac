@@ -4,7 +4,6 @@
     [dadysql.spec]
     [dady.fail :as f]
     [dady.spec :as ds]
-    [dadysql.selector :as dc]
     [dadysql.plugin.join-impl :as ji]
     [dadysql.plugin.sql-bind-impl :as bi]
     [dadysql.selector :as dc]
@@ -168,14 +167,13 @@
 
 
 
-(defn do-execute [req-m tms]
+(defn do-execute [req-m tm-coll]
   (let [handler (-> (:dadysql.core/sql-exec req-m)
                     (warp-bind-sql req-m)
                     (warp-do-output req-m)
                     (warp-do-output-join req-m))
         pull-fn (:dadysql.core/pull req-m)]
-    (f/try-> tms
-             (dc/select-name req-m)
+    (f/try-> tm-coll
              (validate-param-spec req-m)
              (dc/init-db-seq-op req-m)
              (pi/bind-input req-m pull-fn)

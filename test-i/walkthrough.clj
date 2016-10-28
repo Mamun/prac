@@ -30,8 +30,9 @@
       (t/db-do  [:drop-ddl] (t/read-file "tie.edn.sql")))
 
   ;; Validate all sql statment with database
-  (-> (t/validate-dml! @td/ds (t/get-all-sql (t/read-file "tie.edn.sql")))
-      (clojure.pprint/pprint))
+  (->> (t/get-all-parameter-sql (t/read-file "tie.edn.sql"))
+       (io/validate-dml! @td/ds ))
+
 
 
   ;; jdbc query example
@@ -51,6 +52,14 @@
               {:dadysql.core/name [:get-dept-list]})
       (clojure.pprint/pprint)
       )
+
+
+  (-> (t/read-file "tie.edn.sql")
+      (t/select-name {:dadysql.core/name [:get-dept-list :get-employee-list]}))
+
+
+  (-> (t/read-file "tie.edn.sql")
+      (t/select-name {:dadysql.core/name [:create-ddl :init-data]}))
 
 
 
