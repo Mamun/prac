@@ -68,55 +68,24 @@
 
 
 (defn gen-spec [parent-ns coll]
-  (->> coll
-       (map (juxt :dadysql.core/name :dadysql.core/param-spec))
-       (filter second)
-       (into {})
-       (ds/map->spec parent-ns)))
+  (let [coll (filter :dadysql.core/param-spec coll)
+        g-coll (group-by :dadysql.core/dml coll)
+
+        ]
+    (clojure.pprint/pprint g-coll)
+    (for [[k v] g-coll
+          m v]
+      (->> (hash-map (:dadysql.core/name m)
+                     (:dadysql.core/param-spec m))))))
+
 
 
 
 (defn eval-param-spec-batch [file-name coll]
   (let [f-k (ds/filename-as-keyword file-name)
         s-m (gen-spec f-k coll)]
-    (ds/eval-spec s-m)
+    (mapv #(ds/eval-spec (ds/map->spec f-k %) ) s-m )
     (mapv #(assoc-param-spec f-k %) coll)))
 
 
 
-(comment
-
-
-
-  (as-key [:hello :get-name :id])
-
-
-  (clojure.string/includes? (str :hello) (str :he))
-
-  ;(namespace (symbol "adsf") )
-
-
-
-  (s/explain :hello.get-by-id/spec {:id 1 :name 3})
-
-  (:hello.get-by-id/spec
-    (s/registry))
-
-  (registry-by-namespace :tie3)
-
-
-  (s/explain :tie3.get-dept-by-id/spec {:id [1 2 3 "asdf"]})
-
-
-
-
-  (->
-    (#'clojure.spec/coll-of
-      #'clojure.core/int?
-      :kind
-      #'clojure.core/vector?)
-    (first)
-    ;(name )
-    )
-
-  )

@@ -89,6 +89,42 @@
           coll-spec)))
 
 
+(comment
+
+
+
+  (as-key [:hello :get-name :id])
+
+
+  (clojure.string/includes? (str :hello) (str :he))
+
+  ;(namespace (symbol "adsf") )
+
+
+
+  (s/explain :hello.get-by-id/spec {:id 1 :name 3})
+
+  (:hello.get-by-id/spec
+    (s/registry))
+
+  (registry-by-namespace :tie)
+
+
+  (s/explain :tie3.get-dept-by-id/spec {:id [1 2 3 "asdf"]})
+
+
+
+
+  (->
+    (#'clojure.spec/coll-of
+      #'clojure.core/int?
+      :kind
+      #'clojure.core/vector?)
+    (first)
+    ;(name )
+    )
+
+  )
 
 
 

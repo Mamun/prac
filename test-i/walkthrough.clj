@@ -4,6 +4,7 @@
             [dadysql.jdbc-io :as io]
             [test-data :as td]
             [dadysql.compiler.spec :as cs]
+            [dady.spec :as ds]
             [clojure.spec :as s]))
 
 
@@ -12,6 +13,11 @@
 ;(get-in u/tie-system-v [:tms])
 
 (comment
+
+  (ds/registry-by-namespace :tie4)
+  (t/read-file "tie4.edn.sql")
+
+
 
 
   (cs/gen-spec :hello (vals (t/read-file "tie.edn.sql")))
