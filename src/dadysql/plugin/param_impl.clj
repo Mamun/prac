@@ -56,7 +56,6 @@
            (get-in m)))
     :dadysql.core/param-ref-fn-key
     (let [[s _ f k] path]
-
       (->> (cc/replace-last-in-vector s k)
            (get-in m)
            (f)))
@@ -71,6 +70,7 @@
 (defn param-exec [tm-coll rinput input-format generator]
   (let [param-paths (param-paths input-format tm-coll rinput)]
     (reduce (fn [acc-input path]
+              ;(println "From param exec " acc-input)
               (let [rv (do-param1 generator path acc-input)
                     [src] path]
                 (if (f/failed? rv)

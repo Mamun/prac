@@ -6,7 +6,7 @@
     [dadysql.compiler.core :as cc]
     [dady.fail :as f]
     [dadysql.spec :as ds]
-    [dadysql.sql-io-impl :as ce]
+    [dadysql.plugin.sql-io-impl :as ce]
     [dadysql.file-reader :as fr]))
 
 
@@ -44,7 +44,7 @@
   [ds tms req-m]
   (if-let [r (f/failed? (tie/validate-input! req-m))]
     r
-    (let [sql-exec (ce/warp-sql-execute ds tms :dadysql.plugin.sql.jdbc-io/transaction)
+    (let [sql-exec (ce/warp-sql-execute ds tms :dadysql.plugin.sql.jdbc-io/batch)
           gen (fn [m]
                 (->> (assoc m :dadysql.core/op :dadysql.core/op-db-seq)
                      (pull ds tms)))]
@@ -67,5 +67,7 @@
 
 
 (defn select-name [tms req-m]
-  (dc/select-name-by-name-coll tms (:dadysql.core/name req-m) ))
+  (-> (dc/select-name-by-name-coll tms (:dadysql.core/name req-m) )
+      (vals))
+  )
 

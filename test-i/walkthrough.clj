@@ -1,7 +1,7 @@
 (ns walkthrough
   (:require [clojure.java.jdbc :as jdbc]
             [dadysql.jdbc :as t]
-            [dadysql.sql-io-impl :as io]
+            [dadysql.jdbc-io :as io]
             [test-data :as td]
             [dadysql.compiler.spec :as cs]
             [clojure.spec :as s]))
@@ -114,8 +114,7 @@
   (-> @td/ds
       (t/pull (t/read-file "tie.edn.sql")
               {:dadysql.core/name   [:get-employee-by-id :get-employee-dept :get-employee-detail]
-               :dadysql.core/param {:id 1}}
-              )
+               :dadysql.core/param {:id 1}})
       (clojure.pprint/pprint))
 
 
@@ -228,7 +227,7 @@
         (t/push! (t/read-file "tie.edn.sql")
                  {
                   :dadysql.core/name   :update-dept
-                  :params d})
+                  :dadysql.core/param d})
         (clojure.pprint/pprint)))
 
 
@@ -269,11 +268,8 @@
                                                :country "Germany"}}}]
     (-> @td/ds
         (t/push! (t/read-file "tie.edn.sql")
-                 :dadysql.core/name [:create-employee :create-employee-detail]
-                 :params employee
-                 ;:iormat as-model
-                 ;:dadysql.core/output-format as-model
-                 )
+                 {:dadysql.core/name [:create-employee :create-employee-detail]
+                  :dadysql.core/param employee})
         (clojure.pprint/pprint)
         )
     )

@@ -1,4 +1,4 @@
-(ns dadysql.tracking
+(ns dadysql.plugin.sql-io-tracking
   (:import [java.util.Date]
            [java.util.concurrent.TimeUnit])
   (:require [clojure.set]
@@ -67,8 +67,3 @@
     tm-coll))
 
 
-(defn warp-tracking [handler]
-  (fn [m]
-    (do
-      (notify-async-tracking
-        (handler m)))))

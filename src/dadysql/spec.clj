@@ -113,5 +113,12 @@
 (s/def :dadysql.core/param-format #{:dadysql.core/format-nested :dadysql.core/format-map})
 
 
-(s/def :dadysql.core/user-input (s/keys :req [(or :dadysql.core/name :dadysql.core/group)]
-                                        :opt [:dadysql.core/param :dadysql.core/param-format :dadysql.core/output-format]))
+;(def input-key )
+
+(s/def :dadysql.core/user-input
+  (s/merge
+    (s/keys :req [(or :dadysql.core/name :dadysql.core/group)]
+            :opt [:dadysql.core/param :dadysql.core/param-format :dadysql.core/output-format])
+    (s/map-of #{:dadysql.core/name :dadysql.core/group
+                :dadysql.core/param :dadysql.core/param-format :dadysql.core/output-format}
+              any?)))

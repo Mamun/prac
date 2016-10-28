@@ -20,7 +20,7 @@
   []
   (when (nil? @tms)
     (let [w (read-file "tie.edn.sql")]
-      (db-do (get-ds) [:create-ddl :init-data] w)
+      ; (db-do (get-ds) [:create-ddl :init-data] w)
       (reset! tms w))
     (println "reading "))
   @tms)
@@ -29,7 +29,7 @@
 (defn init-tms
   []
   (let [w (read-file "tie.edn.sql")]
-    (db-do (get-ds) [:create-ddl :init-data] w)
+    ;(db-do (get-ds) [:create-ddl :init-data] w)
     (reset! tms w))
   )
 
