@@ -9,38 +9,37 @@
       (keyword)))
 
 
-(defn build-ns-keyword [& nas]
-  (keyword (apply str (interpose "." (map name nas)))))
+
+(defn create-ns-key [ns-key r]
+  (let [w (if (namespace ns-key)
+            (str (namespace ns-key) "." (name ns-key))
+            (name ns-key))]
+    (if (namespace r)
+      (keyword (str w "." (namespace r) "/" (name r)))
+      (keyword (str w "/" (name r))))))
 
 
-(defn add-ns-to-keyword [k & nas]
-  (if (empty? nas)
-    k
-    (-> (apply build-ns-keyword nas)
-        (name)
-        (str "/" (name k))
-        (keyword))))
+(defn assoc-ns-key [ns-key m]
+  (->> (map (fn [v]
+              (create-ns-key ns-key v)) (keys m))
+       (interleave (keys m))
+       (apply assoc {})
+       (clojure.set/rename-keys m)))
 
 
-(defn rename-nskeys-one [mapkey-fn m]
-  (let [k (keys m)
-        w (map mapkey-fn k)
-        nk (apply assoc {} (interleave k w))]
-    (clojure.set/rename-keys m nk)))
-
-
-(defn rename-ns-key-batch [m]
+(defn as-ns-format [ m]
   (->> m
-       (map (fn [[k v-m]]
-              {k (rename-nskeys-one (fn [v]
-                                      (add-ns-to-keyword v k)) v-m)}))
-       (into {})))
+       (w/prewalk (fn [w]
+                 (if (and (map? w)
+                          (every? map? (vals w) ))
+                   (into {}
+                         (map (fn [[k v]]
+                                {k (assoc-ns-key k v)}
+                                ) w))
+                   w)
+                 ) )))
 
 
-(defn as-ns-key-format [parent-ns-keyword m]
-  (->> (rename-nskeys-one (fn [k] (build-ns-keyword parent-ns-keyword k)) m)
-       (rename-ns-key-batch)
-       (rename-nskeys-one (fn [k] (add-ns-to-keyword :spec k)))))
 
 
 (defn build-spec-one [m]
@@ -59,10 +58,13 @@
 
 
 (defn map->spec [parent-ns-keyword m]
-  (->> m
-       (as-ns-key-format parent-ns-keyword)
+  (->> (assoc-ns-key parent-ns-keyword m)
+       (as-ns-format )
        (build-spec-batch)
        (apply concat)))
+
+
+
 
 
 (defn eval-spec [coll-v]
@@ -83,48 +85,18 @@
 
 ;(as-ns-keyword :a :n)
 
+(defn merge-spec2 [coll-spec]
+  (cons 'clojure.spec/merge
+        coll-spec))
+
+
 (defn merge-spec [coll-spec]
   (eval
     (cons 'clojure.spec/merge
           coll-spec)))
 
 
-(comment
 
-
-
-  (as-key [:hello :get-name :id])
-
-
-  (clojure.string/includes? (str :hello) (str :he))
-
-  ;(namespace (symbol "adsf") )
-
-
-
-  (s/explain :hello.get-by-id/spec {:id 1 :name 3})
-
-  (:hello.get-by-id/spec
-    (s/registry))
-
-  (registry-by-namespace :tie)
-
-
-  (s/explain :tie3.get-dept-by-id/spec {:id [1 2 3 "asdf"]})
-
-
-
-
-  (->
-    (#'clojure.spec/coll-of
-      #'clojure.core/int?
-      :kind
-      #'clojure.core/vector?)
-    (first)
-    ;(name )
-    )
-
-  )
 
 
 

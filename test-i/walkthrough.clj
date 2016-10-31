@@ -117,7 +117,7 @@
   (-> @td/ds
       (t/pull (t/read-file "tie.edn.sql")
               {:dadysql.core/name   [:get-dept-by-id :get-dept-employee]
-               :dadysql.core/param {:id 1 }})
+               :dadysql.core/param {:id 1  }})
       (clojure.pprint/pprint))
 
   (do

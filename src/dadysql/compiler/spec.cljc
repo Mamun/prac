@@ -1,5 +1,6 @@
 (ns dadysql.compiler.spec
   (:require [clojure.spec :as s]
+            [dady.spec :as ds]
             [dady.spec :as ds]))
 
 
@@ -62,7 +63,7 @@
 (defn assoc-param-spec [parent-ns m]
   (if-not (contains? m :dadysql.core/param-spec)
     m
-    (->> (ds/add-ns-to-keyword :spec parent-ns (:dadysql.core/name m))
+    (->> (ds/create-ns-key parent-ns (:dadysql.core/name m))
          (assoc m :dadysql.core/spec))))
 
 
@@ -84,7 +85,7 @@
 (defn eval-param-spec-batch [file-name coll]
   (let [f-k (ds/filename-as-keyword file-name)
         s-m (gen-spec f-k coll)]
-    (mapv #(ds/eval-spec (ds/map->spec f-k %) ) s-m )
+    (mapv #(ds/eval-spec (ds/map->spec f-k %)) s-m)
     (mapv #(assoc-param-spec f-k %) coll)))
 
 
