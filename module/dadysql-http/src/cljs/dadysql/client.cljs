@@ -1,8 +1,6 @@
 (ns dadysql.client
   (:require [ajax.core :as a]
-            [dadysql.re-frame :as r]
-            [dadysql.util :as u]))
-
+            [dadysql.re-frame :as r]))
 
 
 (def default-request {:method          :post
@@ -18,48 +16,58 @@
                    })
 
 
+(defn find-subscribe-key
+  [input-request]
+  (let [name (:dadysql.core/name input-request)
+        group (:dadysql.core/group input-request)
+        n (if (sequential? name)
+            (first name)
+            name)]
+    (or group n)))
+
+
+
+(defn build-request
+  ([subscribe-key param-m]
+   {:params        param-m
+    :handler       #(r/dispatch subscribe-key %)
+    :error-handler #(r/dispatch subscribe-key %)})
+  ([param-m]
+   (build-request (find-subscribe-key param-m) param-m)))
+
+
+
+(defn sub-path
+  [& path]
+  (into [r/store-path-key] path))
+
+
+(defn sub-error-path
+  [& path]
+  (into [r/error-path-key] path))
+
+
+(defn dispatch-path [s-key v]
+  [r/store-path-key [s-key v]])
+
+
 (defn pull
-  ([url ajax-m]
-   (->> (merge default-request ajax-m)
+  ([url param-m]
+   (->> (build-request param-m)
+        (merge default-request)
         (a/POST (str (or url "") "/pull"))))
-  ([ajax-m]
-   (pull "" ajax-m)))
+  ([param-m]
+   (pull "" param-m)))
+
 
 
 (defn push!
-  ([url ajax-m]
-   (->> (merge default-request ajax-m)
+  ([url param-m]
+   (->> (build-request param-m)
+        (merge default-request)
         (a/POST (str (or url "") "/push"))))
-  ([ajax-m]
-   (push! "" ajax-m)))
+  ([param-m]
+   (push! "" param-m)))
 
-
-
-(comment
-
-  (->> (default-dadysql-params {:a 3})
-       (default-dadysql-params)
-       (a/POST "/pull")
-       )
-  )
-
-
-#_(:cljs
-   (defn build-js-request
-     [name params options callback]
-     (let [namev (mapv keyword (js->clj name))
-           params (js->clj params)
-           options (js->clj options)
-           cb (fn [res] (if (= "text/html" (get-in options [:accept]))
-                          (callback res)
-                          (callback (clj->js res))))]
-       (merge {:name     namev
-               :params   params
-               :input    :string
-               :output   :string
-               :callback cb} options))))
-
-
-#_(def ^:export h-options (clj->js accept-html-options))
 
 

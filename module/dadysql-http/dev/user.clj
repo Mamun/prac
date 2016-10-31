@@ -17,3 +17,10 @@
   (figwheel/start-figwheel!))
 
 (defn cljs-repl [] (figwheel/cljs-repl))
+
+
+(comment
+
+  (cljs-repl)
+  (run)
+  )
