@@ -20,14 +20,14 @@
 (deftest update-ns-key-test
   (testing "testing as-ns-key-format"
     (are [a e] (= a e)
-               (as-ns-format {:get-by-id {:id   :a
-                                          :name :name}})
+               (convert-key-to-ns-key {:get-by-id {:id :a
+                                          :name        :name}})
                {:get-by-id {:get-by-id/id   :a,
                             :get-by-id/name :name}}
 
-               (as-ns-format {:get-by-id         {:id   :id
+               (convert-key-to-ns-key {:get-by-id {:id  :id
                                                   :name :name}
-                              :get-details-by-id {:id :id}})
+                              :get-details-by-id  {:id :id}})
                {:get-by-id
                 {:get-by-id/id   :id
                  :get-by-id/name :name}

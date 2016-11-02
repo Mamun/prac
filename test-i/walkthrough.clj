@@ -18,12 +18,15 @@
 
 (comment
 
-  (ds/registry-by-namespace :tie4)
+  (ds/registry-by-namespace :tie)
 
   (s/explain :tie4/employee {:id 3 :id2 4})
 
-  (gen/sample (s/gen :tie4/get-dept-by-id ) )
-  (gen/sample (s/gen :tie4/employee ) )
+  (gen/sample (s/gen :tie/get-dept-by-id ) )
+
+  (gen/sample (s/gen :tie/employee ) )
+
+
 
 
   (s/exercise :tie4/get-dept-by-id)
@@ -65,6 +68,7 @@
   #_(s/valid? (s/or :dadysql.core/name string?
                   :id   integer?) :keyowrd)
 
+  (t/generate-spec "tie.edn.sql")
   ;; Create database table and init data
   (->> {:dadysql.core/name [:create-ddl :init-data]}
        (t/select-name (t/read-file "tie.edn.sql") )

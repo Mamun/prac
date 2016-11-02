@@ -2,7 +2,7 @@
   (:require [dadysql.compiler.spec :as cs]
             [dady.common :as cc]
             [dadysql.compiler.validation :as u]
-
+            [dady.spec-util :as su]
             [dadysql.compiler.core-sql :as sql]
             [dadysql.compiler.core-inheritance :as ci]
             [clojure.spec :as s]))
@@ -183,7 +183,7 @@
         reserve (mapv #(compile-reserve % nil) reserve)
         global (dissoc global :dadysql.core/extend)]
     (->> (concat [global] modules reserve)
-         (cs/eval-param-spec-batch file-name )
+         (su/eval-param-spec file-name)
          (into {} (map into-name-map)))))
 
 

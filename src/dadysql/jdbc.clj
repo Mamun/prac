@@ -2,6 +2,7 @@
   (:require
     [dadysql.core :as tie]
     [dadysql.compiler.core :as cc]
+    [dady.spec-util :as cs]
     [dady.fail :as f]
     [dadysql.spec :as ds]
     [dadysql.plugin.sql-io-impl :as ce]
@@ -87,4 +88,6 @@
     (into [] p (vals tms))))
 
 
-
+(defn generate-spec [file-name]
+  (let [m (read-file file-name)]
+    (cs/write-param-spec file-name (vals m))))
