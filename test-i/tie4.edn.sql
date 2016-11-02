@@ -39,6 +39,7 @@ select * from employee where dept_id = :id;
  :group :create-employee
  :extend {:create-employee {:model :employee
                             :param-spec {:id int?}
+
                             :param [[:transaction_id :ref-con 0]
                                      [:id :ref-gen :gen-dept ]]}
            :create-employee-detail {:model :employee-detail
@@ -50,3 +51,19 @@ insert into employee (id,  transaction_id,  firstname,  lastname,  dept_id)
              values (:id, :transaction_id, :firstname, :lastname, :dept_id);
 insert into employee_detail (employee_id, street,   city,  state,  country )
                     values (:employee_id, :street, :city, :state, :country);
+
+
+
+/*
+{:doc "Modify employee with dept, details and meeting  "
+ :name [:create-employee2 ]
+ :group :create-employee
+ :extend {:create-employee2 {:model :employee
+                            :param-spec {:id2 int?}
+                            :param [[:transaction_id :ref-con 0]
+                                     [:id :ref-gen :gen-dept ]]}}
+ :commit :all
+ }*/
+insert into employee (id,  transaction_id,  firstname,  lastname,  dept_id)
+             values (:id, :transaction_id, :firstname, :lastname, :dept_id);
+

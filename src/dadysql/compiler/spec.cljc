@@ -1,7 +1,9 @@
 (ns dadysql.compiler.spec
   (:require [clojure.spec :as s]
-            [dady.spec :as ds]
-            [dady.spec :as ds]))
+            [dady.spec-util :as ds]
+            [dady.spec-util :as ds]
+            [dady.spec-util :as ds]
+            [dady.spec-util :as ds]))
 
 
 (s/def :dadysql.core/common
@@ -60,33 +62,36 @@
 
 
 
-(defn assoc-param-spec [parent-ns m]
-  (if-not (contains? m :dadysql.core/param-spec)
-    m
-    (->> (ds/create-ns-key parent-ns (:dadysql.core/name m))
-         (assoc m :dadysql.core/spec))))
+(defn assoc-spec [spec-name-m m]
+  (if (and (contains? m :dadysql.core/param-spec)
+           (get spec-name-m (:dadysql.core/name m)))
+    (assoc m :dadysql.core/spec (get spec-name-m (:dadysql.core/name m)))
+    m))
 
 
 
-(defn gen-spec [parent-ns coll]
-  (let [coll (filter :dadysql.core/param-spec coll)
-        g-coll (group-by :dadysql.core/dml coll)
-
-        ]
-    (clojure.pprint/pprint g-coll)
-    (for [[k v] g-coll
-          m v]
-      (->> (hash-map (:dadysql.core/name m)
-                     (:dadysql.core/param-spec m))))))
+(defn get-param-spec [coll]
+  (let [insert-coll (->> (filter :dadysql.core/param-spec coll)
+                         (filter (fn [m] (= (:dadysql.core/dml m)
+                                            :dadysql.core/dml-insert)))
+                         (group-by :dadysql.core/model)
+                         (map (fn [[k v]] {k (apply merge (mapv :dadysql.core/param-spec v))}))
+                         (into {}))]
+    (->> (filter :dadysql.core/param-spec coll)
+         (into {} (map (juxt :dadysql.core/name :dadysql.core/param-spec)))
+         (merge insert-coll))))
 
 
 
 
 (defn eval-param-spec-batch [file-name coll]
   (let [f-k (ds/filename-as-keyword file-name)
-        s-m (gen-spec f-k coll)]
-    (mapv #(ds/eval-spec (ds/map->spec f-k %)) s-m)
-    (mapv #(assoc-param-spec f-k %) coll)))
+        s-m (get-param-spec coll)
+        psk (ds/map->spec-key f-k s-m)]
+    ;;Also poosibel to write to file
+    ;(ds/write-to-file (name f-k) (ds/map->spec f-k s-m) )
+    (ds/eval-spec (ds/map->spec f-k s-m))
+    (mapv #(assoc-spec psk %) coll)))
 
 
 

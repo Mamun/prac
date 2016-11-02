@@ -3,7 +3,7 @@
     [clojure.spec :as s]
     [dadysql.spec]
     [dady.fail :as f]
-    [dady.spec :as ds]
+    [dady.spec-util :as ds]
     [dadysql.plugin.join-impl :as ji]
     [dadysql.plugin.sql-bind-impl :as bi]
     [dadysql.selector :as dc]

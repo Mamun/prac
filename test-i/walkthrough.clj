@@ -4,10 +4,14 @@
             [dadysql.jdbc-io :as io]
             [test-data :as td]
             [dadysql.compiler.spec :as cs]
-            [dady.spec :as ds]
-            [clojure.spec :as s]))
+            [dady.spec-util :as ds]
+            [clojure.spec :as s]
+
+            [clojure.spec.gen :as g]
+            [clojure.spec.gen :as gen]))
 
 
+(s/def :a/hello string?)
 
 ;(integer? 3)
 ;(get-in u/tie-system-v [:tms])
@@ -15,12 +19,48 @@
 (comment
 
   (ds/registry-by-namespace :tie4)
-  (t/read-file "tie4.edn.sql")
+
+  (s/explain :tie4/employee {:id 3 :id2 4})
+
+  (gen/sample (s/gen :tie4/get-dept-by-id ) )
+  (gen/sample (s/gen :tie4/employee ) )
+
+
+  (s/exercise :tie4/get-dept-by-id)
+
+  ;(s/valid? :tie5.employee/id2 "asdf")
+
+  (type #'clojure.core/int?)
+
+
+
+  (->>
+
+    (t/read-file "tie4.edn.sql")
+    (clojure.pprint/pprint)
+    )
+
+
+  (slurp "tie4.clj")
+
+  (load-file "tie4.clj")
+
+
+
+  (->> {:employee
+        [#:dadysql.core{:model :employee,
+                        :param-spec {:id :id}}
+         #:dadysql.core{:model :employee,
+                        :param-spec {:id2 :id2}}]}
+       (map (fn [[k v]]  {k (reduce (fn [acc v]
+                                      (merge-with merge acc v)
+                                      ) {} v) } ))
+       )
 
 
 
 
-  (cs/gen-spec :hello (vals (t/read-file "tie.edn.sql")))
+  (cs/get-param-spec :hello (vals (t/read-file "tie.edn.sql")))
 
   #_(s/valid? (s/or :dadysql.core/name string?
                   :id   integer?) :keyowrd)

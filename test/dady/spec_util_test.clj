@@ -1,5 +1,5 @@
-(ns dady.spec-test
-  (:use [dady.spec]
+(ns dady.spec-util-test
+  (:use [dady.spec-util]
         [clojure.test])
   (:require [clojure.spec :as s]
             [clojure.walk :as w]))
@@ -13,7 +13,6 @@
                (create-ns-key :t :p) :t/p)))
 
 ;(create-ns-key-test)
-
 
 
 
@@ -56,25 +55,7 @@
 
 
 
-(comment
 
-  ;(every? map? (vals {:a {:b 3} :t 4}) )
-
-
-
-
-
-
-  (as-ns-format :tie {:get-by-id {:id   (var int?)
-                                  :name (var string?)}})
-
-  (add-ns-to-keyword-test)
-
-  (build-ns-keyword-test)
-
-  (as-ns-key-format-test)
-
-  )
 
 
 
@@ -87,10 +68,8 @@
 (comment
 
 
-  #_(is
-      (= (var int?) (var int?)))
 
-  (comment
+
 
 
 
@@ -112,19 +91,18 @@
     (build-ns-keyword :a :b :c)
 
 
-    ;(add-ns-to-keyword :hello )
+                                        ;(add-ns-to-keyword :hello
+
 
 
     (clojure.pprint/pprint
-      (registry-by-namespace :tie))
+      (registry-by-namespace :work))
 
 
     (->> {:get-by-id         {:id   (var int?)
                               :name (var string?)}
           :get-details-by-id {:id (var int?)}}
-         (assoc-ns-key :tie)
-         (as-ns-format)
-         (build-spec-batch)
+         (map->spec :work)
          #_(eval-spec))
 
 
@@ -134,8 +112,8 @@
 
     (s/explain
       (eval
-        (merge-spec2 (list :tie.get-details-by-id/spec
-                           :tie.get-by-id/spec)))
+        (merge-spec2 (list :work/get-details-by-id
+                           :work/get-by-id)))
       {:id 3})
 
 
@@ -145,10 +123,22 @@
 
     (s/explain
       (clojure.spec/merge
-        :tie.get-by-id/spec
-        (clojure.spec/keys :req-un [:tie.get-details-by-id/spec]))
+        :work/get-by-id
+        (clojure.spec/keys :req-un [:work/get-details-by-id  ]))
       {:id   3
-       :spec {:name 3}}
+       :name "asdf"
+       :get-details-by-id  {:name "sadf" :id 5}}
+      )
+
+
+
+    (s/explain
+      (clojure.spec/merge
+        :work/get-by-id
+        (clojure.spec/keys :req-un [:work/get-details-by-id  ]))
+      {:id   3
+       :name "asdf"
+       :get-details-by-id  {:name "sadf" :id 5}}
       )
 
 
@@ -194,4 +184,4 @@
 
     )
 
-  )
+
