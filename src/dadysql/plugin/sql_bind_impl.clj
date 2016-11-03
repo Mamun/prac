@@ -101,6 +101,8 @@
   (let [[sql-str & sql-params] (:dadysql.core/sql tm)
         input (:dadysql.core/param tm)
         param-spec (or (:dadysql.core/param-spec tm) {})
+        param-spec (merge (:opt param-spec) (:req param-spec) )
+
         rf (fn [sql-coll p-key]
              (let [p-value (cc/as-sequential (p-key input))
                    w (-> (p-key param-spec)

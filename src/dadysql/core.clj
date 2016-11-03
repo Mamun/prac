@@ -4,6 +4,7 @@
     [dadysql.spec]
     [dady.fail :as f]
     [dady.spec-util :as ds]
+    [dady.spec-generator :as sg]
     [dadysql.plugin.join-impl :as ji]
     [dadysql.plugin.sql-bind-impl :as bi]
     [dadysql.selector :as dc]
@@ -155,11 +156,18 @@
 
 
 
+(defn map-un-spec [tm-coll]
+  (->> (map :dadysql.core/spec tm-coll)
+       (remove nil?)
+       (map (fn [w] (sg/add-postfix-to-key w "-un") ) )
+       (ds/merge-spec  )))
+
+
 (defn validate-param-spec [tm-coll req-m]
   (let [param-spec (condp = (:dadysql.core/op req-m)
                      :dadysql.core/op-push
                      (:dadysql.core/spec (first tm-coll))
-                     (ds/merge-spec (map :dadysql.core/spec tm-coll)))]
+                     (map-un-spec tm-coll) )]
     (if-not (s/valid? param-spec (:dadysql.core/param req-m))
       (f/fail (s/explain-str param-spec (:dadysql.core/param req-m)))
       tm-coll)))

@@ -84,7 +84,14 @@
       false)))
 
 
-(s/def :dadysql.core/param-spec (s/map-of keyword? clj-spec?))
+(s/def ::req (s/map-of keyword? clj-spec?))
+(s/def ::opt (s/map-of keyword? clj-spec?))
+(s/def :dadysql.core/param-spec (s/merge (s/or :req (s/keys :req [::req])
+                                   :opt (s/keys :opt [::opt]))
+                             (s/map-of #{:req :opt} any?)))
+
+
+#_(s/def :dadysql.core/param-spec (s/map-of keyword? clj-spec?))
 
 
 

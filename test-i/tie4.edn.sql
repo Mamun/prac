@@ -22,11 +22,11 @@
  :group :load-dept
  :extend {:get-dept-by-id {:timeout 2000
                            :param [[:next_transaction_id :ref-fn-key inc :transaction_id]]
-                           :param-spec {:id (s/coll-of int? :kind vector?)}
+                           :param-spec {:req {:id (s/coll-of int? :kind vector?)}}
                            :result #{:single}}
          }
  :timeout 5000
- :param-spec {:id int?}
+ :param-spec {:req {:id int?}}
  }*/
 select * from department where id = :id ;
 select * from employee where dept_id = :id;
@@ -38,7 +38,7 @@ select * from employee where dept_id = :id;
  :name [:create-employee :create-employee-detail ]
  :group :create-employee
  :extend {:create-employee {:model :employee
-                            :param-spec {:id int?}
+                            :param-spec {:req {:id int?}}
 
                             :param [[:transaction_id :ref-con 0]
                                      [:id :ref-gen :gen-dept ]]}
@@ -59,7 +59,7 @@ insert into employee_detail (employee_id, street,   city,  state,  country )
  :name [:create-employee2 ]
  :group :create-employee
  :extend {:create-employee2 {:model :employee
-                            :param-spec {:id2 int?}
+                            :param-spec {:req {:id2 int?}}
                             :param [[:transaction_id :ref-con 0]
                                      [:id :ref-gen :gen-dept ]]}}
  :commit :all

@@ -7,7 +7,7 @@
  :source-paths ["src" "src-jvm"]
   :dependencies  [[org.clojure/clojure "1.9.0-alpha13"]
                   ;    [org.clojure/core.async "0.1.346.0-17112a-alpha"]
-                 [org.clojure/core.async "0.2.382"]
+                 [org.clojure/core.async "0.2.395"]
                  [org.clojure/tools.reader "0.9.2"]
                  [org.clojure/tools.logging "0.3.1"]
            ;      [org.clojure/core.match "0.3.0-alpha4"]
@@ -25,7 +25,7 @@
                                     [codox "0.8.12"]
                                     [lein-midje "3.0.0"]
                                     [lein-pprint "1.1.1"]]
-                   :dependencies   [[org.clojure/tools.namespace "0.2.11"]
+                   :dependencies   [[org.clojure/tools.namespace "0.3.0-alpha3"]
                                     [org.clojure/tools.nrepl "0.2.10"]
 
                                     [org.clojure/test.check "0.9.0"]

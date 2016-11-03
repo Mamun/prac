@@ -6,8 +6,6 @@
             [dadysql.compiler.spec :as cs]
             [dady.spec-util :as ds]
             [clojure.spec :as s]
-
-            [clojure.spec.gen :as g]
             [clojure.spec.gen :as gen]))
 
 
@@ -18,30 +16,15 @@
 
 (comment
 
-  (ds/registry-by-namespace :tie)
+  (ds/registry :tie)
 
-  (s/explain :tie4/employee {:id 3 :id2 4})
+  (gen/sample (s/gen :tie/get-dept-by-id))
 
-  (gen/sample (s/gen :tie/get-dept-by-id ) )
-
-  (gen/sample (s/gen :tie/employee ) )
+  (gen/sample (s/gen :tie/employee))
 
 
-
-
-  (s/exercise :tie4/get-dept-by-id)
-
-  ;(s/valid? :tie5.employee/id2 "asdf")
-
-  (type #'clojure.core/int?)
-
-
-
-  (->>
-
-    (t/read-file "tie4.edn.sql")
-    (clojure.pprint/pprint)
-    )
+  (->>  (t/read-file "tie4.edn.sql")
+        (clojure.pprint/pprint))
 
 
   (slurp "tie4.clj")
@@ -51,13 +34,13 @@
 
 
   (->> {:employee
-        [#:dadysql.core{:model :employee,
-                        :param-spec {:id :id}}
-         #:dadysql.core{:model :employee,
-                        :param-spec {:id2 :id2}}]}
-       (map (fn [[k v]]  {k (reduce (fn [acc v]
-                                      (merge-with merge acc v)
-                                      ) {} v) } ))
+        [#:dadysql.core {:model      :employee,
+                         :param-spec {:id :id}}
+         #:dadysql.core {:model      :employee,
+                         :param-spec {:id2 :id2}}]}
+       (map (fn [[k v]] {k (reduce (fn [acc v]
+                                     (merge-with merge acc v)
+                                     ) {} v)}))
        )
 
 
@@ -66,22 +49,22 @@
   (cs/get-param-spec :hello (vals (t/read-file "tie.edn.sql")))
 
   #_(s/valid? (s/or :dadysql.core/name string?
-                  :id   integer?) :keyowrd)
+                    :id integer?) :keyowrd)
 
   (t/generate-spec "tie.edn.sql")
   ;; Create database table and init data
   (->> {:dadysql.core/name [:create-ddl :init-data]}
-       (t/select-name (t/read-file "tie.edn.sql") )
-       (io/db-do (td/get-ds) ))
+       (t/select-name (t/read-file "tie.edn.sql"))
+       (io/db-do (td/get-ds)))
 
 
 
   (-> @td/ds
-      (t/db-do  [:drop-ddl] (t/read-file "tie.edn.sql")))
+      (t/db-do [:drop-ddl] (t/read-file "tie.edn.sql")))
 
   ;; Validate all sql statment with database
   (->> (t/get-all-parameter-sql (t/read-file "tie.edn.sql"))
-       (io/validate-dml! @td/ds ))
+       (io/validate-dml! @td/ds))
 
 
 
@@ -93,7 +76,7 @@
   ;; Simple pull
   (-> @td/ds
       (t/pull (t/read-file "tie.edn.sql")
-              {:dadysql.core/name :get-dept-list}) )
+              {:dadysql.core/name :get-dept-list}))
 
 
   ;;With model name when name as vector
@@ -122,7 +105,7 @@
   (-> (t/read-file "tie2.edn.sql")
       (:get-dept-by-id)
       (:dadysql.core/param-spec)
-      (s/explain-str {:id 2} )
+      (s/explain-str {:id 2})
       )
 
 
@@ -144,15 +127,15 @@
 
   (-> @td/ds
       (t/pull (t/read-file "tie.edn.sql")
-              {:dadysql.core/name   [:get-dept-by-ids]
-               :dadysql.core/param {:id [ 1 2 3] }})
+              {:dadysql.core/name  [:get-dept-by-ids]
+               :dadysql.core/param {:id [1 2 3]}})
       (clojure.pprint/pprint))
 
 
 
   (-> @td/ds
       (t/pull (t/read-file "tie.edn.sql")
-              {:dadysql.core/name   [:get-dept-by-ids]
+              {:dadysql.core/name  [:get-dept-by-ids]
                :dadysql.core/param {:id [1 2 112]}})
       (clojure.pprint/pprint))
 
@@ -160,8 +143,8 @@
   ;; for join data
   (-> @td/ds
       (t/pull (t/read-file "tie.edn.sql")
-              {:dadysql.core/name   [:get-dept-by-id :get-dept-employee]
-               :dadysql.core/param {:id 1  }})
+              {:dadysql.core/name  [:get-dept-by-id :get-dept-employee]
+               :dadysql.core/param {:id  1}})
       (clojure.pprint/pprint))
 
   (do
@@ -172,14 +155,14 @@
 
   (-> @td/ds
       (t/pull (t/read-file "tie.edn.sql")
-              {:dadysql.core/name   [:get-employee-by-id :get-employee-dept :get-employee-detail]
+              {:dadysql.core/name  [:get-employee-by-id :get-employee-dept :get-employee-detail]
                :dadysql.core/param {:id 1}})
       (clojure.pprint/pprint))
 
 
   (-> @td/ds
       (t/pull (t/read-file "tie.edn.sql")
-              {:dadysql.core/name   [:get-employee-detail]
+              {:dadysql.core/name  [:get-employee-detail]
                :dadysql.core/param {:id 1}}
               ;:dadysql.core/output-format :nested-join
               )
@@ -189,7 +172,7 @@
 
   (-> @td/ds
       (t/pull (t/read-file "tie.edn.sql")
-              {:dadysql.core/group  :load-employee
+              {:dadysql.core/group :load-employee
                :dadysql.core/param {:id 1}}
               ;:dadysql.core/output-format :nested-join
               )
@@ -201,7 +184,7 @@
   (let [v {:dept_name "Call Center Munich"}]
     (-> @td/ds
         (t/push! (t/read-file "tie.edn.sql")
-                 {:dadysql.core/name   :create-dept
+                 {:dadysql.core/name  :create-dept
                   :dadysql.core/param v}
                  ;:dadysql.core/output-format :as-sequence
                  )
@@ -214,7 +197,7 @@
   (let [d {:department {:dept_name "Call Center Munich 2"}}]
     (-> @td/ds
         (t/push! (t/read-file "tie.edn.sql")
-                 {:dadysql.core/name   [:create-dept]
+                 {:dadysql.core/name  [:create-dept]
                   :dadysql.core/param d}
 
                  )
@@ -277,15 +260,15 @@
     (-> @td/ds
         (t/push! (t/read-file "tie.edn.sql")
                  {
-                  :dadysql.core/name [:update-dept]
-                  :dadysql.core/param            d})
+                  :dadysql.core/name  [:update-dept]
+                  :dadysql.core/param d})
         (clojure.pprint/pprint)))
 
   (let [d {:dept_name "Call Center Munich 1" :transaction_id 0 :id 2}]
     (-> @td/ds
         (t/push! (t/read-file "tie.edn.sql")
                  {
-                  :dadysql.core/name   :update-dept
+                  :dadysql.core/name  :update-dept
                   :dadysql.core/param d})
         (clojure.pprint/pprint)))
 
@@ -327,7 +310,7 @@
                                                :country "Germany"}}}]
     (-> @td/ds
         (t/push! (t/read-file "tie.edn.sql")
-                 {:dadysql.core/name [:create-employee :create-employee-detail]
+                 {:dadysql.core/name  [:create-employee :create-employee-detail]
                   :dadysql.core/param employee})
         (clojure.pprint/pprint)
         )
@@ -353,8 +336,8 @@
     (->
       @td/ds
       (t/push! (t/read-file "tie.edn.sql")
-               {:dadysql.core/name   [:create-meeting]
-                :params meeting})
+               {:dadysql.core/name [:create-meeting]
+                :params            meeting})
       (clojure.pprint/pprint)
       )
     )
@@ -365,8 +348,8 @@
     (->
       (t/read-file "tie.edn.sql")
       (t/push! @td/ds
-               {:dadysql.core/name   [:create-meeting :create-employee-meeting]
-                :params meeting})
+               {:dadysql.core/name [:create-meeting :create-employee-meeting]
+                :params            meeting})
       (clojure.pprint/pprint)
       )
     )
@@ -394,16 +377,11 @@
   ;;;; Check sql tracking
 
   #_(t/start-tracking :hello
-                    (fn [v]
-                      (clojure.pprint/pprint v)))
+                      (fn [v]
+                        (clojure.pprint/pprint v)))
 
   #_(t/stop-tracking :hello)
 
   #_(t/start-sql-execution)
-
-
-
-
-
 
   )

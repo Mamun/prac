@@ -17,17 +17,17 @@
 
 
 
-(deftest update-ns-key-test
+(deftest convert-key-to-ns-key-test
   (testing "testing as-ns-key-format"
     (are [a e] (= a e)
-               (convert-key-to-ns-key {:get-by-id {:id :a
-                                          :name        :name}})
+               (convert-key-to-ns-key {:get-by-id {:id   :a
+                                                   :name :name}})
                {:get-by-id {:get-by-id/id   :a,
                             :get-by-id/name :name}}
 
-               (convert-key-to-ns-key {:get-by-id {:id  :id
-                                                  :name :name}
-                              :get-details-by-id  {:id :id}})
+               (convert-key-to-ns-key {:get-by-id         {:id   :id
+                                                           :name :name}
+                                       :get-details-by-id {:id :id}})
                {:get-by-id
                 {:get-by-id/id   :id
                  :get-by-id/name :name}
@@ -68,101 +68,75 @@
 (comment
 
 
+  (map->spec :t {:person {:name 'string?}
+                 :credit {:id 'int?}})
+
+  (eval-spec (map->spec :t {:person {:name string?}
+                            :credit {:id int?}}))
+
+
+  (s/explain :t/person {:t.person/name "asdf"} )
+
+  (s/explain :t/person-list [{:t.person/name "asdf"}])
+
+
+  (s/explain :t/person-un {:name "asdf"} )
+
+
+
+  ;(s/explain :t/hello-list [{:a 12}] )
+
+  (s/valid?
+    (merge-spec (list :hello3.get-by-id/spec :hello3.get-details-by-id/spec))
+    {:id 3 :name "asdf"})
+
+
+  (s/valid?
+    (merge-spec (list :hello3.get-by-id/spec :hello3.get-details-by-id/spec))
+    {:id 3 :name 3})
+
+
+  (let [p {:person {:fname string?
+                    :lname string?} } ])
+
+
+  (s/def :person/fname string?)
+  (s/def :person/lname string?)
+  (s/def :credit/id int?)
+  (s/def :credit/detail (s/keys :req [:credit/id]))
+  (s/def :credit/list (s/coll-of :credit/detail :kind vector?))
+
+  (s/explain :credit/detail {:credit/id 23})
+  (s/explain :credit/list [{:credit/id 23}])
 
 
 
 
+  (s/def :person/detail (s/keys :req [:person/fname
+                                      :person/lname
+                                      :credit/detail-list]))
 
 
-    (=
-      (list (clojure.spec/def :emp.get-by-id/spec (clojure.spec/keys :req-un [:emp.get-by-id/id]))
-            (clojure.spec/def :emp.get-by-id/id #'clojure.core/int?)
-            (clojure.spec/def :emp.get-by-name/spec (clojure.spec/keys :req-un [:emp.get-by-name/name]))
-            (clojure.spec/def :emp.get-by-name/name #'clojure.core/string?))
-
-      (list (clojure.spec/def :emp.get-by-id/spec (clojure.spec/keys :req-un [:emp.get-by-id/id]))
-            (clojure.spec/def :emp.get-by-id/id #'clojure.core/int?)
-            (clojure.spec/def :emp.get-by-name/spec (clojure.spec/keys :req-un [:emp.get-by-name/name]))
-            (clojure.spec/def :emp.get-by-name/name #'clojure.core/string?)))
+  (s/explain :person/detail {:person/fname       "Hello"
+                             :person/lname       "Check"
+                             :credit/detail-list [{:credit/id 12}]})
 
 
+  (s/exercise :person/detail)
 
+  ;Person -> 1:n -> Credit
 
-    (build-ns-keyword :a :b :c)
+  ;;Person
+  {:person/detail {:person/fname       "Max"
+                   :person/lname       "Musterman"
+                   :credit/detail-list [{:credit/id 12}]}}
 
+  ;;Credit
+  {:credit/detail {:credit/id     12
+                   :person/detail {:person/fname "Max"
+                                   :person/lname "Musterman"}}}
 
-                                        ;(add-ns-to-keyword :hello
-
-
-
-    (clojure.pprint/pprint
-      (registry-by-namespace :work))
-
-
-    (->> {:get-by-id         {:id   (var int?)
-                              :name (var string?)}
-          :get-details-by-id {:id (var int?)}}
-         (map->spec :work)
-         #_(eval-spec))
-
-
-    (merge-spec2 (list :tie.get-details-by-id/spec
-                       :tie.get-by-id/spec))
-
-
-    (s/explain
-      (eval
-        (merge-spec2 (list :work/get-details-by-id
-                           :work/get-by-id)))
-      {:id 3})
-
-
-
-
-
-
-    (s/explain
-      (clojure.spec/merge
-        :work/get-by-id
-        (clojure.spec/keys :req-un [:work/get-details-by-id  ]))
-      {:id   3
-       :name "asdf"
-       :get-details-by-id  {:name "sadf" :id 5}}
-      )
-
-
-
-    (s/explain
-      (clojure.spec/merge
-        :work/get-by-id
-        (clojure.spec/keys :req-un [:work/get-details-by-id  ]))
-      {:id   3
-       :name "asdf"
-       :get-details-by-id  {:name "sadf" :id 5}}
-      )
-
-
-
-
-
-
-
-
-    (->> {:get-by-id   {:id (var int?)}
-          :get-by-name {:name (var string?)}}
-         (map->spec :emp)
-         ;(apply concat)
-         ;(eval-spec)
-         ;(eval)
-         )
-
-    (->>
-      '(list (clojure.spec/def :emp.get-by-id/spec (clojure.spec/keys :req-un [:emp.get-by-id/id]))
-             (clojure.spec/def :emp.get-by-id/id #'clojure.core/int?)
-             (clojure.spec/def :emp.get-by-name/spec (clojure.spec/keys :req-un [:emp.get-by-name/name]))
-             (clojure.spec/def :emp.get-by-name/name #'clojure.core/string?))
-      (eval)
-      )
+  )
 
 
 
@@ -171,17 +145,5 @@
 
 
 
-
-    (s/valid?
-      (merge-spec (list :hello3.get-by-id/spec :hello3.get-details-by-id/spec))
-      {:id 3 :name "asdf"}
-      )
-
-    (s/valid?
-      (merge-spec (list :hello3.get-by-id/spec :hello3.get-details-by-id/spec))
-      {:id 3 :name 3}
-      )
-
-    )
 
 
