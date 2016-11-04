@@ -96,7 +96,8 @@ select * from employee where dept_id = :id;
  :name [:create-dept :update-dept :delete-dept]
  :model :department
  :extend {:create-dept {:param [[:id :ref-gen :gen-dept]
-                                [:transaction_id :ref-con 0]]}
+                                [:transaction_id :ref-con 0]]
+                        :param-spec {:opt {:id int? :transaction_id int? :dept_name string?}}        }
          :update-dept {:param [[:next_transaction_id :ref-fn-key inc :transaction_id]]}
          }
   :commit :all

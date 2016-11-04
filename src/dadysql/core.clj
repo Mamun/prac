@@ -122,7 +122,6 @@
             ) more-tm)))
 
 
-
 (defn- not-continue?
   [root-result]
   (if (or (f/failed? root-result)
@@ -147,6 +146,7 @@
                    (merge root-output)
                    (ji/do-join (:dadysql.core/join root))))))))
 
+
 ;;sql bind needs to call with in warp-do-join process
 (defn warp-bind-sql [handler request-m]
   (fn [tm-coll]
@@ -156,21 +156,22 @@
 
 
 
-(defn map-un-spec [tm-coll]
-  (->> (map :dadysql.core/spec tm-coll)
-       (remove nil?)
-       (map (fn [w] (sg/add-postfix-to-key w "-un") ) )
-       (ds/merge-spec  )))
-
-
 (defn validate-param-spec [tm-coll req-m]
   (let [param-spec (condp = (:dadysql.core/op req-m)
                      :dadysql.core/op-push
-                     (:dadysql.core/spec (first tm-coll))
-                     (map-un-spec tm-coll) )]
-    (if-not (s/valid? param-spec (:dadysql.core/param req-m))
-      (f/fail (s/explain-str param-spec (:dadysql.core/param req-m)))
-      tm-coll)))
+                     (-> (map :dadysql.core/spec tm-coll)
+                         (remove nil?)
+                         (sg/join-spec))
+                     (-> (map :dadysql.core/spec tm-coll)
+                         (remove nil?)
+                         (sg/union-spec)))]
+    (if (and (nil? param-spec)
+             (empty? param-spec) )
+      tm-coll
+      (let [param-spec (sg/eval-spec param-spec)]
+        (if-not (s/valid? param-spec (:dadysql.core/param req-m))
+          (f/fail (s/explain-str param-spec (:dadysql.core/param req-m)))
+          )))))
 
 
 

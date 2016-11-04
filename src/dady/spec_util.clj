@@ -31,15 +31,18 @@
 
 ;(as-ns-keyword :a :n)
 
-(defn merge-spec2 [coll-spec]
-  (cons 'clojure.spec/merge
-        coll-spec))
+
+#_(defn merge-spec [coll-spec]
+    (eval
+      (cons 'clojure.spec/merge
+            coll-spec)))
 
 
-(defn merge-spec [coll-spec]
-  (eval
-    (cons 'clojure.spec/merge
-          coll-spec)))
+#_(defn map-un-spec [tm-coll]
+    (->> (map :dadysql.core/spec tm-coll)
+         (remove nil?)
+         (map (fn [w] (sg/add-postfix-to-key w sg/un-postfix)))
+         (merge-spec)))
 
 
 
@@ -47,11 +50,6 @@
   (-> (clojure.string/split file-name-str #"\.")
       (first)
       (keyword)))
-
-
-
-
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -68,39 +66,45 @@
          (merge insert-coll))))
 
 
+(defn gen-spec [file-name coll]
+  (let [f-k (filename-as-keyword file-name)]
+    (->> (get-param-spec coll)
+         (sg/model->spec f-k))))
 
-(defn assoc-spec2 [file-name coll]
+
+
+(defn get-spec-map [file-name coll]
   (let [f-k (filename-as-keyword file-name)
         s-m (get-param-spec coll)
-        nps (sg/assoc-ns-key f-k s-m)
-        psk (->> (interleave (keys s-m)
-                             (keys nps))
-                 (apply assoc {}))
-        ;_ (clojure.pprint/pprint  psk )
-        xf (fn [m]
-             (if (and (contains? m :dadysql.core/param-spec)
-                      (get psk (:dadysql.core/name m)))
-               (assoc m :dadysql.core/spec (get psk (:dadysql.core/name m)))
-               m))]
-    (mapv xf coll)))
+        nps (sg/assoc-ns-key f-k s-m)]
+    (->> (interleave (keys s-m)
+                     (keys nps))
+         (apply assoc {}))))
+
+
+
+(defn assosc-spec-to-m [psk m]
+  (if (and (contains? m :dadysql.core/param-spec)
+           (get psk (:dadysql.core/name m)))
+    (if (= (:dadysql.core/dml m)
+           :dadysql.core/dml-insert)
+      (assoc m :dadysql.core/spec (get psk (:dadysql.core/model m)))
+      (assoc m :dadysql.core/spec (get psk (:dadysql.core/name m))))
+    m))
 
 
 
 (defn eval-and-assoc-param-spec [file-name coll]
-  (let [f-k (filename-as-keyword file-name)]
-    (->> (get-param-spec coll)
-         (sg/map->spec f-k)
-         (sg/eval-spec))
-    (assoc-spec2 file-name coll)))
+  (do
+    (apply sg/eval-spec (gen-spec file-name coll ) )
+    (let [m (get-spec-map file-name coll)]
+      (mapv (fn [w] (assosc-spec-to-m m w) ) coll))))
 
 
 
-(defn write-param-spec [file-name coll]
-  (let [f-k (filename-as-keyword file-name)]
-    (->> (get-param-spec coll)
-         ;(assoc-ns-key f-k)
-         (sg/map->spec f-k)
-         (write-spec-to-file (str (name f-k))))))
+
+
+
 
 
 

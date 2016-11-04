@@ -3,6 +3,7 @@
     [dadysql.core :as tie]
     [dadysql.compiler.core :as cc]
     [dady.spec-util :as cs]
+    [dady.spec-generator :as sg]
     [dady.fail :as f]
     [dadysql.spec :as ds]
     [dadysql.plugin.sql-io-impl :as ce]
@@ -34,9 +35,9 @@
   (fn [tm-coll]
     (let [m (ce/global-info-m tms tm-coll)
           sql-io (fn [v]
-                    (if (= type :dadysql.plugin.sql.jdbc-io/batch)
-                      (io/jdbc-handler-batch ds v m)
-                      (io/jdbc-handler ds v m)))]
+                   (if (= type :dadysql.plugin.sql.jdbc-io/batch)
+                     (io/jdbc-handler-batch ds v m)
+                     (io/jdbc-handler ds v m)))]
       (ce/apply-sql-io sql-io tm-coll type))))
 
 
@@ -88,6 +89,12 @@
     (into [] p (vals tms))))
 
 
-(defn generate-spec [file-name]
+(defn gen-spec [file-name]
   (let [m (read-file file-name)]
-    (cs/write-param-spec file-name (vals m))))
+    (cs/gen-spec file-name (vals m))))
+
+
+(defn get-spec [tms req-m]
+  (->> (select-name tms req-m)
+       (map :dadysql.core/spec)
+       (sg/union-spec)))

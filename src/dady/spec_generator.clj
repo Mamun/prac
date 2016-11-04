@@ -3,7 +3,7 @@
             [clojure.spec :as s]))
 
 
-(defn eval-spec [coll-v]
+(defn eval-spec [& coll-v]
   (doseq [v coll-v]
     (eval v)))
 
@@ -36,6 +36,7 @@
 (defn add-postfix-to-key [k v]
   (keyword (str (namespace k) "/" (name k) v)))
 
+(def un-postfix "-un")
 
 (defn convert-model-tp-def [k m]
   (let [w (list 'clojure.spec/keys :req (into [] (keys (:req m)))
@@ -47,7 +48,7 @@
             (list 'clojure.spec/or
                   :one w
                   :list (list 'clojure.spec/coll-of w :kind 'vector?)))
-      (list 'clojure.spec/def (add-postfix-to-key k "-un")
+      (list 'clojure.spec/def (add-postfix-to-key k un-postfix)
             (list 'clojure.spec/or
                   :one w-un
                   :list (list 'clojure.spec/coll-of w-un :kind 'vector?))))))
@@ -101,7 +102,7 @@
                (update-if-contains [:req] (fn [w] (assoc-ns-key model-k w))))})
 
 
-(defn map->spec
+(defn model->spec
   [base-ns-name m]
   (if (s/valid? ::input [base-ns-name m])
     (->> (remove-quote m)
@@ -114,7 +115,42 @@
 
 
 
+(defn union-spec [spec-coll]
+  (->> spec-coll
+       (remove nil?)
+       (map (fn [w] (add-postfix-to-key w un-postfix)))
+       (cons 'clojure.spec/merge)))
+
+
+
+(defn join-spec [[f-spec & rest-spec]]
+  (list 'clojure.spec/merge  f-spec
+     (list 'clojure.spec/keys :req (into [] rest-spec))))
+
+
+
+
 (comment
+
+  (s/def ::a string?)
+  (s/def ::b string?)
+
+  (s/def :hello/a (s/keys :req [::a]))
+  (s/def :hello/b (s/keys :req [::a]))
+
+  (s/def :hello/z (s/merge :hello/a (s/keys :req [:hello/b]) ) )
+
+
+  (s/explain-data :hello/z {::a "hello" :hello/b {::b "asdfsd"}})
+
+  (s/explain
+    (eval
+      (join-spec [:hello/a :hello/b] ))
+    {::a "hello" :hello/b {::a "asdfsd"}})
+
+
+
+
 
 
   (let [m {:opt {:a 2}}]
@@ -124,18 +160,18 @@
   :always m
 
 
-  (map->spec :tie {:employee          {:req {:id2 #'clojure.core/int?}},
-                   :get-dept-by-id
-                                      {:req
-                                       {:id
-                                        (#'clojure.spec/coll-of
-                                          #'clojure.core/int?
-                                          :kind
-                                          #'clojure.core/vector?)}},
-                   :get-dept-employee {:req {:id #'clojure.core/int?}},
-                   :create-employee   {:req {:id #'clojure.core/int?}},
-                   :create-employee2  {:req {:id2 #'clojure.core/int?}}
-                   })
+  (model->spec :tie {:employee          {:req {:id2 #'clojure.core/int?}},
+                     :get-dept-by-id
+                                        {:req
+                                         {:id
+                                          (#'clojure.spec/coll-of
+                                            #'clojure.core/int?
+                                            :kind
+                                            #'clojure.core/vector?)}},
+                     :get-dept-employee {:req {:id #'clojure.core/int?}},
+                     :create-employee   {:req {:id #'clojure.core/int?}},
+                     :create-employee2  {:req {:id2 #'clojure.core/int?}}
+                     })
 
 
   (clojure.pprint/pprint
@@ -143,8 +179,8 @@
 
 
   (eval-spec
-    (map->spec :a/t {:person {:req {:name 'string?}
-                              :opt {:lname 'string?}}})
+    (model->spec :a/t {:person {:req {:name 'string?}
+                                :opt {:lname 'string?}}})
 
     )
 

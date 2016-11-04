@@ -23,6 +23,8 @@
   (gen/sample (s/gen :tie/employee))
 
 
+  (t/gen-spec "tie4.edn.sql")
+
   (->>  (t/read-file "tie4.edn.sql")
         (clojure.pprint/pprint))
 
@@ -51,7 +53,7 @@
   #_(s/valid? (s/or :dadysql.core/name string?
                     :id integer?) :keyowrd)
 
-  (t/generate-spec "tie.edn.sql")
+  (t/gen-spec "tie.edn.sql")
   ;; Create database table and init data
   (->> {:dadysql.core/name [:create-ddl :init-data]}
        (t/select-name (t/read-file "tie.edn.sql"))
@@ -63,8 +65,9 @@
       (t/db-do [:drop-ddl] (t/read-file "tie.edn.sql")))
 
   ;; Validate all sql statment with database
-  (->> (t/get-all-parameter-sql (t/read-file "tie.edn.sql"))
-       (io/validate-dml! @td/ds))
+  (->> (t/read-file "tie.edn.sql")
+       (t/get-all-parameter-sql )
+       (io/validate-dml! (td/get-ds)))
 
 
 
@@ -109,6 +112,8 @@
       )
 
 
+
+
   ;; with params
   (-> @td/ds
       (t/pull (t/read-file "tie2.edn.sql")
@@ -130,6 +135,19 @@
               {:dadysql.core/name  [:get-dept-by-ids]
                :dadysql.core/param {:id [1 2 3]}})
       (clojure.pprint/pprint))
+
+
+  #_(clojure.pprint/pprint
+    (:create-dept (t/read-file "tie.edn.sql")) )
+
+
+  (->
+      (t/get-spec (t/read-file "tie.edn.sql")
+              {:dadysql.core/name  [:get-dept-by-ids]
+               :dadysql.core/param {:id [1 2 3]}})
+      (eval)
+      (s/explain-data {:id [3] } )
+      #_(clojure.pprint/pprint))
 
 
 
