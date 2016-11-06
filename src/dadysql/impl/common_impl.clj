@@ -1,4 +1,4 @@
-(ns dadysql.plugin.common-impl
+(ns dadysql.impl.common-impl
   (:require
     [dady.fail :as f]))
 

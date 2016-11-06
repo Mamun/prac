@@ -1,4 +1,4 @@
-(ns dadysql.plugin.util
+(ns dadysql.impl.util
   (:require
     [clojure.set]))
 

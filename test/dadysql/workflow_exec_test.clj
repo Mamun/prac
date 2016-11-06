@@ -1,9 +1,9 @@
-(ns dadysql.core-test
+(ns dadysql.workflow-exec-test
   (:use [clojure.test])
-  (:require [dadysql.core :refer :all]
-            ;[dadysql.plugin.factory :refer :all]
-            [dadysql.plugin.param-impl :as p]
-            [dadysql.plugin.util :as cu]))
+  (:require [dadysql.workflow-exec :refer :all]
+            ;[dadysql.impl.factory :refer :all]
+            [dadysql.impl.param-impl :as p]
+            [dadysql.impl.util :as cu]))
 
 
 #_(deftest validate-param-spec!-test

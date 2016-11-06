@@ -1,15 +1,15 @@
-(ns dadysql.core
+(ns dadysql.workflow-exec
   (:require
     [clojure.spec :as s]
     [dadysql.spec]
     [dady.fail :as f]
     [dady.spec-util :as ds]
     [dady.spec-generator :as sg]
-    [dadysql.plugin.join-impl :as ji]
-    [dadysql.plugin.sql-bind-impl :as bi]
+    [dadysql.impl.join-impl :as ji]
+    [dadysql.impl.sql-bind-impl :as bi]
     [dadysql.selector :as dc]
-    [dadysql.plugin.param-impl :as pi]
-    [dadysql.plugin.common-impl :as ci]))
+    [dadysql.impl.param-impl :as pi]
+    [dadysql.impl.common-impl :as ci]))
 
 
 

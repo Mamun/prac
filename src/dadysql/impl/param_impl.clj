@@ -1,8 +1,8 @@
-(ns dadysql.plugin.param-impl
+(ns dadysql.impl.param-impl
   (:require [dady.common :as cc]
             [dady.fail :as f]
-            [dadysql.plugin.join-impl :as ji]
-            [dadysql.plugin.util :as ccu]))
+            [dadysql.impl.join-impl :as ji]
+            [dadysql.impl.util :as ccu]))
 
 
 (defn temp-generator [_]

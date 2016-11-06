@@ -1,6 +1,6 @@
-(ns dadysql.plugin.util-test
+(ns dadysql.impl.util-test
   (:use [clojure.test]
-        [dadysql.plugin.util]))
+        [dadysql.impl.util]))
 
 
 (deftest get-path-test

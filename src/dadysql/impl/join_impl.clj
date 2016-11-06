@@ -1,7 +1,7 @@
-(ns dadysql.plugin.join-impl
+(ns dadysql.impl.join-impl
   (:require [dady.common :as cc]
             [dady.fail :as f]
-            [dadysql.plugin.util :as cu]
+            [dadysql.impl.util :as cu]
     #_[dadysql.spec :refer :all]))
 
 

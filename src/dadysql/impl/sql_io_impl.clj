@@ -1,9 +1,9 @@
-(ns dadysql.plugin.sql-io-impl
+(ns dadysql.impl.sql-io-impl
   (:require [clojure.set]
             [clojure.core.async :as async :refer [<! >! <!! chan alt! go go-loop onto-chan sliding-buffer]]
             [dady.common :as cc]
             [dady.fail :as f]
-            [dadysql.plugin.sql-io-tracking :as dt]
+            [dadysql.impl.sql-io-tracking :as dt]
             [clojure.tools.logging :as log]))
 
 
@@ -94,7 +94,7 @@
 
 
 (defmethod apply-sql-io
-  :dadysql.plugin.sql.jdbc-io/parallel
+  :dadysql.impl.sql.jdbc-io/parallel
   [h m-coll _]
   (let [handler (-> h
                     (warp-io-execption)
@@ -111,7 +111,7 @@
 
 
 (defmethod apply-sql-io
-  :dadysql.plugin.sql.jdbc-io/batch
+  :dadysql.impl.sql.jdbc-io/batch
   [h tm-coll _]
   (let [handler (-> h
                     (warp-io-execption)
@@ -197,7 +197,7 @@
                                              {:subject "Hello Meeting for IT", :meeting_id 109},
                     :dadysql.core/name       :create-meeting}]]
       (->> (apply-sql-io (td/get-ds) @td/ds meeting :tms (t/read-file "tie.edn.sql")
-                         :type :dadysql.plugin.sql.jdbc-io/transaction)
+                         :type :dadysql.impl.sql.jdbc-io/transaction)
            (clojure.pprint/pprint)))
 
     )

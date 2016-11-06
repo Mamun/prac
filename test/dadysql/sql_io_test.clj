@@ -1,4 +1,4 @@
-(ns dadysql.plugin.sql-io-test
+(ns dadysql.impl.sql-io-test
   (:use [clojure.test]
         [dady.fail]
         [dadysql.sql-io-impl])

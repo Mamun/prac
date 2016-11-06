@@ -1,4 +1,4 @@
-(ns dadysql.plugin.sql-io-tracking
+(ns dadysql.impl.sql-io-tracking
   (:import [java.util.Date]
            [java.util.concurrent.TimeUnit])
   (:require [clojure.set]

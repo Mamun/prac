@@ -47,7 +47,10 @@
 
 #_(s/valid? :User/id "Musterman")
 #_(s/valid? :Credit/id 12345)
-#_(s/valid? :Credit/id "Error")
+#_(s/valid? Credit/id "Error")
+
+(s/def :creduít/id string?)
+
 
 
 

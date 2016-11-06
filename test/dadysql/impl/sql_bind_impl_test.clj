@@ -1,10 +1,10 @@
-(ns dadysql.plugin.sql-bind-impl-test
+(ns dadysql.impl.sql-bind-impl-test
   (:use [clojure.test]
         [dady.fail]
         [dadysql.compiler.validation])
-  (:require                                                 ;[dadysql.plugin.sql-bind-impl :refer :all]
-    [dadysql.plugin.sql-bind-impl :refer :all]
-    ;[dadysql.plugin.sql-util :refer :all]
+  (:require                                                 ;[dadysql.impl.sql-bind-impl :refer :all]
+    [dadysql.impl.sql-bind-impl :refer :all]
+    ;[dadysql.impl.sql-util :refer :all]
 
     [dady.proto :refer :all]
     #_[dadysql.spec :refer :all]))

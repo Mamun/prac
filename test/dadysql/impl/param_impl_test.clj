@@ -1,8 +1,8 @@
-(ns dadysql.plugin.param-impl-test
+(ns dadysql.impl.param-impl-test
   (:use [clojure.test]
         [dady.fail])
   (:require
-    [dadysql.plugin.param-impl :refer :all]
+    [dadysql.impl.param-impl :refer :all]
     [dady.common :refer :all]))
 
 
