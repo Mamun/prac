@@ -68,17 +68,16 @@
    ds: datasource
    "
   [ds tms req-m]
+  ;(println "pull" req-m)
   (if-let [r (f/failed? (tie/validate-input! req-m))]
     r
     (let [op-m {:dadysql.core/op :dadysql.core/op-pull}
-          sql-exec (warp-sql-io ds tms :dadysql.impl.sql.jdbc-io/parallel)
-          gen (fn [_] 1)]
+          sql-exec (warp-sql-io ds tms :dadysql.impl.sql.jdbc-io/parallel)]
       (-> op-m
           (merge req-m)
-          (assoc :dadysql.core/pull gen)
+          (assoc :dadysql.core/pull identity)
           (assoc :dadysql.core/sql-exec sql-exec)
           (tie/do-execute (select-name tms req-m))))))
-
 
 
 
@@ -87,13 +86,10 @@
   [ds tms req-m]
   (if-let [r (f/failed? (tie/validate-input! req-m))]
     r
-    (let [sql-exec (warp-sql-io ds tms :dadysql.impl.sql.jdbc-io/batch)
-          gen (fn [m]
-                (->> (assoc m :dadysql.core/op :dadysql.core/op-db-seq)
-                     (pull ds tms)))]
+    (let [sql-exec (warp-sql-io ds tms :dadysql.impl.sql.jdbc-io/batch)]
       (-> req-m
           (assoc :dadysql.core/op :dadysql.core/op-push!)
-          (assoc :dadysql.core/pull gen)
+          (assoc :dadysql.core/pull (partial pull ds tms))
           (assoc :dadysql.core/sql-exec sql-exec)
           (tie/do-execute (select-name tms req-m))))))
 

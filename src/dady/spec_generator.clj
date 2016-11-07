@@ -116,10 +116,13 @@
 
 
 (defn union-spec [spec-coll]
-  (->> spec-coll
-       (remove nil?)
-       (map (fn [w] (add-postfix-to-key w un-postfix)))
-       (cons 'clojure.spec/merge)))
+  (if (or (nil? spec-coll)
+          (empty? spec-coll))
+    spec-coll
+    (->> spec-coll
+         (remove nil?)
+         (map (fn [w] (add-postfix-to-key w un-postfix)))
+         (cons 'clojure.spec/merge))))
 
 
 

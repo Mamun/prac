@@ -2,6 +2,7 @@
   (:require [clojure.java.io :as io]
             [clojure.walk :as w]
             [clojure.spec :as s]
+            [dadysql.impl.param-impl :as pl ]
             [clojure.tools.reader.edn :as edn]))
 
 
@@ -36,7 +37,7 @@
                 :index        :dadysql.core/index
 
                 :skip         :dadysql.core/skip
-                :param        :dadysql.core/param-coll
+                :param        :dadysql.core/default-param
                 :ref-con      :dadysql.core/param-ref-con
                 :ref-key      :dadysql.core/param-ref-key
                 :ref-fn-key   :dadysql.core/param-ref-fn-key
@@ -95,28 +96,19 @@
                   v)
                 ) coll))
 
-(defn convert-param-fn [v]
-  (->> (vals v)
-       (w/postwalk (fn [w]
-                     (if (keyword? w)
-                       (list 'get-in 'm [w])
-                       w)))
-       (mapv (fn [w] (list 'fn ['m] w)))
-       ;(mapv eval)
-       (interleave (keys v))
-       (apply assoc {})))
+
 
 
 (defn compiler-param-resolve [coll]
   (w/postwalk (fn [m]
                 (if (and (map? m)
-                         (:param m) )
-                  (update-in m [:param] convert-param-fn )
+                         (:param m))
+                  (update-in m [:param] pl/convert-param-t)
                   m
                   )
-                ) coll)
+                ) coll))
 
-  )
+
 
 
 ;;Do we need to unquote again here
@@ -134,6 +126,12 @@
 
 (comment
 
+
+  (partition-by (fn [[k v]]
+                  (keyword? v)
+                  )
+                {:a :b :t (fn [t] t)})
+
   ;(var? [int?])
 
   ;(var? :a)
@@ -143,14 +141,14 @@
   ;(coll? {1 2})
 
   (->> (read-file "tie2.edn.sql")
-       (s/conform :dadysql.core/compiler-spec )
-       (clojure.pprint/pprint) )
+       (s/conform :dadysql.core/compiler-spec)
+       (clojure.pprint/pprint))
 
 
 
   (->
     (read-file "tie3.edn.sql")
-    (clojure.pprint/pprint) )
+    (clojure.pprint/pprint))
 
   ;(require '[tie_edn])
 

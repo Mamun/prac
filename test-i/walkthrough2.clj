@@ -22,8 +22,8 @@
 
 
 ;(s/def ::var-r resolve)
-(s/def ::params-v (s/or :k keyword? :t any?))
-(s/def ::params (s/map-of keyword? ::params-v))
+;(s/def ::params-v (s/or :k keyword? :t any?))
+;(s/def ::params (s/map-of keyword? ::params-v))
 
 (comment
 
@@ -38,6 +38,9 @@
     )
 
 
+  (->> {:dadysql.core/name [:create-ddl :init-data]}
+       (t/select-name (t/read-file "tie4.edn.sql"))
+       (io/db-do (td/get-ds)))
 
 
   (t/get-defined-spec (t/read-file "tie4.edn.sql"))
@@ -45,6 +48,18 @@
   (->> (t/read-file "tie4.edn.sql")
        (clojure.pprint/pprint))
 
+
+
+  (-> @td/ds
+      (t/pull (t/read-file "tie4.edn.sql")
+              {:dadysql.core/name  [:get-dept-by-id]
+               :dadysql.core/param {:id 1}}
+              ;:dadysql.core/output-format :map
+              )
+      (clojure.pprint/pprint))
+
+
+  ;((constantly 1))
 
 
   )

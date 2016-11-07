@@ -29,3 +29,17 @@
      w)))
 
 
+
+
+
+
+
+
+
+(comment
+
+
+  (get-path {:id 3} :id)
+  (get-path-batch {:id 3 :id2 5} [] (list :id :id2) )
+
+  )

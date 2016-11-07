@@ -8,7 +8,7 @@
    :dadysql.core/model      :department
    :dadysql.core/param-spec {:id int?}
    :dadysql.core/sql        ["insert into department (id, transaction_id, dept_name) values (:id, :transaction_id, :dept_name)"]
-   :dadysql.core/extend     {:insert-dept {:dadysql.core/param-coll [[:transaction_id :dadysql.core/param-ref-con 0]
+   :dadysql.core/extend     {:insert-dept {:dadysql.core/default-param [[:transaction_id :dadysql.core/param-ref-con 0]
                                                                      [:transaction_id :dadysql.core/param-ref-con 0]]
                                            :dadysql.core/timeout    30}}})
 
@@ -23,10 +23,10 @@
    :dadysql.core/sql        ["insert into department (id, transaction_id, dept_name) values (:id, :transaction_id, :dept_name)"
                              "update department set dept_name=:dept_name, transaction_id=:next_transaction_id  where transaction_id=:transaction_id and id=:id"
                              "delete from department where id in (:id)"]
-   :dadysql.core/extend     {:insert-dept {:dadysql.core/param-coll [[:transaction_id :dadysql.core/param-ref-con 0]
+   :dadysql.core/extend     {:insert-dept {:dadysql.core/default-param [[:transaction_id :dadysql.core/param-ref-con 0]
                                                                      [:transaction_id :dadysql.core/param-ref-con 0]]
                                            :dadysql.core/timeout    30}
-                             ;:update-dept {:dadysql.core/param-coll [[:next_transaction_id :ref-fn-key 'inc :transaction_id]]}
+                             ;:update-dept {:dadysql.core/default-param [[:next_transaction_id :ref-fn-key 'inc :transaction_id]]}
                              :delete-dept {:dadysql.core/param-spec :tie-edn2/get-dept-by-id}}})
 
 
@@ -35,7 +35,7 @@
   [{:dadysql.core/timeout    30,
     :doc                     "Modify department"
     :dadysql.core/param-spec :tie-edn2/get-dept-by-id,
-    :dadysql.core/param-coll [[:transaction_id :dadysql.core/param-ref-con 0]],
+    :dadysql.core/default-param [[:transaction_id :dadysql.core/param-ref-con 0]],
     :dadysql.core/index      0,
     :dadysql.core/name       :insert-dept,
     :dadysql.core/sql        ["insert into department (id, transaction_id, dept_name) values (:id, :transaction_id, :dept_name)"
@@ -93,7 +93,7 @@
                               :get-dept-list   {:dadysql.core/result #{:dadysql.core/result-array}}}
     :dadysql.core/timeout    5000
     :dadysql.core/result     #{:dadysql.core/result-array}
-    :dadysql.core/param-coll [[:limit :dadysql.core/param-ref-con 10]
+    :dadysql.core/default-param [[:limit :dadysql.core/param-ref-con 10]
                               [:offset :dadysql.core/param-ref-con 0]]
     :dadysql.core/sql        ["select * from department LIMIT :limit OFFSET :offset"
                               "select * from department where id in (:id) "
@@ -114,7 +114,7 @@
    :get-dept-list
    {:dadysql.core/timeout    5000,
     :dadysql.core/result     #{:array},
-    :dadysql.core/param-coll [[:limit :ref-con 10] [:offset :ref-con 0]],
+    :dadysql.core/default-param [[:limit :ref-con 10] [:offset :ref-con 0]],
     :dadysql.core/join       [[:department :id :1-n :employee :dept_id]],
     :dadysql.core/name       :get-dept-list,
     :dadysql.core/index      0,
@@ -127,7 +127,7 @@
    :get-dept-by-ids
    {:dadysql.core/index      1,
     :dadysql.core/name       :get-dept-by-ids,
-    :dadysql.core/param-coll [[:limit :ref-con 10] [:offset :ref-con 0]],
+    :dadysql.core/default-param [[:limit :ref-con 10] [:offset :ref-con 0]],
     :dadysql.core/sql        ["select * from department where id in (:id) " :id],
     :dadysql.core/result     #{:array},
     :dadysql.core/timeout    5000,
@@ -138,7 +138,7 @@
    :get-employee-list
    {:dadysql.core/timeout    5000,
     :dadysql.core/result     #{:array},
-    :dadysql.core/param-coll [[:limit :ref-con 10] [:offset :ref-con 0]],
+    :dadysql.core/default-param [[:limit :ref-con 10] [:offset :ref-con 0]],
     :dadysql.core/join       [[:employee :id :1-1 :employee-detail :employee_id]
                               [:employee :id :n-n :meeting :meeting_id [:employee-meeting :employee_id :meeting_id]]
                               [:employee :dept_id :n-1 :department :id]],
@@ -153,7 +153,7 @@
    :get-meeting-list
    {:dadysql.core/timeout    5000,
     :dadysql.core/result     #{:array},
-    :dadysql.core/param-coll [[:limit :ref-con 10] [:offset :ref-con 0]],
+    :dadysql.core/default-param [[:limit :ref-con 10] [:offset :ref-con 0]],
     :dadysql.core/join       [[:meeting :meeting_id :n-n :employee :id [:employee-meeting :meeting_id :employee_id]]],
     :dadysql.core/name       :get-meeting-list,
     :dadysql.core/index      3,
@@ -164,7 +164,7 @@
    :get-employee-meeting-list
    {:dadysql.core/timeout    5000,
     :dadysql.core/result     #{:array},
-    :dadysql.core/param-coll [[:limit :ref-con 10] [:offset :ref-con 0]],
+    :dadysql.core/default-param [[:limit :ref-con 10] [:offset :ref-con 0]],
     :dadysql.core/name       :get-employee-meeting-list,
     :dadysql.core/index      4,
     :dadysql.core/sql

@@ -8,8 +8,8 @@
 
 (deftest param-paths-test
   (testing "test param-paths  "
-    (let [coll [{:dadysql.core/param-coll  [[:id :ref-gen :gen-dept]]}
-                {:dadysql.core/param-coll [[:id3 :ref-gen :gen-dept]]}]
+    (let [coll [{:dadysql.core/default-param  [[:id :ref-gen :gen-dept]]}
+                {:dadysql.core/default-param [[:id3 :ref-gen :gen-dept]]}]
           expected-result (list [[:id] :ref-gen :gen-dept] [[:id3] :ref-gen :gen-dept])
           actual-result (param-paths :dadysql.core/format-map coll {:id2 1})]
       (is (= actual-result
@@ -45,11 +45,11 @@
 
 (deftest model-param-paths-test
   (testing "test model-param-paths  "
-    (let [coll [{:dadysql.core/param-coll {:transaction_id 0
+    (let [coll [{:dadysql.core/default-param {:transaction_id 0
                                            :transaction_id2 :id
                                            :id 2} ,
                  :dadysql.core/model :employee}
-                {:dadysql.core/param-coll {:city :a} ,
+                {:dadysql.core/default-param {:city :a} ,
                  :dadysql.core/model :employee-detail}]
           param {:employee {:firstname "Schwan"
                             :lastname  "Ragg"
@@ -62,8 +62,8 @@
                            [[:employee :transaction_id2] :ref-key :id]
                            [[:employee :id] :dadysql.core/param-ref-gen :gen-dept]
                            [[:employee :employee-detail :city] :ref-con 0]]
-          actual-result (param-paths :dadysql.core/format-nested coll :dadysql.core/param-coll)]
-      (println actual-result)
+          actual-result (param-paths :dadysql.core/format-nested coll :dadysql.core/default-param)]
+      (clojure.pprint/pprint actual-result)
       (is (= actual-result
              expected-result)))))
 
@@ -75,7 +75,7 @@
 (deftest param-ref-con-test
 
   (testing "test param-ref-con-key"
-    (let [coll [{:dadysql.core/param-coll [[:transaction_id :dadysql.core/param-ref-con 0]],
+    (let [coll [{:dadysql.core/default-param [[:transaction_id :dadysql.core/param-ref-con 0]],
                  :dadysql.core/model :employee}]
           input {:id 2}
           expected-result {:id 2 :transaction_id 0}
@@ -84,7 +84,7 @@
              actual-result))))
   (testing "test param-ref-con "
     (let [
-          coll [{:dadysql.core/param-coll [[:transaction_id :dadysql.core/param-ref-con 0]],
+          coll [{:dadysql.core/default-param [[:transaction_id :dadysql.core/param-ref-con 0]],
                  :dadysql.core/model :employee}]
           input {:employee {:id 2}}
           expected-result {:employee {:id 2 :transaction_id 0}}
@@ -98,7 +98,7 @@
 
 (deftest param-ref-key-test
   (testing "test param-ref-key"
-    (let [coll [{:dadysql.core/param-coll [[:transaction_id :dadysql.core/param-ref-key :id]],
+    (let [coll [{:dadysql.core/default-param [[:transaction_id :dadysql.core/param-ref-key :id]],
                  :dadysql.core/model :employee}]
           input {:id 2}
 
@@ -107,7 +107,7 @@
       (is (= expected-result
              actual-result))))
   (testing "test param-ref-key "
-    (let [coll [{:dadysql.core/param-coll [[:transaction_id :dadysql.core/param-ref-key :id]],
+    (let [coll [{:dadysql.core/default-param [[:transaction_id :dadysql.core/param-ref-key :id]],
                  :dadysql.core/model :employee}]
           input {:employee {:id 2}}
           expected-result {:employee {:id 2 :transaction_id 2}}
@@ -119,7 +119,7 @@
 
 (deftest param-ref-fn-key-test
   (testing "test params-ref-fn-key "
-      (let [coll [{:dadysql.core/param-coll [[:transaction_id :dadysql.core/param-ref-fn-key inc :id]],
+      (let [coll [{:dadysql.core/default-param [[:transaction_id :dadysql.core/param-ref-fn-key inc :id]],
                    :dadysql.core/model :employee}]
             input {:id 2}
             expected-result {:id 2 :transaction_id 3}
@@ -127,7 +127,7 @@
         (is (= expected-result
                actual-result))))
   (testing "test param-ref-fn-key "
-    (let [coll [{:dadysql.core/param-coll [[:transaction_id :dadysql.core/param-ref-fn-key inc :id]],
+    (let [coll [{:dadysql.core/default-param [[:transaction_id :dadysql.core/param-ref-fn-key inc :id]],
                  :dadysql.core/model :employee}]
           input {:employee {:id 2}}
           expected-result {:employee {:id 2 :transaction_id 3}}
@@ -141,7 +141,7 @@
 (deftest param-impl-test
   (testing "test params-ref-gen-key"
     (let [
-          coll [{:dadysql.core/param-coll [[:transaction_id :dadysql.core/param-ref-gen :id]],
+          coll [{:dadysql.core/default-param [[:transaction_id :dadysql.core/param-ref-gen :id]],
                  :dadysql.core/model :employee}]
           input {:id 2}
           expected-result {:id 2 :transaction_id 5}
@@ -150,7 +150,7 @@
              actual-result))))
   (testing "test params-ref-gen-key"
     (let [
-          coll [{:dadysql.core/param-coll [[:transaction_id :dadysql.core/param-ref-gen :id]],
+          coll [{:dadysql.core/default-param [[:transaction_id :dadysql.core/param-ref-gen :id]],
                  :dadysql.core/model :employee}]
           input {:id 2}
           actual-result (param-exec coll input :dadysql.core/format-map (fn [_] (fail "Failed ") ))]
@@ -162,7 +162,7 @@
 
 (deftest params-ref-gen-key-test
   (testing "test param-ref-fn-key "
-    (let [coll [{:dadysql.core/param-coll [[:transaction_id :dadysql.core/param-ref-gen :id]],
+    (let [coll [{:dadysql.core/default-param [[:transaction_id :dadysql.core/param-ref-gen :id]],
                  :dadysql.core/model :employee}]
           input {:employee {:id 2}}
           expected-result {:employee {:id 2, :transaction_id 3}}
@@ -171,7 +171,7 @@
                actual-result)))))
   (testing "test params-ref-gen-key"
     (let [
-          coll [{:dadysql.core/param-coll [[:transaction_id :dadysql.core/param-ref-gen :id]],
+          coll [{:dadysql.core/default-param [[:transaction_id :dadysql.core/param-ref-gen :id]],
                  :dadysql.core/model :employee}]
           input {:employee {:id 2}}
           actual-result (param-exec coll input :dadysql.core/format-nested (fn [_] (fail "Failed ") ))]
@@ -184,7 +184,7 @@
 (deftest do-param-comp-test
   (testing "test do-params-comp  "
     (let [
-          coll [{:dadysql.core/param-coll [[:transaction_id :dadysql.core/param-ref-con 0]
+          coll [{:dadysql.core/default-param [[:transaction_id :dadysql.core/param-ref-con 0]
                                       [:id2 :dadysql.core/param-ref-fn-key inc :transaction_id]
                                       [:id4 :dadysql.core/param-ref-key :id]
                                       [:id3 :dadysql.core/param-ref-gen :id]]

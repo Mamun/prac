@@ -23,5 +23,5 @@
                        w1)
 
         module-m (dissoc module-m :dadysql.core/name :dadysql.core/model :dadysql.core/sql :dadysql.core/extend :dadysql.core/doc)
-        f-config (select-keys f-config [:dadysql.core/param-coll :dadysql.core/param-spec :dadysql.core/timeout])]
+        f-config (select-keys f-config [:dadysql.core/default-param :dadysql.core/param-spec :dadysql.core/timeout])]
     (merge-with compiler-merge f-config module-m w2)))

@@ -91,7 +91,7 @@
        (apply dissoc m)))
 
 
-(def skip-key-for-call [:dadysql.core/join :dadysql.core/param-spec :dadysql.core/param-coll])
+(def skip-key-for-call [:dadysql.core/join :dadysql.core/param-spec :dadysql.core/default-param])
 (def skip-key-for-others [:dadysql.core/result :clojure.core/column])
 
 
@@ -114,7 +114,7 @@
   (->> (keys m)
        (reduce (fn [acc k]
                  (condp = k
-                   :dadysql.core/param-coll (update-in acc [k] (fn [w] (cc/distinct-with-range 2 w)))
+                   :dadysql.core/default-param (update-in acc [k] (fn [w] (cc/distinct-with-range 2 w)))
                    acc)
                  ) m)))
 
@@ -205,7 +205,7 @@
       (read-file "tie.edn.sql")
       ;(second)
       ;(second)
-      ;(get-in [:dadysql.core/param-coll 0 2])
+      ;(get-in [:dadysql.core/default-param 0 2])
 
       (clojure.pprint/pprint))
     2

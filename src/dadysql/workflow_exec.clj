@@ -3,8 +3,6 @@
     [clojure.spec :as s]
     [dadysql.spec]
     [dady.fail :as f]
-    [dady.spec-util :as ds]
-    [dady.spec-generator :as sg]
     [dadysql.impl.join-impl :as ji]
     [dadysql.impl.sql-bind-impl :as bi]
     [dadysql.selector :as dc]
@@ -156,25 +154,6 @@
 
 
 
-(defn validate-param-spec [tm-coll req-m]
-  (let [param-spec (condp = (:dadysql.core/op req-m)
-                     :dadysql.core/op-push
-                     (-> (map :dadysql.core/spec tm-coll)
-                         (remove nil?)
-                         (sg/join-spec))
-                     (-> (map :dadysql.core/spec tm-coll)
-                         (remove nil?)
-                         (sg/union-spec)))]
-    (if (and (nil? param-spec)
-             (empty? param-spec) )
-      tm-coll
-      (let [param-spec (sg/eval-spec param-spec)]
-        (if-not (s/valid? param-spec (:dadysql.core/param req-m))
-          (f/fail (s/explain-str param-spec (:dadysql.core/param req-m)))
-          )))))
-
-
-
 
 (defn do-execute [req-m tm-coll]
   (let [handler (-> (:dadysql.core/sql-exec req-m)
@@ -183,7 +162,8 @@
                     (warp-do-output-join req-m))
         pull-fn (:dadysql.core/pull req-m)]
     (f/try-> tm-coll
-             (validate-param-spec req-m)
+             (pi/validate-param-spec req-m)
+             (pi/assoc-generator pull-fn)
+             (pi/bind-param req-m)
              (dc/init-db-seq-op req-m)
-             (pi/bind-input req-m pull-fn)
              (handler))))

@@ -20,3 +20,6 @@
                         expected-result [[:a 0] [:a 1]]
                         acutal-result (get-path d :a)]
                     (is (= expected-result acutal-result)))))
+
+
+;(get-path-test)

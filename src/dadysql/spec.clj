@@ -60,9 +60,9 @@
 
 
 (s/def ::params-v (s/or :k keyword? :t any?))
-(s/def :dadysql.core/param-coll (s/map-of keyword? ::params-v))
+(s/def :dadysql.core/default-param (s/map-of keyword? ::params-v))
 
-#_(s/def :dadysql.core/param-coll
+#_(s/def :dadysql.core/default-param
   (clojure.spec/*
     (clojure.spec/alt
       :ref-con (clojure.spec/tuple keyword? #{:dadysql.core/param-ref-con} any?)
@@ -122,12 +122,13 @@
 (s/def :dadysql.core/param-format #{:dadysql.core/format-nested :dadysql.core/format-map})
 
 
+(s/def :dadysql.core/op #{:dadysql.core/op-db-seq :dadysql.core/op-pull :dadysql.core/op-push})
 ;(def input-key )
 
 (s/def :dadysql.core/user-input
   (s/merge
     (s/keys :req [(or :dadysql.core/name :dadysql.core/group)]
             :opt [:dadysql.core/param :dadysql.core/param-format :dadysql.core/output-format])
-    (s/map-of #{:dadysql.core/name :dadysql.core/group
+    (s/map-of #{:dadysql.core/name :dadysql.core/group :dadysql.core/op
                 :dadysql.core/param :dadysql.core/param-format :dadysql.core/output-format}
               any?)))

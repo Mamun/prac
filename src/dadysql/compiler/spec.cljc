@@ -7,7 +7,7 @@
     (s/keys :opt [:dadysql.core/timeout
                   :dadysql.core/column
                   :dadysql.core/result
-                  :dadysql.core/param-coll
+                  :dadysql.core/default-param
                   :dadysql.core/param-spec])))
 
 

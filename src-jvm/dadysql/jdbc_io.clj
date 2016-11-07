@@ -6,6 +6,8 @@
 
 (defn jdbc-handler
   [ds tm _]
+  ;(println "jdbc hanbdler ")
+  ;(clojure.pprint/pprint tm )
   (let [dml-type (:dadysql.core/dml tm)
         sql (:dadysql.core/sql tm)
         result (:dadysql.core/result tm)]

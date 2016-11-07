@@ -94,7 +94,9 @@
 
 
   (-> (t/read-file "tie.edn.sql")
-      (t/select-name {:dadysql.core/name [:get-dept-list :get-employee-list]}))
+      (t/select-name {:dadysql.core/name [:get-dept-list :get-employee-list]})
+
+      )
 
 
   (-> (t/read-file "tie.edn.sql")
@@ -118,7 +120,7 @@
 
 
   ;; with params
-  (-> @td/ds
+  #_(-> @td/ds
       (t/pull (t/read-file "tie2.edn.sql")
               {:dadysql.core/name  [:get-dept-by-id]
                :dadysql.core/param {:id [1]}}
@@ -219,9 +221,7 @@
     (-> @td/ds
         (t/push! (t/read-file "tie.edn.sql")
                  {:dadysql.core/name  [:create-dept]
-                  :dadysql.core/param d}
-
-                 )
+                  :dadysql.core/param d})
         (clojure.pprint/pprint)))
 
 
@@ -242,8 +242,8 @@
                         {:dept_name "Hardware dept"}]}]
     (-> @td/ds
         (t/push! (t/read-file "tie.edn.sql")
-                 :dadysql.core/name [:insert-dept]
-                 :params d)
+                 {:dadysql.core/name [:create-dept]
+                  :dadysql.core/param d}  )
         (clojure.pprint/pprint)))
 
 

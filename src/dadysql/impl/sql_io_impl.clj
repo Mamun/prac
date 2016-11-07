@@ -191,7 +191,7 @@
                     :dadysql.core/join       [],
                     :dadysql.core/group      :create-meeting,
                     :dadysql.core/model      :meeting,
-                    :dadysql.core/param-coll [[:meeting_id :dadysql.core/param-ref-gen :gen-meet]],
+                    :dadysql.core/default-param [[:meeting_id :dadysql.core/param-ref-gen :gen-meet]],
                     :dadysql.core/index      0,
                     :dadysql.core/param
                                              {:subject "Hello Meeting for IT", :meeting_id 109},

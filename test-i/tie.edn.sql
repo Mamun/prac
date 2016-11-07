@@ -30,8 +30,8 @@ call next value for seq_meet;
                             :result #{:array}}}
  :timeout 5000
  :result #{:array}
- :param [[:limit :ref-con 10]
-         [:offset :ref-con 0]]
+ :param {:limit  (constantly 10)
+         :offset (constantly 0)}
  :skip #{:join}
   }*/
 select * from department LIMIT :limit OFFSET :offset;
@@ -95,10 +95,10 @@ select * from employee where dept_id = :id;
 {:doc "Modify department"
  :name [:create-dept :update-dept :delete-dept]
  :model :department
- :extend {:create-dept {:param [[:id :ref-gen :gen-dept]
-                                [:transaction_id :ref-con 0]]
+ :extend {:create-dept {:param {:id :gen-dept
+                                :transaction_id (constantly 0) }
                         :param-spec {:opt {:id int? :transaction_id int? :dept_name string?}}        }
-         :update-dept {:param [[:next_transaction_id :ref-fn-key inc :transaction_id]]}
+         :update-dept {:param {:next_transaction_id (inc :transaction_id) } }
          }
   :commit :all
  }*/
@@ -112,11 +112,11 @@ delete from department where id in (:id);
  :name [:create-employee :create-employee-detail ]
  :group :create-employee
  :extend {:create-employee {:model :employee
-                            :param [[:transaction_id :ref-con 0]
-                                     [:id :ref-gen :gen-dept ]]}
+                            :param {:transaction_id (constantly 0)
+                                    :id :gen-dept } }
            :create-employee-detail {:model :employee-detail
-                                    :param [[:city :ref-con 0]
-                                            [:id :ref-gen :gen-dept ]]}}
+                                    :param {:city (constantly 0)
+                                            :id   :gen-dept   } }}
  :commit :all
  }*/
 insert into employee (id,  transaction_id,  firstname,  lastname,  dept_id)
@@ -131,7 +131,7 @@ insert into employee_detail (employee_id, street,   city,  state,  country )
  :name [:create-meeting :create-employee-meeting ]
  :group :create-meeting
  :extend {:create-meeting {:model :meeting
-                           :param [[:meeting_id :ref-gen :gen-meet]]}
+                           :param {:meeting_id :gen-meet} }
           :create-employee-meeting {:model :employee-meeting}}
  :commit :all
  }*/
@@ -142,7 +142,7 @@ insert into employee_meeting (employee_id, meeting_id) values (:employee_id, :me
 {:doc ""
 :name :update-employee-dept
 :extend {:update-employee-dept {:model :employee
-                                :param [[:next_transaction_id :ref-fn-key inc :transaction_id]]}}
+                                :param {:next_transaction_id (inc :transaction_id) } }}
 }
 */
 update employee set dept_id=:dept_id, transaction_id=:next_transaction_id where transaction_id=:transaction_id and id=:id;
