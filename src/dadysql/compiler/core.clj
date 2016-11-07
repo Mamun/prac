@@ -110,7 +110,7 @@
     (assoc m :dadysql.core/model (:dadysql.core/name m))))
 
 
-(defn remove-duplicate [m]
+#_(defn remove-duplicate [m]
   (->> (keys m)
        (reduce (fn [acc k]
                  (condp = k
@@ -131,7 +131,7 @@
   (let [model-m (sql/map-sql-with-name-model tm)]
     (reduce (fn [acc v]
               (->> (ci/do-inheritance v tm global-m)
-                   (remove-duplicate)
+                   ;                (remove-duplicate)
                    (assoc-default-key)
                    (do-skip)
                    (do-skip-for-dml-type)

@@ -11,10 +11,8 @@
 
 (defn assoc-param-path
   [data root-path param-coll]
-  (for [p param-coll
-        mp (ccu/get-path data root-path (first p))
-        :when (not (get-in data mp))]
-    (assoc p 0 mp)))
+  (->> (map (fn [w] {w (first (ccu/get-path data root-path w)) }  ) (keys param-coll) )
+       (into {})))
 
 
 (defmulti param-paths (fn [input-format _ _] input-format))
@@ -30,7 +28,9 @@
                   :let [crp (ccu/get-path param-m rp (:dadysql.core/model c))]
                   p (assoc-param-path param-m crp (:dadysql.core/param-coll c))]
               p)]
-    (-> []
+    (into rpp cpp)
+
+    #_(-> []
         (into rpp)
         (into cpp))))
 
@@ -44,8 +44,20 @@
        (assoc-param-path param-m (ccu/empty-path))))
 
 
+(comment
 
-(defn do-param1 [generator path m]
+  (let [coll [{:dadysql.core/param-coll {:id :a} }
+              {:dadysql.core/param-coll {:id3 :b} }]
+
+        actual-result (param-paths :dadysql.core/format-map coll {:id2 1})]
+    actual-result
+      )
+
+  )
+
+
+
+#_(defn do-param1 [generator path m]
   (condp = (second path)
     :dadysql.core/param-ref-con
     (let [[_ _ v] path]
@@ -68,15 +80,41 @@
 
 
 (defn param-exec [tm-coll rinput input-format generator]
-  (let [param-paths (param-paths input-format tm-coll rinput)]
+  (let [param-paths (param-paths input-format tm-coll rinput)
+        proc (into {} (mapv :dadysql.core/param-coll tm-coll ) ) ]
+    (println param-paths)
     (reduce (fn [acc-input path]
               ;(println "From param exec " acc-input)
-              (let [rv (do-param1 generator path acc-input)
-                    [src] path]
+              (let [[k p] path
+
+                    rv ((get proc k) (get-in acc-input (into [] (butlast p) ) ) ) ]
                 (if (f/failed? rv)
                   (reduced rv)
-                  (assoc-in acc-input src rv)))
+                  (assoc-in acc-input p rv)))
               ) rinput param-paths)))
+
+
+(comment
+
+  (let [coll [{:dadysql.core/param-coll {:transaction_id (fn [w] (:id w) ) },
+               :dadysql.core/model :employee}]
+        input {:id 2}
+
+        expected-result {:id 2 :transaction_id 2}
+        actual-result (param-exec coll input :dadysql.core/format-map identity)]
+
+    actual-result
+    )
+
+
+  (let [coll [{:dadysql.core/param-coll {:transaction_id (fn [w] (:id w) ) },
+               :dadysql.core/model :employee}]
+        input {:employee {:id 2}}
+        expected-result {:employee {:id 2, :transaction_id 3}}
+        actual-result (param-exec coll input :dadysql.core/format-nested (fn [_] 3 ))]
+     actual-result )
+
+  )
 
 
 (defn disptach-input-format [req-m]

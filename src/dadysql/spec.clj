@@ -59,8 +59,10 @@
       :many (s/tuple keyword? keyword? #{:dadysql.core/join-many-many} keyword? keyword? (s/tuple keyword? keyword? keyword?)))))
 
 
+(s/def ::params-v (s/or :k keyword? :t any?))
+(s/def :dadysql.core/param-coll (s/map-of keyword? ::params-v))
 
-(s/def :dadysql.core/param-coll
+#_(s/def :dadysql.core/param-coll
   (clojure.spec/*
     (clojure.spec/alt
       :ref-con (clojure.spec/tuple keyword? #{:dadysql.core/param-ref-con} any?)

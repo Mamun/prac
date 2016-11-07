@@ -95,6 +95,30 @@
                   v)
                 ) coll))
 
+(defn convert-param-fn [v]
+  (->> (vals v)
+       (w/postwalk (fn [w]
+                     (if (keyword? w)
+                       (list 'get-in 'm [w])
+                       w)))
+       (mapv (fn [w] (list 'fn ['m] w)))
+       ;(mapv eval)
+       (interleave (keys v))
+       (apply assoc {})))
+
+
+(defn compiler-param-resolve [coll]
+  (w/postwalk (fn [m]
+                (if (and (map? m)
+                         (:param m) )
+                  (update-in m [:param] convert-param-fn )
+                  m
+                  )
+                ) coll)
+
+  )
+
+
 ;;Do we need to unquote again here
 (defn read-file
   [file-name]
@@ -103,6 +127,7 @@
       (map-sql-tag)
       (reverse)
       (compiler-resolve)
+      (compiler-param-resolve)
       (key->nskey alais-map)))
 
 

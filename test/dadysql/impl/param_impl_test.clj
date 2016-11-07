@@ -8,7 +8,7 @@
 
 (deftest param-paths-test
   (testing "test param-paths  "
-    (let [coll [{:dadysql.core/param-coll [[:id :ref-gen :gen-dept]]}
+    (let [coll [{:dadysql.core/param-coll  [[:id :ref-gen :gen-dept]]}
                 {:dadysql.core/param-coll [[:id3 :ref-gen :gen-dept]]}]
           expected-result (list [[:id] :ref-gen :gen-dept] [[:id3] :ref-gen :gen-dept])
           actual-result (param-paths :dadysql.core/format-map coll {:id2 1})]
@@ -45,11 +45,11 @@
 
 (deftest model-param-paths-test
   (testing "test model-param-paths  "
-    (let [coll [{:dadysql.core/param-coll [[:transaction_id :ref-con 0]
-                                      [:transaction_id2 :ref-key :id]
-                                      [:id :dadysql.core/param-ref-gen :gen-dept]],
+    (let [coll [{:dadysql.core/param-coll {:transaction_id 0
+                                           :transaction_id2 :id
+                                           :id 2} ,
                  :dadysql.core/model :employee}
-                {:dadysql.core/param-coll [[:city :ref-con 0]],
+                {:dadysql.core/param-coll {:city :a} ,
                  :dadysql.core/model :employee-detail}]
           param {:employee {:firstname "Schwan"
                             :lastname  "Ragg"
@@ -63,9 +63,11 @@
                            [[:employee :id] :dadysql.core/param-ref-gen :gen-dept]
                            [[:employee :employee-detail :city] :ref-con 0]]
           actual-result (param-paths :dadysql.core/format-nested coll :dadysql.core/param-coll)]
+      (println actual-result)
       (is (= actual-result
              expected-result)))))
 
+(model-param-paths-test)
 
 ;(def apply-param-proc (param-exec identity))
 
