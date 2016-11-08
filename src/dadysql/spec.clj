@@ -59,7 +59,7 @@
       :many (s/tuple keyword? keyword? #{:dadysql.core/join-many-many} keyword? keyword? (s/tuple keyword? keyword? keyword?)))))
 
 
-(s/def ::params-v (s/or :k keyword? :t fn?))
+(s/def ::params-v fn?)
 (s/def :dadysql.core/default-param (s/* (s/cat :k keyword? :v ::params-v ) ) #_(s/map-of keyword? ::params-v))
 
 #_(s/def :dadysql.core/default-param

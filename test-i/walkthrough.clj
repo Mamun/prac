@@ -60,6 +60,10 @@
        (io/db-do (td/get-ds)))
 
 
+  (do
+    (t/read-file "tie.edn.sql")
+    nil
+    )
 
   (-> @td/ds
       (t/db-do [:drop-ddl] (t/read-file "tie.edn.sql")))

@@ -198,8 +198,19 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;, Reader util ;;;;;;;;;
 
+(defmulti map-param-fn (fn [v] (type v)))
 
-(defn map-core-fn
+(defmethod map-param-fn
+  :default
+  [w]
+  (fn [_]
+    (fn [_]
+      w)))
+
+
+
+(defmethod map-param-fn
+  clojure.lang.PersistentList
   [v]
   (let [w1 (->> v
                 (w/postwalk (fn [w]
@@ -210,14 +221,12 @@
                 (eval))]
     (fn [_]
       (fn [m]
-        (let [w (w1 m)]
-          (if (fn? w)
-            (w)
-            w))))))
+        (w1 m)))))
 
 
 
-(defn map-seq-fn
+(defmethod map-param-fn
+  clojure.lang.Keyword
   [w]
   (fn [caller-fn]
     (fn [_]
@@ -230,18 +239,11 @@
 ;(type (fn [t]))
 
 
-
 (defn convert-param-t [w]
   (->> (partition 2 w)
        (mapv (fn [[k v]]
-               (if (keyword? v)
-                 [k (map-seq-fn v)]
-                 [k (map-core-fn v)])))
+               [k (map-param-fn v)]))
        (flatten)))
-
-
-
-
 
 
 
