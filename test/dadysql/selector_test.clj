@@ -119,13 +119,6 @@
 
 
 
-(deftest select-name-test
-  (testing "test select-name"
-    (let [m {:dadysql.core/name :get-dept-by-id}
-          r (select-name (fr/read-file "tie.edn.sql") m)]
-      (is (= 1 (count r)))
-      (is (not (failed? r))))))
-
 
 
 

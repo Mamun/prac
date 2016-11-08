@@ -1,6 +1,7 @@
 (ns test-data
   (:require ;[dadysql.spec :refer :all]
-            [dadysql.jdbc :refer :all])
+            [dadysql.jdbc :refer :all]
+            [dadysql.jdbc-io :as jio])
   (:import [com.mchange.v2.c3p0 ComboPooledDataSource]))
 
 
@@ -20,7 +21,8 @@
   []
   (when (nil? @tms)
     (let [w (read-file "tie.edn.sql")]
-      ; (db-do (get-ds) [:create-ddl :init-data] w)
+      (->> (select-name w {:dadysql.core/name [:create-ddl :init-data]})
+           (jio/db-do (get-ds) ))
       (reset! tms w))
     (println "reading "))
   @tms)

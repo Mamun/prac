@@ -59,8 +59,8 @@
       :many (s/tuple keyword? keyword? #{:dadysql.core/join-many-many} keyword? keyword? (s/tuple keyword? keyword? keyword?)))))
 
 
-(s/def ::params-v (s/or :k keyword? :t any?))
-(s/def :dadysql.core/default-param (s/map-of keyword? ::params-v))
+(s/def ::params-v (s/or :k keyword? :t fn?))
+(s/def :dadysql.core/default-param (s/* (s/cat :k keyword? :v ::params-v ) ) #_(s/map-of keyword? ::params-v))
 
 #_(s/def :dadysql.core/default-param
   (clojure.spec/*
@@ -69,6 +69,19 @@
       :ref-fn-key (clojure.spec/tuple keyword? #{:dadysql.core/param-ref-fn-key} ifn? keyword?)
       :ref-gen (clojure.spec/tuple keyword? #{:dadysql.core/param-ref-gen} keyword?)
       :ref-key (clojure.spec/tuple keyword? #{:dadysql.core/param-ref-key} keyword?))))
+
+
+
+#_(s/conform
+  (s/* (s/cat :k keyword? :v ::params-v ) )
+  [:a :b :a '(inc :b) :c :b]
+  )
+
+#_(group-by (fn [[k v]]
+            (keyword? v)
+            ) (partition 2   [:a :b :a '(inc :b) :c :b]) )
+
+
 
 
 

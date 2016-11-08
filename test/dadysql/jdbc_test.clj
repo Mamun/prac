@@ -4,10 +4,6 @@
             [dadysql.jdbc :refer :all]))
 
 
-(deftest has-dml-type?-test
-  (testing "test has-dml-type? "
-    (let [data {:dadysql.core/dml :dadysql.core/dml-select}]
-      (is (not (nil? (has-dml-type? data)))))))
 
 
 (deftest get-dml-test

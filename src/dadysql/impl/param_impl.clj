@@ -11,11 +11,15 @@
 (defn temp-generator [_]
   -1)
 
-
+;(concat [ 1 2 3] [ 3 4 5])
+;(map first (partition 2 [1 2 3 4]) )
 
 (defn- assoc-param-path [m param-m root-path]
-  (->> (keys (:dadysql.core/default-param m))
-       (map (fn [w] (first (ccu/get-path param-m root-path w))))))
+  (->> (:dadysql.core/default-param m)
+       (partition 2)
+       (map first)
+       (map (fn [w] {w (first (ccu/get-path param-m root-path w))}))
+       (into {})))
 
 
 (defmulti param-paths (fn [input-format _ _] input-format))
@@ -40,9 +44,11 @@
   :dadysql.core/format-map
   [_ tm-coll param-m]
   (->> (map :dadysql.core/default-param tm-coll)
-       (apply merge)
-       (keys)
-       (map (fn [w] (first (ccu/get-path param-m w))))
+       (apply concat)
+       (partition 2)
+       (map first)
+       (map (fn [w] {w (first (ccu/get-path param-m w))}))
+       (into {})
        (repeat)
        (mapv (fn [m p]
                (assoc m :dadysql.core/param-path p)
@@ -59,8 +65,8 @@
        )
 
 
-  (let [coll [{:dadysql.core/default-param {:id :a}}
-              {:dadysql.core/default-param {:id3 :b}}]
+  (let [coll [{:dadysql.core/default-param [:id :a]}
+              {:dadysql.core/default-param [:id2 :b]}]
         actual-result (param-paths :dadysql.core/format-map coll {:id2 1})]
     actual-result
     )
@@ -69,39 +75,42 @@
 
 
 (defn param-exec2 [acc-input m]
-  (reduce (fn [acc-input path]
-            (if (get-in acc-input path)
-              acc-input
-              (let [p-exec (get-in m [:dadysql.core/default-param (last path)])
-                    p-value (get-in acc-input (into [] (butlast path)))
-                    new-in (p-exec p-value)
-                    new-in (if (fn? new-in)
-                             (new-in)
-                             new-in
-                             )
-                    ]
-                (if (f/failed? new-in)
-                  (reduced new-in)
-                  (assoc-in acc-input path new-in))))
-            ) acc-input (:dadysql.core/param-path m)))
-
+  (let [path-m (:dadysql.core/param-path m)]
+    (->> (:dadysql.core/default-param m)
+         (partition 2)
+         (reduce (fn [acc-input [k f]]
+                   (if (get-in acc-input (get path-m k))
+                     acc-input
+                     (let [p (into [] (butlast (get path-m k)))
+                           v (get-in acc-input p)
+                           new-in (f v)]
+                       (if (f/failed? new-in)
+                         (reduced new-in)
+                         (assoc-in acc-input (get path-m k) new-in))))
+                   ) acc-input))))
 
 
 
 (defn param-exec [tm-coll rinput input-format]
   (let [param-paths (param-paths input-format tm-coll rinput)]
     (reduce (fn [acc-input path]
-              (param-exec2 acc-input path)
+              (let [r (param-exec2 acc-input path)]
+                (if (f/failed? r)
+                  (reduced r)
+                  r))
               ) rinput param-paths)))
 
+
+(defn assoc-temp-gen [w gen]
+  (->> (partition 2 w)
+       (mapv (fn [[k f]] [k (f gen)]))
+       (flatten)))
 
 
 (defn assoc-generator [tm-coll gen]
   (mapv (fn [m]
           (if (:dadysql.core/default-param m)
-            (update-in m [:dadysql.core/default-param]
-                       (fn [w]
-                         (into {} (mapv (fn [[k f]] {k (f gen)}) w))))
+            (update-in m [:dadysql.core/default-param] assoc-temp-gen gen)
             m)
           ) tm-coll))
 
@@ -161,6 +170,7 @@
   [tm-coll request-m]
   (let [input (:dadysql.core/param request-m)
         input (param-exec tm-coll input :dadysql.core/format-nested)
+
         input (f/try-> input
                        (ji/do-disjoin (get-in tm-coll [0 :dadysql.core/join])))]
     (if (f/failed? input)
@@ -179,22 +189,32 @@
                          (doall)
                          (sg/union-spec)))]
     (if (and (nil? param-spec)
-             (empty? param-spec) )
+             (empty? param-spec))
       tm-coll
-      (if (s/valid? (eval param-spec)  (:dadysql.core/param req-m))
+      (if (s/valid? (eval param-spec) (:dadysql.core/param req-m))
         tm-coll
-        (f/fail (s/explain-str (eval param-spec)  (:dadysql.core/param req-m)))))))
+        (f/fail (s/explain-str (eval param-spec) (:dadysql.core/param req-m)))))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;, Reader util ;;;;;;;;;
 
 
 (defn map-core-fn
-  [w]
-  (let [w1 (eval w) ]
+  [v]
+  (let [w1 (->> v
+                (w/postwalk (fn [w]
+                              (if (keyword? w)
+                                (list 'get-in 'm [w])
+                                w)))
+                (list 'fn ['m])
+                (eval))]
     (fn [_]
       (fn [m]
-        (w1 m)))))
+        (let [w (w1 m)]
+          (if (fn? w)
+            (w)
+            w))))))
+
 
 
 (defn map-seq-fn
@@ -205,56 +225,48 @@
                   :dadysql.core/op   :dadysql.core/op-db-seq}))))
 
 
-
-(defn convert-param-fn [v]
-  (if (empty? v)
-    v
-    (->> (vals v)
-         (w/postwalk (fn [w]
-                       (if (keyword? w)
-                         (list 'get-in 'm [w])
-                         w)))
-         (mapv (fn [w] (list 'fn ['m] w)))
-         (mapv map-core-fn)
-         (interleave (keys v))
-         (apply assoc {}))))
-
-
-(defn convert-param-fn-keyword [m]
-  (if (empty? m)
-    m
-    (do
-      (->> (vals m)
-           (mapv map-seq-fn)
-           (interleave (keys m))
-           (apply assoc {})))))
+;(keyword? :As)
+;(type :keyword)
+;(type (fn [t]))
 
 
 
-(defn convert-param-t [v]
-  (let [[f f2] (split-with (fn [[k r]]
-                             (if (keyword? r)
-                               true false ) ) v)]
-    (merge
-      (convert-param-fn-keyword (into {} f))
-      (convert-param-fn (into {} f2)))))
+(defn convert-param-t [w]
+  (->> (partition 2 w)
+       (mapv (fn [[k v]]
+               (if (keyword? v)
+                 [k (map-seq-fn v)]
+                 [k (map-core-fn v)])))
+       (flatten)))
+
+
+
+
 
 
 
 (comment
 
-  (let [p {:b 1}
-        w (convert-param-t {:b :a :a '(constantly 3)  })
-        fn1 (fn [r] (do
-                      (println "--form in pout " r)
-                      3)  )
-        w1 (into {} (mapv (fn [[k f]] {k (f fn1)}  ) w ))
-        ]
-    ( (:a w1) p)
+  (let [{a true b false}
+        (group-by (fn [[k v]] (keyword? v)) {:id inc :a :b})]
+    b)
 
-    ( (:b w1) p)
-
+  (clojure.pprint/pprint
+    (convert-param-t [:a '(constantly 3) :b :a])
     )
 
+
+  (let [p {:b 1}
+        fn1 (fn [r] (do
+                      (println "--form in pout " r)
+                      3))
+        w (-> (convert-param-t [:a '(constantly 3) :b :a])
+              (assoc-temp-gen fn1))]
+
+    (reduce (fn [acc [k f]]
+              (assoc acc k (f acc))
+              ) p (partition 2 w))
+
+    )
 
   )

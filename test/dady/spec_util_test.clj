@@ -5,7 +5,7 @@
             [clojure.walk :as w]))
 
 
-(deftest create-ns-key-test
+#_(deftest create-ns-key-test
   (testing "testing add-ns-to-keyword "
     (are [a e] (= a e)
                (create-ns-key :a/b :hello) :a.b/hello
@@ -17,7 +17,7 @@
 
 
 
-(deftest convert-key-to-ns-key-test
+#_(deftest convert-key-to-ns-key-test
   (testing "testing as-ns-key-format"
     (are [a e] (= a e)
                (convert-key-to-ns-key {:get-by-id {:id   :a
@@ -38,7 +38,7 @@
 ;(update-ns-key-test)
 
 
-(deftest map->spec-test
+#_(deftest map->spec-test
   (testing "testing map->spec "
     (let [v {:get-by-id   {:id :id}
              :get-by-name {:name :name}}

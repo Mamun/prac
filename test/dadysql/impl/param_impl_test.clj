@@ -8,49 +8,25 @@
 
 (deftest param-paths-test
   (testing "test param-paths  "
-    (let [coll [{:dadysql.core/default-param  [[:id :ref-gen :gen-dept]]}
-                {:dadysql.core/default-param [[:id3 :ref-gen :gen-dept]]}]
-          expected-result (list [[:id] :ref-gen :gen-dept] [[:id3] :ref-gen :gen-dept])
-          actual-result (param-paths :dadysql.core/format-map coll {:id2 1})]
+    (let [coll [{:dadysql.core/default-param  [:id  (fn [m] 2)]}
+                {:dadysql.core/default-param  [:id3 (fn [m] 3)]}]
+          expected-result {:id [:id], :id3 [:id3]}
+          actual-result (get-in (param-paths :dadysql.core/format-map coll {:id2 1}) [0 :dadysql.core/param-path]) ]
+      ;(println actual-result)
       (is (= actual-result
              expected-result)))))
 
 ;(param-paths-test)
 
 
-#_(deftest do-param-test
-    (testing "do param test"
-      (let [tm-coll [{:dadysql.core/name       :get-dept-by-id,
-                      :dadysql.core/sql        ["select * from department where id = ?" 1],
-                      :dadysql.core/model      :department,
-                      :dadysql.core/result     #{:single},
-                      :dadysql.core/param-spec :get-dept-by-id/spec,
-                      :dadysql.core/timeout    2000,
-                      :dadysql.core/dml    :dadysql.core/dml-select,
-                      :dadysql.core/join       [],
-                      :dadysql.core/group      :load-dept,
-                      :dadysql.core/index      0}]
-            r (do-param tm-coll {:dadysql.core/param-format :dadysql.core/format-map
-                                 :params                    {:id 4}})]
-        (is (= (get-in r [0 :dadysql.core/param]) {:id 4})))))
-
-
-
-#_(comment
-
-    (do-param-test)
-    )
-
-
-
 (deftest model-param-paths-test
   (testing "test model-param-paths  "
-    (let [coll [{:dadysql.core/default-param {:transaction_id 0
-                                           :transaction_id2 :id
-                                           :id 2} ,
-                 :dadysql.core/model :employee}
-                {:dadysql.core/default-param {:city :a} ,
-                 :dadysql.core/model :employee-detail}]
+    (let [coll [{:dadysql.core/default-param [:transaction_id 0
+                                              :transaction_id2 :id
+                                              :id 2],
+                 :dadysql.core/model         :employee}
+                {:dadysql.core/default-param [:city :a],
+                 :dadysql.core/model         :employee-detail}]
           param {:employee {:firstname "Schwan"
                             :lastname  "Ragg"
                             :dept_id   1
@@ -58,159 +34,128 @@
                                        {:street  "Schwan",
                                         :state   "Bayern",
                                         :country "Germany"}}}
-          expected-result [[[:employee :transaction_id] :ref-con 0]
-                           [[:employee :transaction_id2] :ref-key :id]
-                           [[:employee :id] :dadysql.core/param-ref-gen :gen-dept]
-                           [[:employee :employee-detail :city] :ref-con 0]]
-          actual-result (param-paths :dadysql.core/format-nested coll :dadysql.core/default-param)]
-      (clojure.pprint/pprint actual-result)
+          expected-result [{:transaction_id  [:employee :transaction_id],
+                            :transaction_id2 [:employee :transaction_id2],
+                            :id              [:employee :id]}
+                           {:city [:employee :employee-detail :city]}
+
+                           ]
+          actual-result (mapv :dadysql.core/param-path (param-paths :dadysql.core/format-nested coll param)) ]
       (is (= actual-result
              expected-result)))))
 
-(model-param-paths-test)
+;(model-param-paths-test)
 
 ;(def apply-param-proc (param-exec identity))
 
 
-(deftest param-ref-con-test
-
+(deftest param-exec-test
   (testing "test param-ref-con-key"
-    (let [coll [{:dadysql.core/default-param [[:transaction_id :dadysql.core/param-ref-con 0]],
-                 :dadysql.core/model :employee}]
+    (let [coll [{:dadysql.core/default-param [:transaction_id (fn [v] 0)],
+                 :dadysql.core/model         :employee}]
           input {:id 2}
           expected-result {:id 2 :transaction_id 0}
-          actual-result (param-exec coll input :dadysql.core/format-map identity)]
+          actual-result (param-exec coll input :dadysql.core/format-map)]
       (is (= expected-result
              actual-result))))
-  (testing "test param-ref-con "
-    (let [
-          coll [{:dadysql.core/default-param [[:transaction_id :dadysql.core/param-ref-con 0]],
-                 :dadysql.core/model :employee}]
-          input {:employee {:id 2}}
-          expected-result {:employee {:id 2 :transaction_id 0}}
-          actual-result (param-exec coll input :dadysql.core/format-nested identity)]
-      (is (= expected-result
-             actual-result)))))
 
-
-;(param-ref-con-test)
-
-
-(deftest param-ref-key-test
-  (testing "test param-ref-key"
-    (let [coll [{:dadysql.core/default-param [[:transaction_id :dadysql.core/param-ref-key :id]],
-                 :dadysql.core/model :employee}]
-          input {:id 2}
-
-          expected-result {:id 2 :transaction_id 2}
-          actual-result (param-exec coll input :dadysql.core/format-map identity)]
-      (is (= expected-result
-             actual-result))))
   (testing "test param-ref-key "
-    (let [coll [{:dadysql.core/default-param [[:transaction_id :dadysql.core/param-ref-key :id]],
-                 :dadysql.core/model :employee}]
+    (let [coll [{:dadysql.core/default-param [:transaction_id (fn [m] (:id m))],
+                 :dadysql.core/model         :employee}]
           input {:employee {:id 2}}
           expected-result {:employee {:id 2 :transaction_id 2}}
-          actual-result (param-exec coll input :dadysql.core/format-nested identity)]
+          actual-result (param-exec coll input :dadysql.core/format-nested)]
       (is (= expected-result
-             actual-result)))))
-
-;(param-ref-key-test)
-
-(deftest param-ref-fn-key-test
+             actual-result))))
   (testing "test params-ref-fn-key "
-      (let [coll [{:dadysql.core/default-param [[:transaction_id :dadysql.core/param-ref-fn-key inc :id]],
-                   :dadysql.core/model :employee}]
-            input {:id 2}
-            expected-result {:id 2 :transaction_id 3}
-            actual-result (param-exec coll input :dadysql.core/format-map identity)]
-        (is (= expected-result
-               actual-result))))
+    (let [coll [{:dadysql.core/default-param [:transaction_id (fn [m] (inc (:id m)))],
+                 :dadysql.core/model         :employee}]
+          input {:id 2}
+          expected-result {:id 2 :transaction_id 3}
+          actual-result (param-exec coll input :dadysql.core/format-map)]
+      (is (= expected-result
+             actual-result))))
   (testing "test param-ref-fn-key "
-    (let [coll [{:dadysql.core/default-param [[:transaction_id :dadysql.core/param-ref-fn-key inc :id]],
-                 :dadysql.core/model :employee}]
+    (let [coll [{:dadysql.core/default-param [:transaction_id (fn [m] (inc (:id m)))]
+                 :dadysql.core/model         :employee}]
           input {:employee {:id 2}}
           expected-result {:employee {:id 2 :transaction_id 3}}
-          actual-result (param-exec coll input :dadysql.core/format-nested identity)]
-      (is (= expected-result
-             actual-result)))))
-
-;(param-ref-fn-key-test)
-
-
-(deftest param-impl-test
-  (testing "test params-ref-gen-key"
-    (let [
-          coll [{:dadysql.core/default-param [[:transaction_id :dadysql.core/param-ref-gen :id]],
-                 :dadysql.core/model :employee}]
-          input {:id 2}
-          expected-result {:id 2 :transaction_id 5}
-          actual-result (param-exec coll input :dadysql.core/format-map (fn [_] 5 ))]
+          actual-result (param-exec coll input :dadysql.core/format-nested)]
       (is (= expected-result
              actual-result))))
   (testing "test params-ref-gen-key"
     (let [
-          coll [{:dadysql.core/default-param [[:transaction_id :dadysql.core/param-ref-gen :id]],
-                 :dadysql.core/model :employee}]
+          coll [{:dadysql.core/default-param [:transaction_id (fn [m] 5)],
+                 :dadysql.core/model         :employee}]
           input {:id 2}
-          actual-result (param-exec coll input :dadysql.core/format-map (fn [_] (fail "Failed ") ))]
-      (is (failed? actual-result)))))
-
-
-;(param-impl-test)
-
-
-(deftest params-ref-gen-key-test
+          expected-result {:id 2 :transaction_id 5}
+          actual-result (param-exec coll input :dadysql.core/format-map)]
+      (is (= expected-result
+             actual-result))))
+  (testing "test params-ref-gen-key"
+    (let [coll [{:dadysql.core/default-param [:id (fn [m] (do
+                                                            (fail "Failed ")
+                                                            ))]
+                 :dadysql.core/model         :employee}]
+          input {:id2 2}
+          actual-result (param-exec coll input :dadysql.core/format-map)]
+      (is (failed? actual-result))))
   (testing "test param-ref-fn-key "
-    (let [coll [{:dadysql.core/default-param [[:transaction_id :dadysql.core/param-ref-gen :id]],
-                 :dadysql.core/model :employee}]
+    (let [coll [{:dadysql.core/default-param [:transaction_id (fn [m] 3)],
+                 :dadysql.core/model         :employee}]
           input {:employee {:id 2}}
           expected-result {:employee {:id 2, :transaction_id 3}}
-          actual-result (param-exec coll input :dadysql.core/format-nested (fn [_] 3 ))]
+          actual-result (param-exec coll input :dadysql.core/format-nested)]
       (is (= (expected-result
                actual-result)))))
   (testing "test params-ref-gen-key"
-    (let [
-          coll [{:dadysql.core/default-param [[:transaction_id :dadysql.core/param-ref-gen :id]],
-                 :dadysql.core/model :employee}]
+    (let [coll [{:dadysql.core/default-param [:transaction_id (fn [m] (fail "Failed "))],
+                 :dadysql.core/model         :employee}]
           input {:employee {:id 2}}
-          actual-result (param-exec coll input :dadysql.core/format-nested (fn [_] (fail "Failed ") ))]
-      (is (failed? actual-result)))))
+          actual-result (param-exec coll input :dadysql.core/format-nested)]
+      (is (failed? actual-result))))
 
-
-;(params-ref-gen-key-test)
-
-
-(deftest do-param-comp-test
   (testing "test do-params-comp  "
-    (let [
-          coll [{:dadysql.core/default-param [[:transaction_id :dadysql.core/param-ref-con 0]
-                                      [:id2 :dadysql.core/param-ref-fn-key inc :transaction_id]
-                                      [:id4 :dadysql.core/param-ref-key :id]
-                                      [:id3 :dadysql.core/param-ref-gen :id]]
-                 :dadysql.core/model :employee}]
+    (let [coll [{:dadysql.core/default-param [:transaction_id (fn [_] 0)
+                                              :id2            (fn [m] (inc (:transaction_id m)))
+                                              :id4            (fn [m] (:id m))
+                                              :id3            (fn [m] (:id m))]
+                 :dadysql.core/model         :employee}]
           input {:employee {:id 2}}
-          expected-result {:employee {:id 2, :transaction_id 0, :id4 2, :id2 1, :id3 5}}
-          actual-result (param-exec coll input :dadysql.core/format-nested (fn [_] 5))]
+          expected-result {:employee {:id 2, :transaction_id 0, :id4 2, :id2 1, :id3 2}}
+          actual-result (param-exec coll input :dadysql.core/format-nested)]
       (is (= expected-result
              actual-result))))
   (testing "test do-params-comp for empty collection  "
-    (let [
-          coll []
+    (let [coll []
           input {:employee {:id 2}}
           expected-result {:employee {:id 2}}
-          actual-result (param-exec coll input :dadysql.core/format-nested identity)]
+          actual-result (param-exec coll input :dadysql.core/format-nested)]
       (is (= expected-result
-             actual-result)))))
+             actual-result))))
+  )
 
-;(do-param-comp-test)
+;(param-exec-test)
 
+#_(deftest convert-param-test
+  (testing "convert param test "
+    (let [input-m {:b 1}
+          tem-gen (fn [r] (do 3))
+          w (-> (convert-param-t [:a '(constantly 0)
+                                  :b :w
+                                  :c '(inc :b)])
+                (assoc-temp-gen tem-gen))
+          a-gen (:a w)
+          b-gen (:b w)
+          c-gen (:c w)]
+      (is (= (a-gen input-m) 0))
+      (is (= (b-gen input-m) 3))
+      (is (= (c-gen input-m) 2)))))
 
-
-
-;(param-key-compile-test)
 
 (comment
+
+  ;(convert-param-test)
   (run-tests)
   )
 
