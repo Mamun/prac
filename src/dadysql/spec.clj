@@ -23,10 +23,7 @@
 
 
 (s/def :dadysql.core/file-reload boolean?)
-(s/def :dadysql.core/reserve-name (s/with-gen (s/every keyword? :kind set?)
-                                              (fn []
-                                                (s/gen #{#{:create-ddl :drop-ddl :init-data}
-                                                         #{:init-data}}))))
+(s/def :dadysql.core/reserve-name (s/every keyword? :kind set?))
 
 (s/def :dadysql.core/doc string?)
 (s/def :dadysql.core/timeout pos-int?)
@@ -59,29 +56,7 @@
       :many (s/tuple keyword? keyword? #{:dadysql.core/join-many-many} keyword? keyword? (s/tuple keyword? keyword? keyword?)))))
 
 
-(s/def ::params-v fn?)
-(s/def :dadysql.core/default-param (s/* (s/cat :k keyword? :v ::params-v ) ) #_(s/map-of keyword? ::params-v))
-
-#_(s/def :dadysql.core/default-param
-  (clojure.spec/*
-    (clojure.spec/alt
-      :ref-con (clojure.spec/tuple keyword? #{:dadysql.core/param-ref-con} any?)
-      :ref-fn-key (clojure.spec/tuple keyword? #{:dadysql.core/param-ref-fn-key} ifn? keyword?)
-      :ref-gen (clojure.spec/tuple keyword? #{:dadysql.core/param-ref-gen} keyword?)
-      :ref-key (clojure.spec/tuple keyword? #{:dadysql.core/param-ref-key} keyword?))))
-
-
-
-#_(s/conform
-  (s/* (s/cat :k keyword? :v ::params-v ) )
-  [:a :b :a '(inc :b) :c :b]
-  )
-
-#_(group-by (fn [[k v]]
-            (keyword? v)
-            ) (partition 2   [:a :b :a '(inc :b) :c :b]) )
-
-
+(s/def :dadysql.core/default-param (s/* (s/cat :k keyword? :fn fn?)))
 
 
 
@@ -102,11 +77,10 @@
 (s/def ::req (s/map-of keyword? clj-spec?))
 (s/def ::opt (s/map-of keyword? clj-spec?))
 (s/def :dadysql.core/param-spec (s/merge (s/or :req (s/keys :req [::req])
-                                   :opt (s/keys :opt [::opt]))
-                             (s/map-of #{:req :opt} any?)))
+                                               :opt (s/keys :opt [::opt]))
+                                         (s/map-of #{:req :opt} any?)))
 
 
-#_(s/def :dadysql.core/param-spec (s/map-of keyword? clj-spec?))
 
 
 

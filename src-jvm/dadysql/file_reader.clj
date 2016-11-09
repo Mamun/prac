@@ -38,10 +38,6 @@
 
                 :skip         :dadysql.core/skip
                 :param        :dadysql.core/default-param
-                :ref-con      :dadysql.core/param-ref-con
-                :ref-key      :dadysql.core/param-ref-key
-                :ref-fn-key   :dadysql.core/param-ref-fn-key
-                :ref-gen      :dadysql.core/param-ref-gen
                 :param-spec   :dadysql.core/param-spec
 
                 :extend       :dadysql.core/extend

@@ -147,7 +147,7 @@
                            [{:id   100
                              :tab2 [[:tab-id :id] [100 1] [100 2]]
                              :tab3 nil}]}
-          actual-result (do-join data join)]
+          actual-result (do-join (assoc-join-key data join) join)]
       (is (= expected-result actual-result))))
   (testing "test do-join "
     (let [join [[:tab :id :dadysql.core/join-one-one :tab1 :tab-id]
@@ -166,7 +166,7 @@
                             :tab4    {:id 1}
                             :tab2    [{:tab2-id 102 :tab-id 100}
                                       {:tab2-id 103 :tab-id 100}]}}
-          actual-result (do-join data join)]
+          actual-result (do-join (assoc-join-key data join) join)]
       (is (= actual-result
              expected-result)))))
 
@@ -258,6 +258,16 @@
 ;(ndest-rel-data-test)
 
 
+#_(let [join [[:tab :id :dadysql.core/join-one-many :tab1 :tab-id]]
+      data {:tab {:id   100
+                  :tab1 [{ :name "name1"}
+                         { :name "name2"}]}}
+
+      ]
+  (clojure.pprint/pprint
+    (assoc-join-key data join))
+
+  )
 
 (deftest do-disjoin-test
   (testing "test do-disjoin with :1-n relationship "
@@ -268,7 +278,7 @@
           expected-result {:tab  {:id 100}
                            :tab1 [{:tab-id 100 :name "name1"}
                                   {:tab-id 100 :name "name2"}]}
-          actual-result (do-disjoin data join)]
+          actual-result (do-disjoin (assoc-join-key data join) join)]
       (is (= actual-result
              expected-result))))
   (testing "test do-disjoin with :1-n relationship "
@@ -282,7 +292,7 @@
                            :tab1 (list {:tab-id 100 :name "name1"}
                                        {:tab-id 100 :name "name2"}
                                        {:tab-id 100 :name "name3"})}
-          actual-result (do-disjoin data join)]
+          actual-result (do-disjoin (assoc-join-key data join) join)]
       (is (= actual-result
              expected-result))))
   (testing "test do-disjoin with :n-n relationship "
@@ -293,10 +303,11 @@
                       {:id   102
                        :tab1 {:tab-id 138}}]}
           expected-result {:tab  [{:id 100} {:id 102}],
+                           :tab1 [{:tab-id 100} {:tab-id 102}]
                            :ntab [{:tab-id 100, :tab1-id 100}
                                   {:tab-id 100, :tab1-id 101}
                                   {:tab-id 102, :tab1-id 138}]}
-          actual-result (do-disjoin data join)]
+          actual-result (do-disjoin (assoc-join-key data join) join)]
       (is (= actual-result
              expected-result))))
   (testing "test do-join"
@@ -317,14 +328,23 @@
                             :transaction_id 0,
                             :id             109},
                            :employee-detail
-                           [{:street      "Schwan",
-                             :city        "Munich",
-                             :state       "Bayern",
-                             :country     "Germany",
-                             :employee_id 109}]
+                           {:street      "Schwan",
+                            :city        "Munich",
+                            :state       "Bayern",
+                            :country     "Germany",
+                            :employee_id 109}
+
                            }
-          actual-result (do-disjoin data j)]
+          actual-result (do-disjoin (assoc-join-key data j) j)]
       (is (= expected-result actual-result)))))
+
+(comment
+
+  (run-tests)
+  )
+
+
+;(do-disjoin-test)
 
 
 ;(do-disjoin-test)

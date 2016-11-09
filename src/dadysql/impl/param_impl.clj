@@ -145,37 +145,7 @@
   )
 
 
-(defn disptach-input-format [req-m]
-  (if (and
-        (= :dadysql.core/op-push! (:dadysql.core/op req-m))
-        (or (:dadysql.core/group req-m)
-            (sequential? (:dadysql.core/name req-m))))
-    :dadysql.core/format-nested
-    :dadysql.core/format-map))
 
-
-(defmulti bind-param (fn [_ request-m] (disptach-input-format request-m)))
-
-
-(defmethod bind-param :dadysql.core/format-map
-  [tm-coll request-m]
-  (let [input (:dadysql.core/param request-m)
-        input (param-exec tm-coll input :dadysql.core/format-map)]
-    (if (f/failed? input)
-      input
-      (mapv (fn [m] (assoc m :dadysql.core/param input)) tm-coll))))
-
-
-(defmethod bind-param :dadysql.core/format-nested
-  [tm-coll request-m]
-  (let [input (:dadysql.core/param request-m)
-        input (param-exec tm-coll input :dadysql.core/format-nested)
-
-        input (f/try-> input
-                       (ji/do-disjoin (get-in tm-coll [0 :dadysql.core/join])))]
-    (if (f/failed? input)
-      input
-      (mapv (fn [m] (assoc m :dadysql.core/param ((:dadysql.core/model m) input))) tm-coll))))
 ;;;;;;;;;;;;;;;;;
 
 

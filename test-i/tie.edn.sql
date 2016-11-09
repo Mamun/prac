@@ -64,9 +64,8 @@ select m.*, em.employee_id from meeting m, employee_meeting em where em.employee
  :name [:get-meeting-by-id :get-employee-for-meeting ]
  :group :load-meeting
  :extend {:get-meeting-by-id {:model :meeting
-                              :result #{:single}
-                              }
-            :get-employee-for-meeting {:model :employee-meeting}}
+                              :result #{:single}}
+          :get-employee-for-meeting {:model :employee-meeting}}
  }*/
 select * from meeting where  meeting_id = :id;
 select e.*, em.employee_id from employee e, employee_meeting em where em.meeting_id = :id and em.employee_id = e.id;
@@ -80,8 +79,7 @@ select e.*, em.employee_id from employee e, employee_meeting em where em.meeting
  :model [:department :employee ]
  :group :load-dept
  :extend {:get-dept-by-id {:timeout 2000
-                           :result #{:single}}
-         }
+                           :result #{:single}}}
  :timeout 5000
  :param-spec {:req {:id int?}}
  }*/
@@ -97,7 +95,9 @@ select * from employee where dept_id = :id;
  :model :department
  :extend {:create-dept {:param  [:id :gen-dept
                                 :transaction_id 0 ]
-                        :param-spec {:opt {:id int? :transaction_id int? :dept_name string?}}        }
+                        :param-spec {:opt {:id int?
+                                           :transaction_id int?
+                                           :dept_name string?}}}
          :update-dept {:param [:next_transaction_id (inc :transaction_id) ] }
          }
   :commit :all

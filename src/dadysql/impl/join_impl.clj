@@ -1,6 +1,7 @@
 (ns dadysql.impl.join-impl
   (:require [dady.common :as cc]
             [dady.fail :as f]
+            [clojure.walk :as w]
             [dadysql.impl.util :as cu]
     #_[dadysql.spec :refer :all]))
 
@@ -96,14 +97,6 @@
         (select-root j-coll))))
 
 
-(defn split-join-n-n-key
-  [j-coll]
-  (split-with (fn [[_ _ rel]]
-                (if (= rel :dadysql.core/join-many-many)
-                  true
-                  false))
-              j-coll))
-
 
 (defn group-by-target-entity-one
   [data j]
@@ -133,15 +126,17 @@
       data)))
 
 
-
-(defn do-disjoin
-  "Assoc relation key and dis-join relation model "
+(defn assoc-join-key
   [data join-coll]
   (if (or (f/failed? data)
           (empty? join-coll))
     data
     (let [join-coll (replace-source-entity-path join-coll data)
-          [n-join join] (split-join-n-n-key join-coll)
+          n-join (filter (fn [[_ _ rel]]
+                           (if (= rel :dadysql.core/join-many-many)
+                             true
+                             false)
+                           ) join-coll)
           ;Find n-n relation data
           nj-data (if (empty? n-join)
                     {}
@@ -149,17 +144,54 @@
                         (replace-target-entity-path data)
                         (group-by-target-entity-batch data)))
           ;Assos relation key
+          join (w/postwalk (fn [w]
+                             (if (= :dadysql.core/join-many-many w)
+                               :dadysql.core/join-one-many
+                               w)
+                             ) join-coll)
           target-data-m (->> data
                              (replace-target-entity-path join)
                              (reduce assoc-target-entity-key data)
                              (group-by-target-entity-batch join))
-          ;Dassoc relation
-          data (->> join-coll
-                    (reduce (fn [acc j]
-                              (update-in acc (first j) dissoc (nth j 3))
-                              ) data))]
-      ;merage all of them
-      (merge data target-data-m nj-data))))
+          data1 (->> join-coll
+                     (reduce (fn [acc [s _ r d _]]
+                               (update-in acc s
+                                          (fn [m]
+                                            (if (or (= r :dadysql.core/join-one-one)
+                                                    (= r :dadysql.core/join-many-one))
+                                              (assoc m d (first (get target-data-m d)))
+                                              (assoc m d (get target-data-m d)))))
+                               ) data))]
+      (merge data1 nj-data))))
 
 
 
+(defn do-disjoin
+  "Assoc relation key and dis-join relation model "
+  [data join-coll]
+  (if (or (f/failed? data)
+          (empty? join-coll))
+    data
+    (->> (replace-source-entity-path join-coll data)
+         (reduce (fn [acc [s _ _ d _]]
+                   (-> (assoc acc d (get-in data (conj s d)))
+                       (update-in s dissoc d))
+                   ) data))))
+
+
+
+
+;nj-data
+
+#_(if (empty? n-join)
+    {}
+    (-> n-join
+        (replace-target-entity-path data)
+        (group-by-target-entity-batch data)))
+;Assos relation key
+;target-data-m
+
+#_(->> data
+       (replace-target-entity-path join)
+       (reduce assoc-target-entity-key data)
+       (group-by-target-entity-batch join))

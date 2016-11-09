@@ -251,6 +251,15 @@
         (clojure.pprint/pprint)))
 
 
+  (let [d {:department [{:dept_name "Software dept "}
+                        {:dept_name "Hardware dept"}]}]
+    (-> @td/ds
+        (t/default-param (t/read-file "tie.edn.sql")
+                 {:dadysql.core/name [:create-dept]
+                  :dadysql.core/param d}  )
+        (clojure.pprint/pprint)))
+
+
 
   ;; Check all depts
   (-> @td/ds
@@ -341,6 +350,19 @@
         )
     )
 
+
+  (let [employee {:employee {:firstname       "Schwan"
+                             :lastname        "Ragg"
+                             :dept_id         1
+                             :employee-detail {:street  "Schwan",
+                                               :city    "Munich",
+                                               :state   "Bayern",
+                                               :country "Germany"}}}]
+    (-> @td/ds
+        (t/default-param (t/read-file "tie.edn.sql")
+                 {:dadysql.core/name  [:create-employee :create-employee-detail]
+                  :dadysql.core/param employee})
+        (clojure.pprint/pprint)))
 
 
 
