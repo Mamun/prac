@@ -81,19 +81,6 @@
 
 
 
-(defn default-param [ds tms req-m]
-  (if-let [r (f/failed? (tie/validate-input! req-m))]
-    r
-    (let [sql-exec (warp-sql-io ds tms :dadysql.impl.sql.jdbc-io/batch)
-          req-m (-> req-m
-                    (assoc :dadysql.core/op :dadysql.core/op-push!)
-                    (assoc :dadysql.core/pull (partial pull ds tms))
-                    (assoc :dadysql.core/sql-exec sql-exec))]
-      (->> req-m
-           (tie/process-input (select-name tms req-m))))))
-
-
-
 (defn push!
   "Create, update or delete value in database. DB O/P will be run within transaction. "
   [ds tms req-m]
@@ -107,5 +94,13 @@
           (tie/do-execute (select-name tms req-m))))))
 
 
+(defn default-param [ds tms req-m]
+  (if-let [r (f/failed? (tie/validate-input! req-m))]
+    r
+    (let [sql-exec (warp-sql-io ds tms :dadysql.impl.sql.jdbc-io/parallel)]
+      (-> req-m
+          (assoc :dadysql.core/pull (partial pull ds tms))
+          (assoc :dadysql.core/sql-exec sql-exec)
+          (tie/process-input (select-name tms req-m) :disjoin false)))))
 
 

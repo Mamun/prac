@@ -8,7 +8,6 @@
             [immutant.web :as im]
             [dadysql.jdbc :as tj]
             [dady.common :as cc]
-            [dady.fail :as f]
             [clojure.tools.logging :as log])
   (:import
     [com.mchange.v2.c3p0 ComboPooledDataSource])
@@ -16,38 +15,21 @@
 
 
 (defonce ds-atom (atom nil))
-(defonce tms-atom (atom nil))
+(defonce m-config (atom nil))
 
 
 (defn init-state []
   (when (nil? @ds-atom)
     (reset! ds-atom {:datasource (ComboPooledDataSource.)}))
-  (when (nil? @tms-atom)
-    (f/try->> (tj/read-file "tie.edn.sql")
-              (tj/db-do @ds-atom [:create-ddl :init-data])
-              (tj/validate-dml! @ds-atom)
-              (reset! tms-atom))))
-
-
-(comment
-
-
-  (tj/pull @ds-atom @tms-atom  {:dadysql.core/name :get-dept-by-id, :dadysql.core/param {:id 2}} )
-
-
-  (int?)
-
-  (:get-dept-by-id @tms-atom)
-
-
-  (tj/pull @ds-atom @tms-atom  {:dadysql.core/name :get-dept-by-id
-                                :dadysql.core/param {:id "1"} } )
-
-  @tms-atom
-  ds-atom
-  (init-state)
-  )
-
+  (reset!
+    m-config
+    (mapv #(t/load-file-one %) [{:file-name "tie.edn.sql"
+                                 :init-name [:create-ddl :init-data]
+                                 :ds        ds-atom}
+                                {:file-name "tie2.edn.sql"
+                                 :ds        ds-atom}
+                                {:file-name "tie5.edn.sql"
+                                 :ds        ds-atom}])))
 
 (defn api-routes []
   (-> (routes
@@ -60,7 +42,6 @@
 
 (defroutes app-routes
            (GET "/" _ (resp/resource-response "index.html" {:root "public"}))
-
            (context "/api" _ (api-routes))
            (route/resources "/")
            (route/not-found {:status 200 :body "Not found"}))
@@ -71,7 +52,7 @@
     ;(log/info "Request -----------------" req)
     (let [w (handler req)]
       ; (log/info "Response -----------------" w)
-      (println "---" w)
+      ; (println "---" w)
       w
       )
     ))
@@ -79,7 +60,7 @@
 
 (def http-handler
   (-> app-routes
-      (t/warp-dadysql-handler :tms tms-atom :ds ds-atom)
+      (t/warp-dadysql-handler m-config)
       (warp-log)))
 
 
@@ -96,6 +77,12 @@
 ;(def hello (delay (atom {:a 3})))
 
 (comment
+
+
+
+
+
+
 
   (init-state)
   (im/run http-handler {:port 3000

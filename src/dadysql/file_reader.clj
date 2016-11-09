@@ -2,46 +2,46 @@
   (:require [clojure.java.io :as io]
             [clojure.walk :as w]
             [clojure.spec :as s]
-            [dadysql.impl.param-impl :as pl ]
+            [dadysql.impl.param-impl :as pl]
             [clojure.tools.reader.edn :as edn]))
 
 
-(def alais-map {:doc          :dadysql.core/doc
-                :timeout      :dadysql.core/timeout
-                :reserve-name :dadysql.core/reserve-name
-                :file-reload  :dadysql.core/file-reload
-                :tx-prop      :dadysql.core/tx-prop
+(def ^:dynamic *alais-map* {:doc          :dadysql.core/doc
+                            :timeout      :dadysql.core/timeout
+                            :reserve-name :dadysql.core/reserve-name
+                            :file-reload  :dadysql.core/file-reload
+                            :tx-prop      :dadysql.core/tx-prop
 
-                :join         :dadysql.core/join
-                :1-1          :dadysql.core/join-one-one
-                :1-n          :dadysql.core/join-one-many
-                :n-1          :dadysql.core/join-many-one
-                :n-n          :dadysql.core/join-many-many
+                            :join         :dadysql.core/join
+                            :1-1          :dadysql.core/join-one-one
+                            :1-n          :dadysql.core/join-one-many
+                            :n-1          :dadysql.core/join-many-one
+                            :n-n          :dadysql.core/join-many-many
 
-                :name         :dadysql.core/name
-                :model        :dadysql.core/model
-                :group        :dadysql.core/group
-                :column       :dadysql.core/column
-                :sql          :dadysql.core/sql
+                            :name         :dadysql.core/name
+                            :model        :dadysql.core/model
+                            :group        :dadysql.core/group
+                            :column       :dadysql.core/column
+                            :sql          :dadysql.core/sql
 
-                :result       :dadysql.core/result
-                :array        :dadysql.core/result-array
-                :single       :dadysql.core/result-single
+                            :result       :dadysql.core/result
+                            :array        :dadysql.core/result-array
+                            :single       :dadysql.core/result-single
 
-                :commit       :dadysql.core/commit
-                :all          :dadysql.core/commit-all
-                :any          :dadysql.core/commit-any
-                :none         :dadysql.core/commit-none
+                            :commit       :dadysql.core/commit
+                            :all          :dadysql.core/commit-all
+                            :any          :dadysql.core/commit-any
+                            :none         :dadysql.core/commit-none
 
-                :dml-type     :dadysql.core/dml
-                :index        :dadysql.core/index
+                            :dml-type     :dadysql.core/dml
+                            :index        :dadysql.core/index
 
-                :skip         :dadysql.core/skip
-                :param        :dadysql.core/default-param
-                :param-spec   :dadysql.core/param-spec
+                            :skip         :dadysql.core/skip
+                            :param        :dadysql.core/default-param
+                            :param-spec   :dadysql.core/param-spec
 
-                :extend       :dadysql.core/extend
-                :spec-file    :dadysql.core/spec-file})
+                            :extend       :dadysql.core/extend
+                            :spec-file    :dadysql.core/spec-file})
 
 
 (defn key->nskey
@@ -116,7 +116,7 @@
       (reverse)
       (compiler-resolve)
       (compiler-param-resolve)
-      (key->nskey alais-map)))
+      (key->nskey *alais-map*)))
 
 
 

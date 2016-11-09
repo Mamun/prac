@@ -97,8 +97,6 @@
              (do-output req-m))))
 
 
-
-
 (defn- is-join-pull?
   [tm-coll req-m]
   (if (and
@@ -154,7 +152,7 @@
 
 
 
-(defn disptach-input-format [req-m]
+(defn input-format [req-m]
   (if (and
         (= :dadysql.core/op-push! (:dadysql.core/op req-m))
         (or (:dadysql.core/group req-m)
@@ -164,25 +162,29 @@
 
 
 
-(defn bind-param2 [input tm-coll request-m]
-  (if (= (disptach-input-format request-m)
-         :dadysql.core/format-nested)
-    (let [input (f/try-> input
-                         (ji/do-disjoin (get-in tm-coll [0 :dadysql.core/join])))]
-      (if (f/failed? input)
-        input
-        (mapv (fn [m] (assoc m :dadysql.core/param ((:dadysql.core/model m) input))) tm-coll)))
-    (mapv (fn [m] (assoc m :dadysql.core/param input)) tm-coll)))
-
-
-(defn process-input [tm-coll req-m]
+(defn process-input [req-m tm-coll & {:keys [disjoin]
+                                      :or   {disjoin true}}]
   (let [pull-fn (:dadysql.core/pull req-m)
-        t (disptach-input-format req-m)]
+        in-format (input-format req-m)
+        apply-disjoin (fn [input]
+                        (if (and disjoin
+                                 (= in-format :dadysql.core/format-nested))
+                          (ji/do-disjoin input (get-in tm-coll [0 :dadysql.core/join]))
+                          input))]
     (f/try-> tm-coll
              (pi/validate-param-spec req-m)
              (pi/assoc-generator pull-fn)
-             (pi/param-exec (:dadysql.core/param req-m) t)
-             (ji/assoc-join-key (get-in tm-coll [0 :dadysql.core/join])))))
+             (pi/param-exec (:dadysql.core/param req-m) in-format)
+             (ji/assoc-join-key (get-in tm-coll [0 :dadysql.core/join]))
+             (apply-disjoin))))
+
+
+
+(defn- bind-param [input tm-coll request-m]
+  (if (= (input-format request-m)
+         :dadysql.core/format-nested)
+    (mapv (fn [m] (assoc m :dadysql.core/param ((:dadysql.core/model m) input))) tm-coll)
+    (mapv (fn [m] (assoc m :dadysql.core/param input)) tm-coll)))
 
 
 
@@ -191,8 +193,8 @@
                     (warp-bind-sql req-m)
                     (warp-do-output req-m)
                     (warp-do-output-join req-m))]
-    (f/try-> tm-coll
-             (process-input req-m)
-             (bind-param2 tm-coll req-m)
+    (f/try-> req-m
+             (process-input tm-coll)
+             (bind-param tm-coll req-m)
              (dc/init-db-seq-op req-m)
              (handler))))

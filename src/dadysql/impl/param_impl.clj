@@ -91,16 +91,6 @@
 
 
 
-(defn param-exec [tm-coll rinput input-format]
-  (let [param-paths (param-paths input-format tm-coll rinput)]
-    (reduce (fn [acc-input path]
-              (let [r (param-exec2 acc-input path)]
-                (if (f/failed? r)
-                  (reduced r)
-                  r))
-              ) rinput param-paths)))
-
-
 (defn assoc-temp-gen [w gen]
   (->> (partition 2 w)
        (mapv (fn [[k f]] [k (f gen)]))
@@ -113,6 +103,19 @@
             (update-in m [:dadysql.core/default-param] assoc-temp-gen gen)
             m)
           ) tm-coll))
+
+
+
+(defn param-exec [tm-coll rinput input-format]
+  (let [param-paths (param-paths input-format tm-coll rinput)]
+    (reduce (fn [acc-input path]
+              (let [r (param-exec2 acc-input path)]
+                (if (f/failed? r)
+                  (reduced r)
+                  r))
+              ) rinput param-paths)))
+
+
 
 
 

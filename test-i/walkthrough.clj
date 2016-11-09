@@ -365,6 +365,12 @@
         (clojure.pprint/pprint)))
 
 
+  (-> @td/ds
+      (t/default-param (t/read-file "tie.edn.sql")
+                       {:dadysql.core/name  [:create-employee :create-employee-detail]
+                        :dadysql.core/param {}})
+      (clojure.pprint/pprint))
+
 
   ;;;;;######################## Meeting [Employee n:n Meeting] ############
 
@@ -420,6 +426,24 @@
         (clojure.pprint/pprint)))
 
 
+
+  (let [meeting {:meeting {:subject  "Hello Meeting for IT"
+                           :employee [{:current_transaction_id 1,
+                                       :dept_id                2,
+                                       :lastname               "Zoma",
+                                       :firstname              "Abba"
+                                       :id                     1}
+                                      {:current_transaction_id 1,
+                                       :dept_id                2,
+                                       :lastname               "Zoma",
+                                       :firstname              "Abba"
+                                       :id                     2}]}}]
+    (->  @td/ds
+        (t/default-param  (t/read-file "tie.edn.sql")
+                          {:dadysql.core/name [:create-meeting :create-employee-meeting]
+                           :dadysql.core/param meeting}
+                 )
+        (clojure.pprint/pprint)))
 
   ;;;; Check sql tracking
 

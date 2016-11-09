@@ -94,12 +94,6 @@
     (into [] (map :dadysql.core/name) w)))
 
 
-
-
-
-
-
-
 (defn do-result1
   [m req-m]
   (condp = (:dadysql.core/op req-m)
@@ -111,47 +105,9 @@
     m))
 
 
-
 (defn init-db-seq-op
   [tm-coll req-m]
   (mapv (fn [m] (do-result1 m req-m)) tm-coll))
-
-
-
-
-
-
-(comment
-
-
-  (require '[dadysql.jdbc :as t])
-
-  #_(-> {:dadysql.core/name [:create-dept]
-         :params            {:department [{:dept_name "Software dept "}
-                                          {:dept_name "Hardware dept"}]}}
-
-        (select-name-for :dadysql.core/op-push! (t/read-file "tie.edn.sql"))
-        )
-
-
-
-  #_(-> {:dadysql.core/name [:get-dept-by-ids]
-         :params            {:id [1 2 112]}}
-
-        (select-name-for :dadysql.core/op-pull (t/read-file "tie.edn.sql"))
-        )
-
-
-
-  (select2 (t/read-file "tie.edn.sql")
-           {:dadysql.core/name [:create-dept]
-            :params            {:department [{:dept_name "Software dept "}
-                                             {:dept_name "Hardware dept"}]}}
-           :dadysql.core/op-push!)
-
-  )
-
-
 
 
 
