@@ -6,32 +6,37 @@
             [dadysql.jdbc :as tj]))
 
 
-#_{:ds        ds-atom
-   :init-name []
-   :file-name "tie.edn.sql"}
+(defn find-index [old-coll new]
+  (->> (map-indexed vector old-coll)
+       (filter #(= (get (second %) :url) (:url new)))
+       (map first)
+       (first)))
+
+
+(defn assoc-new-file [old-coll new]
+  (let [find-index (find-index old-coll new)]
+    (if (nil? find-index)
+      (conj old-coll new)
+      (assoc-in old-coll [find-index] new))))
 
 
 (defn load-file-one
-  [{:keys [ds file-name init-name]}]
+  [{:keys [ds file-name init-name] :as m}]
   (let [v (tj/read-file file-name)]
     (do
+      (log/info "Loading file " file-name)
       (when init-name
-        (io/db-do @ds (tj/select-name v {:dadysql.core/name init-name})))
-      (io/validate-dml! @ds (tj/get-sql-statement @ds))
-      {:ds  ds
-       :url (str "/" (first (clojure.string/split file-name #"\.")))
-       :tms (atom v) })))
+        (io/db-do ds (tj/select-name v {:dadysql.core/name init-name})))
+      (io/validate-dml! ds (tj/get-sql-statement ds))
+      (-> m
+          (assoc :url (str "/" (first (clojure.string/split file-name #"\."))))
+          (assoc :tms v)
+          (dissoc init-name)))))
 
 
-
-(defn- reload-tms
-  ([tms-atom ds]
-   (when (get-in @tms-atom [:_global_ :dadysql.core/file-reload])
-     (let [n-tms (tj/read-file (get-in @tms-atom [:_global_ :dadysql.core/file-name]))]
-       (io/validate-dml! ds (tj/get-sql-statement n-tms))
-       (reset! tms-atom n-tms)))
-   @tms-atom))
-
+(defn get-value [old-coll new]
+  (->> (find-index old-coll new)
+       (get old-coll)))
 
 
 (defn try!
@@ -41,9 +46,6 @@
     (catch Exception e
       (log/error e)
       (f/fail {:msg "Error in server "}))))
-
-;(clojure.string/join "/" (clojure.string/split "/tu/e" #"/") )
-
 
 
 ;ds-atom tms-atom
@@ -58,39 +60,34 @@
 
   "
   [handler config-atom & {:keys [pull-path push-path log? encoding]
-                :or   {pull-path "/pull"
-                       push-path "/push"}}]
-  (let []
-    (fn [req]
-      (let [m (into {} (mapv (fn [m] {(:url m) m}) @config-atom))
-            request-path (or (:path-info req)
-                             (:uri req))
-            r (clojure.string/split request-path #"/")
-            req-url (clojure.string/join "/" (butlast r))
-            config (get m req-url)]
-        (if (nil? config)
-          (handler req)
-          (let [ds (:ds config)
-                tms (:tms config)]
-            (condp = (str "/" (last r))
-              pull-path
-              (let [ds (or (:ds req) @ds)
-                    tms (or (:tms req)
-                            (try! reload-tms tms ds))
-                    handler (-> (partial tj/pull ds tms)
-                                (h/warp-pull)
-                                (h/warp-default))]
-                (handler req))
-              push-path
-              (let [ds (or (:ds req) @ds)
-                    tms (or (:tms req)
-                            (try! reload-tms tms ds))
-                    handler (-> (partial tj/push! ds tms)
-                                (h/warp-push)
-                                (h/warp-default))]
-                (handler req))
-              (do
-                (handler req)))))))))
+                          :or   {pull-path "/pull"
+                                 push-path "/push"}}]
+  (fn [req]
+    (let [request-path (or (:path-info req)
+                           (:uri req))
+          r (clojure.string/split request-path #"/")
+          req-url (clojure.string/join "/" (butlast r))
+          config (get-value @config-atom {:url req-url})]
+      (if (nil? config)
+        (handler req)
+        (let [config (load-file-one config)
+              ds (or (:ds req) (:ds config))
+              tms (or (:tms req) (:tms config))]
+          (swap! config-atom (fn [v] (assoc-new-file v config)))
+          (condp = (str "/" (last r))
+            pull-path
+            (let [handler (-> (partial tj/pull ds tms)
+                              (h/warp-pull)
+                              (h/warp-default))]
+              (handler req))
+            push-path
+            (let [handler (-> (partial tj/push! ds tms)
+                              (h/warp-push)
+                              (h/warp-default))]
+              (handler req))
+            (do
+              (handler req)))))))
+  )
 
 
 

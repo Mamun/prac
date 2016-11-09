@@ -13,23 +13,21 @@
     [com.mchange.v2.c3p0 ComboPooledDataSource])
   (:gen-class))
 
-
-(defonce ds-atom (atom nil))
+;(defonce ds-atom (atom nil))
 (defonce m-config (atom nil))
 
 
 (defn init-state []
-  (when (nil? @ds-atom)
-    (reset! ds-atom {:datasource (ComboPooledDataSource.)}))
-  (reset!
-    m-config
-    (mapv #(t/load-file-one %) [{:file-name "tie.edn.sql"
-                                 :init-name [:create-ddl :init-data]
-                                 :ds        ds-atom}
-                                {:file-name "tie2.edn.sql"
-                                 :ds        ds-atom}
-                                {:file-name "tie5.edn.sql"
-                                 :ds        ds-atom}])))
+  (let [ds {:datasource (ComboPooledDataSource.)}
+        v (mapv #(t/load-file-one %) [{:file-name "tie.edn.sql"
+                                       :init-name [:create-ddl :init-data]
+                                       :ds        ds}
+                                      {:file-name "tie2.edn.sql"
+                                       :ds        ds}
+                                      {:file-name "tie5.edn.sql"
+                                       :ds        ds}])]
+    (reset! m-config v)))
+
 
 (defn api-routes []
   (-> (routes
