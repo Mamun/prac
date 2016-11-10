@@ -2,7 +2,7 @@
   (:require
     [clojure.spec :as s]
     [dadysql.spec]
-    [dady.fail :as f]
+    [dadysql.clj.fail :as f]
     [dadysql.impl.join-impl :as ji]
     [dadysql.impl.sql-bind-impl :as bi]
     [dadysql.selector :as dc]

@@ -1,6 +1,6 @@
 (ns dadysql.impl.join-impl
-  (:require [dady.common :as cc]
-            [dady.fail :as f]
+  (:require [dadysql.clj.common :as cc]
+            [dadysql.clj.fail :as f]
             [clojure.walk :as w]
             [dadysql.impl.util :as cu]
     #_[dadysql.spec :refer :all]))

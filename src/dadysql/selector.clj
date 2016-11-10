@@ -1,7 +1,7 @@
 (ns dadysql.selector
   (:require
-    [dady.common :as cc]
-    [dady.fail :as f]
+    [dadysql.clj.common :as cc]
+    [dadysql.clj.fail :as f]
     [clojure.set]))
 
 

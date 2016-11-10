@@ -1,5 +1,5 @@
 (ns dadysql.compiler.core-sql
-  (:require [dady.common :as dc]))
+  (:require [dadysql.clj.common :as dc]))
 
 
 

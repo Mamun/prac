@@ -1,7 +1,7 @@
 (ns dadysql.impl.sql-bind-impl
-  (:require [dady.fail :as f]
+  (:require [dadysql.clj.fail :as f]
             [clojure.spec :as s]
-            [dady.common :as cc]))
+            [dadysql.clj.common :as cc]))
 
 
 (defn validate-input-not-empty!

@@ -1,5 +1,5 @@
-(ns dady.spec-util-test
-  (:use [dady.spec-util]
+(ns dadysql.impl.param-spec-impl-test
+  (:use [dadysql.impl.param-spec-impl]
         [clojure.test])
   (:require [clojure.spec :as s]
             [clojure.walk :as w]))

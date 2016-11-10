@@ -1,5 +1,5 @@
-(ns dady.proto
-  (:require [dady.fail :as f])
+(ns dadysql.clj.proto
+  (:require [dadysql.clj.fail :as f])
   (:import [PersistentVector]
            (clojure.lang PersistentVector)))
 

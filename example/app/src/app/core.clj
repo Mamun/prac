@@ -5,7 +5,7 @@
             [compojure.route :as route]
             [immutant.web :as im]
             [dadysql.jdbc :as tj]
-            [dady.fail :as f]
+            [dadysql.clj.fail :as f]
             #_[common :as cc])
   (:import
     [com.mchange.v2.c3p0 ComboPooledDataSource])
@@ -16,12 +16,12 @@
 (defonce tms-atom (atom nil))
 
 
-(defn init-state []
+#_(defn init-state []
   (when (nil? @ds-atom)
     (reset! ds-atom {:datasource (ComboPooledDataSource.)}))
   (when (nil? @tms-atom)
     (f/try->> (tj/read-file "tie.edn.sql")
-               (tj/db-do @ds-atom [:create-ddl :init-data])
+               (tj/db-do @ds-atom [:init-db :init-data])
                (tj/validate-dml! @ds-atom)
                (reset! tms-atom))))
 

@@ -78,7 +78,7 @@
     :dadysql.core/doc          "global."
     :dadysql.core/file-reload  true
     :dadysql.core/timeout      1000
-    :dadysql.core/reserve-name #{:create-ddl :drop-ddl :init-data}
+    :dadysql.core/reserve-name #{:init-db :drop-ddl :init-data}
     :dadysql.core/tx-prop      [:isolation :serializable :read-only? true]
     :dadysql.core/join         [[:department :id :dadysql.core/join-one-many :employee :dept_id]
                                 [:employee :id :dadysql.core/join-one-one :employee-detail :employee_id]
@@ -107,7 +107,7 @@
     :dadysql.core/doc          "global.",
     :dadysql.core/file-reload  true,
     :dadysql.core/timeout      1000,
-    :dadysql.core/reserve-name #{:create-ddl :init-data :drop-ddl},
+    :dadysql.core/reserve-name #{:init-db :init-data :drop-ddl},
     :dadysql.core/tx-prop      [:isolation :serializable :read-only? true]},
    :get-dept-list
    {:dadysql.core/timeout    5000,

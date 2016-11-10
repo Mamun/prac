@@ -4,7 +4,7 @@
             [dadysql.jdbc-io :as io]
             [test-data :as td]
             [dadysql.compiler.spec :as cs]
-            [dady.spec-util :as ds]
+            [dadysql.impl.param-spec-impl :as ds]
             [clojure.spec :as s]
             [clojure.spec.gen :as gen]))
 
@@ -53,9 +53,14 @@
   #_(s/valid? (s/or :dadysql.core/name string?
                     :id integer?) :keyowrd)
 
-  (t/get-defined-spec "tie.edn.sql")
+  (->
+    (t/read-file "tie.edn.sql" )
+    (t/write-spec-to-file  "src/tie.clj")
+    )
+
+
   ;; Create database table and init data
-  (->> {:dadysql.core/name [:create-ddl :init-data]}
+  (->> {:dadysql.core/name [:init-db :init-data]}
        (t/select-name (t/read-file "tie.edn.sql"))
        (io/db-do (td/get-ds)))
 
@@ -104,7 +109,7 @@
 
 
   (-> (t/read-file "tie.edn.sql")
-      (t/select-name {:dadysql.core/name [:create-ddl :init-data]}))
+      (t/select-name {:dadysql.core/name [:init-db :init-data]}))
 
 
 

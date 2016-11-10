@@ -21,7 +21,7 @@
   []
   (when (nil? @tms)
     (let [w (read-file "tie.edn.sql")]
-      (->> (select-name w {:dadysql.core/name [:create-ddl :init-data]})
+      (->> (select-name w {:dadysql.core/name [:init-db :init-data]})
            (jio/db-do (get-ds) ))
       (reset! tms w))
     (println "reading "))
@@ -31,7 +31,7 @@
 (defn init-tms
   []
   (let [w (read-file "tie.edn.sql")]
-    ;(db-do (get-ds) [:create-ddl :init-data] w)
+    ;(db-do (get-ds) [:init-db :init-data] w)
     (reset! tms w))
   )
 

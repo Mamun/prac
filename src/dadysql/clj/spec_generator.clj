@@ -1,6 +1,17 @@
-(ns dady.spec-generator
+(ns dadysql.clj.spec-generator
   (:require [clojure.walk :as w]
             [clojure.spec :as s]))
+
+
+(defn write-spec-to-file [dir package-name spec-list]
+  (let [as-dir (clojure.string/join "/" (clojure.string/split package-name #"\."))
+        file-path  (str dir "/"  as-dir ".cljc")]
+    (with-open [w (clojure.java.io/writer file-path)]
+      (.write w (str "(ns " package-name "  \n  (:require [clojure.spec]))"))
+      (.write w "\n")
+      (doseq [v1 spec-list]
+        (.write w (str v1))
+        (.write w "\n")))))
 
 
 (defn eval-spec [& coll-v]
@@ -115,7 +126,7 @@
 
 
 
-(defn union-spec [spec-coll]
+(defn as-merge-spec [spec-coll]
   (if (or (nil? spec-coll)
           (empty? spec-coll))
     spec-coll
@@ -126,85 +137,18 @@
 
 
 
-(defn join-spec [[f-spec & rest-spec]]
+(defn as-relational-spec [[f-spec & rest-spec]]
   (list 'clojure.spec/merge  f-spec
      (list 'clojure.spec/keys :req (into [] rest-spec))))
 
 
 
-
-(comment
-
-  (s/def ::a string?)
-  (s/def ::b string?)
-
-  (s/def :hello/a (s/keys :req [::a]))
-  (s/def :hello/b (s/keys :req [::a]))
-
-  (s/def :hello/z (s/merge :hello/a (s/keys :req [:hello/b]) ) )
-
-
-  (s/explain-data :hello/z {::a "hello" :hello/b {::b "asdfsd"}})
-
-  (s/explain
-    (eval
-      (join-spec [:hello/a :hello/b] ))
-    {::a "hello" :hello/b {::a "asdfsd"}})
-
-
-
-
-
-
-  (let [m {:opt {:a 2}}]
-    (cond-> true
-            (contains? m :opt) (update-in m [:opt] #(assoc % :b 2)))
-    (contains? m :req) (update-in m [:req] #(assoc % :b 2)))
-  :always m
-
-
-  (model->spec :tie {:employee          {:req {:id2 #'clojure.core/int?}},
-                     :get-dept-by-id
-                                        {:req
-                                         {:id
-                                          (#'clojure.spec/coll-of
-                                            #'clojure.core/int?
-                                            :kind
-                                            #'clojure.core/vector?)}},
-                     :get-dept-employee {:req {:id #'clojure.core/int?}},
-                     :create-employee   {:req {:id #'clojure.core/int?}},
-                     :create-employee2  {:req {:id2 #'clojure.core/int?}}
-                     })
-
-
-  (clojure.pprint/pprint
-    (s/exercise ::model))
-
-
-  (eval-spec
-    (model->spec :a/t {:person {:req {:name 'string?}
-                                :opt {:lname 'string?}}})
-
-    )
-
-
-
-
-
-
-  {:person {:req {:name 'string?}
-            :opt {:lname 'string?}}
-   :credit {:id 'int?}}
-
-
-
-
-
-
-
-  (s/conform :t/person-un {:name "Hello"})
-  (s/conform :t/person-un [{:name "Hello"}])
-  (s/conform :t/person {:t.person/name "Hello" :t.person/lname 24})
-  (s/conform :t/person [{:t.person/name "Hello"}])
-
-  )
+(defn registry [n-name]
+  (->> (s/registry)
+       (w/postwalk (fn [v]
+                     (if (map? v)
+                       (->> v
+                            (filter (fn [[k _]]
+                                      (clojure.string/includes? (str k) (str n-name))))
+                            (into {}))
+                       v)))))

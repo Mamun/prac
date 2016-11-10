@@ -1,49 +1,5 @@
-(ns dady.spec-util
-  (:require [clojure.spec :as s]
-            [clojure.pprint]
-            [dady.spec-generator :as sg]
-            [clojure.walk :as w]))
-
-
-;;Does not execute macro
-(defn write-spec-to-file [file-name v]
-  (with-open [w (clojure.java.io/writer (str "target/" file-name ".clj"))]
-    (.write w (str "(ns " file-name "  \n  (:require [clojure.spec]))"))
-    (.write w "\n")
-    (doseq [v1 v]
-      (.write w (str v1))
-      (.write w "\n"))))
-
-
-
-
-
-(defn registry [n-name]
-  (->> (s/registry)
-       (w/postwalk (fn [v]
-                     (if (map? v)
-                       (->> v
-                            (filter (fn [[k _]]
-                                      (clojure.string/includes? (str k) (str n-name))))
-                            (into {}))
-                       v)))))
-
-
-;(as-ns-keyword :a :n)
-
-
-#_(defn merge-spec [coll-spec]
-    (eval
-      (cons 'clojure.spec/merge
-            coll-spec)))
-
-
-#_(defn map-un-spec [tm-coll]
-    (->> (map :dadysql.core/spec tm-coll)
-         (remove nil?)
-         (map (fn [w] (sg/add-postfix-to-key w sg/un-postfix)))
-         (merge-spec)))
-
+(ns dadysql.impl.param-spec-impl
+  (:require [dadysql.clj.spec-generator :as sg]))
 
 
 (defn filename-as-keyword [file-name-str]
@@ -94,17 +50,8 @@
 
 
 
-(defn eval-and-assoc-param-spec [file-name coll]
+(defn eval-and-assoc-spec [file-name coll]
   (do
     (apply sg/eval-spec (gen-spec file-name coll ) )
     (let [m (get-spec-map file-name coll)]
       (mapv (fn [w] (assosc-spec-to-m m w) ) coll))))
-
-
-
-
-
-
-
-
-

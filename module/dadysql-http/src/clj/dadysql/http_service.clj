@@ -6,9 +6,9 @@
             [ring.middleware.keyword-params :as kp]
             [ring.middleware.format-params :as fp]
             [ring.middleware.format-response :as fr]
-            [dady.fail :as f]
-            [dady.walk :as dw]
-            [dady.common :as c]
+            [dadysql.clj.fail :as f]
+            [dadysql.clj.walk :as dw]
+            [dadysql.clj.common :as c]
             [dadysql.http-util :as u]))
 
 

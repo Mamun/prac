@@ -1,6 +1,6 @@
 (ns dadysql.jdbc-i-test
   (:use [clojure.test])
-  (:require [dady.common :refer :all]
+  (:require [dadysql.clj.common :refer :all]
             [dadysql.jdbc :refer :all]
             [test-data :as td]))
 

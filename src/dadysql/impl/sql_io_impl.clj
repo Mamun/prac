@@ -1,8 +1,8 @@
 (ns dadysql.impl.sql-io-impl
   (:require [clojure.set]
             [clojure.core.async :as async :refer [<! >! <!! chan alt! go go-loop onto-chan sliding-buffer]]
-            [dady.common :as cc]
-            [dady.fail :as f]
+            [dadysql.clj.common :as cc]
+            [dadysql.clj.fail :as f]
             [dadysql.impl.sql-io-tracking :as dt]
             [clojure.tools.logging :as log]))
 

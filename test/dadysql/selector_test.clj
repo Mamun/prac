@@ -1,10 +1,10 @@
 (ns dadysql.selector-test
   (:use [clojure.test])
   (:require [dadysql.selector :refer :all]
-            [dady.common :refer :all]
-            [dady.fail :refer :all]
+            [dadysql.clj.common :refer :all]
+            [dadysql.clj.fail :refer :all]
             [dadysql.compiler.core :as fr]
-            [dady.fail :as f]))
+            [dadysql.clj.fail :as f]))
 
 
 

@@ -1,7 +1,7 @@
 (ns dadysql.http-util
-  (:require [dady.common :as c]
-            [dady.fail :as f]
-            [dady.walk :as w]
+  (:require [dadysql.clj.common :as c]
+            [dadysql.clj.fail :as f]
+            [dadysql.clj.walk :as w]
             [dadysql.util :as u]
             [clojure.tools.reader.edn :as edn]))
 

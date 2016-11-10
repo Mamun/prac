@@ -1,6 +1,6 @@
 (ns dadysql.ui
   (:require
-   ; [dady.walk :as w]
+   ; [dadysql.clj.walk :as w]
     [dadysql.util :as tu]
     #_[devcards.util.edn-renderer :as d]))
 

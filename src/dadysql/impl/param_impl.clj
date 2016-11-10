@@ -1,10 +1,10 @@
 (ns dadysql.impl.param-impl
-  (:require [dady.fail :as f]
+  (:require [dadysql.clj.fail :as f]
             [clojure.walk :as w]
             [clojure.spec :as s]
-            [dady.spec-util :as ds]
-            [dady.spec-generator :as sg]
-            [dadysql.impl.join-impl :as ji]
+            ;[dadysql.impl.param-spec-impl :as ds]
+            [dadysql.clj.spec-generator :as sg]
+            ;[dadysql.impl.join-impl :as ji]
             [dadysql.impl.util :as ccu]))
 
 
@@ -157,10 +157,10 @@
                      :dadysql.core/op-push
                      (-> (map :dadysql.core/spec tm-coll)
                          (remove nil?)
-                         (sg/join-spec))
+                         (sg/as-relational-spec))
                      (-> (map :dadysql.core/spec tm-coll)
                          (doall)
-                         (sg/union-spec)))]
+                         (sg/as-merge-spec)))]
     (if (and (nil? param-spec)
              (empty? param-spec))
       tm-coll

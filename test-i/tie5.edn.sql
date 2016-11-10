@@ -3,7 +3,7 @@
  :doc "Abstract configuration, timeout will be used to all sql statement if it is not defined of it owns."
  :file-reload true
  :timeout 1000
- :reserve-name #{:create-ddl :drop-ddl :init-data}
+ :reserve-name #{:init-db :drop-ddl :init-data}
  :tx-prop [:isolation :serializable :read-only? false]
  :join [[:department :id :1-n :employee :dept_id]
         [:employee :id :1-1 :employee-detail :employee_id]

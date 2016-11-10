@@ -2,14 +2,15 @@
   (:require
     [dadysql.workflow-exec :as tie]
     [dadysql.compiler.core :as cc]
-    [dady.spec-util :as cs]
-    [dady.spec-generator :as sg]
-    [dady.fail :as f]
+    [dadysql.clj.spec-generator :as sg]
+    [dadysql.clj.fail :as f]
     [dadysql.spec :as ds]
     [dadysql.impl.sql-io-impl :as ce]
+    [dadysql.impl.param-spec-impl :as ps]
     [dadysql.selector :as sel]
     [dadysql.jdbc-io :as io]
-    [dadysql.file-reader :as fr]))
+    [dadysql.file-reader :as fr]
+    [clojure.tools.logging :as log]))
 
 
 
@@ -18,6 +19,7 @@
   ([file-name pc]
    (-> (fr/read-file file-name)
        (cc/do-compile file-name)
+       ;;file name is needed to gen spec
        (assoc-in [:_global_ :dadysql.core/file-name] file-name))))
 
 
@@ -41,15 +43,11 @@
     (into [] p (vals tms))))
 
 
-(defn get-defined-spec [tms]
-  (-> (or (get-in tms [:_global_ :dadysql.core/file-name]) "temp.sql")
-      (cs/gen-spec (vals tms))))
-
 
 (defn select-spec [tms req-m]
   (->> (select-name tms req-m)
        (map :dadysql.core/spec)
-       (sg/union-spec)))
+       (sg/as-merge-spec)))
 
 
 (defn- warp-sql-io [ds tms type]
@@ -102,5 +100,21 @@
           (assoc :dadysql.core/pull (partial pull ds tms))
           (assoc :dadysql.core/sql-exec sql-exec)
           (tie/process-input (select-name tms req-m) :disjoin false)))))
+
+
+(defn write-spec-to-file
+  ([tms dir package-name]
+   (let [f-name (or (get-in tms [:_global_ :dadysql.core/file-name]) "nofound.clj")
+         f-name (first (clojure.string/split f-name #"\."))
+         package-name (if (or (nil? package-name)
+                              (empty? package-name))
+                        f-name
+                        (str package-name "." f-name)) ]
+     (->> (vals tms)
+          (ps/gen-spec (or (get-in tms [:_global_ :dadysql.core/file-name]) "nofound.clj"))
+          (sg/write-spec-to-file dir package-name)))
+   (log/info (format  "Spec file generation is done in dir %s, package %s " dir package-name) ))
+  ([tms dir]
+   (write-spec-to-file tms dir (clojure.string/join "." (butlast (clojure.string/split (str *ns*) #"\."))))))
 
 

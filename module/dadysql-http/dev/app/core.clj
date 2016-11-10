@@ -7,7 +7,7 @@
             [compojure.route :as route]
             [immutant.web :as im]
             [dadysql.jdbc :as tj]
-            [dady.common :as cc]
+            [dadysql.clj.common :as cc]
             [clojure.tools.logging :as log])
   (:import
     [com.mchange.v2.c3p0 ComboPooledDataSource])
@@ -16,17 +16,34 @@
 ;(defonce ds-atom (atom nil))
 (defonce m-config (atom nil))
 
+#_(comment
+
+  (tj/write-spec-to-file (tj/read-file "tie.edn.sql") "dev" )
+  (tj/write-spec-to-file (tj/read-file "tie2.edn.sql") "dev" )
+
+  (t/load-module {:file-name "tie.edn.sql"
+                  :init-name [:init-db :init-data]
+                  ;:spec-dir "dev"
+                  :ds        {:datasource (ComboPooledDataSource.)}})
+
+  )
+
 
 (defn init-state []
   (let [ds {:datasource (ComboPooledDataSource.)}
-        v (mapv #(t/load-file-one %) [{:file-name "tie.edn.sql"
-                                       :init-name [:create-ddl :init-data]
-                                       :ds        ds}
-                                      {:file-name "tie2.edn.sql"
-                                       :ds        ds}
-                                      {:file-name "tie5.edn.sql"
-                                       :ds        ds}])]
+        config [{:file-name "tie.edn.sql"
+                 :init-name [:init-db :init-data]
+                 :spec-dir "dev"
+                 :ds        ds}
+                {:file-name "tie2.edn.sql"
+                 :spec-dir "dev"
+                 :ds        ds}
+                {:file-name "tie5.edn.sql"
+                 :spec-dir "dev"
+                 :ds        ds}]
+        v (mapv #(t/load-module %) config )]
     (reset! m-config v)))
+
 
 
 (defn api-routes []
@@ -56,9 +73,23 @@
     ))
 
 
+(defn warp-execption [handler]
+  (fn [req]
+    (try
+      (handler req)
+      (catch Exception e
+        (do
+          (log/info "Execption in server " (.getMessage e))
+          )
+        ))
+    )
+  )
+
+
 (def http-handler
   (-> app-routes
-      (t/warp-dadysql-handler m-config)
+      (t/warp-dadysql-handler m-config )
+      (warp-execption)
       (warp-log)))
 
 
@@ -82,7 +113,7 @@
 
 
 
-  (init-state)
+  ;(init-state)
   (im/run http-handler {:port 3000
                         ;:host "0.0.0.0"
                         })

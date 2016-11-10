@@ -2,7 +2,7 @@
   (:use [clojure.test]
         [dadysql.compiler.core :as r]
         [dadysql.compiler.spec]
-        [dady.common]
+        [dadysql.clj.common]
         [dadysql.compiler.test-data])
   (:require [clojure.spec :as s]
             [clojure.spec.gen :as gen]))

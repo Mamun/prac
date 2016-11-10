@@ -1,6 +1,6 @@
- (ns dady.common-test
+ (ns dadysql.clj.common-test
    (:use [clojure.test]
-         [dady.common]))
+         [dadysql.clj.common]))
 
 
 (deftest as-lower-case-keyword-test

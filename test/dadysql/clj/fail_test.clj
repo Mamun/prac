@@ -1,6 +1,6 @@
-(ns dady.fail-test
+(ns dadysql.clj.fail-test
   (:use [clojure.test]
-        [dady.fail]))
+        [dadysql.clj.fail]))
 
 
 (deftest fail-test

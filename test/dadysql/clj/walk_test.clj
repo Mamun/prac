@@ -1,6 +1,6 @@
-(ns dady.walk-test
+(ns dadysql.clj.walk-test
   (:use [clojure.test]
-        [dady.walk]))
+        [dadysql.clj.walk]))
 
 
 

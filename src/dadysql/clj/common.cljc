@@ -1,4 +1,4 @@
-(ns dady.common
+(ns dadysql.clj.common
   (:require [clojure.string :as s]))
 
 

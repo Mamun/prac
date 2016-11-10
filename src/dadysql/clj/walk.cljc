@@ -1,4 +1,4 @@
-(ns dady.walk
+(ns dadysql.clj.walk
   (:require [clojure.walk :as w]))
 
 (defn is-include? [filter-v w]

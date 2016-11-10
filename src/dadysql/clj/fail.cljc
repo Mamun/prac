@@ -1,4 +1,4 @@
-(ns dady.fail)
+(ns dadysql.clj.fail)
 
 
 (defrecord Failure [error])

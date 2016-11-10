@@ -1,5 +1,6 @@
 (ns ^:figwheel-always app.core
   (:require [dadysql.client :as dc]
+            [ajax.core :as a]
             [devcards.core]
             [reagent.core :as reagent]
             [re-frame.core :as r])
@@ -50,50 +51,26 @@
 
 ;(re/clear-store [])
 
-(dc/pull {:dadysql.core/name [:get-employee-list]})
 
+
+
+(->> (dc/pull "/tie" {:dadysql.core/name  [:get-employee-by-id :get-employee-dept :get-employee-detail]
+               :dadysql.core/param {:id 1}}))
 
 
 (comment
 
+  (dc/pull "/tie" {:dadysql.core/name [:get-employee-list]})
 
   (dc/pull {:dadysql.core/name  :get-dept-by-id
             :dadysql.core/param {:id 1}})
 
 
-  (->> (dc/pull {:dadysql.core/name  [:get-employee-by-id :get-employee-dept :get-employee-detail]
-                 :dadysql.core/param {:id 1}}))
 
 
   (r/dispatch (dc/dispatch-path :get-dept-by-id {:id 3}))
 
   )
-
-
-;(js/alert "Hello")
-
-(defcard Hello
-         "Hello"
-         {:a 3})
-
-
-
-
-;(set! devcards.core/test-timeout 5000)
-
-
-
-
-
-
-
-#_(->> (re/build-request :get-request {:a 3})
-       (a/GET "/api"))
-
-#_(->> (re/build-request :ajax4 {:a 3})
-       (a/POST "/api/hello"))
-
-
 
 
 

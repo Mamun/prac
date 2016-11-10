@@ -1,4 +1,4 @@
 {:port        3000
  :routes-path "/tie"
- :dadysql-init [:create-ddl :init-data]
+ :dadysql-init [:init-db :init-data]
  :dadysql-file "tie.edn.sql"}

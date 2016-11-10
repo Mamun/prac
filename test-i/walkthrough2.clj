@@ -5,7 +5,7 @@
             [test-data :as td]
             [clojure.walk :as w]
             [dadysql.compiler.spec :as cs]
-            [dady.spec-util :as ds]
+            [dadysql.impl.param-spec-impl :as ds]
             [clojure.spec :as s]
             [clojure.spec.gen :as gen]))
 
@@ -38,7 +38,7 @@
     )
 
 
-  (->> {:dadysql.core/name [:create-ddl :init-data]}
+  (->> {:dadysql.core/name [:init-db :init-data]}
        (t/select-name (t/read-file "tie4.edn.sql"))
        (io/db-do (td/get-ds)))
 

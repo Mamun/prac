@@ -1,9 +1,9 @@
 (ns dadysql.impl.sql-io-test
   (:use [clojure.test]
-        [dady.fail]
+        [dadysql.clj.fail]
         )
   (:require #_[dadysql.spec :refer :all]
-            [dady.common :as cc]))
+            [dadysql.clj.common :as cc]))
 
 
 #_(deftest warp-map-output-test

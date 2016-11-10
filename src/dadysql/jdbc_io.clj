@@ -1,6 +1,6 @@
 (ns dadysql.jdbc-io
   (:require [clojure.java.jdbc :as jdbc]
-            [dady.fail :as f]
+            [dadysql.clj.fail :as f]
             [clojure.tools.logging :as log]))
 
 

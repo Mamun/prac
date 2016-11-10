@@ -1,8 +1,8 @@
 (ns dadysql.compiler.core
   (:require [dadysql.compiler.spec :as cs]
-            [dady.common :as cc]
+            [dadysql.clj.common :as cc]
             [dadysql.compiler.validation :as u]
-            [dady.spec-util :as su]
+            [dadysql.impl.param-spec-impl :as su]
             [dadysql.compiler.core-sql :as sql]
             [dadysql.compiler.core-inheritance :as ci]
             [clojure.spec :as s]))
@@ -183,7 +183,7 @@
         reserve (mapv #(compile-reserve % nil) reserve)
         global (dissoc global :dadysql.core/extend)]
     (->> (concat [global] modules reserve)
-         (su/eval-and-assoc-param-spec file-name)
+         (su/eval-and-assoc-spec file-name)
          (into {} (map into-name-map)))))
 
 

@@ -1,9 +1,9 @@
 (ns dadysql.impl.param-impl-test
   (:use [clojure.test]
-        [dady.fail])
+        [dadysql.clj.fail])
   (:require
     [dadysql.impl.param-impl :refer :all]
-    [dady.common :refer :all]))
+    [dadysql.clj.common :refer :all]))
 
 
 (deftest param-paths-test
