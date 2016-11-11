@@ -30,6 +30,7 @@
 
                                     [org.clojure/test.check "0.9.0"]
 
+                     ;               [metosin/spec-tools "0.1.0-SNAPSHOT"]
                                     [com.h2database/h2 "1.3.154"]
                                     [c3p0/c3p0 "0.9.1.2"]
                                     [ch.qos.logback/logback-classic "1.1.3"]]}
