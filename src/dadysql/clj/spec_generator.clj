@@ -43,14 +43,7 @@
                 (sc/create-ns-key ns-key v)) (keys m))
          (interleave (keys m))
          (apply assoc {})
-         (clojure.set/rename-keys m))
-    )
-
-  )
-
-
-
-
+         (clojure.set/rename-keys m))))
 
 
 (s/def ::req (s/map-of keyword? symbol?))
@@ -64,37 +57,50 @@
 
 (s/def ::input (s/cat :base-ns keyword? :model ::model))
 
+(def join-set #{:1-1 :1-n :n-1})
 
-(defn gen-spec+ [base-ns-name m]
-  (let [f (->> m
-               (assoc-ns-key base-ns-name)
-               (map sc/model->spec2)
-               (apply concat))
-        w (->> m
-               (clojure.walk/postwalk fn->conformer-fn)
-               (assoc-ns-key (sc/add-postfix-to-key base-ns-name "-ex"))
-               (map sc/model->spec2)
-               (apply concat))]
-    (into w (reverse f))))
+(s/def ::join (s/* (s/tuple keyword?  join-set  keyword? )) )
 
+;(s/exercise ::join)
+
+;(s/conform ::join [[:a :1-1 :b]])
+
+
+(defn var->symbol [v]
+  (if (var? v)
+    (symbol (clojure.string/replace (str v) #"#'" ""))
+    v))
 
 
 (defn gen-spec
-  [base-ns-name m]
+  [base-ns-name join m]
   (if (s/valid? ::input [base-ns-name m])
-    (->> (clojure.walk/postwalk sc/var->symbol m)
-         (gen-spec+ base-ns-name))
-
+    (->> (clojure.walk/postwalk var->symbol m)
+         (sc/gen-spec-impl fn->conformer-fn base-ns-name join))
     (throw (ex-info "failed " (s/explain-data ::input [base-ns-name m])))))
 
 
+
+
+;(sc/create-ns-key :hello :a)
+
 (comment
   (let [v {:dept    {:req {:name 'string?
-                           :id   'int?}
-         }
-           ;:student {:req {:name 'string :id   'int?}}
-           }]
-    (gen-spec :model v))
+                           :id   'int?}}
+           :student {:req {:name 'string :id 'int?}}}
+        rel [[:dept :1-n :student]]]
+    (gen-spec :model [] v))
+
+
+
+
+  (->> (mapv (partial assoc-ns-join :hello) [[:dept :1-1 :empl]
+                                             [:company :1-n :dept]
+                                             ])
+       (group-by first)
+       (:dept)
+       (mapv #(nth % 2))
+       )
 
 
   (group-by first
@@ -102,13 +108,12 @@
              [:company :1-n :dept]
              ])
 
-
   )
 
 
-(defmacro defsp [base-ns-name m]
+(defmacro defsp [base-ns-name m join]
   (if (s/valid? ::input [base-ns-name m])
-    (let [r (gen-spec+ base-ns-name m)]
+    (let [r (sc/gen-spec-impl fn->conformer-fn base-ns-name join m)]
       `~(cons 'do r))
     (throw (ex-info "failed " (s/explain-data ::input [base-ns-name m])))))
 
@@ -116,22 +121,30 @@
 
 (comment
 
+
+
   (macroexpand-1 '(defsp :model {:person {:opt {:name string?}}}))
 
-  (defsp :model3 {:person {:req {:id2 int?}}})
+  (defsp :model3 {:dept    {:req {:name string?
+                                  :id   int?}}
+                  :student {:req {:name string? :id int?}}}
+         [[:dept :1-n :student]])
+
+
+
+  (s/exercise :model3/dept)
 
   (s/conform :model3/person {:id2 3})
   ;(->> )
   (s/conform :model3/person {:id2 3})
-  (s/conform :model3/person-list [{:id2 3}] )
+  (s/conform :model3/person-list [{:id2 3}])
 
-  (->> (s/conform :model3-ex/person {:id2 "3"} )
-       (s/unform :model3/person) )
+  (->> (s/conform :model3-ex/person {:id2 "3"})
+       (s/unform :model3/person))
 
 
-  (->> (s/conform :model3-ex/person-list  [{:id2 "3"} {:id2 "4"}] )
-       (s/unform :model3/person-list) )
-
+  (->> (s/conform :model3-ex/person-list [{:id2 "3"} {:id2 "4"}])
+       (s/unform :model3/person-list))
 
   )
 
