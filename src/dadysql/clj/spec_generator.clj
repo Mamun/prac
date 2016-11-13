@@ -1,89 +1,55 @@
 (ns dadysql.clj.spec-generator
   (:require [clojure.walk :as w]
-            [dadysql.clj.spec-coerce :as sc]
-            [clojure.spec :as s]))
+            [dadysql.clj.spec-gen-impl :as sc]
+            [clojure.spec :as s])
+  (:import [BigInteger]))
 
 
-(defn eval-spec [& coll-v]
-  (doseq [v coll-v]
-    (eval v)))
+(defn x-int? [x]
+  (cond
+    (integer? x) x
+    (string? x) (try
+                  (Integer/parseInt x)
+                  (catch Exception e
+                    :clojure.spec/invalid))
+    :else :clojure.spec/invalid))
 
 
-(defn create-ns-key [ns-key r]
-  (let [w (if (namespace ns-key)
-            (str (namespace ns-key) "." (name ns-key))
-            (name ns-key))]
-    (if (namespace r)
-      (keyword (str w "." (namespace r) "/" (name r)))
-      (keyword (str w "/" (name r))))))
+(defn x-integer? [x]
+  (cond
+    (integer? x) x
+    (string? x) (try
+                  (BigInteger. x)
+                  (catch Exception e
+                    :clojure.spec/invalid))
+    :else :clojure.spec/invalid))
+
+
+
+(defn fn->conformer-fn [s]
+  (if (symbol? s)
+    (condp = s
+      'integer? (list 'clojure.spec/conformer 'dadysql.clj.spec-generator/x-integer?)
+      'int?     (list 'clojure.spec/conformer 'dadysql.clj.spec-generator/x-int?)
+      s)
+    s))
 
 
 
 (defn assoc-ns-key [ns-key m]
-  (->> (map (fn [v]
-              (create-ns-key ns-key v)) (keys m))
-       (interleave (keys m))
-       (apply assoc {})
-       (clojure.set/rename-keys m)))
+  (if (nil? m)
+    {}
+    (->> (map (fn [v]
+                (sc/create-ns-key ns-key v)) (keys m))
+         (interleave (keys m))
+         (apply assoc {})
+         (clojure.set/rename-keys m))
+    )
+
+  )
 
 
 
-(defn convert-property-to-def [m]
-  (map (fn [[k v]]
-         (list 'clojure.spec/def k v))
-       m))
-
-
-(defmulti convert-model-tp-def (fn [k m t] t))
-
-(defmethod convert-model-tp-def
-  :default
-  [k m _]
-  (let [w ['clojure.spec/keys]
-        w (if (:req m)
-            (into w [:req (into [] (keys (:req m)))])
-            w)
-        w (if (:opt m)
-            (into w [:opt (into [] (keys (:opt m)))])
-            w)
-        w (apply list w)]
-    (list 'clojure.spec/def k
-          (list 'clojure.spec/or
-                :one w
-                :list (list 'clojure.spec/coll-of w :kind 'vector?)))))
-
-(def un-postfix "-un")
-
-(defn add-postfix-to-key [k v]
-  (keyword (str (namespace k) "/" (name k) v)))
-
-
-(defmethod convert-model-tp-def
-  un-postfix
-  [k m _]
-  (let [w-un ['clojure.spec/keys]
-        w-un (if (:req m)
-               (into w-un [:req-un (into [] (keys (:req m)))])
-               w-un)
-        w-un (if (:opt m)
-               (into w-un [:opt-un (into [] (keys (:opt m)))])
-               w-un)
-        w-un (apply list w-un)]
-    (list 'clojure.spec/def (add-postfix-to-key k un-postfix)
-          (list 'clojure.spec/or
-                :one w-un
-                :list (list 'clojure.spec/coll-of w-un :kind 'vector?)))))
-
-
-
-(defn convert-model-spec [[model-k model-v]]
-  (let [req-k (:req model-v)
-        opt-k (:opt model-v)]
-    (into
-      (list
-        (convert-model-tp-def model-k model-v :default)
-        (convert-model-tp-def model-k model-v un-postfix))
-      (convert-property-to-def (merge opt-k req-k)))))
 
 
 
@@ -99,63 +65,58 @@
 (s/def ::input (s/cat :base-ns keyword? :model ::model))
 
 
-#_(s/fdef map->spec :args ::input :ret any?)
+(defn gen-spec+ [base-ns-name m]
+  (let [f (->> m
+               (assoc-ns-key base-ns-name)
+               (map (partial sc/model->spec2 [:default sc/un-postfix]))
+               (apply concat))
+        w (->> m
+               (clojure.walk/postwalk fn->conformer-fn)
+               (assoc-ns-key (sc/add-postfix-to-key base-ns-name "-ex"))
+               (map (partial sc/model->spec2 [sc/un-postfix]))
+               (apply concat))]
+    (into w (reverse f)))
+  )
 
-(defn contains-in?
-  [m ks]
-  (not= ::absent (get-in m ks ::absent)))
-
-(defn update-if-contains
-  [m ks f & args]
-  (if (contains-in? m ks)
-    (apply (partial update-in m ks f) args)
-    m))
-
-
-(defn map-req-opt [[model-k m]]
-  {model-k (-> m
-               (update-if-contains [:opt] (fn [w] (assoc-ns-key model-k w)))
-               (update-if-contains [:req] (fn [w] (assoc-ns-key model-k w))))})
-
-
-(defn remove-quote [m]
-  (clojure.walk/prewalk (fn [v]
-                          (if (var? v)
-                            (symbol (clojure.string/replace (str v) #"#'" ""))
-                            v)
-                          ) m))
-
-
-(defn model->spec
+(defn gen-spec
   [base-ns-name m]
   (if (s/valid? ::input [base-ns-name m])
-    (->> (remove-quote m)
-         (assoc-ns-key base-ns-name)
-         (map map-req-opt)
-         (into {})
-         (map convert-model-spec)
-         (apply concat))
+    (->>
+      (clojure.walk/postwalk sc/var->symbol m)
+      (gen-spec+ base-ns-name ))
+
     (throw (ex-info "failed " (s/explain-data ::input [base-ns-name m])))))
 
 
-(defn resolve-symbol
-  [m]
-  (clojure.walk/prewalk (fn [v]
-                          (if (and (seq? v)
-                                   (= 'quote (first v)))
-                            (if-let [r (resolve (eval v))]
-                              r
-                              (throw (ex-info "Could not resolve symbol " {:symbol (eval v)})))
-                            v)
-                          ) m))
+(comment
+  (let [v {:dept {:req {:name 'string?
+                        :id   'int?}}}]
+    (gen-spec :model v))
+
+  )
 
 
-(defmacro defsp [base-ns m]
-  (let [r (->> (model->spec base-ns m)
-               (resolve-symbol))]
-    `~(cons 'do r)))
+(defmacro defsp [base-ns-name m]
+  (if  (s/valid? ::input [base-ns-name m])
+    (let [r (->> (gen-spec+ base-ns-name m)
+                 (clojure.walk/postwalk sc/resolve-symbol))]
+      `~(cons 'do r))
+    (throw (ex-info "failed " (s/explain-data ::input [base-ns-name m])))
+    )
+)
+
+(comment
+
+  (macroexpand-1 '(defsp :model {:person {:opt {:name string? }}}))
+
+  (defsp :model3 {:person {:req {:id2 int?  }}})
+
+  (s/explain :model3/person {:model3.person/id 3 })
+  (s/explain :model3/person-un {:id 3})
+  (s/explain :model3-ex/person-un {:id2 "3"})
 
 
+  )
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;Additional spec
@@ -166,7 +127,7 @@
     spec-coll
     (->> spec-coll
          (remove nil?)
-         (map (fn [w] (add-postfix-to-key w un-postfix)))
+         (map (fn [w] (sc/add-postfix-to-key w sc/un-postfix)))
          (cons 'clojure.spec/merge))))
 
 
@@ -186,6 +147,10 @@
                        v)))))
 
 
+(defn eval-spec [& coll-v]
+  (doseq [v coll-v]
+    (eval v)))
+
 (defn write-spec-to-file [dir package-name spec-list]
   (let [as-dir (clojure.string/join "/" (clojure.string/split package-name #"\."))
         file-path (str dir "/" as-dir ".cljc")]
@@ -203,23 +168,30 @@
 
 (comment
 
-  (s/def :person/id (s/conformer x-integer?))
+  (println "Hello")
+
+  (s/def :person/id (s/conformer sc/x-integer?))
   (s/def :person/id2 integer?)
-  (s/def :model/person (s/keys :req [:person/id :person/id2] ))
+  (s/def :model/person (s/keys :req [:person/id :person/id2]))
 
 
-  (defsp :model2 {:person {:req {:id 'int? :id2 int?}}})
+  ;(= 'int? 'int?)
 
 
 
-  (s/explain :model2/person-un {:id 123 :id2 123})
+  (println "hello")
+
+  (s/explain :model/person {:person/id "123" :person/id2 123})
 
 
-  (s/exercise :model/person )
+  (s/exercise :model/person)
 
   (registry :model2)
 
-  (macroexpand-1 '(sg/defs :model {:person {:opt {:name 'int?}}}))
+  (println
+    (macroexpand-1 '(defsp :model {:person {:opt {:name int? }}}))
+    )
+
 
   (let [v (quote 'int?)]
 
@@ -229,23 +201,27 @@
 
   (let [v {:dept {:req {:name 'string?
                         :id   'int?}}}
-        sp (sg/model->spec :model v)]
-    ;(clojure.pprint/pprint sp)
-    (->> sp
-         (first)
-         (last)
-         (resolve)
-         (eval)
-         )
+        sp (gen-spec :model v)]
+    (clojure.pprint/pprint sp)
+    #_(->> sp
+           (first)
+           (last)
+           (resolve)
+           (eval)
+           )
 
-    #_(clojure.pprint/pprint (apply sg/eval-spec sp) ))
+    )
 
-
-  (s/conform ::person {::id "2344" })
-
+  (symbol? 'int?)
 
 
 
 
+  (let [v {:dept {:req {:name 'string?
+                        :id   'int?}}}]
+    (gen-ex-spec :model v))
+
+
+  (s/conform ::person {::id "2344"})
 
   )

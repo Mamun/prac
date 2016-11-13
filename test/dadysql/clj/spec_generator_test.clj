@@ -9,7 +9,7 @@
   (testing "test model->spec"
     (let [v {:dept {:req {:name 'string?
                           :id   int?}}}
-          sp (model->spec :model v)]
+          sp (gen-spec :model v)]
       (clojure.pprint/pprint sp))
 
     ))

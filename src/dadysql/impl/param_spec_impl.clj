@@ -25,7 +25,7 @@
 (defn gen-spec [file-name coll]
   (let [f-k (filename-as-keyword file-name)]
     (->> (get-param-spec coll)
-         (sg/model->spec f-k))))
+         (sg/gen-spec f-k))))
 
 
 

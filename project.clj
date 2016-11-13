@@ -6,12 +6,9 @@
   ;:offline? true
  :source-paths ["src" "src-jvm"]
   :dependencies  [[org.clojure/clojure "1.9.0-alpha13"]
-                  ;    [org.clojure/core.async "0.1.346.0-17112a-alpha"]
                  [org.clojure/core.async "0.2.395"]
                  [org.clojure/tools.reader "0.9.2"]
                  [org.clojure/tools.logging "0.3.1"]
-           ;      [org.clojure/core.match "0.3.0-alpha4"]
-          ;       [prismatic/schema "0.2.2"]
                  [org.clojure/java.jdbc "0.4.2"]]
 
 
@@ -26,10 +23,8 @@
                                     [lein-midje "3.0.0"]
                                     [lein-pprint "1.1.1"]]
                    :dependencies   [[org.clojure/tools.namespace "0.3.0-alpha3"]
-                                    [org.clojure/tools.nrepl "0.2.10"]
-
+                                    [org.clojure/tools.nrepl "0.2.12"]
                                     [org.clojure/test.check "0.9.0"]
-
                      ;               [metosin/spec-tools "0.1.0-SNAPSHOT"]
                                     [com.h2database/h2 "1.3.154"]
                                     [c3p0/c3p0 "0.9.1.2"]
