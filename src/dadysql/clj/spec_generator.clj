@@ -30,7 +30,7 @@
   (if (symbol? s)
     (condp = s
       'integer? (list 'clojure.spec/conformer 'dadysql.clj.spec-generator/x-integer?)
-      'int?     (list 'clojure.spec/conformer 'dadysql.clj.spec-generator/x-int?)
+      'int? (list 'clojure.spec/conformer 'dadysql.clj.spec-generator/x-int?)
       s)
     s))
 
@@ -68,52 +68,69 @@
 (defn gen-spec+ [base-ns-name m]
   (let [f (->> m
                (assoc-ns-key base-ns-name)
-               (map (partial sc/model->spec2 [:default sc/un-postfix]))
+               (map sc/model->spec2)
                (apply concat))
         w (->> m
                (clojure.walk/postwalk fn->conformer-fn)
                (assoc-ns-key (sc/add-postfix-to-key base-ns-name "-ex"))
-               (map (partial sc/model->spec2 [sc/un-postfix]))
+               (map sc/model->spec2)
                (apply concat))]
-    (into w (reverse f)))
-  )
+    (into w (reverse f))))
+
+
 
 (defn gen-spec
   [base-ns-name m]
   (if (s/valid? ::input [base-ns-name m])
-    (->>
-      (clojure.walk/postwalk sc/var->symbol m)
-      (gen-spec+ base-ns-name ))
+    (->> (clojure.walk/postwalk sc/var->symbol m)
+         (gen-spec+ base-ns-name))
 
     (throw (ex-info "failed " (s/explain-data ::input [base-ns-name m])))))
 
 
 (comment
-  (let [v {:dept {:req {:name 'string?
-                        :id   'int?}}}]
+  (let [v {:dept    {:req {:name 'string?
+                           :id   'int?}
+         }
+           ;:student {:req {:name 'string :id   'int?}}
+           }]
     (gen-spec :model v))
+
+
+  (group-by first
+            [[:dept :1-1 :empl]
+             [:company :1-n :dept]
+             ])
+
 
   )
 
 
 (defmacro defsp [base-ns-name m]
-  (if  (s/valid? ::input [base-ns-name m])
-    (let [r (->> (gen-spec+ base-ns-name m)
-                 (clojure.walk/postwalk sc/resolve-symbol))]
+  (if (s/valid? ::input [base-ns-name m])
+    (let [r (gen-spec+ base-ns-name m)]
       `~(cons 'do r))
-    (throw (ex-info "failed " (s/explain-data ::input [base-ns-name m])))
-    )
-)
+    (throw (ex-info "failed " (s/explain-data ::input [base-ns-name m])))))
+
+
 
 (comment
 
-  (macroexpand-1 '(defsp :model {:person {:opt {:name string? }}}))
+  (macroexpand-1 '(defsp :model {:person {:opt {:name string?}}}))
 
-  (defsp :model3 {:person {:req {:id2 int?  }}})
+  (defsp :model3 {:person {:req {:id2 int?}}})
 
-  (s/explain :model3/person {:model3.person/id 3 })
-  (s/explain :model3/person-un {:id 3})
-  (s/explain :model3-ex/person-un {:id2 "3"})
+  (s/conform :model3/person {:id2 3})
+  ;(->> )
+  (s/conform :model3/person {:id2 3})
+  (s/conform :model3/person-list [{:id2 3}] )
+
+  (->> (s/conform :model3-ex/person {:id2 "3"} )
+       (s/unform :model3/person) )
+
+
+  (->> (s/conform :model3-ex/person-list  [{:id2 "3"} {:id2 "4"}] )
+       (s/unform :model3/person-list) )
 
 
   )
@@ -127,7 +144,7 @@
     spec-coll
     (->> spec-coll
          (remove nil?)
-         (map (fn [w] (sc/add-postfix-to-key w sc/un-postfix)))
+         (map (fn [w] (sc/add-postfix-to-key w "-un")))
          (cons 'clojure.spec/merge))))
 
 
@@ -189,7 +206,7 @@
   (registry :model2)
 
   (println
-    (macroexpand-1 '(defsp :model {:person {:opt {:name int? }}}))
+    (macroexpand-1 '(defsp :model {:person {:opt {:name int?}}}))
     )
 
 
