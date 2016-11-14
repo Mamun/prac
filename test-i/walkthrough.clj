@@ -55,7 +55,7 @@
 
   (->
     (t/read-file "tie.edn.sql" )
-    (t/write-spec-to-file  "src/tie.clj")
+    (t/write-spec-to-file  "src" )
     )
 
 

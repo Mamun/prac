@@ -5,7 +5,8 @@
             :url   "http://www.eclipse.org/legal/epl-v10.html"}
   ;:offline? true
  :source-paths ["src" "src-jvm"]
-  :dependencies  [[org.clojure/clojure "1.9.0-alpha13"]
+  :dependencies  [[org.clojure/clojure "1.9.0-alpha14"]
+                  [dadyspec "0.1.0-SNAPSHOT"]
                  [org.clojure/core.async "0.2.395"]
                  [org.clojure/tools.reader "0.9.2"]
                  [org.clojure/tools.logging "0.3.1"]

@@ -1,0 +1,127 @@
+(ns dadyspec.core-test
+  (:use [clojure.test]
+        [dadyspec.core])
+  (:require [clojure.spec.test :as stest]
+            [clojure.spec :as s]))
+
+
+(deftest gen-spec-test
+  (testing "testing gen-spec "
+    (let [model {:dept {:req {:id   'int?}}}
+          r (gen-spec :app model )
+          e-r `((clojure.spec/def
+                  :app.dept/id
+                  (clojure.spec/conformer dadyspec.core/x-int?))
+                 (clojure.spec/def :app.dept/name string?)
+                 (clojure.spec/def
+                   :app/dept
+                   (clojure.spec/keys :req-un [:app.dept/name :app.dept/id]))
+                 (clojure.spec/def
+                   :app/dept-list
+                   (clojure.spec/coll-of :app/dept :kind clojure.core/vector?))
+                 (clojure.spec/def
+                   :app-ex.dept/id
+                   (clojure.spec/conformer dadyspec.core/x-int?))
+                 (clojure.spec/def :app-ex.dept/name string?)
+                 (clojure.spec/def
+                   :app-ex/dept
+                   (clojure.spec/keys :req-un [:app-ex.dept/name :app-ex.dept/id]))
+                 (clojure.spec/def
+                   :app-ex/dept-list
+                   (clojure.spec/coll-of :app-ex/dept :kind clojure.core/vector?)))]
+      ;(clojure.pprint/pprint r)
+      (is (= r e-r )))))
+
+
+;(gen-spec-test)
+
+
+
+(comment
+
+
+
+
+  (s/exercise :dadyspec.core/req-p 2)
+  (s/exercise :dadyspec.core/opt-m 2)
+  (s/exercise :dadyspec.core/model 2)
+
+
+
+  (s/explain :dadyspec.core/req-p {:req {:id nil }}  )
+
+  (s/explain :dadyspec.core/model {:hello {:req n
+                                           :opt {:id 'int?}}}   )
+
+
+  (s/explain :dadyspec.core/model {:hello {:req {:id 'int?}
+                                           :opt1 {:id 'int?}}}   )
+
+
+  (s/explain :dadyspec.core/model {}  )
+
+  )
+
+
+(comment
+
+
+
+
+  ;(s/valid? ::join [[:dept ::one-many :student]])
+
+  (stest/instrument `gen-spec)
+
+  (s/exercise-fn `gen-spec)
+
+  (stest/check `gen-spec)
+
+  (s/exercise :dadyspec.core/model 1)
+
+  (s/exercise :dadyspec.core/req-or-opt 2)
+
+  (s/exercise (s/keys :req [:dadyspec.core/req]))
+
+  (s/exercise :dadyspec.core/req-or-opt 1)
+
+  (s/valid? :dadyspec.core/req {} )
+
+  (s/valid? :dadyspec.core/req-or-opt {:req nil :opt nil} )
+
+  ;(s/exercise (s/map-of #{:a :b} #{1 2} ) )
+
+
+  (let [model {:dept    {:req {:name 'string?
+                               :id   'int?}}
+               :student {:req {:name 'string?
+                               :id   'int?}}}
+        rel [[:dept :dadyspec.core/one-many :student]]]
+    ;(s/explain-data ::input [:model model rel ] )
+    (gen-spec :model model rel))
+
+
+  (let [model {:dept    {:opt {:name 'string?
+                               :date 'inst?}}}
+        rel [[:dept :dadyspec.core/one-many :student]]]
+    ;(s/explain-data ::input [:model model rel ] )
+    (gen-spec :model model rel))
+
+
+  (defsp model3 {:dept    {:opt {:name string?
+                                  :date inst?}}}
+         [[:dept :dadyspec.core/one-many :student]])
+
+  (x-inst? "2015-12-12")
+  (x-inst? "2015-45")
+
+  (s/explain :model3-ex/dept {:name "asdf" :date "2asdf"})
+
+
+  (clojure.pprint/pprint
+    (s/exercise ::join 3))
+
+
+  (clojure.pprint/pprint
+    (s/exercise ::input 1))
+
+  )

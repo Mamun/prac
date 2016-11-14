@@ -1,8 +1,8 @@
 (ns dadysql.jdbc
   (:require
+    [dadyspec.core :as dsc]
     [dadysql.workflow-exec :as tie]
     [dadysql.compiler.core :as cc]
-    [dadysql.clj.spec-generator :as sg]
     [dadysql.clj.fail :as f]
     [dadysql.spec :as ds]
     [dadysql.impl.sql-io-impl :as ce]
@@ -47,7 +47,7 @@
 (defn select-spec [tms req-m]
   (->> (select-name tms req-m)
        (map :dadysql.core/spec)
-       (sg/as-merge-spec)))
+       (ps/as-merge-spec)))
 
 
 (defn- warp-sql-io [ds tms type]
@@ -112,7 +112,7 @@
                         (str package-name "." f-name)) ]
      (->> (vals tms)
           (ps/gen-spec (or (get-in tms [:_global_ :dadysql.core/file-name]) "nofound.clj"))
-          (sg/write-spec-to-file dir package-name)))
+          (dsc/write-spec-to-file dir package-name)))
    (log/info (format  "Spec file generation is done in dir %s, package %s " dir package-name) ))
   ([tms dir]
    (write-spec-to-file tms dir (clojure.string/join "." (butlast (clojure.string/split (str *ns*) #"\."))))))

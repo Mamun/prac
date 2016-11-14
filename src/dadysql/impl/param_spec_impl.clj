@@ -1,5 +1,6 @@
 (ns dadysql.impl.param-spec-impl
-  (:require [dadysql.clj.spec-generator :as sg]))
+  (:require [dadyspec.core :as sg]
+            [dadyspec.core-impl :as sgi]))
 
 
 (defn filename-as-keyword [file-name-str]
@@ -8,6 +9,20 @@
       (keyword)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn as-merge-spec [spec-coll]
+  (if (or (nil? spec-coll)
+          (empty? spec-coll))
+    spec-coll
+    (->> spec-coll
+         (remove nil?)
+         (cons 'clojure.spec/merge))))
+
+
+(defn as-relational-spec [[f-spec & rest-spec]]
+  (list 'clojure.spec/merge f-spec
+        (list 'clojure.spec/keys :req (into [] rest-spec))))
+
 
 
 (defn get-param-spec [coll]
@@ -32,7 +47,7 @@
 (defn get-spec-map [file-name coll]
   (let [f-k (filename-as-keyword file-name)
         s-m (get-param-spec coll)
-        nps (sg/assoc-ns-key f-k s-m)]
+        nps (sgi/assoc-ns-key f-k s-m)]
     (->> (interleave (keys s-m)
                      (keys nps))
          (apply assoc {}))))
