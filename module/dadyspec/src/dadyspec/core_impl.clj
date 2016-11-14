@@ -83,6 +83,14 @@
                                         (add-postfix-to-key "-list")))]
     [src rel v]))
 
+(defn format-join [base-ns-name join-list]
+  (->> join-list
+       ;(map reverse-join )
+       ;(concat join-list)
+       ;(distinct)
+       (mapv (partial assoc-ns-join base-ns-name))
+       (group-by first))
+  )
 
 #_(defn reverse-join [[src rel dest]]
     (condp = rel

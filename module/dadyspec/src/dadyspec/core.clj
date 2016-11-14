@@ -8,6 +8,40 @@
            (java.util Date UUID)))
 
 
+
+(defn- matches-regex?
+  "Returns true if the string matches the given regular expression"
+  [v regex]
+  (boolean (re-matches regex v)))
+
+
+(defn email?
+  "Returns true if v is an email address"
+  [v]
+  (if (nil? v)
+    false
+    (matches-regex? v
+                    #"(?i)[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?")))
+
+
+(s/def ::email?
+  (s/with-gen (s/and string? email?)
+              #(s/gen #{"test@test.de" "clojure@clojure.de" "fun@fun.de"})))
+
+
+
+(comment
+
+
+
+  (s/valid? ::email? "a.dsfas@test.de")
+
+  (s/exercise ::email?)
+
+  )
+
+
+
 (defn x-int? [x]
   (cond
     (integer? x) x
@@ -138,20 +172,20 @@
 
 
 (defn- gen-spec-impl [base-ns-name join-list m]
-  (let [j-m (->> join-list
-                 ;(map reverse-join )
-                 ;(concat join-list)
-                 ;(distinct)
-                 (mapv (partial sc/assoc-ns-join base-ns-name))
-                 (group-by first))
+  (let [j-m (sc/format-join base-ns-name join-list)
         f (->> m
                (sc/assoc-ns-key base-ns-name)
                (map (partial sc/model->spec2 true j-m))
                (apply concat))
+
+        j-m (sc/format-join (sc/add-postfix-to-key base-ns-name "-un") join-list)
+
         f2 (->> m
                 (sc/assoc-ns-key (sc/add-postfix-to-key base-ns-name "-un"))
                 (map (partial sc/model->spec2 false j-m))
                 (apply concat))
+        j-m (sc/format-join (sc/add-postfix-to-key base-ns-name "-ex") join-list)
+
         w (->> m
                (clojure.walk/postwalk as-conformer)
                (sc/assoc-ns-key (sc/add-postfix-to-key base-ns-name "-ex"))

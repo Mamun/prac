@@ -1,7 +1,6 @@
 (ns dadyspec.walkthrough
   (:use [dadyspec.core])
-  (:require [clojure.spec.test :as stest]
-            [cheshire.core :as ch]
+  (:require [cheshire.core :as ch]
             [clojure.spec :as s]))
 
 
@@ -9,13 +8,16 @@
 
   ;;Example 1
 
-  (defsp app {:author {:req {:id int?}}})
-  (gen-spec :app '{:author {:req {:id int?}}})
+  (defsp app {:author {:req {:id int? :email :dadyspec.core/email?}}})
+  (gen-spec :app '{:author {:req {:id int? :email :dadyspec.core/email?}}})
 
 
-  (s/explain :app/author {:app.author/id 23})
-  (s/explain :app-un/author {:id 23})
-  (s/explain :app-ex/author {:id "23"})
+  (s/explain :app/author {:app.author/id 23 :app.author/email "t.test@test.de"})
+  (s/explain :app-un/author {:id 23 :email "test@test.de"})
+  (s/explain :app-ex/author {:id "23" :email "test@test.de"})
+
+
+  (s/exercise :app/author)
 
   ;;Example 2
 
@@ -60,22 +62,21 @@
 
 (comment
 
+  (defsp app {:dept    {:req {:name string?
+                              :date inst?}
+                        :opt {:note string?}}
+              :student {:req {:name string?
+                              :dob  inst?}}}
+         [[:dept :dadyspec.core/one-many :student]])
 
 
+  (s/exercise :app-un/dept)
 
 
-  (defsp app {:author {:req {:name string?
-                              :type (s/coll-of (s/and keyword? #{:clj :cljs})
-                                               :into #{})}} })
+  (ch/generate-string {:id -1, :email "fun@fun.de"})
+  "{\"id\":-1,\"email\":\"fun@fun.de\"}"
 
-
-  (gen-spec :app '{:author {:req {:name string?
-                                 :type (s/coll-of (s/and keyword? #{:clj :cljs})
-                                                  :into #{})}} })
-
-  (s/conform :app/author {:name "asdf" :type [:cljs]})
-
-  (s/conform :app-ex/author {:name "asdf" :type ["cljs"]} )
+  (ch/parse-string "{\"id\":-1,\"email\":\"fun@fun.de\"}" true)
 
 
   (ch/decode "{\"myarray\":[2,3,3,2],\"myset\":[\"ad\"]}" true
@@ -109,12 +110,6 @@
           ])
   (s/exercise :app/dept 1)
 
-  (clojure.pprint/pprint
-    (s/exercise :app/student 1))
-
-
-  (clojure.pprint/pprint
-    (s/exercise :app/student-list 1))
 
 
 
