@@ -47,7 +47,7 @@
 (defn get-spec-map [file-name coll]
   (let [f-k (filename-as-keyword file-name)
         s-m (get-param-spec coll)
-        nps (sgi/assoc-ns-key f-k s-m)]
+        nps (sgi/update-model-key-m f-k s-m)]
     (->> (interleave (keys s-m)
                      (keys nps))
          (apply assoc {}))))

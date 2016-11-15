@@ -178,9 +178,11 @@
   [m-name join-list m _]
   (let [j-m (sc/format-join m-name join-list)]
     (->> m
-         (sc/assoc-ns-key m-name)
-         (map sc/update-key)
-         (map (fn [w] (sc/model->spec j-m w :qualified? true :fixed? false)))
+         (map (fn [w]
+                (let [w (sc/update-model-key w m-name)]
+                  (->> (sc/model-template w j-m :fixed? false :qualified? true)
+                       (into (sc/convert-property-to-def (second w) ))
+                       (reverse)))))
          (apply concat))))
 
 
@@ -189,9 +191,11 @@
   [m-name join-list m _]
   (let [j-m (sc/format-join (sc/add-postfix-to-key m-name "-un") join-list)]
     (->> m
-         (sc/assoc-ns-key (sc/add-postfix-to-key m-name "-un"))
-         (map sc/update-key)
-         (map (fn [w] (sc/model->spec j-m w :qualified? false :fixed? false)))
+         (map (fn [w] (sc/update-model-key w m-name "-un") ))
+         (map (fn [w]
+                (->> (sc/model-template w j-m :fixed? false :qualified? false)
+                     (into (sc/convert-property-to-def (second w) ))
+                     (reverse))))
          (apply concat))))
 
 
@@ -201,9 +205,11 @@
   (let [j-m (sc/format-join (sc/add-postfix-to-key m-name "-ex") join-list)]
     (->> m
          (clojure.walk/postwalk as-conformer)
-         (sc/assoc-ns-key (sc/add-postfix-to-key m-name "-ex"))
-         (map sc/update-key)
-         (map (fn [w] (sc/model->spec j-m w :qualified? false :fixed? false)))
+         (map (fn [w] (sc/update-model-key w m-name "-ex") ))
+         (map (fn [w]
+                (->> (sc/model-template w j-m :fixed? false :qualified? false)
+                     (into (sc/convert-property-to-def (second w) ))
+                     (reverse))))
          (apply concat))))
 
 
