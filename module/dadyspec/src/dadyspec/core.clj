@@ -171,35 +171,49 @@
     v))
 
 
-(defn- gen-spec-impl [base-ns-name join-list m]
-  (let [j-m (sc/format-join base-ns-name join-list)
-        f (->> m
-               (sc/assoc-ns-key base-ns-name)
-               (map (partial sc/model->spec2 true j-m))
-               (apply concat))
+(defmulti spec-builder (fn [m-name join-list m t] t))
 
-        j-m (sc/format-join (sc/add-postfix-to-key base-ns-name "-un") join-list)
+(defmethod spec-builder
+  :default
+  [m-name join-list m _]
+  (let [j-m (sc/format-join m-name join-list)]
+    (->> m
+         (sc/assoc-ns-key m-name)
+         (map sc/update-key)
+         (map (fn [w] (sc/model->spec j-m w :qualified? true :fixed? false)))
+         (apply concat))))
 
-        f2 (->> m
-                (sc/assoc-ns-key (sc/add-postfix-to-key base-ns-name "-un"))
-                (map (partial sc/model->spec2 false j-m))
-                (apply concat))
-        j-m (sc/format-join (sc/add-postfix-to-key base-ns-name "-ex") join-list)
 
-        w (->> m
-               (clojure.walk/postwalk as-conformer)
-               (sc/assoc-ns-key (sc/add-postfix-to-key base-ns-name "-ex"))
-               (map (partial sc/model->spec2 false j-m))
-               (apply concat))]
-    (concat f f2 w)
-    #_(into w (reverse f))))
+(defmethod spec-builder
+  "-un"
+  [m-name join-list m _]
+  (let [j-m (sc/format-join (sc/add-postfix-to-key m-name "-un") join-list)]
+    (->> m
+         (sc/assoc-ns-key (sc/add-postfix-to-key m-name "-un"))
+         (map sc/update-key)
+         (map (fn [w] (sc/model->spec j-m w :qualified? false :fixed? false)))
+         (apply concat))))
+
+
+(defmethod spec-builder
+  "-ex"
+  [m-name join-list m _]
+  (let [j-m (sc/format-join (sc/add-postfix-to-key m-name "-ex") join-list)]
+    (->> m
+         (clojure.walk/postwalk as-conformer)
+         (sc/assoc-ns-key (sc/add-postfix-to-key m-name "-ex"))
+         (map sc/update-key)
+         (map (fn [w] (sc/model->spec j-m w :qualified? false :fixed? false)))
+         (apply concat))))
 
 
 (defn gen-spec
   ([m-name m join]
    (if (s/valid? ::input [m-name m join])
-     (->> (clojure.walk/postwalk var->symbol m)
-          (gen-spec-impl m-name join))
+     (let [m (clojure.walk/postwalk var->symbol m)]
+       (concat (spec-builder m-name join m nil)
+               (spec-builder m-name join m "-un")
+               (spec-builder m-name join m "-ex")))
      (throw (ex-info "failed " (s/explain-data ::input [m-name m join])))))
   ([m-name m]
    (gen-spec m-name m [])))

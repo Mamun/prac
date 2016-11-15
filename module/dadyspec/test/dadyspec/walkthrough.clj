@@ -50,8 +50,8 @@
                                    :type (s/coll-of (s/and keyword? #{:software :hardware})
                                                    :into #{})}} })
 
-  (s/conform :app/company    {:app.company/id 123 :app.company/name "Web De" :app.company/type [:software]})
-  (s/conform :app-un/company {:id 123 :name "Web De" :type [:software]})
+  (s/conform :app/company    {:app.company/id 123 :app.company/name "Web De" :app.company/type [:software] })
+  (s/conform :app-un/company {:id 123 :name "Web De" :type [:software]  })
   (s/conform :app-ex/company {:id "123" :name "Web De" :type ["software" "hardware"]})
 
 
