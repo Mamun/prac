@@ -5,36 +5,36 @@
             [clojure.spec :as s]))
 
 
-(deftest gen-spec-test
-  (testing "testing gen-spec "
-    (let [model {:dept {:req {:id   'int?}}}
-          r (gen-spec :app model )
-          e-r `((clojure.spec/def
-                  :app.dept/id
-                  (clojure.spec/conformer dadyspec.core/x-int?))
-                 (clojure.spec/def :app.dept/name string?)
-                 (clojure.spec/def
-                   :app/dept
-                   (clojure.spec/keys :req-un [:app.dept/name :app.dept/id]))
-                 (clojure.spec/def
-                   :app/dept-list
-                   (clojure.spec/coll-of :app/dept :kind clojure.core/vector?))
-                 (clojure.spec/def
-                   :app-ex.dept/id
-                   (clojure.spec/conformer dadyspec.core/x-int?))
-                 (clojure.spec/def :app-ex.dept/name string?)
-                 (clojure.spec/def
-                   :app-ex/dept
-                   (clojure.spec/keys :req-un [:app-ex.dept/name :app-ex.dept/id]))
-                 (clojure.spec/def
-                   :app-ex/dept-list
-                   (clojure.spec/coll-of :app-ex/dept :kind clojure.core/vector?)))]
-      ;(clojure.pprint/pprint r)
-      (is (= r e-r )))))
+
 
 
 ;(gen-spec-test)
 
+
+
+(comment
+
+
+  (interpose "\n"
+
+    (gen-spec :app '{:dept    {:req {:name string?
+                                     :date inst?}
+                               :opt {:note string?}}
+                     :student {:req {:name string?
+                                     :dob  inst?}}}
+              :join
+              [[:dept :dadyspec.core/one-many :student]])
+
+
+    )
+
+
+
+  (s/valid? ::email? "a.dsfas@test.de")
+
+  (s/exercise ::email?)
+
+  )
 
 
 (comment

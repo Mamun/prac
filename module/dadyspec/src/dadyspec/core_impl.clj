@@ -15,6 +15,7 @@
   (let [w (if (namespace ns-key)
             (str (namespace ns-key) "." (name ns-key))
             (name ns-key))]
+
     (if (namespace r)
       (keyword (str w "." (namespace r) "/" (name r)))
       (keyword (str w "/" (name r))))))
@@ -32,10 +33,8 @@
          (clojure.set/rename-keys m))))
 
 
-(defn update-model-key [[model-k model-v] & ns-key ]
-  (let [model-k (-> (reduce add-postfix-to-key ns-key)
-                    (as-ns-keyword model-k) )
-        v (as-> model-v m
+(defn- update-model-key-one [[model-k model-property]]
+  (let [v (as-> model-property m
                 (if (:req m)
                   (update m :req (fn [w] (update-model-key-m model-k w)))
                   m)
@@ -45,8 +44,12 @@
     [model-k v]))
 
 
-
-
+(defn update-model-key [model & ns-key]
+  (let [w (reduce add-postfix-to-key ns-key)]
+    (->> model
+         (update-model-key-m w )
+         (map update-model-key-one)
+         (into {}))))
 
 
 (defn keys-template [req opt qualified?]
@@ -73,97 +76,28 @@
 
 
 (defn model-template
-  [[model-k {:keys [req opt]}] join-m & {:keys [fixed? qualified?]
-                                         :or   {fixed?     true
-                                                qualified? true}} ]
-  (let [j (->> (get join-m model-k)
-               (mapv #(nth % 2)))
-        req (into [] (keys req))
+  [[model-k {:keys [req opt]}] j {:keys [fixed? qualified?]
+                                  :or   {fixed?     true
+                                         qualified? true}}]
+  (let [req (into [] (keys req))
         opt (into (or j []) (keys opt))
 
-        w-un     (keys-template req opt qualified?)
+        w-un (keys-template req opt qualified?)
         w-un-set (get-key-set req opt qualified?)]
     ;;conform does not work with merge
     (if fixed?
       `((clojure.spec/def ~model-k (clojure.spec/merge ~w-un (clojure.spec/map-of ~w-un-set any?)))
-        (clojure.spec/def ~(add-postfix-to-key model-k "-list")
+         (clojure.spec/def ~(add-postfix-to-key model-k "-list")
            (clojure.spec/coll-of ~model-k :kind vector?)))
       `((clojure.spec/def ~model-k ~w-un)
          (clojure.spec/def ~(add-postfix-to-key model-k "-list")
            (clojure.spec/coll-of ~model-k :kind vector?))))))
 
 
-(defn convert-property-to-def [{:keys [req opt]}]
-  (->> (merge req opt)
+(defn convert-property-to-def [[_ {:keys [req opt]}] ]
+  (->> (merge opt req)
        (map (fn [[k v]]
               `(clojure.spec/def ~k ~v)))))
-
-
-(comment
-  (->> (map (fn [w] ( update-model-key  w :app "-ex") ) {:student {:req {:di :id
-                                                                         :name :na}}} )
-       (map (fn [[k v]] (convert-property-to-def v) ) )
-       )
-
-  )
-
-
-
-#_(defn model->spec
-  [join-m cm & {:keys [fixed? qualified?]
-                               :or   {fixed?     true
-                                      qualified? true}}]
-  (let [[model-k model-v] cm
-        w (convert-property-to-def model-v)]
-
-    (->> (into w (model-template cm join-m :fixed? fixed? :qualified? qualified?))
-         (reverse))))
-
-
-
-
-
-(comment
-
-
-
-  (let [r (fn [w] {:w w})
-        w (as-> {:c 1 :b 2} m
-                (if (:a m)
-                  (update m :a + 10)
-                  m)
-                (if (:c m)
-                  (update m :b + 10)
-                  m)
-
-                )
-        ]
-    w
-    )
-
-
-
-
-  (let [m {:a 2}]
-    (cond-> m
-            value (assoc :b 3)
-            :always m
-            )
-
-    )
-
-  (defn divisible-by? [divisor number]
-    (zero? (mod number divisor)))
-
-  (let [n 3]
-    (cond-> nil
-            (divisible-by? 3 n) (str "Fizz")
-            (divisible-by? 5 n) (str "Buzz")
-            :always (or (str n)))
-    )
-
-  )
-
 
 
 
@@ -176,10 +110,46 @@
                                         (add-postfix-to-key "-list")))]
     [src rel v]))
 
-(defn format-join [base-ns-name join-list]
-  (->> join-list
-       (mapv (partial assoc-ns-join base-ns-name))
-       (group-by first)))
+
+(defn model->spec
+  [namespace-name m {:keys [postfix join] :as opt}]
+  (let [namespace-name (if postfix
+                         (add-postfix-to-key namespace-name postfix)
+                         namespace-name)
+        j-m (->> join
+                 (mapv #(assoc-ns-join namespace-name %))
+                 (group-by first))
+        assoc-join-k (fn [w]
+                       (->> (get j-m (first w))
+                            (mapv #(nth % 2))))]
+    (->> (update-model-key m namespace-name)
+         (mapv (fn [w]
+                 (-> w
+                     (model-template (assoc-join-k w) opt)
+                     (into (convert-property-to-def w)))))
+         (apply concat))))
+
+
+
+(comment
+  (->> (map (fn [w] (update-model-key-one w :app "-ex")) {:student {:req {:di :id
+                                                                      :name   :na}}})
+       (map (fn [[k v]] (convert-property-to-def v)))
+       )
+
+  )
+
+
+
+
+
+
+
+
+#_(defn format-join [base-ns-name join-list]
+    (->> join-list
+         (mapv (partial assoc-ns-join base-ns-name))
+         (group-by first)))
 
 
 

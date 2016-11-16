@@ -1,6 +1,6 @@
 (ns dadyspec.core
   (:require [clojure.walk :as w]
-            [dadyspec.core-impl :as sc]
+            [dadyspec.core-impl :as impl]
             [clojure.spec :as s])
   (:import [BigInteger]
            [Double]
@@ -27,18 +27,6 @@
 (s/def ::email?
   (s/with-gen (s/and string? email?)
               #(s/gen #{"test@test.de" "clojure@clojure.de" "fun@fun.de"})))
-
-
-
-(comment
-
-
-
-  (s/valid? ::email? "a.dsfas@test.de")
-
-  (s/exercise ::email?)
-
-  )
 
 
 
@@ -109,37 +97,31 @@
     :else :clojure.spec/invalid))
 
 
-
+(def ^:dynamic *conformer-m*
+  {'integer?              `(clojure.spec/conformer dadyspec.core/x-integer?)
+   'clojure.core/integer? `(clojure.spec/conformer dadyspec.core/x-integer?)
+   'int?                  `(clojure.spec/conformer dadyspec.core/x-int?)
+   'clojure.core/int?     `(clojure.spec/conformer dadyspec.core/x-int?)
+   'boolean?              `(clojure.spec/conformer dadyspec.core/x-boolean?)
+   'clojure.core/boolean? `(clojure.spec/conformer dadyspec.core/x-boolean?)
+   'double?               `(clojure.spec/conformer dadyspec.core/x-boolean?)
+   'clojure.core/double?  `(clojure.spec/conformer dadyspec.core/x-double?)
+   'keyword?              `(clojure.spec/conformer dadyspec.core/x-keyword?)
+   'clojure.core/keyword  `(clojure.spec/conformer dadyspec.core/x-keyword?)
+   'inst?                 `(clojure.spec/conformer dadyspec.core/x-inst?)
+   'clojure.core/inst?    `(clojure.spec/conformer dadyspec.core/x-inst?)
+   'uuid?                 `(clojure.spec/conformer dadyspec.core/x-uuid?)
+   'clojure.core/uuid?    `(clojure.spec/conformer dadyspec.core/x-uuid?)})
 
 ;(.toDate (org.joda.time.DateTime/parse x))
 
-(defn as-conformer [s]
-  (if (symbol? s)
-    (do
-      (condp contains? s
-        #{'integer?
-          'clojure.core/integer?} `(clojure.spec/conformer dadyspec.core/x-integer?)
-        #{'int?
-          'clojure.core/int?} (do
-                                `(clojure.spec/conformer dadyspec.core/x-int?))
-        #{'boolean?
-          'clojure.core/boolean?} `(clojure.spec/conformer dadyspec.core/x-boolean?)
-        #{'double?
-          'clojure.core/double?} `(clojure.spec/conformer dadyspec.core/x-double?)
-        #{'keyword?
-          'clojure.core/keyword} `(clojure.spec/conformer dadyspec.core/x-keyword?)
-        #{'inst?
-          'clojure.core/inst?} `(clojure.spec/conformer dadyspec.core/x-inst?)
-        #{'uuid?
-          'clojure.core/uuid?} `(clojure.spec/conformer dadyspec.core/x-uuid?)
-        s))
-    s))
+(defn- conform* [m]
+  (clojure.walk/postwalk (fn [s]
+                           (if-let [r (get *conformer-m* s)]
+                             r
+                             s)
+                           ) m))
 
-
-#_(defn k-value? [v]
-    ;(println v "-- " (type v))
-    (symbol? v)
-    )
 
 (s/def ::req (s/every-kv keyword? any? :min-count 1))
 (s/def ::opt (s/every-kv keyword? any? :min-count 1))
@@ -171,68 +153,27 @@
     v))
 
 
-(defmulti spec-builder (fn [m-name join-list m t] t))
-
-(defmethod spec-builder
-  :default
-  [m-name join-list m _]
-  (let [j-m (sc/format-join m-name join-list)]
-    (->> m
-         (map (fn [w]
-                (let [w (sc/update-model-key w m-name)]
-                  (->> (sc/model-template w j-m :fixed? false :qualified? true)
-                       (into (sc/convert-property-to-def (second w) ))
-                       (reverse)))))
-         (apply concat))))
-
-
-(defmethod spec-builder
-  "-un"
-  [m-name join-list m _]
-  (let [j-m (sc/format-join (sc/add-postfix-to-key m-name "-un") join-list)]
-    (->> m
-         (map (fn [w] (sc/update-model-key w m-name "-un") ))
-         (map (fn [w]
-                (->> (sc/model-template w j-m :fixed? false :qualified? false)
-                     (into (sc/convert-property-to-def (second w) ))
-                     (reverse))))
-         (apply concat))))
-
-
-(defmethod spec-builder
-  "-ex"
-  [m-name join-list m _]
-  (let [j-m (sc/format-join (sc/add-postfix-to-key m-name "-ex") join-list)]
-    (->> m
-         (clojure.walk/postwalk as-conformer)
-         (map (fn [w] (sc/update-model-key w m-name "-ex") ))
-         (map (fn [w]
-                (->> (sc/model-template w j-m :fixed? false :qualified? false)
-                     (into (sc/convert-property-to-def (second w) ))
-                     (reverse))))
-         (apply concat))))
-
 
 (defn gen-spec
-  ([m-name m join]
-   (if (s/valid? ::input [m-name m join])
-     (let [m (clojure.walk/postwalk var->symbol m)]
-       (concat (spec-builder m-name join m nil)
-               (spec-builder m-name join m "-un")
-               (spec-builder m-name join m "-ex")))
-     (throw (ex-info "failed " (s/explain-data ::input [m-name m join])))))
-  ([m-name m]
-   (gen-spec m-name m [])))
+  [namespace-name model-m & {:keys [join]
+                             :or   {join []}}]
+  (if (s/valid? ::input [namespace-name model-m join])
+    (let [m (clojure.walk/postwalk var->symbol model-m)]
+      (concat (impl/model->spec namespace-name m {:fixed? false :qualified? true :join join})
+              (impl/model->spec namespace-name m {:fixed? false :qualified? false :postfix "-un" :join join})
+              (impl/model->spec namespace-name (conform* m) {:join join :fixed? false :qualified? false :postfix "-ex"})
+              ))
+    (throw (ex-info "failed " (s/explain-data ::input [namespace-name model-m join])))))
 
 
 ;(sc/create-ns-key :hello :a)
 
 
 (defmacro defsp
-  ([m-name m & [join]]
+  ([m-name m & {:keys [join]}]
    (let [m-name (keyword m-name)]
      (let [r (if join
-               (gen-spec m-name m join)
+               (gen-spec m-name m :join join)
                (gen-spec m-name m)
                )]
        `~(cons 'do r)))))
@@ -274,8 +215,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;Additional spec
 
 
-
-
 (defn registry [n-name]
   (->> (s/registry)
        (w/postwalk (fn [v]
@@ -292,22 +231,32 @@
     (eval v)))
 
 
+
+(defn as-file-str [ns-name spec-list]
+  (let [w (format "(ns %s \n (:require [clojure.spec] [dadyspec.core])) \n\n" ns-name)]
+    (->> (map str spec-list)
+         (interpose "\n")
+         (cons w)
+         (clojure.string/join))))
+
+
 (defn write-spec-to-file [dir package-name spec-list]
   (let [as-dir (clojure.string/join "/" (clojure.string/split package-name #"\."))
-        file-path (str dir "/" as-dir ".clj")]
+        file-path (str dir "/" as-dir ".clj")
+        file-str (as-file-str package-name spec-list)]
     (with-open [w (clojure.java.io/writer file-path)]
-      (.write w (str "(ns " package-name "  \n  (:require [clojure.spec] \n [dadyspec.core]))"))
-      (.write w "\n")
-      (doseq [v1 spec-list]
-        (.write w (str v1))
-        (.write w "\n")))))
+      (.write w file-str))))
 
 
 
 (comment
 
+
+  (format "(ns %s \n (:require [clojure.spec] \n [dadyspec.core]) " "com.dir")
+
   (->> (gen-spec :app '{:student {:req {:id int?}}})
-       (write-spec-to-file "test" "app")
+       (write-spec-to-file "src" "hello")
+
        )
 
   )

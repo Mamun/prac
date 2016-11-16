@@ -26,6 +26,7 @@
                         :opt {:note string?}}
               :student {:req {:name string?
                               :dob  inst?}}}
+         :join
          [[:dept :dadyspec.core/one-many :student]])
 
   (gen-spec :app '{:dept    {:req {:name string?
@@ -33,6 +34,7 @@
                              :opt {:note string?}}
                    :student {:req {:name string?
                                    :dob  inst?}}}
+            :join
             [[:dept :dadyspec.core/one-many :student]])
 
   (s/exercise :app/dept)
@@ -60,60 +62,3 @@
   )
 
 
-(comment
-
-  (defsp app {:dept    {:req {:name string?
-                              :date inst?}
-                        :opt {:note string?}}
-              :student {:req {:name string?
-                              :dob  inst?}}}
-         [[:dept :dadyspec.core/one-many :student]])
-
-
-  (s/exercise :app-un/dept)
-
-
-  (ch/generate-string {:id -1, :email "fun@fun.de"})
-  "{\"id\":-1,\"email\":\"fun@fun.de\"}"
-
-  (ch/parse-string "{\"id\":-1,\"email\":\"fun@fun.de\"}" true)
-
-
-  (ch/decode "{\"myarray\":[2,3,3,2],\"myset\":[\"ad\"]}" true
-          (fn [field-name]
-            (if (= field-name "myset")
-              #{}
-              [])))
-
-
-
-  (gen-spec :model {:dept    {:opt {:name 'string?
-                                    :date 'inst?}}
-                    }
-            []
-            )
-
-  (macroexpand-1 '(defsp app {:dept    {:opt {:name string?
-                                              :date inst?}}
-                              :student {:opt {:name string?
-                                              :dob  inst?}}}
-                         [[:dept :dadyspec.core/one-many :student]]))
-
-
-  (defsp app {:dept    {:req {:name string?
-                              :date inst?}
-                        :opt {:desc string?}}
-              :student {:req {:name string?
-                              :dob  inst?}}}
-         [;[:dept :dadyspec.core/one-many :student]
-          [:student :dadyspec.core/many-one :dept]
-          ])
-  (s/exercise :app/dept 1)
-
-
-
-
-
-  (ch/parse-string "{\"foo\":\"123\"}")
-
-  )
