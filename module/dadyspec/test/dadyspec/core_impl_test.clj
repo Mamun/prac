@@ -8,8 +8,8 @@
 (deftest update-model-key-test
   (testing "testing gen-spec "
     (is (= #:a {:b {:req #:a.b {:id 3}, :opt #:a.b {:re :f}}}
-           (update-model-key {:b {:req {:id 3}
-                                  :opt {:re :f}}} :a)))))
+           (rename-model-key-to-namespace-key {:b {:req {:id 3}
+                                                   :opt {:re :f}}} :a)))))
 
 
 (deftest model->spec-test
@@ -45,3 +45,6 @@
   (spec-builder-test)
 
   )
+
+
+

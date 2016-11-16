@@ -1,6 +1,7 @@
 (ns dadyspec.core
   (:require [clojure.walk :as w]
             [dadyspec.core-impl :as impl]
+            [cheshire.core :as ch]
             [clojure.spec :as s])
   (:import [BigInteger]
            [Double]
@@ -132,7 +133,10 @@
               :min-count 1))
 
 
-(def rel-type-set #{::one-one ::one-many ::many-one})
+(def rel-type-set #{:dadyspec.core/rel-one-many
+                    :dadyspec.core/rel-one-one
+                    :dadyspec.core/rel-many-one})
+
 (s/def ::join (s/coll-of (s/tuple keyword? rel-type-set keyword?) :type vector?))
 
 
@@ -153,7 +157,6 @@
     v))
 
 
-
 (defn gen-spec
   [namespace-name model-m & {:keys [join]
                              :or   {join []}}]
@@ -161,9 +164,23 @@
     (let [m (clojure.walk/postwalk var->symbol model-m)]
       (concat (impl/model->spec namespace-name m {:fixed? false :qualified? true :join join})
               (impl/model->spec namespace-name m {:fixed? false :qualified? false :postfix "-un" :join join})
-              (impl/model->spec namespace-name (conform* m) {:join join :fixed? false :qualified? false :postfix "-ex"})
-              ))
+              (impl/model->spec namespace-name (conform* m) {:join join :fixed? false :qualified? false :postfix "-ex"})))
     (throw (ex-info "failed " (s/explain-data ::input [namespace-name model-m join])))))
+
+
+(defn merge-spec [& spec-coll]
+  (->> spec-coll
+       (remove nil?)
+       (cons 'clojure.spec/merge)))
+
+
+(defn relation-merge [namespace join & {:as m}]
+  (let [w (mapv #(impl/assoc-ns-join namespace %) join)
+        w-m (group-by first w)]
+    (mapv (fn [[k v]]
+            (impl/relational-merge-spec-template k (mapv #(nth % 2) v) m)
+            ) w-m)))
+
 
 
 ;(sc/create-ns-key :hello :a)
@@ -180,48 +197,21 @@
 
 
 
-(comment
-
-
-  (gen-spec :model '{:person {:opt {:id int?}}})
-  (gen-spec :model '{:person {:opt {:id clojure.core/int?}}})
-
-  (macroexpand-1 '(defsp :model {:person {:opt {:name string?}}}))
-
-  (defsp :model3 {:dept    {:req {:name string?
-                                  :id   int?}}
-                  :student {:req {:name string? :id int?}}}
-         [[:dept :1-n :student]])
-
-
-
-  (s/exercise :model3/dept)
-
-  (s/conform :model3/person {:id2 3})
-  ;(->> )
-  (s/conform :model3/person {:id2 3})
-  (s/conform :model3/person-list [{:id2 3}])
-
-  (->> (s/conform :model3-ex/person {:id2 "3"})
-       (s/unform :model3/person))
-
-
-  (->> (s/conform :model3-ex/person-list [{:id2 "3"} {:id2 "4"}])
-       (s/unform :model3/person-list))
-
-  )
+(defn conform-json [spec json-str]
+  (->> (ch/parse-string json-str true)
+       (s/conform spec)))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;Additional spec
 
 
-(defn registry [n-name]
+(defn registry [namespace-name]
   (->> (s/registry)
        (w/postwalk (fn [v]
                      (if (map? v)
                        (->> v
                             (filter (fn [[k _]]
-                                      (clojure.string/includes? (str k) (str n-name))))
+                                      (clojure.string/includes? (str k) (str namespace-name))))
                             (into {}))
                        v)))))
 

@@ -2,65 +2,102 @@
   (:use [clojure.test]
         [dadyspec.core])
   (:require [clojure.spec.test :as stest]
-            [clojure.spec :as s]))
+            [clojure.spec :as s]
+            [cheshire.core :as ch]
+            [clojure.spec.gen :as gen])
+  (:import (java.util Date UUID)))
+
+
+(deftest relation-merge-test
+  (testing "testing relation merge"
+    (let [w (relation-merge :hello [[:a :dadyspec.core/rel-one-one :b]
+                                    [:a :dadyspec.core/rel-one-one :c]])]
+      (is (= w
+             [`(clojure.spec/merge
+                 :hello/a
+                 (clojure.spec/keys :opt [:hello/b-list :hello/c-list]))])))))
+
+
+(deftest gen-spec-test
+  (testing "gen spec test "
+    (let [v (gen-spec :app '{:dept    {:req {:name string?
+                                             :date inst?}
+                                       :opt {:note string?}}
+                             :student {:req {:name string?
+                                             :dob  inst?}}}
+                      :join
+                      [[:dept :dadyspec.core/rel-one-one :student]])]
+      (is (not-empty v)))))
 
 
 
+(deftest check-exec-test
+  (testing "test generate spec "
+    (do
+      (defsp test {:dept    {:req {:id int?}
+                             :opt {:note string?}}
+                   :student {:req {:name string?
+                                   :id   int?}}}
+             :join [[:dept :dadyspec.core/rel-one-one :student]])
+      (is (s/valid? :test/dept {:test.dept/id 123}))
+      (is (s/valid? :test/dept {:test.dept/id      123
+                                :test/student-list [{:test.student/id   23
+                                                     :test.student/name "asdf"}]}))
+      (is (s/valid? :test-un/dept {:id 123}))
+      (is (s/valid? :test-ex/dept {:id "123"})))))
 
-
-;(gen-spec-test)
 
 
 
 (comment
 
-
-  (interpose "\n"
-
-    (gen-spec :app '{:dept    {:req {:name string?
-                                     :date inst?}
-                               :opt {:note string?}}
-                     :student {:req {:name string?
-                                     :dob  inst?}}}
-              :join
-              [[:dept :dadyspec.core/one-many :student]])
+  (gen-spec :app '{:dept    {:req {:id   int?
+                                   :name string?}
+                             :opt {:note string?}}
+                   :student {:req {:name string?
+                                   :id   int}}}
+            :join
+            [[:dept :dadyspec.core/rel-one-many :student]])
 
 
-    )
+  (defsp app {:dept    {:req {:id   int?
+                              :name string?}
+                        :opt {:note string?}}
+              :student {:req {:name string?
+                              :id   int?}}}
+         :join
+         [[:dept :dadyspec.core/rel-one-many :student]])
 
 
-
-  (s/valid? ::email? "a.dsfas@test.de")
-
-  (s/exercise ::email?)
-
-  )
+  (binding [s/*recursion-limit* 0]
+    (clojure.pprint/pprint
+      (s/exercise :app-un/dept 1)))
 
 
-(comment
+  (binding [s/*recursion-limit* 0]
+    (clojure.pprint/pprint
+      (s/exercise :app-un/student 1)))
 
 
+  ;; Convert to json and back from json again with confrom
+  (binding [s/*recursion-limit* 0]
+    (let [v (first (gen/sample (s/gen :app-un/student) 1))
+          v (update v :id str)                              ;;convert int to string
+          v-str (ch/generate-string v)]
+      (conform-json :app-ex/student v-str)))
 
 
-  (s/exercise :dadyspec.core/req-p 2)
-  (s/exercise :dadyspec.core/opt-m 2)
-  (s/exercise :dadyspec.core/model 2)
+  (binding [s/*recursion-limit* 0]
+    (let [v (first (gen/sample (s/gen :app-un/student) 1))]
+      (s/conform :app/student v)))
 
-
-
-  (s/explain :dadyspec.core/req-p {:req {:id nil }}  )
-
-  (s/explain :dadyspec.core/model {:hello {:req n
-                                           :opt {:id 'int?}}}   )
-
-
-  (s/explain :dadyspec.core/model {:hello {:req {:id 'int?}
-                                           :opt1 {:id 'int?}}}   )
-
-
-  (s/explain :dadyspec.core/model {}  )
+  ;(s/form :app/student)
+  ;(s/form :app/dept)
 
   )
+
+
+
 
 
 (comment
@@ -84,9 +121,9 @@
 
   (s/exercise :dadyspec.core/req-or-opt 1)
 
-  (s/valid? :dadyspec.core/req {} )
+  (s/valid? :dadyspec.core/req {})
 
-  (s/valid? :dadyspec.core/req-or-opt {:req nil :opt nil} )
+  (s/valid? :dadyspec.core/req-or-opt {:req nil :opt nil})
 
   ;(s/exercise (s/map-of #{:a :b} #{1 2} ) )
 
@@ -100,15 +137,15 @@
     (gen-spec :model model rel))
 
 
-  (let [model {:dept    {:opt {:name 'string?
-                               :date 'inst?}}}
+  (let [model {:dept {:opt {:name 'string?
+                            :date 'inst?}}}
         rel [[:dept :dadyspec.core/one-many :student]]]
     ;(s/explain-data ::input [:model model rel ] )
     (gen-spec :model model rel))
 
 
-  (defsp model3 {:dept    {:opt {:name string?
-                                  :date inst?}}}
+  (defsp model3 {:dept {:opt {:name string?
+                              :date inst?}}}
          [[:dept :dadyspec.core/one-many :student]])
 
   (x-inst? "2015-12-12")

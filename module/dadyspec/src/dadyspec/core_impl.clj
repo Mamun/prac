@@ -2,8 +2,6 @@
   (:require [clojure.spec :as s]))
 
 
-
-
 (defn add-postfix-to-key [k v]
   (if (namespace k)
     (keyword (str (namespace k) "/" (name k) v))
@@ -23,11 +21,11 @@
 
 
 
-(defn update-model-key-m [ns-key m]
+(defn rename-key-to-namespace-key [namespace-key m]
   (if (nil? m)
     {}
     (->> (map (fn [v]
-                (as-ns-keyword ns-key v)) (keys m))
+                (as-ns-keyword namespace-key v)) (keys m))
          (interleave (keys m))
          (apply assoc {})
          (clojure.set/rename-keys m))))
@@ -36,18 +34,18 @@
 (defn- update-model-key-one [[model-k model-property]]
   (let [v (as-> model-property m
                 (if (:req m)
-                  (update m :req (fn [w] (update-model-key-m model-k w)))
+                  (update m :req (fn [w] (rename-key-to-namespace-key model-k w)))
                   m)
                 (if (:opt m)
-                  (update m :opt (fn [w] (update-model-key-m model-k w)))
+                  (update m :opt (fn [w] (rename-key-to-namespace-key model-k w)))
                   m))]
     [model-k v]))
 
 
-(defn update-model-key [model & ns-key]
-  (let [w (reduce add-postfix-to-key ns-key)]
+(defn rename-model-key-to-namespace-key [model & namespace-key-list]
+  (let [w (reduce add-postfix-to-key namespace-key-list)]
     (->> model
-         (update-model-key-m w )
+         (rename-key-to-namespace-key w)
          (map update-model-key-one)
          (into {}))))
 
@@ -94,7 +92,7 @@
            (clojure.spec/coll-of ~model-k :kind vector?))))))
 
 
-(defn convert-property-to-def [[_ {:keys [req opt]}] ]
+(defn convert-property-to-def [[_ {:keys [req opt]}]]
   (->> (merge opt req)
        (map (fn [[k v]]
               `(clojure.spec/def ~k ~v)))))
@@ -104,11 +102,18 @@
 (defn assoc-ns-join [base-ns-name [src rel dest]]
   (let [src (as-ns-keyword base-ns-name src)
         v (condp = rel
-            :dadyspec.core/one-one (as-ns-keyword base-ns-name dest)
-            :dadyspec.core/many-one (as-ns-keyword base-ns-name dest)
-            :dadyspec.core/one-many (-> (as-ns-keyword base-ns-name dest)
-                                        (add-postfix-to-key "-list")))]
+            :dadyspec.core/rel-one-one (as-ns-keyword base-ns-name dest)
+            :dadyspec.core/rel-many-one (as-ns-keyword base-ns-name dest)
+            :dadyspec.core/rel-one-many (-> (as-ns-keyword base-ns-name dest)
+                                           (add-postfix-to-key "-list")))]
     [src rel v]))
+
+
+(defn reverse-join [[src rel dest]]
+  (condp = rel
+    :dadyspec.core/rel-one-one  [dest :dadyspec.core/rel-one-one src]
+    :dadyspec.core/rel-many-one [dest :dadyspec.core/rel-one-many src]
+    :dadyspec.core/rel-one-many [dest :dadyspec.core/rel-many-one src]))
 
 
 (defn model->spec
@@ -117,12 +122,15 @@
                          (add-postfix-to-key namespace-name postfix)
                          namespace-name)
         j-m (->> join
+                 (mapv reverse-join)
+                 (into join )
+                 (distinct)
                  (mapv #(assoc-ns-join namespace-name %))
                  (group-by first))
         assoc-join-k (fn [w]
                        (->> (get j-m (first w))
                             (mapv #(nth % 2))))]
-    (->> (update-model-key m namespace-name)
+    (->> (rename-model-key-to-namespace-key m namespace-name)
          (mapv (fn [w]
                  (-> w
                      (model-template (assoc-join-k w) opt)
@@ -132,8 +140,8 @@
 
 
 (comment
-  (->> (map (fn [w] (update-model-key-one w :app "-ex")) {:student {:req {:di :id
-                                                                      :name   :na}}})
+  (->> (map (fn [w] (update-model-key-one w :app "-ex")) {:student {:req {:di   :id
+                                                                          :name :na}}})
        (map (fn [[k v]] (convert-property-to-def v)))
        )
 
@@ -141,24 +149,18 @@
 
 
 
+(defn relational-merge-spec-template [p-spec child-spec-coll {:keys [qualified?]
+                                                              :or   {qualified? true}}]
+  (if (or (nil? child-spec-coll)
+          (empty? child-spec-coll))
+    p-spec
+    (if qualified?
+      (list 'clojure.spec/merge p-spec
+            (list 'clojure.spec/keys :opt (into [] child-spec-coll)))
+      (list 'clojure.spec/merge p-spec
+            (list 'clojure.spec/keys :opt-un (into [] child-spec-coll))))))
 
 
 
-
-
-#_(defn format-join [base-ns-name join-list]
-    (->> join-list
-         (mapv (partial assoc-ns-join base-ns-name))
-         (group-by first)))
-
-
-
-
-
-#_(defn reverse-join [[src rel dest]]
-    (condp = rel
-      :1-n [dest :n-1 src]
-      :n-1 [dest :1-n src]
-      [src rel dest]))
 
 

@@ -1,7 +1,8 @@
 (ns dadyspec.walkthrough
   (:use [dadyspec.core])
   (:require [cheshire.core :as ch]
-            [clojure.spec :as s]))
+            [clojure.spec :as s]
+            [clojure.spec.gen :as gen]))
 
 
 (comment
@@ -19,15 +20,7 @@
 
   (s/exercise :app/author)
 
-  ;;Example 2
-
-  (defsp app {:dept    {:req {:name string?
-                              :date inst?}
-                        :opt {:note string?}}
-              :student {:req {:name string?
-                              :dob  inst?}}}
-         :join
-         [[:dept :dadyspec.core/one-many :student]])
+  ;;Example 2 auto generate data
 
   (gen-spec :app '{:dept    {:req {:name string?
                                    :date inst?}
@@ -35,29 +28,53 @@
                    :student {:req {:name string?
                                    :dob  inst?}}}
             :join
-            [[:dept :dadyspec.core/one-many :student]])
-
-  (s/exercise :app/dept)
+            [[:dept :dadyspec.core/rel-one-many :student]])
 
 
-  ;; Example
+  (defsp app {:dept    {:req {:dept-name string?
+                              :date      inst?}
+                        :opt {:note string?}}
+              :student {:req {:student-name string?
+                              :dob          inst?}}}
+         :join
+         [[:dept :dadyspec.core/rel-one-many :student]])
+
+
+
+  (binding [s/*recursion-limit* 0]
+    (clojure.pprint/pprint
+      (s/exercise :app-un/dept 1)))
+
+
+  (binding [s/*recursion-limit* 0]
+    (clojure.pprint/pprint
+      (s/exercise :app-un/student 1)))
+
+
+  ;; Convert to
+  (binding [s/*recursion-limit* 0]
+    (clojure.pprint/pprint
+      (gen/sample (s/gen :app-un/student) 1)
+      ))
+
+
+
+
+  ;; Example conform form string
 
   (defsp app {:company {:req {:name string?
-                              :id int?
+                              :id   int?
                               :type (s/coll-of (s/and keyword? #{:software :hardware})
-                                               :into #{})}} })
+                                               :into #{})}}})
 
   (gen-spec :app '{:company {:req {:name string?
-                                   :id int?
+                                   :id   int?
                                    :type (s/coll-of (s/and keyword? #{:software :hardware})
-                                                   :into #{})}} })
+                                                    :into #{})}}})
 
-  (s/conform :app/company    {:app.company/id 123 :app.company/name "Web De" :app.company/type [:software] })
-  (s/conform :app-un/company {:id 123 :name "Web De" :type [:software]  })
+  (s/conform :app/company {:app.company/id 123 :app.company/name "Web De" :app.company/type [:software]})
+  (s/conform :app-un/company {:id 123 :name "Web De" :type [:software]})
   (s/conform :app-ex/company {:id "123" :name "Web De" :type ["software" "hardware"]})
-
-
-
 
   )
 
