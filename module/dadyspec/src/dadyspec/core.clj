@@ -1,6 +1,7 @@
 (ns dadyspec.core
   (:require [clojure.walk :as w]
             [dadyspec.core-impl :as impl]
+            [dadyspec.util :as u]
             [cheshire.core :as ch]
             [clojure.spec :as s])
   (:import [BigInteger]
@@ -25,7 +26,7 @@
                     #"(?i)[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?")))
 
 
-(s/def ::email?
+(s/def ::email
   (s/with-gen (s/and string? email?)
               #(s/gen #{"test@test.de" "clojure@clojure.de" "fun@fun.de"})))
 
@@ -175,7 +176,7 @@
 
 
 (defn relation-merge [namespace join & {:as m}]
-  (let [w (mapv #(impl/assoc-ns-join namespace %) join)
+  (let [w (mapv #(u/assoc-ns-join namespace %) join)
         w-m (group-by first w)]
     (mapv (fn [[k v]]
             (impl/relational-merge-spec-template k (mapv #(nth % 2) v) m)

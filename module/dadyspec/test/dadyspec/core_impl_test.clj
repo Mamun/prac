@@ -1,6 +1,7 @@
 (ns dadyspec.core-impl-test
   (:use [clojure.test]
-        [dadyspec.core-impl])
+        [dadyspec.core-impl]
+        [dadyspec.util ] )
   (:require [clojure.spec.test :as stest]
             [clojure.spec :as s]))
 
@@ -36,13 +37,13 @@
 (comment
 
   (clojure.pprint/pprint
-    (model->spec {:a {:opt {:id :a}}} :hello {:qualified? false})
+    (model->spec :hello {:a {:opt {:id :a}}}  {:qualified? false})
     )
 
 
   (update-model-key-test)
 
-  (spec-builder-test)
+  (model->spec-test)
 
   )
 
