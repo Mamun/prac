@@ -6,7 +6,7 @@
             [clojure.spec :as s]))
 
 
-(deftest update-model-key-test
+#_(deftest update-model-key-test
   (testing "testing gen-spec "
     (is (= #:a {:b {:req #:a.b {:id 3}, :opt #:a.b {:re :f}}}
            (rename-model-key-to-namespace-key {:b {:req {:id 3}

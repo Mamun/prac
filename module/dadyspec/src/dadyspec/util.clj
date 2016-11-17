@@ -9,12 +9,15 @@
     namespace-key))
 
 
+;(namespace :a.a)
+
 ;; or does not work correctly for unfrom core api
 (defn as-ns-keyword [ns-key r]
+  ;(println ns-key "--" r)
+
   (let [w (if (namespace ns-key)
             (str (namespace ns-key) "." (name ns-key))
             (name ns-key))]
-
     (if (namespace r)
       (keyword (str w "." (namespace r) "/" (name r)))
       (keyword (str w "/" (name r))))))
@@ -31,29 +34,21 @@
          (clojure.set/rename-keys m))))
 
 
-(defn- update-model-key-one [[model-k model-property]]
-  (let [v (as-> model-property m
-                (if (:req m)
-                  (update m :req (fn [w] (rename-key-to-namespace-key model-k w)))
-                  m)
-                (if (:opt m)
-                  (update m :opt (fn [w] (rename-key-to-namespace-key model-k w)))
-                  m))]
-    [model-k v]))
+(defn update-model-key-one [model-k model-property]
+  (as-> model-property m
+        (if (:req m)
+          (update m :req (fn [w] (rename-key-to-namespace-key model-k w)))
+          m)
+        (if (:opt m)
+          (update m :opt (fn [w] (rename-key-to-namespace-key model-k w)))
+          m)))
 
 
-(defn rename-model-key-to-namespace-key
-  [model-m & namespace-key-list]
-  (let [w (reduce add-postfix-to-key namespace-key-list)]
-    (->> model-m
-         (rename-key-to-namespace-key w)
-         (map update-model-key-one)
-         (into {}))))
 
 
 (comment
 
-  (rename-model-key-to-namespace-key {:student {:req {:id :a}}} :app)
+  #_(rename-model-key-to-namespace-key {:student {:req {:id :a}}} :app)
 
   )
 
@@ -61,7 +56,7 @@
 
 (defn get-spec-model [base-ns-name m]
   (let [w (-> (as-ns-keyword base-ns-name :spec)
-              (rename-key-to-namespace-key  m)
+              (rename-key-to-namespace-key m)
               (keys))]
     (->> (mapv #(add-postfix-to-key % "-list") w)
          (concat w))))
@@ -71,7 +66,7 @@
 (comment
 
   (get-spec-model :app {:student {:req {:id :a}}
-                        :dept {:req :s}
+                        :dept    {:req :s}
                         })
   )
 
@@ -79,33 +74,32 @@
 
 (defn reverse-join [[src rel dest]]
   (condp = rel
-    :dadyspec.core/rel-one-one  [dest :dadyspec.core/rel-one-one src]
+    :dadyspec.core/rel-one-one [dest :dadyspec.core/rel-one-one src]
     :dadyspec.core/rel-many-one [dest :dadyspec.core/rel-one-many src]
     :dadyspec.core/rel-one-many [dest :dadyspec.core/rel-many-one src]))
 
 
 
 (defn assoc-ns-join [base-ns-name [src rel dest]]
-  (let [src (as-ns-keyword base-ns-name src)
-        v (condp = rel
-            :dadyspec.core/rel-one-one (as-ns-keyword base-ns-name dest)
-            :dadyspec.core/rel-many-one (as-ns-keyword base-ns-name dest)
-            :dadyspec.core/rel-one-many (-> (as-ns-keyword base-ns-name dest)
-                                            (add-postfix-to-key "-list")))]
-    [src rel v]))
+  (condp = rel
+    :dadyspec.core/rel-one-one (as-ns-keyword base-ns-name dest)
+    :dadyspec.core/rel-many-one (as-ns-keyword base-ns-name dest)
+    :dadyspec.core/rel-one-many (-> (as-ns-keyword base-ns-name dest)
+                                    (add-postfix-to-key "-list")))
+  )
 
 
 
-(defn rename-join-key-to-ns-key [namespace-name join]
-  (->> join
-       (mapv reverse-join)
-       (into join)
-       (distinct)
-       (mapv #(assoc-ns-join namespace-name %))
-       (group-by first)))
+#_(defn rename-join-key-to-ns-key [namespace-name join]
+    (->> join
+         (mapv reverse-join)
+         (into join)
+         (distinct)
+         (mapv #(assoc-ns-join namespace-name %))
+         (group-by first)))
 
 
 (comment
 
-  (rename-join-key-to-ns-key :hello [[:a :dadyspec.core/rel-many-one :b]] )
+  (rename-join-key-to-ns-key :hello [[:a :dadyspec.core/rel-many-one :b]])
   )
