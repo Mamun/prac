@@ -3,132 +3,40 @@
             [dadyspec.core-impl :as impl]
             [dadyspec.util :as u]
             [cheshire.core :as ch]
-            [clojure.spec :as s])
-  (:import [BigInteger]
-           [Double]
-           (org.joda.time DateTime)
-           (java.util Date UUID)))
+            [clojure.spec :as s]
+            [clojure.spec.gen :as gen]
+            [dadyspec.core-gen :as sg]))
 
 
+(s/def ::email (s/with-gen (s/and string? sg/email?)
+                           #(s/gen #{"test@test.de" "clojure@clojure.de" "fun@fun.de"})))
+(s/def ::x-int (s/with-gen (s/conformer sg/x-int? (fn [_ v] (str v))) (fn [] sg/x-int-gen)))
+(s/def ::x-integer (s/with-gen (s/conformer sg/x-integer? (fn [_ v] (str v))) (fn [] sg/x-integer-gen)))
+(s/def ::x-double (s/with-gen (s/conformer sg/x-double? (fn [_ v] (str v))) (fn [] sg/x-double-gen)))
+(s/def ::x-boolean (s/with-gen (s/conformer sg/x-boolean? (fn [_ v] (str v))) (fn [] sg/x-boolean-gen)))
+(s/def ::x-keyword (s/with-gen (s/conformer sg/x-keyword? (fn [_ v] (str v))) (fn [] sg/x-keyword-gen)))
+(s/def ::x-inst (s/with-gen (s/conformer sg/x-inst? (fn [_ v] (str v))) (fn [] sg/x-inst-gen)))
+(s/def ::x-uuid (s/with-gen (s/conformer sg/x-uuid? (fn [_ v] (str v))) (fn [] sg/x-uuid-gen)))
 
-(defn- matches-regex?
-  "Returns true if the string matches the given regular expression"
-  [v regex]
-  (boolean (re-matches regex v)))
-
-
-(defn email?
-  "Returns true if v is an email address"
-  [v]
-  (if (nil? v)
-    false
-    (matches-regex? v
-                    #"(?i)[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?")))
-
-
-(s/def ::email
-  (s/with-gen (s/and string? email?)
-              #(s/gen #{"test@test.de" "clojure@clojure.de" "fun@fun.de"})))
-
-
-
-(defn x-int? [x]
-  (cond
-    (integer? x) x
-    (string? x) (try
-                  (Integer/parseInt x)
-                  (catch Exception e
-                    :clojure.spec/invalid))
-    :else :clojure.spec/invalid))
-
-
-
-(comment
-
-  (s/def ::id (s/with-gen (s/conformer x-int?) #(s/gen #{12}) )
-
-    
-  (s/conform ::id "12")
-
-  (s/exercise ::id)
-
-  )
-
-
-(defn x-integer? [x]
-  (cond
-    (integer? x) x
-    (string? x) (try
-                  (BigInteger. x)
-                  (catch Exception e
-                    :clojure.spec/invalid))
-    :else :clojure.spec/invalid))
-
-
-(defn x-double? [x]
-  (cond
-    (double? x) x
-    (string? x) (try
-                  (Double/parseDouble x)
-                  (catch Exception e
-                    :clojure.spec/invalid))
-    :else :clojure.spec/invalid))
-
-
-(defn x-boolean? [x]
-  (cond
-    (boolean? x) x
-    (string? x) (cond
-                  (= "true" x) true
-                  (= "false" x) false
-                  :else ::s/invalid)
-    :else :clojure.spec/invalid))
-
-
-(defn x-keyword? [x]
-  (cond
-    (keyword? x) x
-    (string? x) (keyword x)
-    :else :clojure.spec/invalid))
-
-
-(defn x-inst? [x]
-  (cond
-    (inst? x) x
-    (string? x) (try
-                  (.toDate (org.joda.time.DateTime/parse x))
-                  (catch Exception e
-                    :clojure.spec/invalid))
-    :else :clojure.spec/invalid))
-
-
-(defn x-uuid? [x]
-  (cond
-    (uuid? x) x
-    (string? x) (try
-                  (UUID/fromString x)
-                  (catch Exception e
-                    :clojure.spec/invalid))
-    :else :clojure.spec/invalid))
 
 
 (def ^:dynamic *conformer-m*
-  {'integer?              `(clojure.spec/conformer dadyspec.core/x-integer?)
-   'clojure.core/integer? `(clojure.spec/conformer dadyspec.core/x-integer?)
-   'int?                  `(clojure.spec/conformer dadyspec.core/x-int?)
-   'clojure.core/int?     `(clojure.spec/conformer dadyspec.core/x-int?)
-   'boolean?              `(clojure.spec/conformer dadyspec.core/x-boolean?)
-   'clojure.core/boolean? `(clojure.spec/conformer dadyspec.core/x-boolean?)
-   'double?               `(clojure.spec/conformer dadyspec.core/x-boolean?)
-   'clojure.core/double?  `(clojure.spec/conformer dadyspec.core/x-double?)
-   'keyword?              `(clojure.spec/conformer dadyspec.core/x-keyword?)
-   'clojure.core/keyword  `(clojure.spec/conformer dadyspec.core/x-keyword?)
-   'inst?                 `(clojure.spec/conformer dadyspec.core/x-inst?)
-   'clojure.core/inst?    `(clojure.spec/conformer dadyspec.core/x-inst?)
-   'uuid?                 `(clojure.spec/conformer dadyspec.core/x-uuid?)
-   'clojure.core/uuid?    `(clojure.spec/conformer dadyspec.core/x-uuid?)})
+  {'integer?              ::x-integer
+   'clojure.core/integer? ::x-integer
+   'int?                  ::x-int
+   'clojure.core/int?     ::x-int
+   'boolean?              ::x-boolean
+   'clojure.core/boolean? ::x-boolean
+   'double?               ::x-double
+   'clojure.core/double?  ::x-double
+   'keyword?              ::x-keyword
+   'clojure.core/keyword  ::x-keyword
+   'inst?                 ::x-inst
+   'clojure.core/inst?    ::x-inst
+   'uuid?                 ::x-uuid
+   'clojure.core/uuid?    ::x-uuid})
 
-;(.toDate (org.joda.time.DateTime/parse x))
+
 
 (defn- conform* [m]
   (clojure.walk/postwalk (fn [s]

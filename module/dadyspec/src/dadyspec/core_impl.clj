@@ -13,13 +13,11 @@
   ([model-k qualified?]
    (if qualified?
      (let [n (keyword (str (namespace model-k) ".spec/" (name model-k)))]
-       (list `(clojure.spec/def ~n (clojure.spec/merge (clojure.spec/keys :req [~model-k])
-                                                       (clojure.spec/map-of #{~model-k} any?)))
+       (list `(clojure.spec/def ~n (clojure.spec/keys :req [~model-k]))
              (add-list n)))
      (let [n (keyword (str (namespace model-k) ".spec/" (name model-k)))
            r (keyword (name model-k))]
-       (list `(clojure.spec/def ~n (clojure.spec/merge (clojure.spec/keys :req-un [~model-k])
-                                                       (clojure.spec/map-of #{~r} any?)))
+       (list `(clojure.spec/def ~n (clojure.spec/keys :req-un [~model-k]))
              (add-list n)))))
   ([model-k]
    (model-spec-template model-k true)))
@@ -112,7 +110,9 @@
     (->> m
          (map (partial model->spec-one namespace-name opt j-m))
          (apply concat)
+         (reverse)
          (cons (app-spec-template namespace-name w1))
+         (reverse)
          )))
 
 

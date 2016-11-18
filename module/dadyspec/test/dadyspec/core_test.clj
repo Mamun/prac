@@ -100,7 +100,18 @@
       (s/exercise :app/spec 1)))
 
 
+  (binding [s/*recursion-limit* 0]
+    (clojure.pprint/pprint
+      (s/exercise :ex-app/dept 1)))
 
+  (binding [s/*recursion-limit* 0]
+    (clojure.pprint/pprint
+      (s/exercise :ex-app/dept-list 1)))
+
+
+  (binding [s/*recursion-limit* 0]
+    (clojure.pprint/pprint
+      (s/exercise :ex-app/spec 1)))
 
   ;(s/form :app/student)
   ;(s/form :app/dept)
@@ -114,6 +125,15 @@
 (comment
 
 
+
+  (defsp app {:dept    {:req {:id   int?
+                              :dob inst?
+                              }
+                        }}
+
+         )
+
+  (s/exercise :ex-app/dept )
 
 
   ;(s/valid? ::join [[:dept ::one-many :student]])
@@ -205,22 +225,15 @@
 
 
 
-  (clojure.spec/def :app.spec/dept    (clojure.spec/keys :req-un [:app/dept]))
+  (clojure.spec/def :app.spec/dept (clojure.spec/keys :req-un [:app/dept]))
   (clojure.spec/def :app.spec/student (clojure.spec/keys :req-un [:app/student]))
   (s/def :app/spec (s/or :app.spec/dept :app.spec/dept
-                         :app.spec/student :app.spec/student ))
+                         :app.spec/student :app.spec/student))
 
 
 
   #_(s/conform :app/spec {:student {:name "", :id -1}})
   #_(s/explain :app/spec {:dept {:name "", :id -1}})
-
-
-
-
-
-
-
 
   )
 

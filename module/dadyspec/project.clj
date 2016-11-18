@@ -4,7 +4,7 @@
             :license {:name "Eclipse Public License"
                       :url  "http://www.eclipse.org/legal/epl-v10.html"}
             :dependencies [[org.clojure/clojure "1.9.0-alpha14"]
-                           [clj-time "0.12.2"]
+                           #_[clj-time "0.12.2"]
                            [cheshire "5.6.3"]]
   :profiles {:dev {:repl-options   {:port 4555}
                    :codox          {:src-linenum-anchor-prefix "L"
