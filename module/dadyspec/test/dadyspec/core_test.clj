@@ -71,29 +71,36 @@
 
   (binding [s/*recursion-limit* 0]
     (clojure.pprint/pprint
-      (s/exercise :app-un.spec/dept 1)))
-
-  (binding [s/*recursion-limit* 0]
-    (clojure.pprint/pprint
-      (s/exercise :app-un/dept 1)))
+      (s/exercise :app/dept 1)))
 
 
   (binding [s/*recursion-limit* 0]
     (clojure.pprint/pprint
-      (s/exercise :app-un/student 1)))
-
-
-  ;; Convert to json and back from json again with confrom
-  (binding [s/*recursion-limit* 0]
-    (let [v (first (gen/sample (s/gen :app-un/student) 1))
-          v (update v :id str)                              ;;convert int to string
-          v-str (ch/generate-string v)]
-      (conform-json :app-ex/student v-str)))
+      (s/exercise :app/dept-list 1)))
 
 
   (binding [s/*recursion-limit* 0]
-    (let [v (first (gen/sample (s/gen :app-un/student) 1))]
-      (s/conform :app/student v)))
+    (clojure.pprint/pprint
+      (s/exercise :un-app.spec/dept 2)))
+
+
+  (binding [s/*recursion-limit* 0]
+    (clojure.pprint/pprint
+      (s/exercise :un-app.spec/dept-list 1)))
+
+
+  (binding [s/*recursion-limit* 0]
+    (clojure.pprint/pprint
+      (s/exercise :un-app.spec/student-list 1)))
+
+
+
+  (binding [s/*recursion-limit* 0]
+    (clojure.pprint/pprint
+      (s/exercise :app/spec 1)))
+
+
+
 
   ;(s/form :app/student)
   ;(s/form :app/dept)

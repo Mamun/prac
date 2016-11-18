@@ -3,32 +3,27 @@
             [dadyspec.util :as u]))
 
 
-#_(defn- get-key-set [req opt qualified?]
-    (if qualified?
-      (into #{} (into req opt))
-      (->> (into req opt)
-           (mapv name)
-           (mapv keyword)
-           (into #{}))))
-
 (defn add-list [model-k]
   (let [k-list (u/add-postfix-to-key model-k "-list")]
     `(clojure.spec/def ~k-list
        (clojure.spec/coll-of ~model-k :kind vector?))))
 
 
-(defn add-spec
-  ([model-k qualified? ]
+(defn model-spec-template
+  ([model-k qualified?]
    (if qualified?
      (let [n (keyword (str (namespace model-k) ".spec/" (name model-k)))]
-       `(clojure.spec/def ~n (clojure.spec/merge (clojure.spec/keys :req [~model-k])
-                                                 (clojure.spec/map-of #{~model-k} any?))))
+       (list `(clojure.spec/def ~n (clojure.spec/merge (clojure.spec/keys :req [~model-k])
+                                                       (clojure.spec/map-of #{~model-k} any?)))
+             (add-list n)))
      (let [n (keyword (str (namespace model-k) ".spec/" (name model-k)))
-           r (keyword (name model-k)) ]
-       `(clojure.spec/def ~n (clojure.spec/merge (clojure.spec/keys :req-un [~model-k])
-                                                 (clojure.spec/map-of #{~r} any?))))))
+           r (keyword (name model-k))]
+       (list `(clojure.spec/def ~n (clojure.spec/merge (clojure.spec/keys :req-un [~model-k])
+                                                       (clojure.spec/map-of #{~r} any?)))
+             (add-list n)))))
   ([model-k]
-   (add-spec model-k true)))
+   (model-spec-template model-k true)))
+
 
 
 (defn type-dispatch [{:keys [fixed? qualified?]
@@ -46,12 +41,9 @@
   [model-k req opt {:keys [fixed? qualified?]
                     :or   {fixed?     true
                            qualified? true}}]
-
-  (list `(clojure.spec/def ~model-k (clojure.spec/keys :req ~req :opt ~opt))
-        (add-list model-k)
-        (add-spec model-k)
-        (add-spec (u/add-postfix-to-key model-k "-list") )
-        ))
+  (concat (list `(clojure.spec/def ~model-k (clojure.spec/keys :req ~req :opt ~opt))
+                (add-list model-k))
+          (model-spec-template model-k)))
 
 
 (defmethod model-template
@@ -61,8 +53,7 @@
                            qualified? true}}]
   (list `(clojure.spec/def ~model-k (clojure.spec/keys :req-un ~req :opt-un ~opt))
         (add-list model-k)
-        (add-spec model-k false)
-        (add-spec (u/add-postfix-to-key model-k "-list") false  )))
+        (model-spec-template model-k false)))
 
 
 (defmethod model-template
@@ -85,21 +76,12 @@
               `(clojure.spec/def ~k ~v)))))
 
 
-#_(defn spec-template [namespace-name model-k {:keys [fixed? qualified?]
-                                             :or   {fixed?     true
-                                                    qualified? true}}]
-  (let [k (-> (u/as-ns-keyword namespace-name :spec)
-              (u/as-ns-keyword model-k))
-        v (-> (u/as-ns-keyword namespace-name model-k))
-        k-list (u/add-postfix-to-key k "-list")
-        v-list (u/add-postfix-to-key v "-list")]
-    (if qualified?
-      `((clojure.spec/def ~k (clojure.spec/merge (clojure.spec/keys :req [~v])
-                                                 (clojure.spec/map-of #{~v} any?)))
-         (clojure.spec/def ~k-list (clojure.spec/keys :req [~v-list])))
-      `((clojure.spec/def ~k (clojure.spec/merge (clojure.spec/keys :req-un [~v])
-                                                 (clojure.spec/map-of #{~model-k} any?)))
-         (clojure.spec/def ~k-list (clojure.spec/keys :req-un [~v-list]))))))
+
+
+(defn app-spec-template [namespace-name coll]
+  (let [w (interleave  coll #_(map (comp keyword name)  coll)  coll)]
+    `(s/def ~(u/as-ns-keyword namespace-name :spec) ~(cons 'clojure.spec/or w)) )
+  )
 
 
 
@@ -111,18 +93,16 @@
         opt-list (into (or j []) (keys opt))
         req-list (into [] (keys req))]
     (concat (property-template req opt)
-            (model-template model-k req-list opt-list opt-m)
-            #_(spec-template namespace-name k opt-m))))
+            (model-template model-k req-list opt-list opt-m))))
 
 
 (defn model->spec
   [namespace-name m {:keys [postfix join] :as opt}]
-  (let [namespace-name (u/add-postfix-to-key namespace-name postfix)
+  (let [namespace-name (u/add-prefix-to-key namespace-name postfix)
         w (mapv (fn [w]
                   (keyword (str (name namespace-name) ".spec") (name w))
-                  ) (keys m ))
+                  ) (keys m))
         w1 (concat w (mapv #(u/add-postfix-to-key % "-list") w))
-        _ (println "--" w1)
 
         j-m (->> join
                  (mapv u/reverse-join)
@@ -131,7 +111,9 @@
                  (group-by first))]
     (->> m
          (map (partial model->spec-one namespace-name opt j-m))
-         (apply concat))))
+         (apply concat)
+         (cons (app-spec-template namespace-name w1))
+         )))
 
 
 
@@ -139,7 +121,7 @@
 
 
 
-  (model->spec :app {:student {:opt {:id :a}}} {:qualified? true})
+  (model->spec :app {:student {:opt {:id :a}}} {:qualified? true :postfix "un-"})
 
 
   (->> (map (fn [w] (update-model-key-one w :app "-ex")) {:student {:req {:di   :id

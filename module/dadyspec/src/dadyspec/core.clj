@@ -42,6 +42,19 @@
     :else :clojure.spec/invalid))
 
 
+
+(comment
+
+  (s/def ::id (s/with-gen (s/conformer x-int?) #(s/gen #{12}) )
+
+    
+  (s/conform ::id "12")
+
+  (s/exercise ::id)
+
+  )
+
+
 (defn x-integer? [x]
   (cond
     (integer? x) x
@@ -164,8 +177,8 @@
   (if (s/valid? ::input [namespace-name model-m join])
     (let [m (clojure.walk/postwalk var->symbol model-m)]
       (concat (impl/model->spec namespace-name m {:fixed? false :qualified? true :join join})
-              (impl/model->spec namespace-name m {:fixed? false :qualified? false :postfix "-un" :join join})
-              (impl/model->spec namespace-name (conform* m) {:join join :fixed? false :qualified? false :postfix "-ex"})))
+              (impl/model->spec namespace-name m {:fixed? false :qualified? false :postfix "un-" :join join})
+              (impl/model->spec namespace-name (conform* m) {:join join :fixed? false :qualified? false :postfix "ex-"})))
     (throw (ex-info "failed " (s/explain-data ::input [namespace-name model-m join])))))
 
 
