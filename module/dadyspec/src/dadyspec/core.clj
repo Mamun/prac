@@ -4,8 +4,7 @@
             [dadyspec.util :as u]
             [cheshire.core :as ch]
             [clojure.spec :as s]
-            [clojure.spec.gen :as gen]
-            [dadyspec.core-gen :as sg]))
+            [dadyspec.core-conformer :as sg]))
 
 
 (s/def ::email (s/with-gen (s/and string? sg/email?)
@@ -37,13 +36,13 @@
    'clojure.core/uuid?    ::x-uuid})
 
 
-
 (defn- conform* [m]
   (clojure.walk/postwalk (fn [s]
                            (if-let [r (get *conformer-m* s)]
                              r
                              s)
                            ) m))
+
 
 
 (s/def ::req (s/every-kv keyword? any? :min-count 1))
@@ -61,16 +60,26 @@
 
 (s/def ::join (s/coll-of (s/tuple keyword? rel-type-set keyword?) :type vector?))
 
+(s/def ::gen-type (s/coll-of #{:qualified :unqualified :ex} :pred #{}))
+
+(s/def ::opt-k (s/merge (s/keys :opt-un [::join ::gen-type])
+                        (s/map-of #{:join :gen-type} any?)))
+
 
 (s/def ::input (s/cat :base-ns keyword?
                       :model ::model
-                      :join ::join))
+                      :opt ::opt-k))
 (s/def ::output any?)
 
 
-(s/fdef gen-spec
-        :args ::input
-        :ret ::output)
+(comment
+  (s/explain ::opt-k {:gen-type #{:qualified}
+
+                      })
+
+  )
+
+
 
 
 (defn- var->symbol [v]
@@ -80,15 +89,27 @@
 
 
 (defn gen-spec
-  [namespace-name model-m & {:keys [join]
-                             :or   {join []}}]
-  (if (s/valid? ::input [namespace-name model-m join])
-    (let [m (clojure.walk/postwalk var->symbol model-m)]
-      (concat (impl/model->spec namespace-name m {:fixed? false :qualified? true :join join})
-              (impl/model->spec namespace-name m {:fixed? false :qualified? false :postfix "un-" :join join})
-              (impl/model->spec namespace-name (conform* m) {:join join :fixed? false :qualified? false :postfix "ex-"})))
-    (throw (ex-info "failed " (s/explain-data ::input [namespace-name model-m join])))))
+  ([namespace-name model-m opt-config-m]
+   (if (s/valid? ::input [namespace-name model-m opt-config-m])
+     (let [{:keys [join gen-type]} opt-config-m
+           m (clojure.walk/postwalk var->symbol model-m)
+           q-list (when (contains? gen-type :qualified)
+                    (->> {:fixed? false :qualified? true :join join}
+                         (impl/model->spec namespace-name m)))
+           unq-list (when (contains? gen-type :unqualified)
+                      (->> {:fixed? false :qualified? false :postfix "un-" :join join}
+                           (impl/model->spec namespace-name m)))
+           ex-list (when (contains? gen-type :ex)
+                     (->> {:join join :fixed? false :qualified? false :postfix "ex-"}
+                          (impl/model->spec namespace-name (conform* m))))]
+       (concat q-list unq-list ex-list))
+     (throw (ex-info "failed " (s/explain-data ::input [namespace-name model-m opt-config-m])))))
+  ([namespace-name model-m]
+   (gen-spec namespace-name model-m {:join [] :gen-type #{:qualified}})))
 
+
+
+(s/fdef gen-spec :args ::input :ret ::output)
 
 (defn merge-spec [& spec-coll]
   (->> spec-coll
@@ -109,12 +130,9 @@
 
 
 (defmacro defsp
-  ([m-name m & {:keys [join]}]
+  ([m-name m & {:as opt-m}]
    (let [m-name (keyword m-name)]
-     (let [r (if join
-               (gen-spec m-name m :join join)
-               (gen-spec m-name m)
-               )]
+     (let [r (gen-spec m-name m opt-m)]
        `~(cons 'do r)))))
 
 

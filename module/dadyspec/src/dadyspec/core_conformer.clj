@@ -1,4 +1,4 @@
-(ns dadyspec.core-gen
+(ns dadyspec.core-conformer
   (:require [clojure.spec :as s]
             [clojure.spec.gen :as gen])
   (:import [BigInteger]
@@ -16,6 +16,16 @@
                   (catch Exception e
                     :clojure.spec/invalid))
     :else :clojure.spec/invalid))
+
+
+(comment
+  (s/conform)
+
+  (s/explain (and (s/conformer x-int?)
+                  (s/int-in 10 15)) "12")
+  (s/explain (and (s/conformer x-int?) (s/int-in 10 15)) 11  )
+
+  )
 
 
 (def x-int-gen (gen/fmap #(str %) (gen/int)))

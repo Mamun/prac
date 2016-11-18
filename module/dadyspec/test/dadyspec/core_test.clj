@@ -25,10 +25,8 @@
                                        :opt {:note string?}}
                              :student {:req {:name string?
                                              :dob  inst?}}}
-                      :join
-                      [[:dept :dadyspec.core/rel-one-one :student]])]
+                      {:join [[:dept :dadyspec.core/rel-one-one :student]]})]
       (is (not-empty v)))))
-
 
 
 (deftest check-exec-test
@@ -56,8 +54,8 @@
                              :opt {:note string?}}
                    :student {:req {:name string?
                                    :id   int}}}
-            :join
-            [[:dept :dadyspec.core/rel-one-many :student]])
+            {:join     [[:dept :dadyspec.core/rel-one-many :student]]
+             :gen-type #{:unqualified :qualified}})
 
 
   (defsp app {:dept    {:req {:id   int?
@@ -125,15 +123,18 @@
 (comment
 
 
+  (gen-spec :app '{:dept {:req {:id  (and int? (s/int-in 10 15))
+                                :dob inst?
+                                }}}
+            {:gen-type #{:ex}})
 
-  (defsp app {:dept    {:req {:id   int?
-                              :dob inst?
-                              }
-                        }}
-
+  (defsp app {:dept {:req {:id  (merge int? (s/int-in 10 15))}}}
+         :gen-type #{:ex}
          )
 
-  (s/exercise :ex-app/dept )
+  (s/exercise :ex-app/dept)
+
+  (s/explain :ex-app/dept {:id "11"} )
 
 
   ;(s/valid? ::join [[:dept ::one-many :student]])
