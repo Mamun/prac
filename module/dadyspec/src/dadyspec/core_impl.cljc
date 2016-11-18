@@ -83,7 +83,7 @@
 
 
 
-(defn model->spec-one [namespace-name opt-m j-m [k v]]
+(defn- model->spec-one [namespace-name opt-m j-m [k v]]
   (let [model-k (u/as-ns-keyword namespace-name k)
         {:keys [req opt]} (u/update-model-key-one model-k v)
         j (->> (get j-m model-k)
@@ -121,7 +121,7 @@
 
 
 
-  (model->spec :app {:student {:opt {:id :a}}} {:qualified? true :postfix "un-"})
+  (model->spec :app.hello {:student {:opt {:id :a}}} {:qualified? true :postfix "un-"})
 
 
   (->> (map (fn [w] (update-model-key-one w :app "-ex")) {:student {:req {:di   :id

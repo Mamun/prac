@@ -2,43 +2,14 @@
   (:require [clojure.walk :as w]
             [dadyspec.core-impl :as impl]
             [dadyspec.util :as u]
-            [cheshire.core :as ch]
+;            [cheshire.core :as ch]
             [clojure.spec :as s]
-            [dadyspec.core-conformer :as sg]))
-
-
-(s/def ::email (s/with-gen (s/and string? sg/email?)
-                           #(s/gen #{"test@test.de" "clojure@clojure.de" "fun@fun.de"})))
-(s/def ::x-int (s/with-gen (s/conformer sg/x-int? (fn [_ v] (str v))) (fn [] sg/x-int-gen)))
-(s/def ::x-integer (s/with-gen (s/conformer sg/x-integer? (fn [_ v] (str v))) (fn [] sg/x-integer-gen)))
-(s/def ::x-double (s/with-gen (s/conformer sg/x-double? (fn [_ v] (str v))) (fn [] sg/x-double-gen)))
-(s/def ::x-boolean (s/with-gen (s/conformer sg/x-boolean? (fn [_ v] (str v))) (fn [] sg/x-boolean-gen)))
-(s/def ::x-keyword (s/with-gen (s/conformer sg/x-keyword? (fn [_ v] (str v))) (fn [] sg/x-keyword-gen)))
-(s/def ::x-inst (s/with-gen (s/conformer sg/x-inst? (fn [_ v] (str v))) (fn [] sg/x-inst-gen)))
-(s/def ::x-uuid (s/with-gen (s/conformer sg/x-uuid? (fn [_ v] (str v))) (fn [] sg/x-uuid-gen)))
-
-
-
-(def ^:dynamic *conformer-m*
-  {'integer?              ::x-integer
-   'clojure.core/integer? ::x-integer
-   'int?                  ::x-int
-   'clojure.core/int?     ::x-int
-   'boolean?              ::x-boolean
-   'clojure.core/boolean? ::x-boolean
-   'double?               ::x-double
-   'clojure.core/double?  ::x-double
-   'keyword?              ::x-keyword
-   'clojure.core/keyword  ::x-keyword
-   'inst?                 ::x-inst
-   'clojure.core/inst?    ::x-inst
-   'uuid?                 ::x-uuid
-   'clojure.core/uuid?    ::x-uuid})
+            [dadyspec.core-xtype :as sg]))
 
 
 (defn- conform* [m]
   (clojure.walk/postwalk (fn [s]
-                           (if-let [r (get *conformer-m* s)]
+                           (if-let [r (get sg/*conformer-m* s)]
                              r
                              s)
                            ) m))
@@ -70,16 +41,6 @@
                       :model ::model
                       :opt ::opt-k))
 (s/def ::output any?)
-
-
-(comment
-  (s/explain ::opt-k {:gen-type #{:qualified}
-
-                      })
-
-  )
-
-
 
 
 (defn- var->symbol [v]
@@ -137,7 +98,7 @@
 
 
 
-(defn conform-json [spec json-str]
+#_(defn conform-json [spec json-str]
   (->> (ch/parse-string json-str true)
        (s/conform spec)))
 
@@ -170,7 +131,7 @@
          (clojure.string/join))))
 
 
-(defn write-spec-to-file [dir package-name spec-list]
+#_(defn write-spec-to-file [dir package-name spec-list]
   (let [as-dir (clojure.string/join "/" (clojure.string/split package-name #"\."))
         file-path (str dir "/" as-dir ".clj")
         file-str (as-file-str package-name spec-list)]

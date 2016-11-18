@@ -195,46 +195,4 @@
 
   )
 
-(comment
-
-
-  (clojure.spec/def :app.dept/name string?)
-  (clojure.spec/def :app.dept/id int?)
-  (clojure.spec/def :app.dept/note string?)
-  (clojure.spec/def :app/dept
-    (clojure.spec/keys :req-un [:app.dept/id :app.dept/name]
-                       :opt-un [:app.dept/note]))
-
-
-
-  #_(clojure.pprint/pprint
-      (s/exercise :app.spec/dept 1))
-
-
-  #_(clojure.pprint/pprint
-      (s/exercise :app/dept 1))
-
-
-  (clojure.spec/def :app.student/id int?)
-  (clojure.spec/def :app.student/name string?)
-  (clojure.spec/def :app/student
-    (clojure.spec/keys :req-un [:app.student/name :app.student/id]))
-
-
-  #_(clojure.pprint/pprint
-      (s/exercise :app.spec/student 1))
-
-
-
-  (clojure.spec/def :app.spec/dept (clojure.spec/keys :req-un [:app/dept]))
-  (clojure.spec/def :app.spec/student (clojure.spec/keys :req-un [:app/student]))
-  (s/def :app/spec (s/or :app.spec/dept :app.spec/dept
-                         :app.spec/student :app.spec/student))
-
-
-
-  #_(s/conform :app/spec {:student {:name "", :id -1}})
-  #_(s/explain :app/spec {:dept {:name "", :id -1}})
-
-  )
 
