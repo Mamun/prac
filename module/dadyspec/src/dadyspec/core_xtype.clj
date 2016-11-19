@@ -123,30 +123,3 @@
                     #"(?i)[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?")))
 
 
-(s/def ::email (s/with-gen (s/and string? email?)
-                           #(s/gen #{"test@test.de" "clojure@clojure.de" "fun@fun.de"})))
-(s/def ::x-int (s/with-gen (s/conformer x-int? (fn [_ v] (str v))) (fn [] x-int-gen)))
-(s/def ::x-integer (s/with-gen (s/conformer x-integer? (fn [_ v] (str v))) (fn [] x-integer-gen)))
-(s/def ::x-double (s/with-gen (s/conformer x-double? (fn [_ v] (str v))) (fn [] x-double-gen)))
-(s/def ::x-boolean (s/with-gen (s/conformer x-boolean? (fn [_ v] (str v))) (fn [] x-boolean-gen)))
-(s/def ::x-keyword (s/with-gen (s/conformer x-keyword? (fn [_ v] (str v))) (fn [] x-keyword-gen)))
-(s/def ::x-inst (s/with-gen (s/conformer x-inst? (fn [_ v] (str v))) (fn [] x-inst-gen)))
-(s/def ::x-uuid (s/with-gen (s/conformer x-uuid? (fn [_ v] (str v))) (fn [] x-uuid-gen)))
-
-
-
-(def ^:dynamic *conformer-m*
-  {'integer?              ::x-integer
-   'clojure.core/integer? ::x-integer
-   'int?                  ::x-int
-   'clojure.core/int?     ::x-int
-   'boolean?              ::x-boolean
-   'clojure.core/boolean? ::x-boolean
-   'double?               ::x-double
-   'clojure.core/double?  ::x-double
-   'keyword?              ::x-keyword
-   'clojure.core/keyword  ::x-keyword
-   'inst?                 ::x-inst
-   'clojure.core/inst?    ::x-inst
-   'uuid?                 ::x-uuid
-   'clojure.core/uuid?    ::x-uuid})

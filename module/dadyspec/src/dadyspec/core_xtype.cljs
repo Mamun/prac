@@ -21,5 +21,7 @@
 
 (def ^:dynamic *conformer-m*
   {'integer?              ::x-integer
-   'clojure.core/integer? ::x-integer
+   ;'clojure.core/integer? ::x-integer
    })
+
+

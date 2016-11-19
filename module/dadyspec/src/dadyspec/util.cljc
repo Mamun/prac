@@ -1,4 +1,5 @@
-(ns dadyspec.util)
+(ns dadyspec.util
+  (:require [clojure.set]))
 
 
 (defn add-postfix-to-key [namespace-key post-fix-str]
@@ -17,24 +18,6 @@
     namespace-key))
 
 
-#_(comment
-
-    (name :a.a/a)
-    (namespace :a.a/a)
-
-
-    (let [w (clojure.string/split ":a.b" #"\.")]
-      (clojure.string/split (first w) #":")
-
-      )
-
-
-    (add-prefix-to-key :b "un-")
-
-    )
-
-
-;(namespace :a.a)
 
 ;; or does not work correctly for unfrom core api
 (defn as-ns-keyword [ns-key r]
@@ -70,30 +53,12 @@
 
 
 
-
-(comment
-
-  #_(rename-model-key-to-namespace-key {:student {:req {:id :a}}} :app)
-
-  )
-
-
-
 (defn get-spec-model [base-ns-name m]
   (let [w (-> (as-ns-keyword base-ns-name :spec)
               (rename-key-to-namespace-key m)
               (keys))]
     (->> (mapv #(add-postfix-to-key % "-list") w)
          (concat w))))
-
-
-
-(comment
-
-  (get-spec-model :app {:student {:req {:id :a}}
-                        :dept    {:req :s}
-                        })
-  )
 
 
 
@@ -110,21 +75,7 @@
     :dadyspec.core/rel-one-one (as-ns-keyword base-ns-name dest)
     :dadyspec.core/rel-many-one (as-ns-keyword base-ns-name dest)
     :dadyspec.core/rel-one-many (-> (as-ns-keyword base-ns-name dest)
-                                    (add-postfix-to-key "-list")))
-  )
+                                    (add-postfix-to-key "-list"))))
 
 
 
-#_(defn rename-join-key-to-ns-key [namespace-name join]
-    (->> join
-         (mapv reverse-join)
-         (into join)
-         (distinct)
-         (mapv #(assoc-ns-join namespace-name %))
-         (group-by first)))
-
-
-(comment
-
-  (rename-join-key-to-ns-key :hello [[:a :dadyspec.core/rel-many-one :b]])
-  )

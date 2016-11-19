@@ -12,10 +12,10 @@
 (defn model-spec-template
   ([model-k qualified?]
    (if qualified?
-     (let [n (keyword (str (namespace model-k) ".spec/" (name model-k)))]
+     (let [n (keyword (str (namespace model-k) ".entity/" (name model-k)))]
        (list `(clojure.spec/def ~n (clojure.spec/keys :req [~model-k]))
              (add-list n)))
-     (let [n (keyword (str (namespace model-k) ".spec/" (name model-k)))
+     (let [n (keyword (str (namespace model-k) ".entity/" (name model-k)))
            r (keyword (name model-k))]
        (list `(clojure.spec/def ~n (clojure.spec/keys :req-un [~model-k]))
              (add-list n)))))
@@ -49,9 +49,12 @@
   [model-k req opt {:keys [fixed? qualified?]
                     :or   {fixed?     true
                            qualified? true}}]
-  (list `(clojure.spec/def ~model-k (clojure.spec/keys :req-un ~req :opt-un ~opt))
-        (add-list model-k)
-        (model-spec-template model-k false)))
+  (concat
+    (list `(clojure.spec/def ~model-k (clojure.spec/keys :req-un ~req :opt-un ~opt))
+          (add-list model-k))
+    (model-spec-template model-k false)
+    )
+  )
 
 
 (defmethod model-template
@@ -61,10 +64,15 @@
                            qualified? true}}]
   (let [w-un-set (into #{} (into req opt)) #_(get-key-set req opt qualified?)]
     ;;conform does not work with merge
-    (list `(clojure.spec/def ~model-k
-             (clojure.spec/merge (clojure.spec/keys :req ~req :opt ~opt)
-                                 (clojure.spec/map-of ~w-un-set any?)))
-          (add-list model-k))))
+    (concat
+      (list `(clojure.spec/def ~model-k
+               (clojure.spec/merge (clojure.spec/keys :req ~req :opt ~opt)
+                                   (clojure.spec/map-of ~w-un-set any?)))
+            )
+      (add-list model-k)
+      )
+
+    ))
 
 
 
@@ -78,7 +86,7 @@
 
 (defn app-spec-template [namespace-name coll]
   (let [w (interleave  coll #_(map (comp keyword name)  coll)  coll)]
-    `(s/def ~(u/as-ns-keyword namespace-name :spec) ~(cons 'clojure.spec/or w)) )
+    `(s/def ~(u/as-ns-keyword namespace-name :entity) ~(cons 'clojure.spec/or w)) )
   )
 
 
@@ -98,7 +106,7 @@
   [namespace-name m {:keys [postfix join] :as opt}]
   (let [namespace-name (u/add-prefix-to-key namespace-name postfix)
         w (mapv (fn [w]
-                  (keyword (str (name namespace-name) ".spec") (name w))
+                  (keyword (str (name namespace-name) ".entity") (name w))
                   ) (keys m))
         w1 (concat w (mapv #(u/add-postfix-to-key % "-list") w))
 
