@@ -117,13 +117,13 @@
                        v)))))
 
 
-(defn eval-spec [& coll-v]
+#_(defn eval-spec [& coll-v]
   (doseq [v coll-v]
     (eval v)))
 
 
 
-(defn as-file-str [ns-name spec-list]
+#_(defn as-file-str [ns-name spec-list]
   (let [w (format "(ns %s \n (:require [clojure.spec] [dadyspec.core])) \n\n" ns-name)]
     (->> (map str spec-list)
          (interpose "\n")

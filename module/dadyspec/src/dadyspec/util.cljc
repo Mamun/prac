@@ -12,26 +12,26 @@
 (defn add-prefix-to-key [namespace-key post-fix-str]
   (if post-fix-str
     (if (namespace namespace-key)
-      (keyword (str post-fix-str (namespace namespace-key) "/" (name namespace-key) ))
-      (keyword (str post-fix-str (name namespace-key) )))
+      (keyword (str post-fix-str (namespace namespace-key) "/" (name namespace-key)))
+      (keyword (str post-fix-str (name namespace-key))))
     namespace-key))
 
 
 #_(comment
 
-  (name :a.a/a)
-  (namespace :a.a/a)
+    (name :a.a/a)
+    (namespace :a.a/a)
 
 
-  (let [w (clojure.string/split ":a.b"  #"\.")]
-    (clojure.string/split (first w) #":")
+    (let [w (clojure.string/split ":a.b" #"\.")]
+      (clojure.string/split (first w) #":")
+
+      )
+
+
+    (add-prefix-to-key :b "un-")
 
     )
-
-
-  (add-prefix-to-key :b "un-" )
-
-  )
 
 
 ;(namespace :a.a)
