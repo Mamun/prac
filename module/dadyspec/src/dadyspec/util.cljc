@@ -66,10 +66,10 @@
 
 (defn reverse-join [[s-tab s-id join-key d-tab d-id [r-tab r-id r-id2] :as j]]
   (condp = join-key
-    :dadyspec.core/join-one-one [d-tab d-id :dadyspec.core/join-one-one s-tab s-id]
-    :dadyspec.core/join-one-many [d-tab d-id :dadyspec.core/join-many-one s-tab s-id]
-    :dadyspec.core/join-many-one [d-tab d-id :dadyspec.core/join-one-many s-tab s-id]
-    :dadyspec.core/join-many-many [d-tab d-id :dadyspec.core/join-many-many s-tab s-id [r-tab r-id2 r-id]]
+    :dadyspec.core/rel-1-1 [d-tab d-id :dadyspec.core/rel-1-1 s-tab s-id]
+    :dadyspec.core/rel-1-n [d-tab d-id :dadyspec.core/rel-n-1 s-tab s-id]
+    :dadyspec.core/rel-n-1 [d-tab d-id :dadyspec.core/rel-1-n s-tab s-id]
+    :dadyspec.core/rel-n-n [d-tab d-id :dadyspec.core/rel-n-n s-tab s-id [r-tab r-id2 r-id]]
     j))
 
 
@@ -78,10 +78,10 @@
 
 (defn assoc-ns-join [base-ns-name [src _ rel dest _ ]]
   (condp = rel
-    :dadyspec.core/rel-one-one (as-ns-keyword base-ns-name dest)
-    :dadyspec.core/rel-many-one (as-ns-keyword base-ns-name dest)
-    :dadyspec.core/rel-one-many (-> (as-ns-keyword base-ns-name dest)
-                                    (add-postfix-to-key "-list"))))
+    :dadyspec.core/rel-1-1 (as-ns-keyword base-ns-name dest)
+    :dadyspec.core/rel-n-1 (as-ns-keyword base-ns-name dest)
+    :dadyspec.core/rel-1-n (-> (as-ns-keyword base-ns-name dest)
+                               (add-postfix-to-key "-list"))))
 
 
 
