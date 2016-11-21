@@ -28,7 +28,7 @@
                    :student {:req {:name string?
                                    :dob  inst?}}}
             {:dadyspec.core/join
-             [[:dept :id :dadyspec.core/rel-one-many :student :dept-id]]}
+             [[:dept :id :dadyspec.core/rel-1-n :student :dept-id]]}
             )
 
 
@@ -38,7 +38,7 @@
               :student {:req {:name string?
                               :dob  inst?}}}
          :dadyspec.core/join
-         [[:dept :id :dadyspec.core/rel-one-many :student :dept-id]]
+         [[:dept :id :dadyspec.core/rel-1-n :student :dept-id]]
          :dadyspec.core/gen-type #{:dadyspec.core/unqualified}
          )
 

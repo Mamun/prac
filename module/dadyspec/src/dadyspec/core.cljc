@@ -58,7 +58,7 @@
 (s/def :dadyspec.core/join
   (clojure.spec/*
     (clojure.spec/alt
-      :one (s/tuple keyword? keyword? #{:dadyspec.core/rel-one-one :dadyspec.core/rel-one-many :dadyspec.core/rel-many-one} keyword? keyword?)
+      :one (s/tuple keyword? keyword? #{:dadyspec.core/rel-1-1 :dadyspec.core/rel-1-n :dadyspec.core/rel-n-1} keyword? keyword?)
       :many (s/tuple keyword? keyword? #{:dadyspec.core/rel-many-many} keyword? keyword? (s/tuple keyword? keyword? keyword?)))))
 
 

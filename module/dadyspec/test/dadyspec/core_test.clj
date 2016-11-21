@@ -10,8 +10,8 @@
 
 (deftest relation-merge-test
   (testing "testing relation merge"
-    (let [w (relation-merge :hello [[:a :dadyspec.core/rel-one-one :b]
-                                    [:a :dadyspec.core/rel-one-one :c]])]
+    (let [w (relation-merge :hello [[:a :dadyspec.core/rel-1-1 :b]
+                                    [:a :dadyspec.core/rel-1-1 :c]])]
       (is (= w
              [`(clojure.spec/merge
                  :hello/a
@@ -25,7 +25,7 @@
                                        :opt {:note string?}}
                              :student {:req {:name string?
                                              :dob  inst?}}}
-                      {:join [[:dept :dadyspec.core/rel-one-one :student]]})]
+                      {:join [[:dept :dadyspec.core/rel-1-1 :student]]})]
       (is (not-empty v)))))
 
 
@@ -36,7 +36,7 @@
                              :opt {:note string?}}
                    :student {:req {:name string?
                                    :id   int?}}}
-             :dadyspec.core/join [[:dept :id :dadyspec.core/rel-one-one :student :dept-id]])
+             :dadyspec.core/join [[:dept :id :dadyspec.core/rel-1-1 :student :dept-id]])
       (is (s/valid? :test/dept {:test.dept/id 123}))
       (is (s/valid? :test/dept {:test.dept/id      123
                                 :test/student-list [{:test.student/id   23
@@ -54,7 +54,7 @@
                              :opt {:note string?}}
                    :student {:req {:name string?
                                    :id   int}}}
-            {:dadyspec.core/join     [[:dept :id :dadyspec.core/rel-one-many :student :dept-id]]
+            {:dadyspec.core/join     [[:dept :id :dadyspec.core/rel-1-n :student :dept-id]]
              :dadyspec.core/gen-type #{:dadyspec.core/unqualified :dadyspec.core/qualified}})
 
 
@@ -64,7 +64,7 @@
               :student {:req {:name string?
                               :id   int?}}}
          :dadyspec.core/join
-         [[:dept :id :dadyspec.core/rel-one-many :student :dept-id]]
+         [[:dept :id :dadyspec.core/rel-1-n :student :dept-id]]
          :dadyspec.core/gen-type #{:dadyspec.core/qualified
                                    :dadyspec.core/unqualified
                                    :dadyspec.core/ex})

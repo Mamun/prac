@@ -40,7 +40,7 @@
     (is (= (model->spec :app
                         {:dept {:opt {:id :a}}}
                         {:dadyspec.core/gen-type :dadyspec.core/unqualified
-                         :dadyspec.core/join     [[:dept :id :dadyspec.core/rel-one-many :student :dept-id]]
+                         :dadyspec.core/join     [[:dept :id :dadyspec.core/rel-1-n :student :dept-id]]
                          :postfix                "un-"})
            '((clojure.spec/def :un-app.dept/id :a)
               (clojure.spec/def :un-app/dept (clojure.spec/keys :req-un [] :opt-un [:un-app/student-list :un-app.dept/id]))
