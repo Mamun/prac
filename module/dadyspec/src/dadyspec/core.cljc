@@ -45,31 +45,33 @@
 
 
 
-(s/def ::req (s/every-kv keyword? any? :min-count 1))
-(s/def ::opt (s/every-kv keyword? any? :min-count 1))
+(s/def :dadyspec.core/req (s/every-kv keyword? any? :min-count 1))
+(s/def :dadyspec.core/opt (s/every-kv keyword? any? :min-count 1))
 
-(s/def ::model
+(s/def :dadyspec.core/model
   (s/every-kv keyword?
-              (s/merge (s/keys :opt-un [::opt ::req]) (s/map-of #{:req :opt} any?))
+              (s/merge (s/keys :opt-un [:dadyspec.core/opt :dadyspec.core/req]) (s/map-of #{:req :opt} any?))
               :min-count 1))
 
 
-(def rel-type-set #{:dadyspec.core/rel-one-many
-                    :dadyspec.core/rel-one-one
-                    :dadyspec.core/rel-many-one})
 
-(s/def ::join (s/coll-of (s/tuple keyword? rel-type-set keyword?) :type vector?))
-
-(s/def ::gen-type (s/coll-of #{:qualified :unqualified :ex} :pred #{}))
-
-(s/def ::opt-k (s/merge (s/keys :opt-un [::join ::gen-type])
-                        (s/map-of #{:join :gen-type} any?)))
+(s/def :dadyspec.core/join
+  (clojure.spec/*
+    (clojure.spec/alt
+      :one (s/tuple keyword? keyword? #{:dadyspec.core/rel-one-one :dadyspec.core/rel-one-many :dadyspec.core/rel-many-one} keyword? keyword?)
+      :many (s/tuple keyword? keyword? #{:dadyspec.core/rel-many-many} keyword? keyword? (s/tuple keyword? keyword? keyword?)))))
 
 
-(s/def ::input (s/cat :base-ns keyword?
-                      :model ::model
-                      :opt ::opt-k))
-(s/def ::output any?)
+(s/def :dadyspec.core/gen-type (s/coll-of #{:dadyspec.core/qualified :dadyspec.core/unqualified :dadyspec.core/ex} :pred #{}))
+
+(s/def :dadyspec.core/opt-k (s/merge (s/keys :opt [:dadyspec.core/join :dadyspec.core/gen-type])
+                                     (s/map-of #{:dadyspec.core/join :dadyspec.core/gen-type} any?)))
+
+
+(s/def :dadyspec.core/input (s/cat :base-ns keyword?
+                                   :model ::model
+                                   :opt ::opt-k))
+(s/def :dadyspec.core/output any?)
 
 
 (defn- var->symbol [v]
@@ -80,28 +82,50 @@
 
 (defn gen-spec
   ([namespace-name model-m opt-config-m]
-   (if (s/valid? ::input [namespace-name model-m opt-config-m])
-     (let [{:keys [join gen-type]} opt-config-m
+   (if (s/valid? :dadyspec.core/input [namespace-name model-m opt-config-m])
+     (let [join (or (:dadyspec.core/join opt-config-m) [])
+           gen-type (or (:dadyspec.core/gen-type opt-config-m)
+                        #{:dadyspec.core/qualified})
+
            m (clojure.walk/postwalk var->symbol model-m)
-           q-list (when (contains? gen-type :qualified)
-                    (->> {:fixed? false :qualified? true :join join}
+           q-list (when (contains? gen-type :dadyspec.core/qualified)
+                    (->> {:fixed? false
+                          :dadyspec.core/gen-type :dadyspec.core/qualified
+                          :join join}
                          (impl/model->spec namespace-name m)))
-           unq-list (when (contains? gen-type :unqualified)
-                      (->> {:fixed? false :qualified? false :postfix "un-" :join join}
+           unq-list (when (contains? gen-type :dadyspec.core/unqualified)
+                      (->> {:fixed? false
+                            :dadyspec.core/gen-type :dadyspec.core/unqualified
+                            :postfix "un-"
+                            :join join}
                            (impl/model->spec namespace-name m)))
-           ex-list (when (contains? gen-type :ex)
-                     (->> {:join join :fixed? false :qualified? false :postfix "ex-"}
+           ex-list (when (contains? gen-type :dadyspec.core/ex)
+                     (->> {:join join
+                           :fixed? false
+                           :dadyspec.core/gen-type :dadyspec.core/unqualified
+                           :postfix "ex-"}
                           (impl/model->spec namespace-name (conform* m))))]
        (concat q-list unq-list ex-list))
      #?(:cljs (throw (js/Error. "Opps! spec validation exception  "))
-        :clj  (throw (ex-info (s/explain-str ::input [namespace-name model-m opt-config-m]) {} #_(s/explain-data ::input [namespace-name model-m opt-config-m])))
-        )))
+        #_(s/explain-data ::input [namespace-name model-m opt-config-m])
+        :clj  (throw (ex-info (s/explain-str ::input [namespace-name model-m opt-config-m]) {})))))
   ([namespace-name model-m]
-   (gen-spec namespace-name model-m {:join [] :gen-type #{:qualified}})))
-
+   (gen-spec namespace-name model-m {:dadyspec.core/join     []
+                                     :dadyspec.core/gen-type #{:dadyspec.core/qualified}})))
 
 
 (s/fdef gen-spec :args ::input :ret ::output)
+
+
+(defmacro defsp
+  ([m-name m & {:as opt-m}]
+   (let [m-name (keyword m-name)
+         opt-m (if (nil? opt-m)
+                 (gen-spec m-name m)
+                 (gen-spec m-name m opt-m))]
+     `~(cons 'do opt-m))))
+
+
 
 (defn merge-spec [& spec-coll]
   (->> spec-coll
@@ -121,17 +145,11 @@
 ;(sc/create-ns-key :hello :a)
 
 
-(defmacro defsp
-  ([m-name m & {:as opt-m}]
-   (let [m-name (keyword m-name)
-         opt-m (if (nil? opt-m) {} opt-m)]
-     (let [r (gen-spec m-name m opt-m)]
-       `~(cons 'do r)))))
 
 
 #_(defn conform-json [spec json-str]
-  (->> (ch/parse-string json-str true)
-       (s/conform spec)))
+    (->> (ch/parse-string json-str true)
+         (s/conform spec)))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;Additional spec
@@ -168,17 +186,12 @@
            file-path (str dir "/" as-dir ".cljc")]
        (spit file-path file-str)))
 
-
-
-
-
    )
 
 
 #?(:clj
    (defmacro write-spec-to-file [dir & spec-des]
      (write-spec-to-file* dir spec-des))
-
 
    )
 
@@ -190,18 +203,17 @@
 
 
   #_(s/write-spec-to-file
-    "dev"
-    :app.spec
-    {:company {:req {:name string?
-                     :id   int?
-                     :type (s/coll-of (s/and keyword? #{:software :hardware})
-                                      :into #{})}}}  )
+      "dev"
+      :app.spec
+      {:company {:req {:name string?
+                       :id   int?
+                       :type (s/coll-of (s/and keyword? #{:software :hardware})
+                                        :into #{})}}})
 
 
   #_(format "(ns %s \n (:require [clojure.spec] \n [dadyspec.core]) " "com.dir")
 
-  #_(write-spec-to-file "src" :app '{:student {:req {:id int?}}} {:gen-type #{:ex} } )
-
+  #_(write-spec-to-file "src" :app '{:student {:req {:id int?}}} {:gen-type #{:ex}})
 
   )
 

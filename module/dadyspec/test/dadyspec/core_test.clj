@@ -36,7 +36,7 @@
                              :opt {:note string?}}
                    :student {:req {:name string?
                                    :id   int?}}}
-             :join [[:dept :dadyspec.core/rel-one-one :student]])
+             :dadyspec.core/join [[:dept :id :dadyspec.core/rel-one-one :student :dept-id]])
       (is (s/valid? :test/dept {:test.dept/id 123}))
       (is (s/valid? :test/dept {:test.dept/id      123
                                 :test/student-list [{:test.student/id   23
@@ -54,8 +54,8 @@
                              :opt {:note string?}}
                    :student {:req {:name string?
                                    :id   int}}}
-            {:join     [[:dept :dadyspec.core/rel-one-many :student]]
-             :gen-type #{:unqualified :qualified}})
+            {:dadyspec.core/join     [[:dept :id :dadyspec.core/rel-one-many :student :dept-id]]
+             :dadyspec.core/gen-type #{:dadyspec.core/unqualified :dadyspec.core/qualified}})
 
 
   (defsp app {:dept    {:req {:id   int?
@@ -63,8 +63,10 @@
                         :opt {:note string?}}
               :student {:req {:name string?
                               :id   int?}}}
-         :join
-         [[:dept :dadyspec.core/rel-one-many :student]])
+         :dadyspec.core/join
+         [[:dept :id :dadyspec.core/rel-one-many :student :dept-id]]
+         :dadyspec.core/gen-type #{:dadyspec.core/qualified :dadyspec.core/unqualified}
+         )
 
 
   (binding [s/*recursion-limit* 0]
@@ -79,17 +81,17 @@
 
   (binding [s/*recursion-limit* 0]
     (clojure.pprint/pprint
-      (s/exercise :un-app.spec/dept 2)))
+      (s/exercise :entity.app/dept 2)))
 
 
   (binding [s/*recursion-limit* 0]
     (clojure.pprint/pprint
-      (s/exercise :un-app.spec/dept-list 1)))
+      (s/exercise :entity.un-app/dept-list 1)))
 
 
   (binding [s/*recursion-limit* 0]
     (clojure.pprint/pprint
-      (s/exercise :un-app.spec/student-list 1)))
+      (s/exercise :entity.un-app/student-list 1)))
 
 
 

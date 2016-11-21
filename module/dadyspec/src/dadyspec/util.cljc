@@ -62,15 +62,41 @@
 
 
 
-(defn reverse-join [[src rel dest]]
+#_(defn reverse-join [[src rel dest]]
   (condp = rel
     :dadyspec.core/rel-one-one [dest :dadyspec.core/rel-one-one src]
     :dadyspec.core/rel-many-one [dest :dadyspec.core/rel-one-many src]
     :dadyspec.core/rel-one-many [dest :dadyspec.core/rel-many-one src]))
 
 
+(defn reverse-join [[s-tab s-id join-key d-tab d-id [r-tab r-id r-id2] :as j]]
+  (condp = join-key
+    :dadyspec.core/join-one-one [d-tab d-id :dadyspec.core/join-one-one s-tab s-id]
+    :dadyspec.core/join-one-many [d-tab d-id :dadyspec.core/join-many-one s-tab s-id]
+    :dadyspec.core/join-many-one [d-tab d-id :dadyspec.core/join-one-many s-tab s-id]
+    :dadyspec.core/join-many-many [d-tab d-id :dadyspec.core/join-many-many s-tab s-id [r-tab r-id2 r-id]]
+    j))
 
-(defn assoc-ns-join [base-ns-name [src rel dest]]
+
+
+#_(defn map-reverse-join
+  [join-coll]
+  (let [f (fn [[s-tab s-id join-key d-tab d-id [r-tab r-id r-id2] :as j]]
+            (condp = join-key
+              :dadyspec.core/join-one-one [d-tab d-id :dadyspec.core/join-one-one s-tab s-id]
+              :dadyspec.core/join-one-many [d-tab d-id :dadyspec.core/join-many-one s-tab s-id]
+              :dadyspec.core/join-many-one [d-tab d-id :dadyspec.core/join-one-many s-tab s-id]
+              :dadyspec.core/join-many-many [d-tab d-id :dadyspec.core/join-many-many s-tab s-id [r-tab r-id2 r-id]]
+              j))]
+    (->> (map f join-coll)
+         (concat join-coll)
+         (distinct)
+         (sort-by first)
+         (into []))))
+
+
+
+(defn assoc-ns-join [base-ns-name [src _ rel dest _ ]]
   (condp = rel
     :dadyspec.core/rel-one-one (as-ns-keyword base-ns-name dest)
     :dadyspec.core/rel-many-one (as-ns-keyword base-ns-name dest)

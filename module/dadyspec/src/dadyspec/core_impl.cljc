@@ -10,69 +10,60 @@
 
 
 (defn model-spec-template
-  ([model-k qualified?]
-   (if qualified?
-     (let [n (keyword (str (namespace model-k) ".entity/" (name model-k)))]
+  ([model-k type]
+   (if (= type :dadyspec.core/qualified)
+     (let [n (keyword (str "entity." (namespace model-k) "/" (name model-k)))]
        (list `(clojure.spec/def ~n (clojure.spec/keys :req [~model-k]))
              (add-list n)))
-     (let [n (keyword (str (namespace model-k) ".entity/" (name model-k)))
+     (let [n (keyword (str "entity." (namespace model-k) "/" (name model-k)))
            r (keyword (name model-k))]
        (list `(clojure.spec/def ~n (clojure.spec/keys :req-un [~model-k]))
              (add-list n)))))
-  ([model-k]
+  #_([model-k]
    (model-spec-template model-k true)))
 
 
 
-(defn type-dispatch [{:keys [fixed? qualified?]
+#_(defn model-spec-template
+  [model-k type ]
+  (if (= type :dadyspec.core/qualified)
+    (let [n (keyword (str "entity." (namespace model-k) "/" (name model-k)))]
+      (list `(clojure.spec/def ~n (clojure.spec/keys :req [~model-k]))
+            (add-list n)))
+    (let [n (keyword (str "entity." (namespace model-k) "/" (name model-k)))
+          r (keyword (name model-k))]
+      (list `(clojure.spec/def ~n (clojure.spec/keys :req-un [~n]))
+            (add-list n)))))
+
+
+#_(defn type-dispatch [{:keys [fixed? qualified?]
                       :or   {fixed?     true
                              qualified? true}}]
+
   (if qualified?
-    :default
+    :dadyspe
     :un-qualified))
 
 
-(defmulti model-template (fn [_ _ _ m] (type-dispatch m)))
+(defmulti model-template (fn [_ _ _ m] (:dadyspec.core/gen-type m)))
 
 (defmethod model-template
-  :default
-  [model-k req opt {:keys [fixed? qualified?]
-                    :or   {fixed?     true
-                           qualified? true}}]
+  :dadyspec.core/qualified
+  [model-k req opt _]
   (concat (list `(clojure.spec/def ~model-k (clojure.spec/keys :req ~req :opt ~opt))
                 (add-list model-k))
-          (model-spec-template model-k)))
+          (model-spec-template model-k :dadyspec.core/qualified)))
 
 
 (defmethod model-template
-  :un-qualified
-  [model-k req opt {:keys [fixed? qualified?]
-                    :or   {fixed?     true
-                           qualified? true}}]
+  :dadyspec.core/unqualified
+  [model-k req opt _]
   (concat
     (list `(clojure.spec/def ~model-k (clojure.spec/keys :req-un ~req :opt-un ~opt))
           (add-list model-k))
-    (model-spec-template model-k false)
+    (model-spec-template model-k :dadyspec.core/unqualified)
     )
   )
-
-
-(defmethod model-template
-  :qualified-fixed
-  [model-k req opt {:keys [fixed? qualified?]
-                    :or   {fixed?     true
-                           qualified? true}}]
-  (let [w-un-set (into #{} (into req opt)) #_(get-key-set req opt qualified?)]
-    ;;conform does not work with merge
-    (concat
-      (list `(clojure.spec/def ~model-k
-               (clojure.spec/merge (clojure.spec/keys :req ~req :opt ~opt)
-                                   (clojure.spec/map-of ~w-un-set any?)))
-            )
-      (add-list model-k)
-      )
-
-    ))
 
 
 
@@ -106,7 +97,7 @@
   [namespace-name m {:keys [postfix join] :as opt}]
   (let [namespace-name (u/add-prefix-to-key namespace-name postfix)
         w (mapv (fn [w]
-                  (keyword (str (name namespace-name) ".entity") (name w))
+                  (keyword (str "entity." (name namespace-name) ) (name w))
                   ) (keys m))
         w1 (concat w (mapv #(u/add-postfix-to-key % "-list") w))
 
@@ -129,7 +120,8 @@
 
 
 
-  (model->spec :app.hello {:student {:opt {:id :a}}} {:qualified? true :postfix "un-"})
+  (model->spec :app.hello {:student {:opt {:id :a}}} {:dadyspec.core/gen-type :dadyspec.core/unqualified
+                                                      :postfix "ex-"})
 
 
   (->> (map (fn [w] (update-model-key-one w :app "-ex")) {:student {:req {:di   :id
