@@ -27,23 +27,26 @@
                              :opt {:note string?}}
                    :student {:req {:name string?
                                    :dob  inst?}}}
-            :join
-            [[:dept :dadyspec.core/rel-one-many :student]])
+            {:dadyspec.core/join
+             [[:dept :id :dadyspec.core/rel-one-many :student :dept-id]]}
+            )
 
 
-  (defsp app {:dept    {:req {:dept-name string?
-                              :date      inst?}
+  (defsp app {:dept    {:req {:name string?
+                              :date inst?}
                         :opt {:note string?}}
-              :student {:req {:student-name string?
-                              :dob          inst?}}}
-         :join
-         [[:dept :dadyspec.core/rel-one-many :student]])
+              :student {:req {:name string?
+                              :dob  inst?}}}
+         :dadyspec.core/join
+         [[:dept :id :dadyspec.core/rel-one-many :student :dept-id]]
+         :dadyspec.core/gen-type #{:dadyspec.core/unqualified}
+         )
 
 
 
   (binding [s/*recursion-limit* 0]
     (clojure.pprint/pprint
-      (s/exercise :app-un/dept 1)))
+      (s/exercise :un-app/dept 1)))
 
 
   (binding [s/*recursion-limit* 0]

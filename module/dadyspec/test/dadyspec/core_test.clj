@@ -65,8 +65,9 @@
                               :id   int?}}}
          :dadyspec.core/join
          [[:dept :id :dadyspec.core/rel-one-many :student :dept-id]]
-         :dadyspec.core/gen-type #{:dadyspec.core/qualified :dadyspec.core/unqualified}
-         )
+         :dadyspec.core/gen-type #{:dadyspec.core/qualified
+                                   :dadyspec.core/unqualified
+                                   :dadyspec.core/ex})
 
 
   (binding [s/*recursion-limit* 0]
@@ -84,6 +85,11 @@
       (s/exercise :entity.app/dept 2)))
 
 
+  (binding [s/*recursion-limit* 1]
+    (clojure.pprint/pprint
+      (s/exercise :entity.un-app/dept 1)))
+
+
   (binding [s/*recursion-limit* 0]
     (clojure.pprint/pprint
       (s/exercise :entity.un-app/dept-list 1)))
@@ -97,7 +103,7 @@
 
   (binding [s/*recursion-limit* 0]
     (clojure.pprint/pprint
-      (s/exercise :app/spec 1)))
+      (s/exercise :app/entity 1)))
 
 
   (binding [s/*recursion-limit* 0]
@@ -109,9 +115,7 @@
       (s/exercise :ex-app/dept-list 1)))
 
 
-  (binding [s/*recursion-limit* 0]
-    (clojure.pprint/pprint
-      (s/exercise :ex-app/spec 1)))
+
 
   ;(s/form :app/student)
   ;(s/form :app/dept)

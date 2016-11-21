@@ -1,6 +1,6 @@
 (ns dadyspec.core
   (:require [clojure.walk :as w]
-            [dadyspec.core-impl :as impl]
+            [dadyspec.spec-generator :as impl]
             [dadyspec.util :as u]
             [clojure.spec :as s]
             [clojure.string]
@@ -91,16 +91,16 @@
            q-list (when (contains? gen-type :dadyspec.core/qualified)
                     (->> {:fixed? false
                           :dadyspec.core/gen-type :dadyspec.core/qualified
-                          :join join}
+                          :dadyspec.core/join join}
                          (impl/model->spec namespace-name m)))
            unq-list (when (contains? gen-type :dadyspec.core/unqualified)
                       (->> {:fixed? false
                             :dadyspec.core/gen-type :dadyspec.core/unqualified
                             :postfix "un-"
-                            :join join}
+                            :dadyspec.core/join join}
                            (impl/model->spec namespace-name m)))
            ex-list (when (contains? gen-type :dadyspec.core/ex)
-                     (->> {:join join
+                     (->> {:dadyspec.core/join join
                            :fixed? false
                            :dadyspec.core/gen-type :dadyspec.core/unqualified
                            :postfix "ex-"}

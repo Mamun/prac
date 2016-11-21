@@ -1,6 +1,6 @@
 (ns dadysql.impl.param-spec-impl
   (:require [dadyspec.core :as sg]
-            [dadyspec.core-impl :as sgi]))
+            [dadyspec.spec-generator :as sgi]))
 
 
 (defn filename-as-keyword [file-name-str]
