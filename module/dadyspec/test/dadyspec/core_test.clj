@@ -32,11 +32,11 @@
 (deftest check-exec-test
   (testing "test generate spec "
     (do
-      (defsp test {:dept    {:req {:id int?}
-                             :opt {:note string?}}
-                   :student {:req {:name string?
+      (defentity test {:dept {:req {:id int?}
+                             :opt  {:note string?}}
+                   :student  {:req {:name string?
                                    :id   int?}}}
-             :dadyspec.core/join [[:dept :id :dadyspec.core/rel-1-1 :student :dept-id]])
+                 :dadyspec.core/join [[:dept :id :dadyspec.core/rel-1-1 :student :dept-id]])
       (is (s/valid? :test/dept {:test.dept/id 123}))
       (is (s/valid? :test/dept {:test.dept/id      123
                                 :test/student-list [{:test.student/id   23
@@ -45,160 +45,41 @@
       (is (s/valid? :test-ex/dept {:id "123"})))))
 
 
+(deftest do-join-test
+  (testing "testing do join "
+    (let [w (->> {:dept
+                  {:id -1,
+                   :name "",
+                   :note "",
+                   :student-list
+                   [{:name "", :id -1}
+                    {:name "", :id -1}]}})
+          expected-result {:dept
+                           {:id -1,
+                            :name "",
+                            :note "",
+                            :student-list
+                            [{:name "", :id -1, :dept-id -1} {:name "", :id -1, :dept-id -1}]}}
+          j-value  (do-disjoin [[:dept :id :dadyspec.core/rel-1-n :student :dept-id]] w)
+          dj-value (do-join [[:dept :id :dadyspec.core/rel-1-n :student :dept-id]] j-value)]
+      (is (= expected-result dj-value)))))
 
 
-(comment
-
-  (gen-spec :app '{:dept    {:req {:id   int?
-                                   :name string?}
-                             :opt {:note string?}}
-                   :student {:req {:name string?
-                                   :id   int}}}
-            {:dadyspec.core/join     [[:dept :id :dadyspec.core/rel-1-n :student :dept-id]]
-             :dadyspec.core/gen-type #{:dadyspec.core/unqualified :dadyspec.core/qualified}})
-
-
-  (defsp app {:dept    {:req {:id   int?
-                              :name string?}
-                        :opt {:note string?}}
-              :student {:req {:name string?
-                              :id   int?}}}
-         :dadyspec.core/join
-         [[:dept :id :dadyspec.core/rel-1-n :student :dept-id]]
-         :dadyspec.core/gen-type #{:dadyspec.core/qualified
-                                   :dadyspec.core/unqualified
-                                   :dadyspec.core/ex})
+(deftest do-dis-join-test
+  (testing "testing do disjoin "
+    (let [w (->> {:dept
+                  {:id -1,
+                   :name "",
+                   :note "",
+                   :student-list
+                   [{:name "", :id -1}
+                    {:name "", :id -1}]}})
+          j-value  (do-disjoin [[:dept :id :dadyspec.core/rel-1-n :student :dept-id]] w)
+          expected-value {:dept {:id -1, :name "", :note ""},
+                          :student [{:name "", :id -1, :dept-id -1}
+                                    {:name "", :id -1, :dept-id -1}]}]
+      (is (= expected-value j-value)))))
 
 
-  (binding [s/*recursion-limit* 0]
-    (clojure.pprint/pprint
-      (s/exercise :app/dept 1)))
-
-
-  (binding [s/*recursion-limit* 0]
-    (clojure.pprint/pprint
-      (s/exercise :app/dept-list 1)))
-
-
-  (binding [s/*recursion-limit* 0]
-    (clojure.pprint/pprint
-      (s/exercise :entity.app/dept 2)))
-
-
-  (binding [s/*recursion-limit* 1]
-    (clojure.pprint/pprint
-      (s/exercise :entity.un-app/dept 1)))
-
-
-  (binding [s/*recursion-limit* 0]
-    (clojure.pprint/pprint
-      (s/exercise :entity.un-app/dept-list 1)))
-
-
-  (binding [s/*recursion-limit* 0]
-    (clojure.pprint/pprint
-      (s/exercise :entity.un-app/student-list 1)))
-
-
-
-  (binding [s/*recursion-limit* 0]
-    (clojure.pprint/pprint
-      (s/exercise :app/entity 1)))
-
-
-  (binding [s/*recursion-limit* 0]
-    (clojure.pprint/pprint
-      (s/exercise :ex-app/dept 1)))
-
-  (binding [s/*recursion-limit* 0]
-    (clojure.pprint/pprint
-      (s/exercise :ex-app/dept-list 1)))
-
-
-
-
-  ;(s/form :app/student)
-  ;(s/form :app/dept)
-
-  )
-
-
-
-
-
-(comment
-
-
-  (gen-spec :app '{:dept {:req {:id  (and int? (s/int-in 10 15))
-                                :dob inst?
-                                }}}
-            {:gen-type #{:ex}})
-
-  (defsp app {:dept {:req {:id  (merge int? (s/int-in 10 15))}}}
-         :gen-type #{:ex}
-         )
-
-  (s/exercise :ex-app/dept)
-
-  (s/explain :ex-app/dept {:id "11"} )
-
-
-  ;(s/valid? ::join [[:dept ::one-many :student]])
-
-  (stest/instrument `gen-spec)
-
-  (s/exercise-fn `gen-spec)
-
-  (stest/check `gen-spec)
-
-  (s/exercise :dadyspec.core/model 1)
-
-  (s/exercise :dadyspec.core/req-or-opt 2)
-
-  (s/exercise (s/keys :req [:dadyspec.core/req]))
-
-  (s/exercise :dadyspec.core/req-or-opt 1)
-
-  (s/valid? :dadyspec.core/req {})
-
-  (s/valid? :dadyspec.core/req-or-opt {:req nil :opt nil})
-
-  ;(s/exercise (s/map-of #{:a :b} #{1 2} ) )
-
-
-  (let [model {:dept    {:req {:name 'string?
-                               :id   'int?}}
-               :student {:req {:name 'string?
-                               :id   'int?}}}
-        rel [[:dept :dadyspec.core/one-many :student]]]
-    ;(s/explain-data ::input [:model model rel ] )
-    (gen-spec :model model rel))
-
-
-  (let [model {:dept {:opt {:name 'string?
-                            :date 'inst?}}}
-        rel [[:dept :dadyspec.core/one-many :student]]]
-    ;(s/explain-data ::input [:model model rel ] )
-    (gen-spec :model model rel))
-
-
-  (defsp model3 {:dept {:opt {:name string?
-                              :date inst?}}}
-         [[:dept :dadyspec.core/one-many :student]])
-
-  (x-inst? "2015-12-12")
-  (x-inst? "2015-45")
-
-  (s/explain :model3-ex/dept {:name "asdf" :date "2asdf"})
-
-
-  (clojure.pprint/pprint
-    (s/exercise ::join 3))
-
-
-  (clojure.pprint/pprint
-    (s/exercise ::input 1))
-
-  )
 
 

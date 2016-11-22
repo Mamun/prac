@@ -9,7 +9,7 @@
 (deftest model->spec-test
   (testing "spec builder test  "
     (is (= (model->spec :app {:student {:opt {:id :a}}}
-                        {:dadyspec.core/gen-type :dadyspec.core/unqualified
+                        {:dadyspec.core/gen-type :dadyspec.core/un-qualified
                          :postfix                "ex-"})
            `((clojure.spec/def :ex-app.student/id :a)
               (clojure.spec/def :ex-app/student (clojure.spec/keys :req-un [] :opt-un [:ex-app.student/id]))
@@ -39,7 +39,7 @@
   (testing "spec gen test "
     (is (= (model->spec :app
                         {:dept {:opt {:id :a}}}
-                        {:dadyspec.core/gen-type :dadyspec.core/unqualified
+                        {:dadyspec.core/gen-type :dadyspec.core/un-qualified
                          :dadyspec.core/join     [[:dept :id :dadyspec.core/rel-1-n :student :dept-id]]
                          :postfix                "un-"})
            '((clojure.spec/def :un-app.dept/id :a)

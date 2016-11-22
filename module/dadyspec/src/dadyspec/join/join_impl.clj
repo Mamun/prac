@@ -1,6 +1,22 @@
 (ns dadyspec.join.join-impl
-  (:require [clojure.walk :as w]
-            [dadyspec.join.join-path-finder :as p]))
+  (:require [dadyspec.join.util :as p]))
+
+
+(defn group-by-value
+  [k v]
+  (let [fv (first v)]
+    (cond
+      (map? v) (if (get v k)
+                 {(get v k) v}
+                 nil)
+      (map? fv) (group-by k v)
+      (vector? fv) (let [index (.indexOf fv k)]
+                     (->> (group-by #(get %1 index) (rest v))
+                          (reduce (fn [acc [k w]]
+                                    (assoc acc k (reduce conj [fv] w))
+                                    ) {})))
+      :else v)))
+
 
 
 (defn select-root
@@ -29,9 +45,14 @@
 
 (defn assoc-to-source-entity-batch
   [target-rel-data-m data-m j-coll]
-  (reduce (fn [acc [s _ _ d :as j]]
-            (->> (get-target-relational-key-value target-rel-data-m data-m j)
-                 (assoc-in acc (conj s d)))
+  (reduce (fn [acc [s _ rel  d :as j]]
+            (let [d-level (if (or (= rel :dadyspec.core/rel-n-n)
+                                  (= rel :dadyspec.core/rel-1-n)
+                                  )
+                            (keyword (str (name d)  "-list"))
+                            d)]
+              (->> (get-target-relational-key-value target-rel-data-m data-m j)
+                   (assoc-in acc (conj s d-level))))
             ) data-m j-coll))
 
 
@@ -39,8 +60,8 @@
   ""
   [[_ _ rel d dt [n nst _]] data-m]
   (if (= rel :dadyspec.core/rel-n-n)
-    {d {nst (p/group-by-value nst (get data-m n))}}
-    {d {dt (p/group-by-value dt (get data-m d))}}))
+    {d {nst (group-by-value nst (get data-m n))}}
+    {d {dt (group-by-value dt (get data-m d))}}))
 
 
 
@@ -64,34 +85,27 @@
         (select-root j-coll))))
 
 
-(defn assoc-target-entity-key
-  [data j]
-  (let [[s-tab s _ d-tab d] j
-        s-ks (conj s-tab s)
-        d-ks (conj d-tab d)]
-    (if (map? (get-in data d-tab))
-      (assoc-in data d-ks (get-in data s-ks))
-      data)))
+(comment
 
 
+  (let [r [[:dept :id :dadyspec.core/rel-1-n :student :dept-id]]
+        v {:dept {:id -1, :name "", :note ""},
+           :student  [{:name "", :id -1, :dept-id -1} {:name "", :id -1, :dept-id -1}]}]
 
+    (do-join v r)
 
+    )
 
+  (let [join [[:tab :id :dadyspec.core/rel-1-1 :tab1 :tab-id]
+              [:tab :tab4-id :dadyspec.core/rel-n-1 :tab4 :id]
+              [:tab :id :dadyspec.core/rel-n-n :tab2 :id [:tab-tab1 :tab-id :tab2-id]]]
 
+        data {:tab      {:id 100 :tab4-id 1}
+              :tab1     {:tab-id 100}
+              :tab4     {:id 1}
+              :tab-tab1 [{:tab2-id 102 :tab-id 100}
+                         {:tab2-id 103 :tab-id 100}]}]
 
-
-
-;nj-data
-
-#_(if (empty? n-join)
-    {}
-    (-> n-join
-        (replace-target-entity-path data)
-        (group-by-target-entity-batch data)))
-;Assos relation key
-;target-data-m
-
-#_(->> data
-       (replace-target-entity-path join)
-       (reduce assoc-target-entity-key data)
-       (group-by-target-entity-batch join))
+    (do-join data join)
+    )
+  )

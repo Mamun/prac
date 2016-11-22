@@ -4,7 +4,9 @@
             [dadyspec.util :as u]
             [clojure.spec :as s]
             [clojure.string]
-            [dadyspec.core-xtype :as sg]))
+            [dadyspec.core-xtype :as sg]
+            [dadyspec.join.disjoin-impl :as dj-impl]
+            [dadyspec.join.join-impl :as j-impl]))
 
 
 (s/def ::email (s/with-gen (s/and string? sg/email?)
@@ -85,7 +87,7 @@
    (if (s/valid? :dadyspec.core/input [namespace-name model-m opt-config-m])
      (let [join (or (:dadyspec.core/join opt-config-m) [])
            gen-type (or (:dadyspec.core/gen-type opt-config-m)
-                        #{:dadyspec.core/qualified})
+                        #{:dadyspec.core/un-qualified})
 
            m (clojure.walk/postwalk var->symbol model-m)
            q-list (when (contains? gen-type :dadyspec.core/qualified)
@@ -111,13 +113,13 @@
         :clj  (throw (ex-info (s/explain-str ::input [namespace-name model-m opt-config-m]) {})))))
   ([namespace-name model-m]
    (gen-spec namespace-name model-m {:dadyspec.core/join     []
-                                     :dadyspec.core/gen-type #{:dadyspec.core/qualified}})))
+                                     :dadyspec.core/gen-type #{:dadyspec.core/un-qualified}})))
 
 
 (s/fdef gen-spec :args ::input :ret ::output)
 
 
-(defmacro defsp
+(defmacro defentity
   ([m-name m & {:as opt-m}]
    (let [m-name (keyword m-name)
          opt-m (if (nil? opt-m)
@@ -143,13 +145,16 @@
 
 
 ;(sc/create-ns-key :hello :a)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
+(defn do-disjoin [join-coll data]
+  (dj-impl/do-disjoin (dj-impl/assoc-join-key data join-coll) join-coll))
 
 
-#_(defn conform-json [spec json-str]
-    (->> (ch/parse-string json-str true)
-         (s/conform spec)))
+(defn do-join [join-coll data ]
+  (j-impl/do-join data join-coll))
+
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;Additional spec
