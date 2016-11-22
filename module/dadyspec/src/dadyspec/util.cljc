@@ -61,19 +61,12 @@
          (concat w))))
 
 
-
-
-
 (defn reverse-join [[s-tab s-id join-key d-tab d-id [r-tab r-id r-id2] :as j]]
   (condp = join-key
-    :dadyspec.core/rel-1-1 [d-tab d-id :dadyspec.core/rel-1-1 s-tab s-id]
     :dadyspec.core/rel-1-n [d-tab d-id :dadyspec.core/rel-n-1 s-tab s-id]
     :dadyspec.core/rel-n-1 [d-tab d-id :dadyspec.core/rel-1-n s-tab s-id]
     :dadyspec.core/rel-n-n [d-tab d-id :dadyspec.core/rel-n-n s-tab s-id [r-tab r-id2 r-id]]
     j))
-
-
-
 
 
 (defn assoc-ns-join [base-ns-name [src _ rel dest _ ]]

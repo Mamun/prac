@@ -1,32 +1,35 @@
 (ns dadyspec.walkthrough
   (:use [dadyspec.core])
-  (:require [cheshire.core :as ch]
-            [clojure.spec :as s]
+  (:require [clojure.spec :as s]
             [clojure.spec.gen :as gen]))
 
 
 (comment
 
+  ;;Generate qualified, unqalified, string value spec
+  ;;Generate
   (gen-spec :app '{:dept    {:req {:id   int?
                                    :name string?}
                              :opt {:note string?}}
                    :student {:req {:name string?
-                                   :id   int}}}
-            {:dadyspec.core/join     [[:dept :id :dadyspec.core/rel-1-n :student :dept-id]]
-             :dadyspec.core/gen-type #{:dadyspec.core/un-qualified }})
+                                   :id   int?}}}
+            {:dadyspec.core/join [[:dept :id :dadyspec.core/rel-1-n :student :dept-id]]})
 
 
-  (defentity app {:dept {:req {:id  int?
-                              :name string?}
-                        :opt  {:note string?}}
-              :student  {:req {:name string?
-                              :id   int?}}}
+  (defentity app {:dept    {:req {:id   int?
+                                  :name string?}
+                            :opt {:note string?}}
+                  :student {:req {:name string?
+                                  :id   int?}}}
              :dadyspec.core/join
-             [[:dept :id :dadyspec.core/rel-1-n :student :dept-id]]
-             :dadyspec.core/gen-type #{:dadyspec.core/qualified
-                                   :dadyspec.core/un-qualified
-                                   :dadyspec.core/ex})
+             [[:dept :id :dadyspec.core/rel-1-n :student :dept-id]])
 
+
+  #_(defentity app {:dept    {:req {:id   int?
+                                  :name string?}
+                            :opt {:note string?}}
+                  :student {:req {:name string?
+                                  :id   int?}}})
 
   (binding [s/*recursion-limit* 0]
     (clojure.pprint/pprint
@@ -37,7 +40,7 @@
     (clojure.pprint/pprint
       (s/exercise :app/dept-list 1)))
 
-
+  ;;as entity map
   (binding [s/*recursion-limit* 0]
     (clojure.pprint/pprint
       (s/exercise :entity.app/dept 2)))
@@ -45,17 +48,17 @@
 
   (binding [s/*recursion-limit* 1]
     (clojure.pprint/pprint
-      (s/exercise :entity.un-app/dept 1)))
+      (s/exercise :entity.unq-app/dept 1)))
 
 
   (binding [s/*recursion-limit* 0]
     (clojure.pprint/pprint
-      (s/exercise :entity.un-app/dept-list 1)))
+      (s/exercise :entity.unq-app/dept-list 1)))
 
 
   (binding [s/*recursion-limit* 0]
     (clojure.pprint/pprint
-      (s/exercise :entity.un-app/student-list 1)))
+      (s/exercise :entity.unq-app/student-list 1)))
 
 
 
@@ -74,23 +77,38 @@
 
 
 
+
+
+
   (binding [s/*recursion-limit* 0]
     (clojure.pprint/pprint
-      (let [w (gen/sample (s/gen :entity.un-app/dept) 1)]
-        (clojure.pprint/pprint w)
+      (let [w (gen/sample (s/gen :entity.unq-app/dept) 1)]
+        ;(clojure.pprint/pprint w)
         (->> w
              (first)
              (do-disjoin [[:dept :id :dadyspec.core/rel-1-n :student :dept-id]])))))
 
 
+  (binding [s/*recursion-limit* 0]
+    (clojure.pprint/pprint
+      (let [w (gen/sample (s/gen :entity.unq-app/dept) 1)]
+        (clojure.pprint/pprint w)
+        (->> w
+             (first)
+             (do-disjoin [[:dept :id :dadyspec.core/rel-1-n :student :dept-id]])
+             #_(do-join [[:dept :id :dadyspec.core/rel-1-n :student :dept-id]])
+             ))))
+
+
+
   (let [w (->> {:dept
-                {:id -1,
+                {:id   -1,
                  :name "",
                  :note "",
                  :student-list
-                 [{:name "", :id -1}
-                  {:name "", :id -1}]}})
-        j-value  (do-disjoin [[:dept :id :dadyspec.core/rel-1-n :student :dept-id]] w)
+                       [{:name "", :id -1}
+                        {:name "", :id -1}]}})
+        j-value (do-disjoin [[:dept :id :dadyspec.core/rel-1-n :student :dept-id]] w)
         dj-value (do-join [[:dept :id :dadyspec.core/rel-1-n :student :dept-id]] j-value)
         ]
     ;(clojure.pprint/pprint j-value)

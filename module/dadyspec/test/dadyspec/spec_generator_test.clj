@@ -46,15 +46,15 @@
                         {:dept {:opt {:id :a}}}
                         {:dadyspec.core/gen-type :dadyspec.core/un-qualified
                          :dadyspec.core/join     [[:dept :id :dadyspec.core/rel-1-n :student :dept-id]]
-                         :postfix                "un-"})
-           '((clojure.spec/def :un-app.dept/id :a)
-              (clojure.spec/def :un-app/dept (clojure.spec/keys :req-un [] :opt-un [:un-app/student-list :un-app.dept/id]))
-              (clojure.spec/def :un-app/dept-list (clojure.spec/coll-of :un-app/dept :kind clojure.core/vector?))
-              (clojure.spec/def :entity.un-app/dept (clojure.spec/keys :req-un [:un-app/dept]))
-              (clojure.spec/def :entity.un-app/dept-list (clojure.spec/coll-of :entity.un-app/dept :kind clojure.core/vector?))
+                         :postfix                "unq-"})
+           '((clojure.spec/def :unq-app.dept/id :a)
+              (clojure.spec/def :unq-app/dept (clojure.spec/keys :req-un [] :opt-un [:unq-app/student-list :unq-app.dept/id]))
+              (clojure.spec/def :unq-app/dept-list (clojure.spec/coll-of :unq-app/dept :kind clojure.core/vector?))
+              (clojure.spec/def :entity.unq-app/dept (clojure.spec/keys :req-un [:unq-app/dept]))
+              (clojure.spec/def :entity.unq-app/dept-list (clojure.spec/coll-of :entity.unq-app/dept :kind clojure.core/vector?))
               (clojure.spec/def
-                :un-app/entity
-                (clojure.spec/or :entity.un-app/dept :entity.un-app/dept :entity.un-app/dept-list :entity.un-app/dept-list)))
+                :unq-app/entity
+                (clojure.spec/or :entity.unq-app/dept :entity.unq-app/dept :entity.unq-app/dept-list :entity.unq-app/dept-list)))
            ))
     )
 

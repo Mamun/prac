@@ -60,7 +60,7 @@
 (s/def :dadyspec.core/join
   (clojure.spec/*
     (clojure.spec/alt
-      :one  (s/tuple keyword? keyword? #{:dadyspec.core/rel-1-1 :dadyspec.core/rel-1-n :dadyspec.core/rel-n-1} keyword? keyword?)
+      :one (s/tuple keyword? keyword? #{:dadyspec.core/rel-1-1 :dadyspec.core/rel-1-n :dadyspec.core/rel-n-1} keyword? keyword?)
       :many (s/tuple keyword? keyword? #{:dadyspec.core/rel-n-n} keyword? keyword? (s/tuple keyword? keyword? keyword?)))))
 
 
@@ -81,39 +81,41 @@
     (symbol (clojure.string/replace (str v) #"#'" ""))
     v))
 
+(defn get-type [w t]
+  (println t)
+  (condp = t
+    :dadyspec.core/un-qualified
+    (assoc w :fixed? false
+             :dadyspec.core/gen-type :dadyspec.core/un-qualified
+             :postfix "unq-")
+    :dadyspec.core/qualified
+    (assoc w :fixed? false
+             :dadyspec.core/gen-type :dadyspec.core/qualified)
+
+    :dadyspec.core/ex
+    (assoc w :fixed? false
+             :dadyspec.core/gen-type :dadyspec.core/un-qualified
+             :postfix "ex-")))
+
 
 (defn gen-spec
   ([namespace-name model-m opt-config-m]
    (if (s/valid? :dadyspec.core/input [namespace-name model-m opt-config-m])
-     (let [join (or (:dadyspec.core/join opt-config-m) [])
-           gen-type (or (:dadyspec.core/gen-type opt-config-m)
-                        #{:dadyspec.core/un-qualified})
-
-           m (clojure.walk/postwalk var->symbol model-m)
-           q-list (when (contains? gen-type :dadyspec.core/qualified)
-                    (->> {:fixed? false
-                          :dadyspec.core/gen-type :dadyspec.core/qualified
-                          :dadyspec.core/join join}
-                         (impl/model->spec namespace-name m)))
-           unq-list (when (contains? gen-type :dadyspec.core/un-qualified)
-                      (->> {:fixed? false
-                            :dadyspec.core/gen-type :dadyspec.core/un-qualified
-                            :postfix "un-"
-                            :dadyspec.core/join join}
-                           (impl/model->spec namespace-name m)))
-           ex-list (when (contains? gen-type :dadyspec.core/ex)
-                     (->> {:dadyspec.core/join join
-                           :fixed? false
-                           :dadyspec.core/gen-type :dadyspec.core/un-qualified
-                           :postfix "ex-"}
-                          (impl/model->spec namespace-name (conform* m))))]
-       (concat q-list unq-list ex-list))
+     (let [gen-type-set (or (:dadyspec.core/gen-type opt-config-m)
+                            #{:dadyspec.core/qualified
+                              :dadyspec.core/un-qualified
+                              :dadyspec.core/ex})
+           m (clojure.walk/postwalk var->symbol model-m)]
+       (->> (map (fn [t]
+                   (if (= t :dadyspec.core/ex)
+                     (impl/model->spec namespace-name (conform* m) (get-type opt-config-m t))
+                     (impl/model->spec namespace-name m (get-type opt-config-m t)))
+                   ) gen-type-set)
+            (apply concat)))
      #?(:cljs (throw (js/Error. "Opps! spec validation exception  "))
-        #_(s/explain-data ::input [namespace-name model-m opt-config-m])
         :clj  (throw (ex-info (s/explain-str ::input [namespace-name model-m opt-config-m]) {})))))
   ([namespace-name model-m]
-   (gen-spec namespace-name model-m {:dadyspec.core/join     []
-                                     :dadyspec.core/gen-type #{:dadyspec.core/un-qualified}})))
+   (gen-spec namespace-name model-m {})))
 
 
 (s/fdef gen-spec :args ::input :ret ::output)
@@ -126,7 +128,6 @@
                  (gen-spec m-name m)
                  (gen-spec m-name m opt-m))]
      `~(cons 'do opt-m))))
-
 
 
 (defn merge-spec [& spec-coll]
@@ -152,7 +153,7 @@
   (dj-impl/do-disjoin (dj-impl/assoc-join-key data join-coll) join-coll))
 
 
-(defn do-join [join-coll data ]
+(defn do-join [join-coll data]
   (j-impl/do-join data join-coll))
 
 

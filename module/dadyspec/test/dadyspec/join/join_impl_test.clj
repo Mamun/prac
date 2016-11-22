@@ -25,7 +25,7 @@
 
   (binding [s/*recursion-limit* 0]
     (clojure.pprint/pprint
-      (g/sample (s/gen :entity.un-app/dept) 1)
+      (g/sample (s/gen :entity.unq-app/dept) 1)
       ))
 
 
