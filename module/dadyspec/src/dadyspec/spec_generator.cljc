@@ -32,12 +32,12 @@
 
 
 (defmethod model-template
-  :dadyspec.core/unqualified
+  :dadyspec.core/un-qualified
   [model-k req opt _]
   (concat
     (list `(clojure.spec/def ~model-k (clojure.spec/keys :req-un ~req :opt-un ~opt))
           (add-list model-k))
-    (model-spec-template model-k :dadyspec.core/unqualified)))
+    (model-spec-template model-k :dadyspec.core/un-qualified)))
 
 
 (defn property-template [req opt]
@@ -96,6 +96,10 @@
 
 (comment
 
+
+  (model->spec :app {:student {:opt {:id :a}}}
+               {:dadyspec.core/gen-type :dadyspec.core/un-qualified
+                :postfix                "ex-"})
 
   (join-m [[:dept :id :dadyspec.core/rel-one-many :student :dept-id]])
 

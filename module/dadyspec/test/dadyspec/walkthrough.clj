@@ -13,7 +13,7 @@
                    :student {:req {:name string?
                                    :id   int}}}
             {:dadyspec.core/join     [[:dept :id :dadyspec.core/rel-1-n :student :dept-id]]
-             :dadyspec.core/gen-type #{:dadyspec.core/un-qualified :dadyspec.core/qualified}})
+             :dadyspec.core/gen-type #{:dadyspec.core/un-qualified }})
 
 
   (defentity app {:dept {:req {:id  int?

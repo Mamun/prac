@@ -64,7 +64,7 @@
       :many (s/tuple keyword? keyword? #{:dadyspec.core/rel-n-n} keyword? keyword? (s/tuple keyword? keyword? keyword?)))))
 
 
-(s/def :dadyspec.core/gen-type (s/coll-of #{:dadyspec.core/qualified :dadyspec.core/unqualified :dadyspec.core/ex} :pred #{}))
+(s/def :dadyspec.core/gen-type (s/coll-of #{:dadyspec.core/qualified :dadyspec.core/un-qualified :dadyspec.core/ex} :pred #{}))
 
 (s/def :dadyspec.core/opt-k (s/merge (s/keys :opt [:dadyspec.core/join :dadyspec.core/gen-type])
                                      (s/map-of #{:dadyspec.core/join :dadyspec.core/gen-type} any?)))
@@ -95,16 +95,16 @@
                           :dadyspec.core/gen-type :dadyspec.core/qualified
                           :dadyspec.core/join join}
                          (impl/model->spec namespace-name m)))
-           unq-list (when (contains? gen-type :dadyspec.core/unqualified)
+           unq-list (when (contains? gen-type :dadyspec.core/un-qualified)
                       (->> {:fixed? false
-                            :dadyspec.core/gen-type :dadyspec.core/unqualified
+                            :dadyspec.core/gen-type :dadyspec.core/un-qualified
                             :postfix "un-"
                             :dadyspec.core/join join}
                            (impl/model->spec namespace-name m)))
            ex-list (when (contains? gen-type :dadyspec.core/ex)
                      (->> {:dadyspec.core/join join
                            :fixed? false
-                           :dadyspec.core/gen-type :dadyspec.core/unqualified
+                           :dadyspec.core/gen-type :dadyspec.core/un-qualified
                            :postfix "ex-"}
                           (impl/model->spec namespace-name (conform* m))))]
        (concat q-list unq-list ex-list))

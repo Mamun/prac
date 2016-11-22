@@ -23,24 +23,6 @@
              [:tab :tab1-list 0]        :tab1-id
              [:ntab :tab1-id :tab-id]])))))
 
-#_(deftest replace-target-entity-path-test
-  (testing "test replace-target-entity-path "
-    (let [join [[[:tab] :id :dadyspec.core/rel-1-n :tab2 :tab-id]
-                [[:tab] :id :dadyspec.core/rel-1-n :tab3 :tab-id]]
-          join-data {:tab {:id   100,
-                           :tab2 [{:m "Munich"}]}}
-          expected-result (list [[:tab] :id :dadyspec.core/rel-1-n [:tab :tab2 0] :tab-id])
-          actual-result (replace-target-entity-path join join-data)]
-      (is (= actual-result
-             expected-result))))
-  (testing "test replace-target-entity-path "
-    (let [join [[[:tab] :id :dadyspec.core/rel-1-1 :tab2 :tab-id]]
-          join-data {:tab {:id   100,
-                           :tab2 {:m "Munich"}}}
-          expected-result (list [[:tab] :id :dadyspec.core/rel-1-1 [:tab :tab2] :tab-id])
-          actual-result (replace-target-entity-path join join-data)]
-      (is (= actual-result
-             expected-result)))))
 
 
 (deftest group-by-target-entity-one-test
@@ -99,24 +81,6 @@
       (is (= e-result actual-result)))))
 
 
-(deftest group-by-target-entity-key-batch-test
-  (testing "test group-by-target-entity-key-batch"
-    (let [join [[:tab :id :1-n :tab2 :tab-id]
-                [:tab :id :1-n :tab3 :tab-id]]
-          data-m {:tab  [{:id 1 :desc "tab "}
-                         {:id 2 :desc "tab "}]
-                  :tab2 [{:id 3 :tab-id 1 :desc "tab2 "}
-                         {:id 4 :tab-id 2 :desc "tab2 "}]
-                  :tab3 {:id 1 :tab-id 1 :desc "tab3 "}}
-          expected-result {:tab2 {:tab-id {1 [{:id 3, :tab-id 1, :desc "tab2 "}]
-                                           2 [{:id 4 :tab-id 2 :desc "tab2 "}]}},
-                           :tab3 {:tab-id {1 {:id 1, :tab-id 1, :desc "tab3 "}}}}
-          actual-result (group-by-target-entity-batch join data-m)]
-      (is (= expected-result
-             actual-result))
-      )
-
-    ))
 
 
 (deftest assoc-join-key-test
@@ -141,7 +105,7 @@
   (testing "test do-disjoin with :dadyspec.core/rel-1-n relationship "
     (let [join [[:tab :id :dadyspec.core/rel-1-n :tab1 :tab-id]]
           data {:tab {:id   100
-                      :tab1 [{:tab-id 100 :name "name1"}
+                      :tab1-list [{:tab-id 100 :name "name1"}
                              {:tab-id 100 :name "name2"}]}}
           expected-result {:tab  {:id 100}
                            :tab1 [{:tab-id 100 :name "name1"}
@@ -149,38 +113,22 @@
           actual-result (do-disjoin (assoc-join-key data join) join)]
       (is (= actual-result
              expected-result))))
-  (testing "test do-disjoin with :dadyspec.core/rel-1-n relationship "
-    (let [join [[:tab :id :dadyspec.core/rel-1-n :tab1 :tab-id]]
-          data {:tab [{:id   100
-                       :tab1 [{:tab-id 100 :name "name1"}
-                              {:tab-id 100 :name "name2"}]}
-                      {:id   100
-                       :tab1 {:tab-id 138 :name "name3"}}]}
-          expected-result {:tab  [{:id 100} {:id 100}]
-                           :tab1 (list {:tab-id 100 :name "name1"}
-                                       {:tab-id 100 :name "name2"}
-                                       {:tab-id 100 :name "name3"})}
-          actual-result (do-disjoin (assoc-join-key data join) join)]
-      (is (= actual-result
-             expected-result))))
   (testing "test do-disjoin with :n-n relationship "
     (let [join [[:tab :id :dadyspec.core/rel-n-n :tab1 :tab-id [:ntab :tab-id :tab1-id]]]
-          data {:tab [{:id   100
-                       :tab1-list [{:tab-id 100}
-                                   {:tab-id 101}]}
-                      {:id   102
-                       :tab1-list {:tab-id 138}}]}
-          expected-result {:tab  [{:id 100} {:id 102}],
-                           :tab1 [{:tab-id 100} {:tab-id 102}]
-                           :ntab [{:tab-id 100, :tab1-id 100}
-                                  {:tab-id 100, :tab1-id 101}
-                                  {:tab-id 102, :tab1-id 138}]}
+          data {:tab {:id   100
+                      :tab1-list [{:tab-id 100}
+                                  {:tab-id 101}]}}
+          expected-result {:tab {:id 100},
+                           :ntab [{:tab1-id 100, :tab-id 100}
+                                  {:tab1-id 100, :tab-id 101}],
+                           :tab1 [{:tab-id 100} {:tab-id 100}]}
 
-          ;actual-result (do-disjoin (assoc-join-key data join) join)
+
+          actual-result (do-disjoin (assoc-join-key data join) join)
           ]
-      (do-disjoin (assoc-join-key data join) join)
+
       ;(assoc-join-key data join)
-      #_(is (= actual-result
+      (is (= actual-result
              expected-result)))
     )
   (testing "test do-join"

@@ -50,8 +50,8 @@
 (defn target-key-identifier [[s-tab s-id join-key d-tab d-id [r-tab r-id r-id2]]]
   (condp = join-key
     :dadyspec.core/rel-1-n (keyword (str (name d-tab)  "-list"))
-    :dadyspec.core/rel-n-n (keyword (str (name d-tab) "-list")
-     d-tab)))
+    :dadyspec.core/rel-n-n (keyword (str (name d-tab) "-list"))
+     d-tab))
 
 
 (defn rename-join-key [join-coll]

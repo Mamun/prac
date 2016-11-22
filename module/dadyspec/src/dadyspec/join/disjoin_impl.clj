@@ -5,8 +5,6 @@
 
 (defn group-by-target-entity-one
   [data j]
-
-
   (if (= :dadyspec.core/rel-n-n (nth j 2))
     (let [[st stc _ dt dtc [rdt s d]] j]
       {rdt [{s (get-in data (conj st stc))
@@ -44,10 +42,13 @@
     (if (empty? n-join)
       {}
       (->
-           (replace-target-entity-path data n-join)
-           (group-by-target-entity-batch data)
-           )
-          )))
+        (replace-target-entity-path data n-join)
+        (group-by-target-entity-batch data)
+        )
+      )))
+
+
+
 
 
 (defn assoc-1-join-key [data join-coll]
@@ -106,6 +107,7 @@
          (reduce (fn [acc j]
                    (let [[s _ _ d _] j
                          d-n (p/target-key-identifier j)]
+
                      (if-let [w (get-in data (conj s d-n))]
                        (-> (assoc acc d w)
                            (update-in s dissoc d-n))
@@ -120,12 +122,12 @@
 
 
   (let [join [[:tab :id :dadyspec.core/rel-n-n :tab1 :tab1-id [:ntab :tab-id :tab1-id]]]
-        data {:tab {:id   100
+        data {:tab {:id        100
                     :tab1-list [{:tab-id 10}
                                 {:tab-id 101}]}}
         ]
-    (clojure.pprint/pprint (assoc-join-key data join))
-    ;(do-disjoin (assoc-join-key data join) join)
+    ;(clojure.pprint/pprint (assoc-join-key data join))
+    (do-disjoin (assoc-join-key data join) join)
     )
 
   ;(get-in {:a 3} [:v])
@@ -138,8 +140,8 @@
                :name         "",
                :student-list [{:name "asdf"}]
                :note         ""}}]
-    (assoc-join-key data j)
-    ;(do-disjoin (assoc-join-key data j) j)
+    ;(assoc-join-key data j)
+    (do-disjoin (assoc-join-key data j) j)
 
     )
 

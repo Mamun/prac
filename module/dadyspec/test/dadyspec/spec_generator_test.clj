@@ -6,6 +6,11 @@
             [clojure.spec :as s]))
 
 
+(comment
+  (run-tests)
+
+  )
+
 (deftest model->spec-test
   (testing "spec builder test  "
     (is (= (model->spec :app {:student {:opt {:id :a}}}
