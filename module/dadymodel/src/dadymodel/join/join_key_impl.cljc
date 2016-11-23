@@ -103,8 +103,8 @@
 
   (let [join [[:tab :id :dadymodel.core/rel-n-n :tab1 :tab1-id [:ntab :tab-id :tab1-id]]]
         data {:tab {:id        100
-                    :tab1-list [{:tab-id 10}
-                                {:tab-id 101}]}}
+                    :tab1-list [{:tab1-id 10}
+                                {:tab1-id 101}]}}
         ]
     ;(clojure.pprint/pprint (assoc-join-key data join))
     (assoc-join-key data join)

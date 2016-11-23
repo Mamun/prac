@@ -153,11 +153,11 @@
 
 
 (defn do-disjoin [join-coll data]
-  (j-impl/do-disjoin data join-coll))
+  (j-impl/do-disjoin-impl data join-coll))
 
 
 (defn do-join [join-coll data]
-  (j-impl/do-join data join-coll))
+  (j-impl/do-join-impl data join-coll))
 
 
 
