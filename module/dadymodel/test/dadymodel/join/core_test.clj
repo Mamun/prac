@@ -19,6 +19,11 @@
                :dadymodel.core/join [[:dept :id :dadymodel.core/rel-1-n :student :dept-id]])
 
 
+  [[[:dept :id :dadymodel.core/rel-1-n :student :dept-id]]
+
+   ]
+
+
   (clojure.pprint/pprint
     (binding [s/*recursion-limit* 0]
       (let [j [[:dept :id :dadymodel.core/rel-1-n :student :dept-id]]
@@ -42,13 +47,11 @@
 (deftest do-join-test
   (testing "test do-join "
     (let [join [[:tab :id :dadymodel.core/rel-1-1 :tab1 :tab-id]
-                [:tab :tab4-id :dadymodel.core/rel-n-1 :tab4 :id]
-                ]
+                [:tab :tab4-id :dadymodel.core/rel-n-1 :tab4 :id]]
 
           data {:tab  {:id 100 :tab4-id 1}
                 :tab1 {:tab-id 100}
-                :tab4 {:id 1}
-                }
+                :tab4 {:id 1}}
           expected-result {:tab
                            {:id      100
                             :tab4-id 1
