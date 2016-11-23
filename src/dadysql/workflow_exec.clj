@@ -3,10 +3,11 @@
     [clojure.spec :as s]
     [dadysql.spec]
     [dadysql.clj.fail :as f]
-    [dadysql.impl.join-impl :as ji]
+    [dadymodel.core :as ji]
     [dadysql.impl.sql-bind-impl :as bi]
     [dadysql.selector :as dc]
     [dadysql.impl.param-impl :as pi]
+    [dadysql.clj.common :as cc]
     [dadysql.impl.common-impl :as ci]))
 
 
@@ -103,16 +104,26 @@
         (= :dadysql.core/op-pull (:dadysql.core/op req-m))
         (or (:dadysql.core/group req-m)
             (sequential? (:dadysql.core/name req-m)))
-        (not-empty (:dadysql.core/join (first tm-coll)))
+        (not-empty (:dadymodel.core/join (first tm-coll)))
         (not (nil? (rest tm-coll))))
     true false))
 
 
+(defn get-source-relational-key-value
+  [j-coll data-m]
+  (reduce (fn [acc j1]
+            (let [[s st rel _ dt [_ sdt _]] j1
+                  w (keys (cc/group-by-value st (s data-m)))]
+              (if (= rel :dadymodel.core/rel-n-n)
+                (merge acc {sdt w})
+                (merge acc {dt w})))
+            ) {} j-coll))
+
 
 (defn- merge-relation-param
   [root-result root more-tm]
-  (let [w (-> (:dadysql.core/join root)
-              (ji/get-source-relational-key-value root-result))]
+  (let [w (-> (:dadymodel.core/join root)
+              (get-source-relational-key-value root-result))]
     (mapv (fn [r]
             (update-in r [:dadysql.core/param] merge w)
             ) more-tm)))
@@ -140,7 +151,7 @@
                    (merge-relation-param root more-tm)
                    (handler)
                    (merge root-output)
-                   (ji/do-join (:dadysql.core/join root))))))))
+                   (ji/do-join (:dadymodel.core/join root))))))))
 
 
 ;;sql bind needs to call with in warp-do-join process
@@ -169,13 +180,13 @@
         apply-disjoin (fn [input]
                         (if (and disjoin
                                  (= in-format :dadysql.core/format-nested))
-                          (ji/do-disjoin input (get-in tm-coll [0 :dadysql.core/join]))
+                          (ji/do-disjoin input (get-in tm-coll [0 :dadymodel.core/join]))
                           input))]
     (f/try-> tm-coll
              (pi/validate-param-spec req-m)
              (pi/assoc-generator pull-fn)
              (pi/param-exec (:dadysql.core/param req-m) in-format)
-             (ji/assoc-join-key (get-in tm-coll [0 :dadysql.core/join]))
+             (ji/do-assoc-relation-key (get-in tm-coll [0 :dadymodel.core/join]))
              (apply-disjoin))))
 
 

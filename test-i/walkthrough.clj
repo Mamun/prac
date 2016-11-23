@@ -23,7 +23,7 @@
   (gen/sample (s/gen :tie/employee))
 
 
-  (t/get-defined-spec "tie4.edn.sql")
+
 
   (->>  (t/read-file "tie4.edn.sql")
         (clojure.pprint/pprint))
@@ -59,10 +59,15 @@
     )
 
 
+  (:get-dept-by-id (t/read-file "tie.edn.sql" ))
+
   ;; Create database table and init data
   (->> {:dadysql.core/name [:init-db :init-data]}
        (t/select-name (t/read-file "tie.edn.sql"))
        (io/db-do (td/get-ds)))
+
+  (dadymodel.core/registry "tie")
+
 
 
   (do
@@ -78,8 +83,6 @@
        (t/get-sql-statement)
        (io/validate-dml! (td/get-ds)))
 
-  (-> (t/read-file "tie.edn.sql")
-      (t/get-defined-spec))
 
 
 
@@ -147,7 +150,7 @@
   (-> @td/ds
       (t/pull (t/read-file "tie.edn.sql")
               {:dadysql.core/name  [:get-dept-by-ids]
-               :dadysql.core/param {:id [1 2 3]}})
+               :dadysql.core/param {:id [1 2 "3"]}})
       (clojure.pprint/pprint))
 
 
@@ -176,7 +179,7 @@
   (-> @td/ds
       (t/pull (t/read-file "tie.edn.sql")
               {:dadysql.core/name  [:get-dept-by-id :get-dept-employee]
-               :dadysql.core/param {:id  1}})
+               :dadysql.core/param {:id "1" }})
       (clojure.pprint/pprint))
 
   (do

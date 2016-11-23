@@ -59,7 +59,7 @@
 
 (defn find-join-model [[s-tab _ join-key d-tab _ [r-tab]]]
   (condp = join-key
-    :dadysql.core/join-many-many [d-tab s-tab r-tab]
+    :dadymodel.core/rel-n-n [d-tab s-tab r-tab]
     [d-tab s-tab]))
 
 
@@ -74,7 +74,7 @@
 
 
 (defn validate-join-key! [coll]
-  (let [i-coll (->> (mapv (juxt :dadysql.core/join :dadysql.core/model) coll)
+  (let [i-coll (->> (mapv (juxt :dadymodel.core/join :dadysql.core/model) coll)
 
                     )]
     ;(println i-coll)

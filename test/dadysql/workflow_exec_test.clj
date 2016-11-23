@@ -6,6 +6,18 @@
             [dadysql.impl.util :as cu]))
 
 
+(deftest get-source-relational-key-value-test
+  (testing "test get-relational-key-value"
+    (let [join [[:tab :id :1-n :tab2 :tab-id]
+                [:tab :id :1-n :tab3 :tab-id]]
+          data-m {:tab [{:id 3 :name "yourname"}
+                        {:id 4 :name "yourname"}]}
+          expected-result {:tab-id (list 3 4)}
+          actual-result (get-source-relational-key-value join data-m)]
+      (is (= expected-result
+             actual-result)))))
+
+
 #_(deftest validate-param-spec!-test
   (testing "testing apply validation "
     (let [input [{:dadysql.core/name        :get-dept-by-id,
@@ -15,7 +27,7 @@
                   :dadysql.core/param-spec  :get-dept-by-id/spec,
                   :dadysql.core/timeout     2000,
                   :dadysql.core/dml     :dadysql.core/dml-select,
-                  :dadysql.core/join        [],
+                  :dadymodel.core/join        [],
                   :dadysql.core/group       :load-dept,
                   :dadysql.core/index       0,
                   :dadysql.core/param {:id 1}}]

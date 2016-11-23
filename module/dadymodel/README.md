@@ -113,7 +113,8 @@ To check full list of spec
  
  ```
  
- ## Limitation 
+ ## Limitation
+  
  * Join and disjoin is work only for unqualified key
  
   

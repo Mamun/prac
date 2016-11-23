@@ -137,8 +137,8 @@
 
 (deftest do-join-test
   (testing "test do-join "
-    (let [join [[:tab :id :dadysql.core/join-one-many :tab2 :tab-id]
-                [:tab :id :dadysql.core/join-one-many :tab3 :tab-id]]
+    (let [join [[:tab :id :dadymodel.core/rel-1-n :tab2 :tab-id]
+                [:tab :id :dadymodel.core/rel-1-n :tab3 :tab-id]]
 
           data {:tab2 [[:tab-id :id] [100 1] [100 2] [1 3]]
                 :tab  [{:id 100}]}
@@ -150,9 +150,9 @@
           actual-result (do-join (assoc-join-key data join) join)]
       (is (= expected-result actual-result))))
   (testing "test do-join "
-    (let [join [[:tab :id :dadysql.core/join-one-one :tab1 :tab-id]
-                [:tab :tab4-id :dadysql.core/join-many-one :tab4 :id]
-                [:tab :id :dadysql.core/join-many-many :tab2 :id [:tab-tab1 :tab-id :tab2-id]]]
+    (let [join [[:tab :id :dadymodel.core/rel-1-1 :tab1 :tab-id]
+                [:tab :tab4-id :dadymodel.core/rel-n-1 :tab4 :id]
+                [:tab :id :dadymodel.core/rel-n-n :tab2 :id [:tab-tab1 :tab-id :tab2-id]]]
 
           data {:tab      {:id 100 :tab4-id 1}
                 :tab1     {:tab-id 100}
@@ -233,7 +233,7 @@
   (testing "test dest-rel-data "
     (let [data {:tab {:id   100
                       :tab1 [{:tab-id 100} {:tab-id 100}]}}
-          j [[:tab] :id :dadysql.core/join-one-many :tab1 :tab-id]
+          j [[:tab] :id :dadymodel.core/rel-1-n :tab1 :tab-id]
           expected-result {:tab1 [{:tab-id 100} {:tab-id 100}]}
           actual-result (group-by-target-entity-one data j)]
       (is (= actual-result
@@ -244,7 +244,7 @@
                               {:tab-id 100}]}
                       {:id   102
                        :tab1 {:tab-id 138}}]}
-          j [[:tab 0] :id :dadysql.core/join-many-many [:tab 0 :tab1 0] :tab-id [:ntab :tab-id :tab1-id]]
+          j [[:tab 0] :id :dadymodel.core/rel-n-n [:tab 0 :tab1 0] :tab-id [:ntab :tab-id :tab1-id]]
           expected-result {:ntab [{:tab-id 100, :tab1-id 100}]}
           actual-result (group-by-target-entity-one data j)]
       (is (= actual-result
@@ -258,7 +258,7 @@
 ;(ndest-rel-data-test)
 
 
-#_(let [join [[:tab :id :dadysql.core/join-one-many :tab1 :tab-id]]
+#_(let [join [[:tab :id :dadymodel.core/rel-1-n :tab1 :tab-id]]
       data {:tab {:id   100
                   :tab1 [{ :name "name1"}
                          { :name "name2"}]}}
@@ -271,7 +271,7 @@
 
 (deftest do-disjoin-test
   (testing "test do-disjoin with :1-n relationship "
-    (let [join [[:tab :id :dadysql.core/join-one-many :tab1 :tab-id]]
+    (let [join [[:tab :id :dadymodel.core/rel-1-n :tab1 :tab-id]]
           data {:tab {:id   100
                       :tab1 [{:tab-id 100 :name "name1"}
                              {:tab-id 100 :name "name2"}]}}
@@ -282,7 +282,7 @@
       (is (= actual-result
              expected-result))))
   (testing "test do-disjoin with :1-n relationship "
-    (let [join [[:tab :id :dadysql.core/join-one-many :tab1 :tab-id]]
+    (let [join [[:tab :id :dadymodel.core/rel-1-n :tab1 :tab-id]]
           data {:tab [{:id   100
                        :tab1 [{:tab-id 100 :name "name1"}
                               {:tab-id 100 :name "name2"}]}
@@ -296,7 +296,7 @@
       (is (= actual-result
              expected-result))))
   (testing "test do-disjoin with :n-n relationship "
-    (let [join [[:tab :id :dadysql.core/join-many-many :tab1 :tab-id [:ntab :tab-id :tab1-id]]]
+    (let [join [[:tab :id :dadymodel.core/rel-n-n :tab1 :tab-id [:ntab :tab-id :tab1-id]]]
           data {:tab [{:id   100
                        :tab1 [{:tab-id 100}
                               {:tab-id 101}]}
@@ -311,7 +311,7 @@
       (is (= actual-result
              expected-result))))
   (testing "test do-join"
-    (let [j [[:employee :id :dadysql.core/join-one-one :employee-detail :employee_id]]
+    (let [j [[:employee :id :dadymodel.core/rel-1-1 :employee-detail :employee_id]]
           data {:employee {:firstname       "Schwan",
                            :lastname        "Ragg",
                            :dept_id         1,
@@ -354,8 +354,8 @@
 
 #_(deftest group-by-join-src-test
   (testing "test group-by-join-src "
-    (let [v [[:tab :id :dadysql.core/join-one-many :tab1 :tab-id]]
-          expected-result {:tab {:dadysql.core/join [[:tab :id :dadysql.core/join-one-many :tab1 :tab-id]]}}
+    (let [v [[:tab :id :dadymodel.core/rel-1-n :tab1 :tab-id]]
+          expected-result {:tab {:dadymodel.core/join [[:tab :id :dadymodel.core/rel-1-n :tab1 :tab-id]]}}
           actual-result (group-by-join-src v)]
       (is (= actual-result
              expected-result)))))
@@ -367,12 +367,12 @@
 
 #_(deftest join-emission-batch-test
   (testing "test join-emission-batch "
-    (let [join [[:tab :ID :dadysql.core/join-one-many :tab2 :tab-id]
-                [:tab :id :dadysql.core/join-one-many :tab3 :tab-ID]
-                [:tab :id :dadysql.core/join-many-many :tab1 :tab-id [:ntab :tab-ID :tab1-id]]]
-          expected-result [[:tab :id :dadysql.core/join-one-many :tab2 :tab-id]
-                           [:tab :id :dadysql.core/join-one-many :tab3 :tab-id]
-                           [:tab :id :dadysql.core/join-many-many :tab1 :tab-id [:ntab :tab-id :tab1-id]]]
+    (let [join [[:tab :ID :dadymodel.core/rel-1-n :tab2 :tab-id]
+                [:tab :id :dadymodel.core/rel-1-n :tab3 :tab-ID]
+                [:tab :id :dadymodel.core/rel-n-n :tab1 :tab-id [:ntab :tab-ID :tab1-id]]]
+          expected-result [[:tab :id :dadymodel.core/rel-1-n :tab2 :tab-id]
+                           [:tab :id :dadymodel.core/rel-1-n :tab3 :tab-id]
+                           [:tab :id :dadymodel.core/rel-n-n :tab1 :tab-id [:ntab :tab-id :tab1-id]]]
           actual-result (join-emission-batch join)]
       (is (= expected-result actual-result)))))
 

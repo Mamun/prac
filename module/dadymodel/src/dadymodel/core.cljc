@@ -87,7 +87,7 @@
     :dadymodel.core/un-qualified
     (assoc w :fixed? false
              :dadymodel.core/gen-type :dadymodel.core/un-qualified
-             :postfix "unq-")
+             :postfix :unq )
     :dadymodel.core/qualified
     (assoc w :fixed? false
              :dadymodel.core/gen-type :dadymodel.core/qualified)
@@ -95,7 +95,7 @@
     :dadymodel.core/ex
     (assoc w :fixed? false
              :dadymodel.core/gen-type :dadymodel.core/un-qualified
-             :postfix "ex-")))
+             :postfix :ex )))
 
 
 (defn gen-spec
@@ -148,15 +148,15 @@
 ;(sc/create-ns-key :hello :a)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn do-assoc-relation-key [join-coll data]
+(defn do-assoc-relation-key [data join-coll]
   (dj-impl/assoc-join-key data join-coll))
 
 
-(defn do-disjoin [join-coll data]
+(defn do-disjoin [data join-coll]
   (j-impl/do-disjoin-impl data join-coll))
 
 
-(defn do-join [join-coll data]
+(defn do-join [data join-coll]
   (j-impl/do-join-impl data join-coll))
 
 

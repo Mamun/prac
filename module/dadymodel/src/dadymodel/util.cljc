@@ -13,8 +13,8 @@
 (defn add-prefix-to-key [namespace-key post-fix-str]
   (if post-fix-str
     (if (namespace namespace-key)
-      (keyword (str post-fix-str (namespace namespace-key) "/" (name namespace-key)))
-      (keyword (str post-fix-str (name namespace-key))))
+      (keyword (str (name post-fix-str) "." (namespace namespace-key) "/" (name namespace-key)))
+      (keyword (str (name post-fix-str) "."  (name namespace-key))))
     namespace-key))
 
 

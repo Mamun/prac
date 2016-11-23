@@ -62,10 +62,10 @@
   [join-coll]
   (let [f (fn [[s-tab s-id join-key d-tab d-id [r-tab r-id r-id2] :as j]]
             (condp = join-key
-              :dadysql.core/join-one-one [d-tab d-id :dadysql.core/join-one-one s-tab s-id]
-              :dadysql.core/join-one-many [d-tab d-id :dadysql.core/join-many-one s-tab s-id]
-              :dadysql.core/join-many-one [d-tab d-id :dadysql.core/join-one-many s-tab s-id]
-              :dadysql.core/join-many-many [d-tab d-id :dadysql.core/join-many-many s-tab s-id [r-tab r-id2 r-id]]
+              :dadymodel.core/rel-1-1 [d-tab d-id :dadymodel.core/rel-1-1 s-tab s-id]
+              :dadymodel.core/rel-1-n [d-tab d-id :dadymodel.core/rel-n-1 s-tab s-id]
+              :dadymodel.core/rel-n-1 [d-tab d-id :dadymodel.core/rel-1-n s-tab s-id]
+              :dadymodel.core/rel-n-n [d-tab d-id :dadymodel.core/rel-n-n s-tab s-id [r-tab r-id2 r-id]]
               j))]
     (->> (map f join-coll)
          (concat join-coll)
@@ -79,7 +79,7 @@
   (->> join-coll
        (group-by first)
        (map (fn [[k coll]]
-              {k {:dadysql.core/join coll}}))
+              {k {:dadymodel.core/join coll}}))
        (into {})))
 
 
@@ -91,7 +91,7 @@
        (apply dissoc m)))
 
 
-(def skip-key-for-call [:dadysql.core/join :dadysql.core/param-spec :dadysql.core/default-param])
+(def skip-key-for-call [:dadymodel.core/join :dadysql.core/param-spec :dadysql.core/default-param])
 (def skip-key-for-others [:dadysql.core/result :clojure.core/column])
 
 
@@ -143,12 +143,12 @@
 (defmethod compile-m
   :global
   [_ tm _]
-  (let [v (->> (get-in tm [:dadysql.core/join])
+  (let [v (->> (get-in tm [:dadymodel.core/join])
                (map-reverse-join)
                (group-by-join-src))
         w (merge-with merge v (get-in tm [:dadysql.core/extend]))]
     (-> tm
-        (dissoc :dadysql.core/join)
+        (dissoc :dadymodel.core/join)
         (assoc :dadysql.core/extend w))))
 
 

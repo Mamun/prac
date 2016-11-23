@@ -49,11 +49,11 @@
 (s/def :dadysql.core/read-only? boolean?)
 
 
-(s/def :dadysql.core/join
+(s/def :dadymodel.core/join
   (clojure.spec/*
     (clojure.spec/alt
-      :one (s/tuple keyword? keyword? #{:dadysql.core/join-one-one :dadysql.core/join-one-many :dadysql.core/join-many-one} keyword? keyword?)
-      :many (s/tuple keyword? keyword? #{:dadysql.core/join-many-many} keyword? keyword? (s/tuple keyword? keyword? keyword?)))))
+      :one (s/tuple keyword? keyword? #{:dadymodel.core/rel-1-1 :dadymodel.core/rel-1-n :dadymodel.core/rel-n-1} keyword? keyword?)
+      :many (s/tuple keyword? keyword? #{:dadymodel.core/rel-n-n} keyword? keyword? (s/tuple keyword? keyword? keyword?)))))
 
 
 (s/def :dadysql.core/default-param (s/* (s/cat :k keyword? :fn fn?)))

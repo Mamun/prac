@@ -1,6 +1,6 @@
 (ns dadysql.impl.param-spec-impl
-  (:require [dadyspec.core :as sg]
-            [dadyspec.spec-generator :as sgi]))
+  (:require [dadymodel.core :as sg]
+            [dadymodel.util :as sgi]))
 
 
 (defn filename-as-keyword [file-name-str]
@@ -22,7 +22,6 @@
 (defn as-relational-spec [[f-spec & rest-spec]]
   (list 'clojure.spec/merge f-spec
         (list 'clojure.spec/keys :req (into [] rest-spec))))
-
 
 
 (defn get-param-spec [coll]
@@ -59,14 +58,17 @@
            (get psk (:dadysql.core/name m)))
     (if (= (:dadysql.core/dml m)
            :dadysql.core/dml-insert)
-      (assoc m :dadysql.core/spec (get psk (:dadysql.core/model m)))
-      (assoc m :dadysql.core/spec (get psk (:dadysql.core/name m))))
+      (let [w (get psk (:dadysql.core/model m))]
+        (assoc m :dadysql.core/spec (keyword (str "unq." (namespace w) "/" (name w) ) )))
+      (let [w (get psk (:dadysql.core/name m))]
+        (assoc m :dadysql.core/spec (keyword (str "ex." (namespace w) "/" (name w) ) ) )))
     m))
 
 
 
 (defn eval-and-assoc-spec [file-name coll]
   (do
-    (apply sg/eval-spec (gen-spec file-name coll ) )
+    (doseq [s (gen-spec file-name coll ) ]
+      (eval s))
     (let [m (get-spec-map file-name coll)]
       (mapv (fn [w] (assosc-spec-to-m m w) ) coll))))

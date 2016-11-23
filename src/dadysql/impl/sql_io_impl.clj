@@ -188,7 +188,7 @@
                     :dadysql.core/timeout    1000,
                     :dadysql.core/commit     :dadysql.core/commit-all,
                     :dadysql.core/dml        :dadysql.core/dml-insert,
-                    :dadysql.core/join       [],
+                    :dadymodel.core/join       [],
                     :dadysql.core/group      :create-meeting,
                     :dadysql.core/model      :meeting,
                     :dadysql.core/default-param [[:meeting_id :dadysql.core/param-ref-gen :gen-meet]],

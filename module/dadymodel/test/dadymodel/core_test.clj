@@ -63,15 +63,10 @@
                    :student-list
                    [{:name "", :id -1}
                     {:name "", :id -1}]}})
-          expected-result {:dept
-                           {:id -1,
-                            :name "",
-                            :note "",
-                            :student-list
-                            [{:name "", :id -1, :dept-id -1} {:name "", :id -1, :dept-id -1}]}}
-          j-value  (do-disjoin [[:dept :id :dadymodel.core/rel-1-n :student :dept-id]] w)
-          dj-value (do-join [[:dept :id :dadymodel.core/rel-1-n :student :dept-id]] j-value)]
-      (is (= expected-result dj-value)))))
+
+          j-value  (do-disjoin w [[:dept :id :dadymodel.core/rel-1-n :student :dept-id]] )
+          dj-value (do-join j-value [[:dept :id :dadymodel.core/rel-1-n :student :dept-id]] )]
+      (is (= w dj-value)))))
 
 
 (deftest do-dis-join-test
@@ -83,12 +78,17 @@
                    :student-list
                    [{:name "", :id -1}
                     {:name "", :id -1}]}})
-          j-value  (do-disjoin [[:dept :id :dadymodel.core/rel-1-n :student :dept-id]] w)
+          j-value  (do-disjoin w [[:dept :id :dadymodel.core/rel-1-n :student :dept-id]] )
           expected-value {:dept {:id -1, :name "", :note ""},
-                          :student [{:name "", :id -1, :dept-id -1}
-                                    {:name "", :id -1, :dept-id -1}]}]
+                          :student [{:name "", :id -1, }
+                                    {:name "", :id -1, }]}]
       (is (= expected-value j-value)))))
 
 
+
+(comment
+  (run-tests)
+
+  )
 
 

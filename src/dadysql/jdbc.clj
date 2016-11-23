@@ -1,6 +1,6 @@
 (ns dadysql.jdbc
   (:require
-    [dadyspec.core :as dsc]
+    [dadymodel.core :as dsc]
     [dadysql.workflow-exec :as tie]
     [dadysql.compiler.core :as cc]
     [dadysql.clj.fail :as f]
@@ -112,7 +112,7 @@
                         (str package-name "." f-name)) ]
      (->> (vals tms)
           (ps/gen-spec (or (get-in tms [:_global_ :dadysql.core/file-name]) "nofound.clj"))
-          (dsc/write-spec-to-file dir package-name)))
+          #_(dsc/write-spec-to-file dir package-name)))
    (log/info (format  "Spec file generation is done in dir %s, package %s " dir package-name) ))
   ([tms dir]
    (write-spec-to-file tms dir (clojure.string/join "." (butlast (clojure.string/split (str *ns*) #"\."))))))

@@ -80,9 +80,9 @@
     :dadysql.core/timeout      1000
     :dadysql.core/reserve-name #{:init-db :drop-ddl :init-data}
     :dadysql.core/tx-prop      [:isolation :serializable :read-only? true]
-    :dadysql.core/join         [[:department :id :dadysql.core/join-one-many :employee :dept_id]
-                                [:employee :id :dadysql.core/join-one-one :employee-detail :employee_id]
-                                [:employee :id :dadysql.core/join-many-many :meeting :meeting_id [:employee-meeting :employee_id :meeting_id]]]}
+    :dadymodel.core/join         [[:department :id :dadymodel.core/rel-1-n :employee :dept_id]
+                                [:employee :id :dadymodel.core/rel-1-1 :employee-detail :employee_id]
+                                [:employee :id :dadymodel.core/rel-n-n :meeting :meeting_id [:employee-meeting :employee_id :meeting_id]]]}
    {:dadysql.core/doc        "spec"
     :dadysql.core/name       [:get-dept-list :get-dept-by-ids :get-employee-list :get-meeting-list :get-employee-meeting-list]
     :dadysql.core/model      [:department :department :employee :meeting :employee-meeting]
@@ -114,7 +114,7 @@
     :dadysql.core/result     #{:array},
     :dadysql.core/default-param [:limit (fn [_] 10)
                                  :offset (fn [_] 0)]
-    :dadysql.core/join       [[:department :id :1-n :employee :dept_id]],
+    :dadymodel.core/join       [[:department :id :1-n :employee :dept_id]],
     :dadysql.core/name       :get-dept-list,
     :dadysql.core/index      0,
     :dadysql.core/sql
@@ -133,14 +133,14 @@
     :dadysql.core/timeout    5000,
     :dadysql.core/param-spec :tie-edn2/get-dept-by-id,
     :dadysql.core/dml        :dadysql.core/dml-select,
-    :dadysql.core/join       [[:department :id :1-n :employee :dept_id]],
+    :dadymodel.core/join       [[:department :id :1-n :employee :dept_id]],
     :dadysql.core/model      :department},
    :get-employee-list
    {:dadysql.core/timeout    5000,
     :dadysql.core/result     #{:array},
     :dadysql.core/default-param [:limit (fn [_] 10)
                                  :offset (fn [_] 0)]
-    :dadysql.core/join       [[:employee :id :1-1 :employee-detail :employee_id]
+    :dadymodel.core/join       [[:employee :id :1-1 :employee-detail :employee_id]
                               [:employee :id :n-n :meeting :meeting_id [:employee-meeting :employee_id :meeting_id]]
                               [:employee :dept_id :n-1 :department :id]],
     :dadysql.core/name       :get-employee-list,
@@ -156,7 +156,7 @@
     :dadysql.core/result     #{:array},
     :dadysql.core/default-param [:limit (fn [_] 10)
                                  :offset (fn [_] 0)]
-    :dadysql.core/join       [[:meeting :meeting_id :n-n :employee :id [:employee-meeting :meeting_id :employee_id]]],
+    :dadymodel.core/join       [[:meeting :meeting_id :n-n :employee :id [:employee-meeting :meeting_id :employee_id]]],
     :dadysql.core/name       :get-meeting-list,
     :dadysql.core/index      3,
     :dadysql.core/sql
