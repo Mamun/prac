@@ -1,4 +1,4 @@
-(ns dadyspec.join.util)
+(ns dadymodel.join.util)
 
 
 (defn empty-path
@@ -46,8 +46,8 @@
 
 (defn target-key-identifier [[s-tab s-id join-key d-tab d-id [r-tab r-id r-id2]]]
   (condp = join-key
-    :dadyspec.core/rel-1-n (keyword (str (name d-tab)  "-list"))
-    :dadyspec.core/rel-n-n (keyword (str (name d-tab) "-list"))
+    :dadymodel.core/rel-1-n (keyword (str (name d-tab)  "-list"))
+    :dadymodel.core/rel-n-n (keyword (str (name d-tab) "-list"))
      d-tab))
 
 
@@ -55,9 +55,9 @@
   (mapv (fn [[s-tab s-id join-key d-tab d-id [r-tab r-id r-id2] :as j]]
 
           (condp = join-key
-            :dadyspec.core/rel-1-1 [s-tab s-id join-key d-tab d-id]
-            :dadyspec.core/rel-1-n [s-tab s-id join-key (keyword (str (name d-tab)  "-list")) d-id]
-            :dadyspec.core/rel-n-1 [s-tab s-id :dadyspec.core/rel-1-n d-tab d-id]
-            :dadyspec.core/rel-n-n [s-tab s-id :dadyspec.core/rel-n-n (keyword (str (name d-tab) "-list")) d-id [r-tab r-id2 r-id]]
+            :dadymodel.core/rel-1-1 [s-tab s-id join-key d-tab d-id]
+            :dadymodel.core/rel-1-n [s-tab s-id join-key (keyword (str (name d-tab)  "-list")) d-id]
+            :dadymodel.core/rel-n-1 [s-tab s-id :dadymodel.core/rel-1-n d-tab d-id]
+            :dadymodel.core/rel-n-n [s-tab s-id :dadymodel.core/rel-n-n (keyword (str (name d-tab) "-list")) d-id [r-tab r-id2 r-id]]
             j)
           ) join-coll))

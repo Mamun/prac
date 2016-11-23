@@ -1,6 +1,6 @@
-(ns dadyspec.spec-generator
+(ns dadymodel.spec-generator
   (:require [clojure.spec :as s]
-            [dadyspec.util :as u]))
+            [dadymodel.util :as u]))
 
 
 (defn add-list [model-k]
@@ -11,7 +11,7 @@
 
 (defn model-spec-template
   [model-k type]
-  (if (= type :dadyspec.core/qualified)
+  (if (= type :dadymodel.core/qualified)
     (let [n (keyword (str "entity." (namespace model-k) "/" (name model-k)))]
       (list `(clojure.spec/def ~n (clojure.spec/keys :req [~model-k]))
             (add-list n)))
@@ -21,23 +21,23 @@
             (add-list n)))))
 
 
-(defmulti model-template (fn [_ _ _ m] (:dadyspec.core/gen-type m)))
+(defmulti model-template (fn [_ _ _ m] (:dadymodel.core/gen-type m)))
 
 (defmethod model-template
-  :dadyspec.core/qualified
+  :dadymodel.core/qualified
   [model-k req opt _]
   (concat (list `(clojure.spec/def ~model-k (clojure.spec/keys :req ~req :opt ~opt))
                 (add-list model-k))
-          (model-spec-template model-k :dadyspec.core/qualified)))
+          (model-spec-template model-k :dadymodel.core/qualified)))
 
 
 (defmethod model-template
-  :dadyspec.core/un-qualified
+  :dadymodel.core/un-qualified
   [model-k req opt _]
   (concat
     (list `(clojure.spec/def ~model-k (clojure.spec/keys :req-un ~req :opt-un ~opt))
           (add-list model-k))
-    (model-spec-template model-k :dadyspec.core/un-qualified)))
+    (model-spec-template model-k :dadymodel.core/un-qualified)))
 
 
 (defn property-template [req opt]
@@ -76,7 +76,7 @@
 
 (defn model->spec
   [namespace-name m {:keys [postfix ] :as opt}]
-  (let [join (:dadyspec.core/join opt )
+  (let [join (:dadymodel.core/join opt )
         namespace-name (u/add-prefix-to-key namespace-name postfix)
         w (mapv (fn [w]
                   (keyword (str "entity." (name namespace-name) ) (name w))
@@ -98,16 +98,16 @@
 
 
   (model->spec :app {:student {:opt {:id :a}}}
-               {:dadyspec.core/gen-type :dadyspec.core/un-qualified
+               {:dadymodel.core/gen-type :dadymodel.core/un-qualified
                 :postfix                "ex-"})
 
-  (join-m [[:dept :id :dadyspec.core/rel-one-many :student :dept-id]])
+  (join-m [[:dept :id :dadymodel.core/rel-one-many :student :dept-id]])
 
 
   (model->spec :app
                {:dept {:opt {:id :a}}}
-               {:dadyspec.core/gen-type :dadyspec.core/unqualified
-                :dadyspec.core/join     [[:dept :id :dadyspec.core/rel-one-many :student :dept-id]]
+               {:dadymodel.core/gen-type :dadymodel.core/unqualified
+                :dadymodel.core/join     [[:dept :id :dadymodel.core/rel-one-many :student :dept-id]]
                 :postfix "un-"})
 
 

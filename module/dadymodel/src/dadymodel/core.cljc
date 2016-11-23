@@ -1,12 +1,12 @@
-(ns dadyspec.core
+(ns dadymodel.core
   (:require [clojure.walk :as w]
-            [dadyspec.spec-generator :as impl]
-            [dadyspec.util :as u]
+            [dadymodel.spec-generator :as impl]
+            [dadymodel.util :as u]
             [clojure.spec :as s]
             [clojure.string]
-            [dadyspec.core-xtype :as sg]
-            [dadyspec.join.disjoin-impl :as dj-impl]
-            [dadyspec.join.join-impl :as j-impl]))
+            [dadymodel.xtype :as sg]
+            [dadymodel.join.join-key-impl :as dj-impl]
+            [dadymodel.join.core :as j-impl]))
 
 
 (s/def ::email (s/with-gen (s/and string? sg/email?)
@@ -47,33 +47,33 @@
 
 
 
-(s/def :dadyspec.core/req (s/every-kv keyword? any? :min-count 1))
-(s/def :dadyspec.core/opt (s/every-kv keyword? any? :min-count 1))
+(s/def :dadymodel.core/req (s/every-kv keyword? any? :min-count 1))
+(s/def :dadymodel.core/opt (s/every-kv keyword? any? :min-count 1))
 
-(s/def :dadyspec.core/model
+(s/def :dadymodel.core/model
   (s/every-kv keyword?
-              (s/merge (s/keys :opt-un [:dadyspec.core/opt :dadyspec.core/req]) (s/map-of #{:req :opt} any?))
+              (s/merge (s/keys :opt-un [:dadymodel.core/opt :dadymodel.core/req]) (s/map-of #{:req :opt} any?))
               :min-count 1))
 
 
 
-(s/def :dadyspec.core/join
+(s/def :dadymodel.core/join
   (clojure.spec/*
     (clojure.spec/alt
-      :one (s/tuple keyword? keyword? #{:dadyspec.core/rel-1-1 :dadyspec.core/rel-1-n :dadyspec.core/rel-n-1} keyword? keyword?)
-      :many (s/tuple keyword? keyword? #{:dadyspec.core/rel-n-n} keyword? keyword? (s/tuple keyword? keyword? keyword?)))))
+      :one (s/tuple keyword? keyword? #{:dadymodel.core/rel-1-1 :dadymodel.core/rel-1-n :dadymodel.core/rel-n-1} keyword? keyword?)
+      :many (s/tuple keyword? keyword? #{:dadymodel.core/rel-n-n} keyword? keyword? (s/tuple keyword? keyword? keyword?)))))
 
 
-(s/def :dadyspec.core/gen-type (s/coll-of #{:dadyspec.core/qualified :dadyspec.core/un-qualified :dadyspec.core/ex} :pred #{}))
+(s/def :dadymodel.core/gen-type (s/coll-of #{:dadymodel.core/qualified :dadymodel.core/un-qualified :dadymodel.core/ex} :pred #{}))
 
-(s/def :dadyspec.core/opt-k (s/merge (s/keys :opt [:dadyspec.core/join :dadyspec.core/gen-type])
-                                     (s/map-of #{:dadyspec.core/join :dadyspec.core/gen-type} any?)))
+(s/def :dadymodel.core/opt-k (s/merge (s/keys :opt [:dadymodel.core/join :dadymodel.core/gen-type])
+                                     (s/map-of #{:dadymodel.core/join :dadymodel.core/gen-type} any?)))
 
 
-(s/def :dadyspec.core/input (s/cat :base-ns keyword?
+(s/def :dadymodel.core/input (s/cat :base-ns keyword?
                                    :model ::model
                                    :opt ::opt-k))
-(s/def :dadyspec.core/output any?)
+(s/def :dadymodel.core/output any?)
 
 
 (defn- var->symbol [v]
@@ -84,30 +84,30 @@
 (defn get-type [w t]
   (println t)
   (condp = t
-    :dadyspec.core/un-qualified
+    :dadymodel.core/un-qualified
     (assoc w :fixed? false
-             :dadyspec.core/gen-type :dadyspec.core/un-qualified
+             :dadymodel.core/gen-type :dadymodel.core/un-qualified
              :postfix "unq-")
-    :dadyspec.core/qualified
+    :dadymodel.core/qualified
     (assoc w :fixed? false
-             :dadyspec.core/gen-type :dadyspec.core/qualified)
+             :dadymodel.core/gen-type :dadymodel.core/qualified)
 
-    :dadyspec.core/ex
+    :dadymodel.core/ex
     (assoc w :fixed? false
-             :dadyspec.core/gen-type :dadyspec.core/un-qualified
+             :dadymodel.core/gen-type :dadymodel.core/un-qualified
              :postfix "ex-")))
 
 
 (defn gen-spec
   ([namespace-name model-m opt-config-m]
-   (if (s/valid? :dadyspec.core/input [namespace-name model-m opt-config-m])
-     (let [gen-type-set (or (:dadyspec.core/gen-type opt-config-m)
-                            #{:dadyspec.core/qualified
-                              :dadyspec.core/un-qualified
-                              :dadyspec.core/ex})
+   (if (s/valid? :dadymodel.core/input [namespace-name model-m opt-config-m])
+     (let [gen-type-set (or (:dadymodel.core/gen-type opt-config-m)
+                            #{:dadymodel.core/qualified
+                              :dadymodel.core/un-qualified
+                              :dadymodel.core/ex})
            m (clojure.walk/postwalk var->symbol model-m)]
        (->> (map (fn [t]
-                   (if (= t :dadyspec.core/ex)
+                   (if (= t :dadymodel.core/ex)
                      (impl/model->spec namespace-name (conform* m) (get-type opt-config-m t))
                      (impl/model->spec namespace-name m (get-type opt-config-m t)))
                    ) gen-type-set)
@@ -121,7 +121,7 @@
 (s/fdef gen-spec :args ::input :ret ::output)
 
 
-(defmacro defentity
+(defmacro defmodel
   ([m-name m & {:as opt-m}]
    (let [m-name (keyword m-name)
          opt-m (if (nil? opt-m)
@@ -148,9 +148,12 @@
 ;(sc/create-ns-key :hello :a)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defn do-assoc-relation-key [join-coll data]
+  (dj-impl/assoc-join-key data join-coll))
+
 
 (defn do-disjoin [join-coll data]
-  (dj-impl/do-disjoin (dj-impl/assoc-join-key data join-coll) join-coll))
+  (j-impl/do-disjoin data join-coll))
 
 
 (defn do-join [join-coll data]
@@ -174,7 +177,7 @@
 
 
 (defn as-file-str [ns-name spec-list]
-  (let [w (str "(ns " ns-name " \n (:require [clojure.spec :as s] [dadyspec.core])) \n\n")]
+  (let [w (str "(ns " ns-name " \n (:require [clojure.spec :as s] [dadymodel.core])) \n\n")]
     (->> (map str spec-list)
          (interpose "\n")
          (cons w)
@@ -217,7 +220,7 @@
                                         :into #{})}}})
 
 
-  #_(format "(ns %s \n (:require [clojure.spec] \n [dadyspec.core]) " "com.dir")
+  #_(format "(ns %s \n (:require [clojure.spec] \n [dadymodel.core]) " "com.dir")
 
   #_(write-spec-to-file "src" :app '{:student {:req {:id int?}}} {:gen-type #{:ex}})
 

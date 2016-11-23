@@ -1,11 +1,11 @@
-(ns dadyspec.join.disjoin-impl
+(ns dadymodel.join.join-key-impl
   (:require [clojure.walk :as w]
-            [dadyspec.join.util :as p]))
+            [dadymodel.join.util :as p]))
 
 
 (defn group-by-target-entity-one
   [data j]
-  (if (= :dadyspec.core/rel-n-n (nth j 2))
+  (if (= :dadymodel.core/rel-n-n (nth j 2))
     (let [[st stc _ dt dtc [rdt s d]] j]
       {rdt [{s (get-in data (conj st stc))
              d (get-in data (conj dt dtc))}]})
@@ -24,8 +24,6 @@
 
 (defn replace-target-entity-path
   [data-m j-coll]
-  ;(println "data:" data-m)
-  ;(println "coll: " j-coll)
   (for [[s-tab-id _ _ d-tab-id _ :as j] j-coll
         :let [w (conj s-tab-id d-tab-id)]
         :when (get-in data-m w)
@@ -35,7 +33,7 @@
 
 (defn assoc-n-n-join-key [data join-coll]
   (let [n-join (filter (fn [[_ _ rel]]
-                         (if (= rel :dadyspec.core/rel-n-n)
+                         (if (= rel :dadymodel.core/rel-n-n)
                            true
                            false)
                          ) join-coll)]
@@ -43,18 +41,15 @@
       {}
       (->
         (replace-target-entity-path data n-join)
-        (group-by-target-entity-batch data)
-        )
-      )))
-
+        (group-by-target-entity-batch data)))))
 
 
 
 
 (defn assoc-1-join-key [data join-coll]
   (let [join (w/postwalk (fn [w]
-                           (if (= :dadyspec.core/rel-n-n w)
-                             :dadyspec.core/rel-1-n
+                           (if (= :dadymodel.core/rel-n-n w)
+                             :dadymodel.core/rel-1-n
                              w)
                            ) join-coll)
         acc-fn (fn [data [s-tab s _ d-tab d]]
@@ -75,8 +70,8 @@
        (reduce (fn [acc [s _ r d _]]
                  (update-in acc s
                             (fn [m]
-                              (if (or (= r :dadyspec.core/rel-1-1)
-                                      (= r :dadyspec.core/rel-n-1))
+                              (if (or (= r :dadymodel.core/rel-1-1)
+                                      (= r :dadymodel.core/rel-n-1))
                                 (assoc m d (first (get target-data-m d)))
                                 (assoc m d (get target-data-m d)))))
                  ) data)))
@@ -98,21 +93,6 @@
 
 
 
-(defn do-disjoin
-  "Assoc relation key and dis-join relation model "
-  [data join-coll]
-  (if (empty? join-coll)
-    data
-    (->> (p/replace-source-entity-path join-coll data)
-         (reduce (fn [acc j]
-                   (let [[s _ _ d _] j
-                         d-n (p/target-key-identifier j)]
-
-                     (if-let [w (get-in data (conj s d-n))]
-                       (-> (assoc acc d w)
-                           (update-in s dissoc d-n))
-                       (update-in acc s dissoc d-n)))
-                   ) data))))
 
 
 
@@ -121,18 +101,19 @@
 (comment
 
 
-  (let [join [[:tab :id :dadyspec.core/rel-n-n :tab1 :tab1-id [:ntab :tab-id :tab1-id]]]
+  (let [join [[:tab :id :dadymodel.core/rel-n-n :tab1 :tab1-id [:ntab :tab-id :tab1-id]]]
         data {:tab {:id        100
                     :tab1-list [{:tab-id 10}
                                 {:tab-id 101}]}}
         ]
     ;(clojure.pprint/pprint (assoc-join-key data join))
-    (do-disjoin (assoc-join-key data join) join)
+    (assoc-join-key data join)
+
     )
 
   ;(get-in {:a 3} [:v])
 
-  (let [j [[:dept :id :dadyspec.core/rel-1-n :student :dept-id]]
+  (let [j [[:dept :id :dadymodel.core/rel-1-n :student :dept-id]]
         ;j (rename-joi-key j)
 
         data {:dept
@@ -141,7 +122,8 @@
                :student-list [{:name "asdf"}]
                :note         ""}}]
     ;(assoc-join-key data j)
-    (do-disjoin (assoc-join-key data j) j)
+    (assoc-join-key data j)
+
 
     )
 

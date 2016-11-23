@@ -1,4 +1,4 @@
-(ns dadyspec.core-xtype
+(ns dadymodel.xtype
   (:require
     [goog.date.UtcDateTime]
    ; [clojure.test.check.generators]

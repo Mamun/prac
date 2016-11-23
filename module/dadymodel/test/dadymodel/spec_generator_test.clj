@@ -1,7 +1,7 @@
-(ns dadyspec.spec-generator-test
+(ns dadymodel.spec-generator-test
   (:use [clojure.test]
-        [dadyspec.spec-generator]
-        [dadyspec.util])
+        [dadymodel.spec-generator]
+        [dadymodel.util])
   (:require [clojure.spec.test :as stest]
             [clojure.spec :as s]))
 
@@ -14,7 +14,7 @@
 (deftest model->spec-test
   (testing "spec builder test  "
     (is (= (model->spec :app {:student {:opt {:id :a}}}
-                        {:dadyspec.core/gen-type :dadyspec.core/un-qualified
+                        {:dadymodel.core/gen-type :dadymodel.core/un-qualified
                          :postfix                "ex-"})
            `((clojure.spec/def :ex-app.student/id :a)
               (clojure.spec/def :ex-app/student (clojure.spec/keys :req-un [] :opt-un [:ex-app.student/id]))
@@ -30,7 +30,7 @@
                   :entity.ex-app/student-list))))))
   (testing "spec builder test  "
     (is (= (model->spec :app {:student {:opt {:id :a}}}
-                        {:dadyspec.core/gen-type :dadyspec.core/qualified
+                        {:dadymodel.core/gen-type :dadymodel.core/qualified
                          })
            `((clojure.spec/def :app.student/id :a)
               (clojure.spec/def :app/student (clojure.spec/keys :req [] :opt [:app.student/id]))
@@ -44,8 +44,8 @@
   (testing "spec gen test "
     (is (= (model->spec :app
                         {:dept {:opt {:id :a}}}
-                        {:dadyspec.core/gen-type :dadyspec.core/un-qualified
-                         :dadyspec.core/join     [[:dept :id :dadyspec.core/rel-1-n :student :dept-id]]
+                        {:dadymodel.core/gen-type :dadymodel.core/un-qualified
+                         :dadymodel.core/join     [[:dept :id :dadymodel.core/rel-1-n :student :dept-id]]
                          :postfix                "unq-"})
            '((clojure.spec/def :unq-app.dept/id :a)
               (clojure.spec/def :unq-app/dept (clojure.spec/keys :req-un [] :opt-un [:unq-app/student-list :unq-app.dept/id]))
