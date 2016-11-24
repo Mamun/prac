@@ -13,11 +13,11 @@
 
 (deftest model->spec-test
   (testing "spec builder test  "
-    (is (= (model->spec {:dadymodel.core/gen-type         :dadymodel.core/un-qualified
+    (is (= (model->spec {:student {:opt {:id :a}}}
+                        {:dadymodel.core/gen-type         :dadymodel.core/un-qualified
                          :dadymodel.core/ns-identifier    :app
                          :dadymodel.core/entity-identifer :entity
-                         :dadymodel.core/prefix           :ex}
-                        {:student {:opt {:id :a}}})
+                         :dadymodel.core/prefix           :ex})
            `((clojure.spec/def :ex.app.student/id :a)
               (clojure.spec/def :ex.app/student (clojure.spec/keys :req-un [] :opt-un [:ex.app.student/id]))
               (clojure.spec/def :ex.app/student-list (clojure.spec/coll-of :ex.app/student :kind clojure.core/vector?))
@@ -35,16 +35,12 @@
                   :ex.entity.app/student-list
                   :ex.entity.app/student-list))))))
   (testing "spec builder test  "
-    (is (= (model->spec {:dadymodel.core/gen-type         :dadymodel.core/qualified
+    (is (= (model->spec {:student {:opt {:id :a}}}
+                        {:dadymodel.core/gen-type         :dadymodel.core/qualified
                          :dadymodel.core/ns-identifier    :app
-                         :dadymodel.core/entity-identifer :entity}
-                        {:student {:opt {:id :a}}})
+                         :dadymodel.core/entity-identifer :entity})
            `((clojure.spec/def :app.student/id :a)
-              (clojure.spec/def
-                :app/student
-                (clojure.spec/merge
-                  (clojure.spec/keys :req [] :opt [:app.student/id])
-                  (clojure.spec/map-of #{:app.student/id} clojure.core/any?)))
+              (clojure.spec/def :app/student (clojure.spec/keys :req [] :opt [:app.student/id]))
               (clojure.spec/def :app/student-list (clojure.spec/coll-of :app/student :kind clojure.core/vector?))
               (clojure.spec/def :entity.app/student (clojure.spec/keys :req [:app/student]))
               (clojure.spec/def :entity.app/student-list (clojure.spec/coll-of :entity.app/student :kind clojure.core/vector?))
@@ -59,14 +55,15 @@
                   :entity.app/student
                   :entity.app/student-list
                   :entity.app/student-list)))
+
            )))
   (testing "spec gen test "
-    (is (= (model->spec {:dadymodel.core/gen-type         :dadymodel.core/un-qualified
+    (is (= (model->spec {:dept {:opt {:id :a}}}
+                        {:dadymodel.core/gen-type         :dadymodel.core/un-qualified
                          :dadymodel.core/ns-identifier    :app
                          :dadymodel.core/join             [[:dept :id :dadymodel.core/rel-1-n :student :dept-id]]
                          :dadymodel.core/entity-identifer :entity
-                         :dadymodel.core/prefix           :unq}
-                        {:dept {:opt {:id :a}}})
+                         :dadymodel.core/prefix           :unq})
            '((clojure.spec/def :unq.app.dept/id :a)
               (clojure.spec/def :unq.app/dept (clojure.spec/keys :req-un [] :opt-un [:unq.app/student-list :unq.app.dept/id]))
               (clojure.spec/def :unq.app/dept-list (clojure.spec/coll-of :unq.app/dept :kind clojure.core/vector?))

@@ -23,6 +23,8 @@
 
 (comment
 
+  (get-ds)
+
   (-> (t/read-file "tie.edn.sql")
       (keys)
       (clojure.pprint/pprint))
@@ -107,7 +109,7 @@
 
 
   (let [meeting {:meeting {:subject  "Hello Meeting for IT"
-                           :employee [{:current_transaction_id 1,
+                           :employee-list [{:current_transaction_id 1,
                                        :dept_id                2,
                                        :lastname               "Zoma",
                                        :firstname              "Abba"
@@ -122,8 +124,25 @@
         (t/push! @ds (t/read-file "tie.edn.sql"))
         (clojure.pprint/pprint)))
 
+  (let [meeting {:meeting {:subject  "Hello Meeting for IT"
+                           :employee-list [{:current_transaction_id 1,
+                                            :dept_id                2,
+                                            :lastname               "Zoma",
+                                            :firstname              "Abba"
+                                            :id                     1}
+                                           {:current_transaction_id 1,
+                                            :dept_id                2,
+                                            :lastname               "Zoma",
+                                            :firstname              "Abba"
+                                            :id                     2}]}}]
+    (-> @ds
+        (t/default-param (t/read-file "tie.edn.sql")
+                         {:dadysql.core/name [:create-meeting :create-employee-meeting]
+                          :dadysql.core/param meeting}  )
+        (clojure.pprint/pprint)))
 
-;;; Load default params
+
+  ;;; Load default params
 
 
   (let [d {:department [{:dept_name "Software dept "}

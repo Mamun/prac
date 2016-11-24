@@ -1,7 +1,7 @@
 (ns dadysql.impl.param-impl
   (:require [dadysql.clj.fail :as f]
             [clojure.walk :as w]
-            [clojure.spec :as s]
+
             [dadysql.impl.param-spec-impl :as ps]
             [dadysql.impl.util :as ccu]))
 
@@ -150,21 +150,6 @@
 ;;;;;;;;;;;;;;;;;
 
 
-(defn validate-param-spec [tm-coll req-m]
-  (let [param-spec (condp = (:dadysql.core/op req-m)
-                     :dadysql.core/op-push
-                     (-> (map :dadysql.core/spec tm-coll)
-                         (remove nil?)
-                         (ps/as-relational-spec))
-                     (-> (map :dadysql.core/spec tm-coll)
-                         (doall)
-                         (ps/as-merge-spec)))]
-    (if (and (nil? param-spec)
-             (empty? param-spec))
-      tm-coll
-      (if (s/valid? (eval param-spec) (:dadysql.core/param req-m))
-        tm-coll
-        (f/fail (s/explain-str (eval param-spec) (:dadysql.core/param req-m)))))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;, Reader util ;;;;;;;;;

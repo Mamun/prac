@@ -1,5 +1,7 @@
 (ns dadysql.impl.param-spec-impl
-  (:require [dadymodel.core :as sg]
+  (:require [dadysql.clj.fail :as f]
+            [clojure.spec :as s]
+            [dadymodel.core :as sg]
             [dadymodel.util :as sgi]))
 
 
@@ -24,51 +26,72 @@
         (list 'clojure.spec/keys :req (into [] rest-spec))))
 
 
-(defn get-param-spec [coll]
-  (let [insert-coll (->> (filter :dadysql.core/param-spec coll)
-                         (filter (fn [m] (= (:dadysql.core/dml m)
-                                            :dadysql.core/dml-insert)))
-                         (group-by :dadysql.core/model)
-                         (map (fn [[k v]] {k (apply merge (mapv :dadysql.core/param-spec v))}))
-                         (into {}))]
-    (->> (filter :dadysql.core/param-spec coll)
-         (into {} (map (juxt :dadysql.core/name :dadysql.core/param-spec)))
-         (merge insert-coll))))
+(defn get-query-spec [coll]
+  (->> (filter :dadysql.core/param-spec coll)
+       (filter (fn [m] (not= (:dadysql.core/dml m)
+                             :dadysql.core/dml-insert)))
+       (into {} (map (juxt :dadysql.core/name :dadysql.core/param-spec)))))
+
+
+(defn get-model-spec [coll]
+  (->> (filter :dadysql.core/param-spec coll)
+       (filter (fn [m] (= (:dadysql.core/dml m)
+                          :dadysql.core/dml-insert)))
+       (group-by :dadysql.core/model)
+       (map (fn [[k v]] {k (apply merge (mapv :dadysql.core/param-spec v))}))
+       (into {})))
 
 
 (defn gen-spec [file-name coll]
-  (let [f-k (filename-as-keyword file-name)]
-    (->> (get-param-spec coll)
-         (sg/gen-spec f-k))))
-
-
-
-(defn get-spec-map [file-name coll]
   (let [f-k (filename-as-keyword file-name)
-        s-m (get-param-spec coll)
-        nps (sgi/rename-key-to-namespace-key f-k s-m)]
-    (->> (interleave (keys s-m)
-                     (keys nps))
-         (apply assoc {}))))
+        q-spec (get-query-spec coll)
+        m-spec (get-model-spec coll)]
+    (into
+      (sg/gen-spec f-k m-spec {:dadymodel.core/gen-type    #{:dadymodel.core/un-qualified}
+                               :dadymodel.core/gen-list?   false
+                               :dadymodel.core/gen-entity? false})
+      (reverse
+        (sg/gen-spec f-k q-spec {:dadymodel.core/gen-type    #{:dadymodel.core/ex
+                                                               :dadymodel.core/un-qualified}
+                                 :dadymodel.core/gen-list?   false
+                                 :dadymodel.core/gen-entity? false})))))
 
 
 
-(defn assosc-spec-to-m [psk m]
-  (if (and (contains? m :dadysql.core/param-spec)
-           (get psk (:dadysql.core/name m)))
+(defn- assosc-spec-to-m [f-k m]
+  (if (contains? m :dadysql.core/param-spec)
     (if (= (:dadysql.core/dml m)
            :dadysql.core/dml-insert)
-      (let [w (get psk (:dadysql.core/model m))]
-        (assoc m :dadysql.core/spec (keyword (str "unq." (namespace w) "/" (name w) ) )))
-      (let [w (get psk (:dadysql.core/name m))]
-        (assoc m :dadysql.core/spec (keyword (str "ex." (namespace w) "/" (name w) ) ) )))
+      (let [w (keyword (str "unq." (name f-k) "/" (name (:dadysql.core/model m))))]
+        (assoc m :dadysql.core/spec w))
+      (let [w (keyword (str "ex." (name f-k) "/" (name (:dadysql.core/name m))))]
+        (assoc m :dadysql.core/spec w)))
     m))
 
 
 
-(defn eval-and-assoc-spec [file-name coll]
+(defn eval-and-assoc-spec [file-name cata-coll]
   (do
-    (doseq [s (gen-spec file-name coll ) ]
+    (doseq [s (gen-spec file-name cata-coll)]
       (eval s))
-    (let [m (get-spec-map file-name coll)]
-      (mapv (fn [w] (assosc-spec-to-m m w) ) coll))))
+    (let [;m (get-spec-map file-name cata-coll)
+          f-k (filename-as-keyword file-name)]
+      (mapv (fn [w] (assosc-spec-to-m f-k w)) cata-coll))))
+
+
+
+(defn validate-param-spec [tm-coll req-m]
+  (let [param-spec (condp = (:dadysql.core/op req-m)
+                     :dadysql.core/op-push
+                     (-> (map :dadysql.core/spec tm-coll)
+                         (remove nil?)
+                         (as-relational-spec))
+                     (-> (map :dadysql.core/spec tm-coll)
+                         (doall)
+                         (as-merge-spec)))]
+    (if (and (nil? param-spec)
+             (empty? param-spec))
+      tm-coll
+      (if (s/valid? (eval param-spec) (:dadysql.core/param req-m))
+        tm-coll
+        (f/fail (s/explain-str (eval param-spec) (:dadysql.core/param req-m)))))))

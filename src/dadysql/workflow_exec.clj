@@ -7,6 +7,7 @@
     [dadysql.impl.sql-bind-impl :as bi]
     [dadysql.selector :as dc]
     [dadysql.impl.param-impl :as pi]
+    [dadysql.impl.param-spec-impl :as psi ]
     [dadysql.clj.common :as cc]
     [dadysql.impl.common-impl :as ci]))
 
@@ -172,6 +173,20 @@
     :dadysql.core/format-map))
 
 
+(comment
+
+
+  (->> [[:meeting :meeting_id :dadymodel.core/rel-n-n :employee :id [:employee-meeting :meeting_id :employee_id]]]
+       (ji/do-disjoin input )
+       )
+  )
+
+(defn show-local-value [v]
+  (println "--------")
+  (clojure.pprint/pprint v)
+  (println "-------")
+  v
+  )
 
 (defn process-input [req-m tm-coll & {:keys [disjoin]
                                       :or   {disjoin true}}]
@@ -183,9 +198,10 @@
                           (ji/do-disjoin input (get-in tm-coll [0 :dadymodel.core/join]))
                           input))]
     (f/try-> tm-coll
-             (pi/validate-param-spec req-m)
+             (psi/validate-param-spec req-m)
              (pi/assoc-generator pull-fn)
              (pi/param-exec (:dadysql.core/param req-m) in-format)
+   ;          (show-local-value)
              (ji/do-assoc-relation-key (get-in tm-coll [0 :dadymodel.core/join]))
              (apply-disjoin))))
 
@@ -206,6 +222,7 @@
                     (warp-do-output-join req-m))]
     (f/try-> req-m
              (process-input tm-coll)
+             ;(show-local-value)
              (bind-param tm-coll req-m)
              (dc/init-db-seq-op req-m)
              (handler))))

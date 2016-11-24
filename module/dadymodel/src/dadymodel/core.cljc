@@ -54,13 +54,24 @@
 
 (s/def :dadymodel.core/gen-type (s/coll-of #{:dadymodel.core/qualified :dadymodel.core/un-qualified :dadymodel.core/ex} :pred #{}))
 
-(s/def :dadymodel.core/opt-k (s/merge (s/keys :opt [:dadymodel.core/join :dadymodel.core/gen-type])
-                                     (s/map-of #{:dadymodel.core/join :dadymodel.core/gen-type} any?)))
+(s/def :dadymodel.core/fixed-key? boolean?)
+(s/def :dadymodel.core/gen-list? boolean?)
+(s/def :dadymodel.core/gen-entity? boolean?)
+
+(s/def :dadymodel.core/opt-k (s/merge (s/keys :opt [:dadymodel.core/join
+                                                    :dadymodel.core/fixed-key?
+                                                    :dadymodel.core/gen-type
+                                                    :dadymodel.core/gen-list?
+                                                    :dadymodel.core/gen-entity?])
+                                      (s/map-of #{:dadymodel.core/join :dadymodel.core/gen-type
+                                                  :dadymodel.core/fixed-key?
+                                                  :dadymodel.core/gen-list?
+                                                  :dadymodel.core/gen-entity?} any?)))
 
 
 (s/def :dadymodel.core/input (s/cat :base-ns keyword?
-                                   :model ::model
-                                   :opt ::opt-k))
+                                    :model ::model
+                                    :opt ::opt-k))
 (s/def :dadymodel.core/output any?)
 
 
@@ -69,39 +80,52 @@
     (symbol (clojure.string/replace (str v) #"#'" ""))
     v))
 
-(defn get-type [w t]
-  (condp = t
-    :dadymodel.core/un-qualified
-    (assoc w :dadymodel.core/fixed-key? false
-             :dadymodel.core/gen-type :dadymodel.core/un-qualified
-             :dadymodel.core/prefix :unq )
-    :dadymodel.core/qualified
-    (assoc w :dadymodel.core/fixed-key? false
-             :dadymodel.core/gen-type :dadymodel.core/qualified)
-    :dadymodel.core/ex
-    (assoc w :dadymodel.core/fixed? false
-             :dadymodel.core/gen-type :dadymodel.core/un-qualified
-             :dadymodel.core/prefix :ex )))
+
+(def gen-config {:dadymodel.core/entity-identifer "entity"
+                 :dadymodel.core/fixed-key?       false
+                 :dadymodel.core/gen-list?        true
+                 :dadymodel.core/gen-entity?      true})
+
+
+(defmulti gen-spec-impl (fn [_ _ t] t))
+
+(defmethod gen-spec-impl
+  :dadymodel.core/un-qualified
+  [m opt-config-m _]
+  (->> (merge opt-config-m {:dadymodel.core/gen-type :dadymodel.core/un-qualified
+                            :dadymodel.core/prefix   :unq})
+       (merge gen-config)
+       (impl/model->spec m)))
+
+
+(defmethod gen-spec-impl
+  :dadymodel.core/qualified
+  [m opt-config-m _]
+  (->> (merge opt-config-m {:dadymodel.core/gen-type :dadymodel.core/qualified})
+       (merge gen-config)
+       (impl/model->spec m)))
+
+
+(defmethod gen-spec-impl
+  :dadymodel.core/ex
+  [m opt-config-m _]
+  (->> (merge opt-config-m {:dadymodel.core/gen-type :dadymodel.core/un-qualified
+                            :dadymodel.core/prefix   :ex})
+       (merge gen-config)
+       (impl/model->spec (conform* m))))
+
 
 
 (defn gen-spec
   ([ns-identifier model-m opt-config-m]
    (if (s/valid? :dadymodel.core/input [ns-identifier model-m opt-config-m])
-     (let [gen-type-set (or (:dadymodel.core/gen-type opt-config-m)
-                            #{:dadymodel.core/qualified
-                              :dadymodel.core/un-qualified
-                              :dadymodel.core/ex})
-           m (clojure.walk/postwalk var->symbol model-m)
-           opt-config-m (assoc opt-config-m :dadymodel.core/entity-identifer "entity")]
-       (->> (map (fn [t]
-                   (if (= t :dadymodel.core/ex)
-                     (-> (get-type opt-config-m t)
-                         (assoc :dadymodel.core/ns-identifier ns-identifier)
-                         (impl/model->spec  (conform* m) ))
-                     (-> (get-type opt-config-m t)
-                         (assoc :dadymodel.core/ns-identifier ns-identifier)
-                         (impl/model->spec m )))
-                   ) gen-type-set)
+     (let [m (clojure.walk/postwalk var->symbol model-m)
+           opt-config-m (assoc opt-config-m :dadymodel.core/ns-identifier ns-identifier)]
+       (->> (or (:dadymodel.core/gen-type opt-config-m)
+                #{:dadymodel.core/qualified
+                  :dadymodel.core/un-qualified
+                  :dadymodel.core/ex})
+            (map (fn [t] (gen-spec-impl m opt-config-m t)))
             (apply concat)))
      #?(:cljs (throw (js/Error. "Opps! spec validation exception  "))
         :clj  (throw (ex-info (s/explain-str ::input [ns-identifier model-m opt-config-m]) {})))))

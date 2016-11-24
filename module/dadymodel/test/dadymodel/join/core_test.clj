@@ -38,6 +38,33 @@
 
 
 
+(comment
+
+
+  (let [d {:employee {:id              1,
+                      :transaction_id  0,
+                      :firstname       "Abba",
+                      :lastname        "Zoma",
+                      :dept_id         1,
+
+
+                      :department      {:id 1, :transaction_id 0, :dept_name "Business"}}
+           :employee-detail {:employee_id 1,
+                             :street      "Schwan",
+                             :city        "Munich",
+                             :state       "Bayern",
+                             :country     "GRE"},
+           :employee-meeting  [[:meeting_id :subject :employee_id]
+                      [1 "Hello" 1]
+                      [2 "Hello Friday" 1]],
+           }
+        j [[:employee :id :dadysql.core/rel-1-n :employee-detail :employee_id]
+           [:employee :id :dadysql.core/rel-n-n :meeting :meeting_id [:employee-meeting :employee_id :meeting_id]]]]
+
+    (do-join-impl d j)
+    )
+
+  )
 
 
 
@@ -61,7 +88,48 @@
           actual-result (do-join-impl data join)]
 
       (is (= actual-result
-             expected-result)))))
+             expected-result))))
+
+  (testing "test do-join "
+
+
+    (let [d {:employee {:id              1,
+                        :transaction_id  0,
+                        :firstname       "Abba",
+                        :lastname        "Zoma",
+                        :dept_id         1,
+
+
+                        :department      {:id 1, :transaction_id 0, :dept_name "Business"}}
+             :employee-detail {:employee_id 1,
+                               :street      "Schwan",
+                               :city        "Munich",
+                               :state       "Bayern",
+                               :country     "GRE"},
+             :employee-meeting  [[:meeting_id :subject :employee_id]
+                                 [1 "Hello" 1]
+                                 [2 "Hello Friday" 1]]}
+          j [[:employee :id :dadymodel.core/rel-1-n :employee-detail :employee_id]
+             [:employee :id :dadymodel.core/rel-n-n :meeting :meeting_id
+              [:employee-meeting :employee_id :meeting_id]]]]
+
+      (is (=
+            (do-join-impl d j)
+            {:employee {:id 1,
+                        :transaction_id 0,
+                        :firstname "Abba",
+                        :lastname "Zoma",
+                        :dept_id 1,
+                        :department {:id 1, :transaction_id 0, :dept_name "Business"},
+                        :employee-detail-list {:employee_id 1, :street "Schwan", :city "Munich", :state "Bayern", :country "GRE"},
+                        :meeting-list [[:meeting_id :subject :employee_id] [1 "Hello" 1] [2 "Hello Friday" 1]]}}
+            ))
+
+      )
+    )
+
+
+  )
 
 
 
