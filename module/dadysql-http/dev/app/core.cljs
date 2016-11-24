@@ -68,6 +68,7 @@
 
 
 
+
   (r/dispatch (dc/dispatch-path :get-dept-by-id {:id 3}))
 
   )

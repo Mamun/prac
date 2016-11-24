@@ -4,38 +4,26 @@
             [dadymodel.util :as u]
             [clojure.spec :as s]
             [clojure.string]
-            [dadymodel.xtype :as sg]
+            [dadymodel.xtype]
             [dadymodel.join.join-key-impl :as dj-impl]
             [dadymodel.join.core :as j-impl]))
 
 
-(s/def ::email (s/with-gen (s/and string? sg/email?)
-                           #(s/gen #{"test@test.de" "clojure@clojure.de" "fun@fun.de"})))
-(s/def ::x-int (s/with-gen (s/conformer sg/x-int? (fn [_ v] (str v))) (fn [] sg/x-int-gen)))
-(s/def ::x-integer (s/with-gen (s/conformer sg/x-integer? (fn [_ v] (str v))) (fn [] sg/x-integer-gen)))
-(s/def ::x-double (s/with-gen (s/conformer sg/x-double? (fn [_ v] (str v))) (fn [] sg/x-double-gen)))
-(s/def ::x-boolean (s/with-gen (s/conformer sg/x-boolean? (fn [_ v] (str v))) (fn [] sg/x-boolean-gen)))
-(s/def ::x-keyword (s/with-gen (s/conformer sg/x-keyword? (fn [_ v] (str v))) (fn [] sg/x-keyword-gen)))
-(s/def ::x-inst (s/with-gen (s/conformer sg/x-inst? (fn [_ v] (str v))) (fn [] sg/x-inst-gen)))
-(s/def ::x-uuid (s/with-gen (s/conformer sg/x-uuid? (fn [_ v] (str v))) (fn [] sg/x-uuid-gen)))
-
-
-
 (def ^:dynamic *conformer-m*
-  {'integer?              ::x-integer
-   'clojure.core/integer? ::x-integer
-   'int?                  ::x-int
-   'clojure.core/int?     ::x-int
-   'boolean?              ::x-boolean
-   'clojure.core/boolean? ::x-boolean
-   'double?               ::x-double
-   'clojure.core/double?  ::x-double
-   'keyword?              ::x-keyword
-   'clojure.core/keyword  ::x-keyword
-   'inst?                 ::x-inst
-   'clojure.core/inst?    ::x-inst
-   'uuid?                 ::x-uuid
-   'clojure.core/uuid?    ::x-uuid})
+  {'integer?              :dadymodel.xtype/x-integer
+   'clojure.core/integer? :dadymodel.xtype/x-integer
+   'int?                  :dadymodel.xtype/x-int
+   'clojure.core/int?     :dadymodel.xtype/x-int
+   'boolean?              :dadymodel.xtype/x-boolean
+   'clojure.core/boolean? :dadymodel.xtype/x-boolean
+   'double?               :dadymodel.xtype/x-double
+   'clojure.core/double?  :dadymodel.xtype/x-double
+   'keyword?              :dadymodel.xtype/x-keyword
+   'clojure.core/keyword  :dadymodel.xtype/x-keyword
+   'inst?                 :dadymodel.xtype/x-inst
+   'clojure.core/inst?    :dadymodel.xtype/x-inst
+   'uuid?                 :dadymodel.xtype/x-uuid
+   'clojure.core/uuid?    :dadymodel.xtype/x-uuid})
 
 
 (defn- conform* [m]
@@ -82,38 +70,41 @@
     v))
 
 (defn get-type [w t]
-  (println t)
   (condp = t
     :dadymodel.core/un-qualified
-    (assoc w :fixed? false
+    (assoc w :dadymodel.core/fixed-key? false
              :dadymodel.core/gen-type :dadymodel.core/un-qualified
-             :postfix :unq )
+             :dadymodel.core/prefix :unq )
     :dadymodel.core/qualified
-    (assoc w :fixed? false
+    (assoc w :dadymodel.core/fixed-key? false
              :dadymodel.core/gen-type :dadymodel.core/qualified)
-
     :dadymodel.core/ex
-    (assoc w :fixed? false
+    (assoc w :dadymodel.core/fixed? false
              :dadymodel.core/gen-type :dadymodel.core/un-qualified
-             :postfix :ex )))
+             :dadymodel.core/prefix :ex )))
 
 
 (defn gen-spec
-  ([namespace-name model-m opt-config-m]
-   (if (s/valid? :dadymodel.core/input [namespace-name model-m opt-config-m])
+  ([ns-identifier model-m opt-config-m]
+   (if (s/valid? :dadymodel.core/input [ns-identifier model-m opt-config-m])
      (let [gen-type-set (or (:dadymodel.core/gen-type opt-config-m)
                             #{:dadymodel.core/qualified
                               :dadymodel.core/un-qualified
                               :dadymodel.core/ex})
-           m (clojure.walk/postwalk var->symbol model-m)]
+           m (clojure.walk/postwalk var->symbol model-m)
+           opt-config-m (assoc opt-config-m :dadymodel.core/entity-identifer "entity")]
        (->> (map (fn [t]
                    (if (= t :dadymodel.core/ex)
-                     (impl/model->spec namespace-name (conform* m) (get-type opt-config-m t))
-                     (impl/model->spec namespace-name m (get-type opt-config-m t)))
+                     (-> (get-type opt-config-m t)
+                         (assoc :dadymodel.core/ns-identifier ns-identifier)
+                         (impl/model->spec  (conform* m) ))
+                     (-> (get-type opt-config-m t)
+                         (assoc :dadymodel.core/ns-identifier ns-identifier)
+                         (impl/model->spec m )))
                    ) gen-type-set)
             (apply concat)))
      #?(:cljs (throw (js/Error. "Opps! spec validation exception  "))
-        :clj  (throw (ex-info (s/explain-str ::input [namespace-name model-m opt-config-m]) {})))))
+        :clj  (throw (ex-info (s/explain-str ::input [ns-identifier model-m opt-config-m]) {})))))
   ([namespace-name model-m]
    (gen-spec namespace-name model-m {})))
 

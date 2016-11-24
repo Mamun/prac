@@ -17,9 +17,11 @@
 
 
   (defmodel app {:dept    {:req {:id   int?
+                                 :des  string?
                                  :name string?}
                            :opt {:note string?}}
                  :student {:req {:name string?
+                                 :age  int?
                                  :id   int?}}}
             :dadymodel.core/join
             [[:dept :id :dadymodel.core/rel-1-n :student :dept-id]])
@@ -31,9 +33,15 @@
       (s/exercise :app/dept 1)))
 
 
+  ;(s/conform :unq.app/model {:id 45 :name "asdf"})
+ ; (s/conform :unq.app/model [{:id 45 :name "asdf" :age 23}])
+
+
+
+
   (binding [s/*recursion-limit* 0]
     (clojure.pprint/pprint
-      (s/exercise :app/dept-list 1)))
+      (s/exercise :unq.app/dept-list 1)))
 
   ;;as entity map
   (binding [s/*recursion-limit* 0]
@@ -76,11 +84,11 @@
     (let [w (gen/sample (s/gen :unq.entity.app/dept) 1)]
       (clojure.pprint/pprint w)
       (-> w
-           (first)
-           (do-disjoin [[:dept :id :dadymodel.core/rel-1-n :student :dept-id]])
-           (do-join [[:dept :id :dadymodel.core/rel-1-n :student :dept-id]])
-           (clojure.pprint/pprint)
-           ))
+          (first)
+          (do-disjoin [[:dept :id :dadymodel.core/rel-1-n :student :dept-id]])
+          (do-join [[:dept :id :dadymodel.core/rel-1-n :student :dept-id]])
+          (clojure.pprint/pprint)
+          ))
     )
 
 
@@ -89,10 +97,10 @@
       (let [w (gen/sample (s/gen :unq.entity.app/dept) 1)]
         (clojure.pprint/pprint w)
         (-> w
-             (first)
-             (do-disjoin [[:dept :id :dadymodel.core/rel-1-n :student :dept-id]])
-             #_(do-join [[:dept :id :dadymodel.core/rel-1-n :student :dept-id]])
-             ))))
+            (first)
+            (do-disjoin [[:dept :id :dadymodel.core/rel-1-n :student :dept-id]])
+            #_(do-join [[:dept :id :dadymodel.core/rel-1-n :student :dept-id]])
+            ))))
 
 
 
@@ -104,7 +112,7 @@
                        [{:name "", :id -1}
                         {:name "", :id -1}]}})
         j-value (do-disjoin w [[:dept :id :dadymodel.core/rel-1-n :student :dept-id]])
-        dj-value (do-join j-value [[:dept :id :dadymodel.core/rel-1-n :student :dept-id]] )]
+        dj-value (do-join j-value [[:dept :id :dadymodel.core/rel-1-n :student :dept-id]])]
     (clojure.pprint/pprint j-value)
     (clojure.pprint/pprint dj-value)
     )

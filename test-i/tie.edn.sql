@@ -45,12 +45,11 @@ select * from employee_meeting LIMIT :limit OFFSET :offset;
 /*
 {:doc "Load employee with dept, details and meeting  "
  :name [:get-employee-by-id :get-employee-dept :get-employee-detail :get-employee-meeting]
- :model [:employee :department :employee-detail :employee-meeting]
+ :model [:employee :department :employee-detail :meeting]
  :group :load-employee
  :extend {:get-employee-by-id  {:result #{:single}}
           :get-employee-dept   {:result #{:single}}
-          :get-employee-detail {:result #{:single}}
-          :get-employee-meeting {:result #{:array}}}
+          :get-employee-detail {:result #{:single}}}
  :param-spec {:req {:id int?}}
  }*/
 select * from employee where id = :id;

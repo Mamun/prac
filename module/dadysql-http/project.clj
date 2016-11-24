@@ -4,7 +4,7 @@
   :license {:name "Eclipse Public License"
             :url  "http://www.eclipse.org/legal/epl-v10.html"}
 
-  :dependencies [[org.clojure/clojure "1.9.0-alpha13" :scope "provided"]
+  :dependencies [[org.clojure/clojure "1.9.0-alpha14" :scope "provided"]
                  [org.clojure/clojurescript "1.9.229" :scope "provided"]
                  [ring "1.4.0" :scope "provided"]
                  [ring-middleware-format "0.6.0"
@@ -14,8 +14,7 @@
                  [dadysql "0.1.0-alpha-SNAPSHOT" :scope "provided"]
                  [cljs-ajax "0.5.2"]
                  [reagent "0.6.0" :scope "provided"]
-                 [re-frame "0.7.0-alpha-3" :scope "provided"]
-                 ]
+                 [re-frame "0.7.0-alpha-3" :scope "provided"]]
 
   :plugins [[lein-cljsbuild "1.1.1"]
             [lein-figwheel "0.5.8"]

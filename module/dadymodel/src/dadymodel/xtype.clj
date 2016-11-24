@@ -19,7 +19,6 @@
 
 
 
-(def x-int-gen (gen/fmap #(str %) (gen/int)))
 
 (defn x-integer? [x]
   (cond
@@ -31,7 +30,6 @@
     :else :clojure.spec/invalid))
 
 
-(def x-integer-gen (gen/fmap #(str %) (gen/large-integer)))
 
 (defn x-double? [x]
   (cond
@@ -43,7 +41,7 @@
     :else :clojure.spec/invalid))
 
 
-(def x-double-gen (gen/fmap #(str %) (gen/double)))
+
 
 (defn x-boolean? [x]
   (cond
@@ -55,7 +53,7 @@
     :else :clojure.spec/invalid))
 
 
-(def x-boolean-gen (gen/fmap #(str %) (gen/boolean)))
+
 
 (defn x-keyword? [x]
   (cond
@@ -64,7 +62,6 @@
     :else :clojure.spec/invalid))
 
 
-(def x-keyword-gen (gen/fmap #(name %) (gen/keyword)))
 
 (def date-formater (SimpleDateFormat. "dd-MM-yyyy HH:mm:ss")) ;
 
@@ -78,7 +75,7 @@
     :else :clojure.spec/invalid))
 
 
-(def x-inst-gen (gen/fmap #(.format date-formater (java.util.Date. %)) (gen/large-integer)))
+
 
 (defn x-uuid? [x]
   (cond
@@ -90,8 +87,46 @@
     :else :clojure.spec/invalid))
 
 
-(def x-uuid-gen (gen/fmap #(str %)
+(defn- matches-regex?
+  "Returns true if the string matches the given regular expression"
+  [v regex]
+  (boolean (re-matches regex v)))
+
+
+(defn email?
+  "Returns true if v is an email address"
+  [v]
+  (if (nil? v)
+    false
+    (matches-regex? v
+                    #"(?i)[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?")))
+
+
+
+(s/def ::email (s/with-gen (s/and string? email?)
+                           #(s/gen #{"test@test.de" "clojure@clojure.de" "fun@fun.de"})))
+
+(defn x-int-gen []
+  (gen/fmap #(str %) (gen/int)))
+(defn x-integer-gen []
+  (gen/fmap #(str %) (gen/large-integer)))
+(defn x-double-gen []
+  (gen/fmap #(str %) (gen/double)))
+(defn x-boolean-gen []
+  (gen/fmap #(str %) (gen/boolean)))
+(defn x-keyword-gen [] (gen/fmap #(name %) (gen/keyword)))
+(defn x-inst-gen [] (gen/fmap #(.format date-formater (java.util.Date. %)) (gen/large-integer)))
+(defn x-uuid-gen [] (gen/fmap #(str %)
                           (gen/uuid)))
+
+
+(s/def ::x-int (s/with-gen (s/conformer x-int? (fn [_ v] (str v))) x-int-gen))
+(s/def ::x-integer (s/with-gen (s/conformer x-integer? (fn [_ v] (str v))) x-integer-gen))
+(s/def ::x-double (s/with-gen (s/conformer x-double? (fn [_ v] (str v))) x-double-gen))
+(s/def ::x-boolean (s/with-gen (s/conformer x-boolean? (fn [_ v] (str v))) x-boolean-gen))
+(s/def ::x-keyword (s/with-gen (s/conformer x-keyword? (fn [_ v] (str v))) x-keyword-gen))
+(s/def ::x-inst (s/with-gen (s/conformer x-inst? (fn [_ v] (str v))) x-inst-gen))
+(s/def ::x-uuid (s/with-gen (s/conformer x-uuid? (fn [_ v] (str v))) x-uuid-gen))
 
 
 (comment
@@ -108,18 +143,5 @@
   )
 
 
-(defn- matches-regex?
-  "Returns true if the string matches the given regular expression"
-  [v regex]
-  (boolean (re-matches regex v)))
-
-
-(defn email?
-  "Returns true if v is an email address"
-  [v]
-  (if (nil? v)
-    false
-    (matches-regex? v
-                    #"(?i)[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?")))
 
 
