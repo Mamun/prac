@@ -49,7 +49,8 @@ select * from employee_meeting LIMIT :limit OFFSET :offset;
  :group :load-employee
  :extend {:get-employee-by-id  {:result #{:single}}
           :get-employee-dept   {:result #{:single}}
-          :get-employee-detail {:result #{:single}}}
+          :get-employee-detail {:result #{:single}}
+          :get-employee-meeting {:result #{:array}}}
  :param-spec {:req {:id int?}}
  }*/
 select * from employee where id = :id;

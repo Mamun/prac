@@ -48,17 +48,17 @@
   (testing "test filter-join-key "
     (let [data [{:dadysql.core/sql   "select * from dual "
                  :dadysql.core/model :dual
-                 :dadymodel.core/join  [[:dual :id :1-n :dual2 :tab-id]
+                 :spec-model.core/join  [[:dual :id :1-n :dual2 :tab-id]
                                       [:dual :id :1-n :tab3 :tab-id]]}
                 {:dadysql.core/sql   "select * from dual "
                  :dadysql.core/model :dual2
-                 :dadymodel.core/join  [[:dual :id :1-n :tab2 :tab-id]
+                 :spec-model.core/join  [[:dual :id :1-n :tab2 :tab-id]
                                       [:dual :id :1-n :tab3 :tab-id]]}]
           expected-result [{:dadysql.core/sql   "select * from dual ",
                             :dadysql.core/model :dual,
-                            :dadymodel.core/join  [[:dual :id :1-n :dual2 :tab-id]]}
+                            :spec-model.core/join  [[:dual :id :1-n :dual2 :tab-id]]}
                            {:dadysql.core/sql   "select * from dual ",
-                            :dadysql.core/model :dual2, :dadymodel.core/join []}]
+                            :dadysql.core/model :dual2, :spec-model.core/join []}]
           actual-result (filter-join-key data)]
       (is (= expected-result
              actual-result)))))
@@ -79,14 +79,14 @@
 
 (deftest filter-join-key-coll-test
   (testing "test filter-join-key-coll"
-    (let [j [[:d-tab :d-id :dadymodel.core/rel-1-1 :s-tab :s-id]]
+    (let [j [[:d-tab :d-id :spec-model.core/rel-1-1 :s-tab :s-id]]
           model [:s-tab]
           actual-result (filter-join-key-coll j model)
-          expected-result [[:d-tab :d-id :dadymodel.core/rel-1-1 :s-tab :s-id]]]
+          expected-result [[:d-tab :d-id :spec-model.core/rel-1-1 :s-tab :s-id]]]
       (is (= actual-result
              expected-result))))
   (testing "test filter-join-key "
-    (let [j [[:d-tab :d-id :dadymodel.core/rel-1-1 :s-tab :s-id]]
+    (let [j [[:d-tab :d-id :spec-model.core/rel-1-1 :s-tab :s-id]]
           model [:s-tab2]
           actual-result (filter-join-key-coll j model)
           expected-result []]

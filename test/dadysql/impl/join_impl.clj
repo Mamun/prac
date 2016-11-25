@@ -11,7 +11,7 @@
   (reduce (fn [acc j1]
             (let [[s st rel _ dt [_ sdt _]] j1
                   w (keys (cc/group-by-value st (s data-m)))]
-              (if (= rel :dadymodel.core/rel-n-n)
+              (if (= rel :spec-model.core/rel-n-n)
                 (merge acc {sdt w})
                 (merge acc {dt w})))
             ) {} j-coll))
@@ -20,7 +20,7 @@
 (defn group-by-target-entity-key-one
   ""
   [[_ _ rel d dt [n nst _]] data-m]
-  (if (= rel :dadymodel.core/rel-n-n)
+  (if (= rel :spec-model.core/rel-n-n)
     {d {nst (cc/group-by-value nst (get data-m n))}}
     {d {dt (cc/group-by-value dt (get data-m d))}}))
 
@@ -38,7 +38,7 @@
 (defn get-target-relational-key-value
   [target-rel-data-m data-m [s st rel d dt [_ nst _]]]
   (let [s-value (get-in data-m (conj s st))]
-    (if (= :dadymodel.core/rel-n-n rel)
+    (if (= :spec-model.core/rel-n-n rel)
       (get-in target-rel-data-m [d nst s-value])
       (get-in target-rel-data-m [d dt s-value]))))
 
@@ -100,7 +100,7 @@
 
 (defn group-by-target-entity-one
   [data j]
-  (if (= :dadymodel.core/rel-n-n (nth j 2))
+  (if (= :spec-model.core/rel-n-n (nth j 2))
     (let [[st stc _ dt dtc [rdt s d]] j]
       {rdt [{s (get-in data (conj st stc))
              d (get-in data (conj dt dtc))}]})
@@ -133,7 +133,7 @@
     data
     (let [join-coll (replace-source-entity-path join-coll data)
           n-join (filter (fn [[_ _ rel]]
-                           (if (= rel :dadymodel.core/rel-n-n)
+                           (if (= rel :spec-model.core/rel-n-n)
                              true
                              false)
                            ) join-coll)
@@ -145,8 +145,8 @@
                         (group-by-target-entity-batch data)))
           ;Assos relation key
           join (w/postwalk (fn [w]
-                             (if (= :dadymodel.core/rel-n-n w)
-                               :dadymodel.core/rel-1-n
+                             (if (= :spec-model.core/rel-n-n w)
+                               :spec-model.core/rel-1-n
                                w)
                              ) join-coll)
           target-data-m (->> data
@@ -157,8 +157,8 @@
                      (reduce (fn [acc [s _ r d _]]
                                (update-in acc s
                                           (fn [m]
-                                            (if (or (= r :dadymodel.core/rel-1-1)
-                                                    (= r :dadymodel.core/rel-n-1))
+                                            (if (or (= r :spec-model.core/rel-1-1)
+                                                    (= r :spec-model.core/rel-n-1))
                                               (assoc m d (first (get target-data-m d)))
                                               (assoc m d (get target-data-m d)))))
                                ) data))]

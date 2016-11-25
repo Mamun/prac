@@ -1,4 +1,4 @@
-(ns dadymodel.workthrogh-prac
+(ns spec-model.workthrogh-prac
   (:require [clojure.spec :as s]
             [clojure.spec.gen :as gen]))
 

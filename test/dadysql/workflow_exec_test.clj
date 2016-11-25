@@ -27,7 +27,7 @@
                   :dadysql.core/param-spec  :get-dept-by-id/spec,
                   :dadysql.core/timeout     2000,
                   :dadysql.core/dml     :dadysql.core/dml-select,
-                  :dadymodel.core/join        [],
+                  :spec-model.core/join        [],
                   :dadysql.core/group       :load-dept,
                   :dadysql.core/index       0,
                   :dadysql.core/param {:id 1}}]

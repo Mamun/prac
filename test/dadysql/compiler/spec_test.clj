@@ -19,12 +19,12 @@
     (is (false? (s/valid? :dadysql.core/tx-prop [:isolation :serializable1 :read-only? true])) )
     (is (s/valid? :dadysql.core/default-param [:next_transaction_id '(inc :transaction_id)]) )
     (is (s/valid? :dadysql.core/default-param [:next_transaction_id :id ]))
-    (is (s/valid? :dadymodel.core/join [[:department :id :dadymodel.core/rel-1-n :employee :dept_id]
-                                       [:employee :id :dadymodel.core/rel-1-1 :employee-detail :employee_id]
-                                       [:employee :id :dadymodel.core/rel-n-n :meeting :meeting_id [:employee-meeting :employee_id :meeting_id]]]))
-    (is (false? (s/valid? :dadymodel.core/join  [[:department :id :dadymodel.core/rel-1-n :employee :dept_id]
-                                               [:employee :id :dadymodel.core/rel-1-1 :employee-detail :employee_id]
-                                               [:employee :id :dadymodel.core/rel-n-n :meeting :meeting_id [:employee-meeting :employee_id]]]))
+    (is (s/valid? :spec-model.core/join [[:department :id :spec-model.core/rel-1-n :employee :dept_id]
+                                       [:employee :id :spec-model.core/rel-1-1 :employee-detail :employee_id]
+                                       [:employee :id :spec-model.core/rel-n-n :meeting :meeting_id [:employee-meeting :employee_id :meeting_id]]]))
+    (is (false? (s/valid? :spec-model.core/join  [[:department :id :spec-model.core/rel-1-n :employee :dept_id]
+                                               [:employee :id :spec-model.core/rel-1-1 :employee-detail :employee_id]
+                                               [:employee :id :spec-model.core/rel-n-n :meeting :meeting_id [:employee-meeting :employee_id]]]))
         )
     ))
 

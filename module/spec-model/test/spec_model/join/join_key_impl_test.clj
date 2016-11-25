@@ -1,9 +1,9 @@
-(ns dadymodel.join.join-key-impl-test
+(ns spec-model.join.join-key-impl-test
   (:use [clojure.test])
-  (:require [dadymodel.join.join-key-impl :refer :all]
-            [dadymodel.core :as dc]
+  (:require [spec-model.join.join-key-impl :refer :all]
+            [spec-model.core :as dc]
             [clojure.spec :as s]
-            [dadymodel.join.util :as p]
+            [spec-model.join.util :as p]
             [clojure.spec.gen :as g]
             ))
 
@@ -19,7 +19,7 @@
           (group-by-target-entity-one
             {:tab {:id 100,
                    :tab1-list [{:tab1-id 10}]}}
-            [[:tab] :id :dadymodel.core/rel-n-n
+            [[:tab] :id :spec-model.core/rel-n-n
              [:tab :tab1-list 0]        :tab1-id
              [:ntab :tab1-id :tab-id]])))))
 
@@ -29,7 +29,7 @@
   (testing "test dest-rel-data "
     (let [data {:tab {:id   100
                       :tab1 [{:tab-id 100} {:tab-id 100}]}}
-          j [[:tab] :id :dadymodel.core/rel-1-n :tab1 :tab-id]
+          j [[:tab] :id :spec-model.core/rel-1-n :tab1 :tab-id]
           expected-result {:tab1 [{:tab-id 100} {:tab-id 100}]}
           actual-result (group-by-target-entity-one data j)]
       (is (= actual-result
@@ -40,7 +40,7 @@
                               {:tab-id 100}]}
                       {:id   102
                        :tab1 {:tab-id 138}}]}
-          j [[:tab 0] :id :dadymodel.core/rel-n-n [:tab 0 :tab1 0] :tab-id [:ntab :tab-id :tab1-id]]
+          j [[:tab 0] :id :spec-model.core/rel-n-n [:tab 0 :tab1 0] :tab-id [:ntab :tab-id :tab1-id]]
           expected-result {:ntab [{:tab-id 100, :tab1-id 100}]}
           actual-result (group-by-target-entity-one data j)]
       (is (= actual-result
@@ -49,8 +49,8 @@
 
 (deftest assoc-target-entity-key-test
   (testing "test acc-ref-key "
-    (let [r [[:tab :id :dadymodel.core/rel-1-n :tab1 :tab-id]]
-          ;[[:tab] :id :dadymodel.core/rel-1-n [:tab :tab1 0] :tab-id]
+    (let [r [[:tab :id :spec-model.core/rel-1-n :tab1 :tab-id]]
+          ;[[:tab] :id :spec-model.core/rel-1-n [:tab :tab1 0] :tab-id]
           data {:tab {:id 100, :tab1-list [{:id 101}]}}
           expected-result {:tab1-list [{:id 101, :tab-id 100}]}
           r (-> (p/rename-join-key r)
@@ -59,7 +59,7 @@
       (is (= atual-result
              expected-result))))
   (testing "test assoc-target-entity-key "
-    (let [r [[:employee :id :dadymodel.core/rel-1-1 :employee-detail :employee_id]]
+    (let [r [[:employee :id :spec-model.core/rel-1-1 :employee-detail :employee_id]]
           data {:employee {:firstname       "Schwan",
                            :lastname        "Ragg",
                            :dept_id         1,
@@ -85,7 +85,7 @@
 
 (deftest assoc-join-key-test
   (testing "assoc-join-key "
-    (let [join [[:tab :id :dadymodel.core/rel-1-n :tab1 :tab-id]]
+    (let [join [[:tab :id :spec-model.core/rel-1-n :tab1 :tab-id]]
           data {:tab {:id        100
                       :tab1-list [{:tab-id 100 :name "name1"}
                                   {:tab-id 100 :name "name2"}]}}

@@ -1,8 +1,8 @@
 (ns dadysql.impl.param-spec-impl
   (:require [dadysql.clj.fail :as f]
             [clojure.spec :as s]
-            [dadymodel.core :as sg]
-            [dadymodel.util :as sgi]))
+            [spec-model.core :as sg]
+            [spec-model.util :as sgi]))
 
 
 (defn filename-as-keyword [file-name-str]
@@ -47,14 +47,14 @@
         q-spec (get-query-spec coll)
         m-spec (get-model-spec coll)]
     (into
-      (sg/gen-spec f-k m-spec {:dadymodel.core/gen-type    #{:dadymodel.core/un-qualified}
-                               :dadymodel.core/gen-list?   false
-                               :dadymodel.core/gen-entity? false})
+      (sg/gen-spec f-k m-spec {:spec-model.core/gen-type    #{:spec-model.core/un-qualified}
+                               :spec-model.core/gen-list?   false
+                               :spec-model.core/gen-entity? false})
       (reverse
-        (sg/gen-spec f-k q-spec {:dadymodel.core/gen-type    #{:dadymodel.core/ex
-                                                               :dadymodel.core/un-qualified}
-                                 :dadymodel.core/gen-list?   false
-                                 :dadymodel.core/gen-entity? false})))))
+        (sg/gen-spec f-k q-spec {:spec-model.core/gen-type    #{:spec-model.core/ex
+                                                               :spec-model.core/un-qualified}
+                                 :spec-model.core/gen-list?   false
+                                 :spec-model.core/gen-entity? false})))))
 
 
 

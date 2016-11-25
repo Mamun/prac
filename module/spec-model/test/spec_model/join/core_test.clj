@@ -1,7 +1,7 @@
-(ns dadymodel.join.core-test
+(ns spec-model.join.core-test
   (:use [clojure.test])
-  (:require [dadymodel.join.core :refer :all]
-            [dadymodel.core :as dc]
+  (:require [spec-model.join.core :refer :all]
+            [spec-model.core :as dc]
             [clojure.spec :as s]
             [clojure.spec.gen :as g]
             ))
@@ -16,17 +16,17 @@
                               :opt {:note string?}}
                     :student {:req {:name string?
                                     :id   int?}}}
-               :dadymodel.core/join [[:dept :id :dadymodel.core/rel-1-n :student :dept-id]])
+               :spec-model.core/join [[:dept :id :spec-model.core/rel-1-n :student :dept-id]])
 
 
-  [[[:dept :id :dadymodel.core/rel-1-n :student :dept-id]]
+  [[[:dept :id :spec-model.core/rel-1-n :student :dept-id]]
 
    ]
 
 
   (clojure.pprint/pprint
     (binding [s/*recursion-limit* 0]
-      (let [j [[:dept :id :dadymodel.core/rel-1-n :student :dept-id]]
+      (let [j [[:dept :id :spec-model.core/rel-1-n :student :dept-id]]
             w (first (g/sample (s/gen :entity.unq-app/dept) 1))
             a (do-join-impl (do-disjoin-impl w j) j)]
         (clojure.pprint/pprint w)
@@ -73,8 +73,8 @@
 
 (deftest do-join-test
   (testing "test do-join "
-    (let [join [[:tab :id :dadymodel.core/rel-1-1 :tab1 :tab-id]
-                [:tab :tab4-id :dadymodel.core/rel-n-1 :tab4 :id]]
+    (let [join [[:tab :id :spec-model.core/rel-1-1 :tab1 :tab-id]
+                [:tab :tab4-id :spec-model.core/rel-n-1 :tab4 :id]]
 
           data {:tab  {:id 100 :tab4-id 1}
                 :tab1 {:tab-id 100}
@@ -109,8 +109,8 @@
              :employee-meeting  [[:meeting_id :subject :employee_id]
                                  [1 "Hello" 1]
                                  [2 "Hello Friday" 1]]}
-          j [[:employee :id :dadymodel.core/rel-1-n :employee-detail :employee_id]
-             [:employee :id :dadymodel.core/rel-n-n :meeting :meeting_id
+          j [[:employee :id :spec-model.core/rel-1-n :employee-detail :employee_id]
+             [:employee :id :spec-model.core/rel-n-n :meeting :meeting_id
               [:employee-meeting :employee_id :meeting_id]]]]
 
       (is (=
@@ -134,8 +134,8 @@
 
 
 (deftest do-disjoin-test
-  (testing "test do-disjoin with :dadymodel.core/rel-1-n relationship "
-    (let [join [[:tab :id :dadymodel.core/rel-1-n :tab1 :tab-id]]
+  (testing "test do-disjoin with :spec-model.core/rel-1-n relationship "
+    (let [join [[:tab :id :spec-model.core/rel-1-n :tab1 :tab-id]]
           data {:tab {:id        100
                       :tab1-list [{:tab-id 100 :name "name1"}
                                   {:tab-id 100 :name "name2"}]}}
@@ -146,7 +146,7 @@
       (is (= actual-result
              expected-result))))
   (testing "test do-disjoin with :n-n relationship "
-    (let [join [[:tab :id :dadymodel.core/rel-n-n :tab1 :tab-id [:ntab :tab-id :tab1-id]]]
+    (let [join [[:tab :id :spec-model.core/rel-n-n :tab1 :tab-id [:ntab :tab-id :tab1-id]]]
           data {:tab {:id        100
                       :tab1-list [{:tab-id 100}
                                   {:tab-id 101}]}}
@@ -156,7 +156,7 @@
       (is (= actual-result
              expected-result))))
   (testing "test do-join"
-    (let [j [[:employee :id :dadymodel.core/rel-1-1 :employee-detail :employee_id]]
+    (let [j [[:employee :id :spec-model.core/rel-1-1 :employee-detail :employee_id]]
           data {:employee {:firstname       "Schwan",
                            :lastname        "Ragg",
                            :dept_id         1,

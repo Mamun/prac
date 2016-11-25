@@ -1,6 +1,6 @@
 (ns dadysql.jdbc
   (:require
-    [dadymodel.core :as dsc]
+    [spec-model.core :as dsc]
     [dadysql.workflow-exec :as tie]
     [dadysql.compiler.core :as cc]
     [dadysql.clj.fail :as f]

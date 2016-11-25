@@ -70,7 +70,7 @@
                                          :city        "Munich",
                                          :state       "Bayern",
                                          :country     "GRE"},
-                       :meeting         [[:meeting_id :subject :employee_id]
+                       :meeting-list         [[:meeting_id :subject :employee_id]
                                          [1 "Hello" 1]
                                          [2 "Hello Friday" 1]],
                        :department      {:id 1, :transaction_id 0, :dept_name "Business"}}}))
@@ -81,7 +81,7 @@
             {:id             1,
              :transaction_id 0,
              :dept_name      "Business",
-             :employee       [{:id             1,
+             :employee-list       [{:id             1,
                                :transaction_id 0,
                                :firstname      "Abba",
                                :lastname       "Zoma",
@@ -102,7 +102,7 @@
                                :city        "Munich",
                                :state       "Bayern",
                                :country     "GRE"},
-             :meeting         [[:meeting_id :subject :employee_id]
+             :meeting-list         [[:meeting_id :subject :employee_id]
                                [1 "Hello" 1]
                                [2 "Hello Friday" 1]],
              :department      {:id 1, :transaction_id 0, :dept_name "Business"}}}))
@@ -145,7 +145,7 @@
     (is (= (push! (td/get-ds) (td/get-tms)
                   {:dadysql.core/name  [:create-meeting :create-employee-meeting]
                    :dadysql.core/param {:meeting {:subject  "Hello Meeting for IT"
-                                                  :employee [{:current_transaction_id 1,
+                                                  :employee-list [{:current_transaction_id 1,
                                                               :dept_id                2,
                                                               :lastname               "Zoma",
                                                               :firstname              "Abba"
@@ -160,7 +160,7 @@
     (is (= (push! (td/get-ds) (td/get-tms)
                   {:dadysql.core/name  [:create-meeting :create-employee-meeting]
                    :dadysql.core/param {:meeting {:subject  "Hello Meeting for Manager"
-                                                  :employee {:id 112}}}})
+                                                  :employee-list [{:id 112}] }}})
            {:meeting [1], :employee-meeting [1]}))
 
 
@@ -174,6 +174,7 @@
                   {:dadysql.core/name  [:update-dept]
                    :dadysql.core/param {:department {:dept_name "Call Center Munich 1" :transaction_id 0 :id 1}}})
            {:department [1]}))
+
     (is (= (push! (td/get-ds) (td/get-tms)
                   {:dadysql.core/name  [:delete-dept]
                    :dadysql.core/param {:department {:id 1}}})

@@ -67,7 +67,7 @@
        (t/select-name (t/read-file "tie.edn.sql"))
        (io/db-do (td/get-ds)))
 
-  (dadymodel.core/registry "tie")
+  (spec-model.core/registry "tie")
 
 
 

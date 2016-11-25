@@ -1,4 +1,4 @@
-(ns dadymodel.util
+(ns spec-model.util
   (:require [clojure.set]))
 
 
@@ -63,17 +63,17 @@
 
 (defn reverse-join [[s-tab s-id join-key d-tab d-id [r-tab r-id r-id2] :as j]]
   (condp = join-key
-    :dadymodel.core/rel-1-n [d-tab d-id :dadymodel.core/rel-n-1 s-tab s-id]
-    :dadymodel.core/rel-n-1 [d-tab d-id :dadymodel.core/rel-1-n s-tab s-id]
-    :dadymodel.core/rel-n-n [d-tab d-id :dadymodel.core/rel-n-n s-tab s-id [r-tab r-id2 r-id]]
+    :spec-model.core/rel-1-n [d-tab d-id :spec-model.core/rel-n-1 s-tab s-id]
+    :spec-model.core/rel-n-1 [d-tab d-id :spec-model.core/rel-1-n s-tab s-id]
+    :spec-model.core/rel-n-n [d-tab d-id :spec-model.core/rel-n-n s-tab s-id [r-tab r-id2 r-id]]
     j))
 
 
 (defn assoc-ns-join [base-ns-name [src _ rel dest _ ]]
   (condp = rel
-    :dadymodel.core/rel-1-1 (as-ns-keyword base-ns-name dest)
-    :dadymodel.core/rel-n-1 (as-ns-keyword base-ns-name dest)
-    :dadymodel.core/rel-1-n (-> (as-ns-keyword base-ns-name dest)
+    :spec-model.core/rel-1-1 (as-ns-keyword base-ns-name dest)
+    :spec-model.core/rel-n-1 (as-ns-keyword base-ns-name dest)
+    :spec-model.core/rel-1-n (-> (as-ns-keyword base-ns-name dest)
                                (add-postfix-to-key "-list"))))
 
 

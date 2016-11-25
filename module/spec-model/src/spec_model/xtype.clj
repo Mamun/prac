@@ -1,4 +1,4 @@
-(ns dadymodel.xtype
+(ns spec-model.xtype
   (:require [clojure.spec :as s]
             [clojure.spec.gen :as gen])
   (:import [BigInteger]

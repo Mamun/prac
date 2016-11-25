@@ -1,5 +1,5 @@
-(ns dadymodel.walkthrough
-  (:use [dadymodel.core])
+(ns spec-model.walkthrough
+  (:use [spec-model.core])
   (:require [clojure.spec :as s]
             [clojure.spec.gen :as gen]))
 
@@ -13,7 +13,7 @@
                              :opt {:note string?}}
                    :student {:req {:name string?
                                    :id   int?}}}
-            {:dadymodel.core/join [[:dept :id :dadymodel.core/rel-1-n :student :dept-id]]})
+            {:spec-model.core/join [[:dept :id :spec-model.core/rel-1-n :student :dept-id]]})
 
 
   (defmodel app {:dept    {:req {:id   int?
@@ -23,8 +23,8 @@
                  :student {:req {:name string?
                                  :age  int?
                                  :id   int?}}}
-            :dadymodel.core/join
-            [[:dept :id :dadymodel.core/rel-1-n :student :dept-id]])
+            :spec-model.core/join
+            [[:dept :id :spec-model.core/rel-1-n :student :dept-id]])
 
 
 
@@ -85,8 +85,8 @@
       (clojure.pprint/pprint w)
       (-> w
           (first)
-          (do-disjoin [[:dept :id :dadymodel.core/rel-1-n :student :dept-id]])
-          (do-join [[:dept :id :dadymodel.core/rel-1-n :student :dept-id]])
+          (do-disjoin [[:dept :id :spec-model.core/rel-1-n :student :dept-id]])
+          (do-join [[:dept :id :spec-model.core/rel-1-n :student :dept-id]])
           (clojure.pprint/pprint)
           ))
     )
@@ -98,8 +98,8 @@
         (clojure.pprint/pprint w)
         (-> w
             (first)
-            (do-disjoin [[:dept :id :dadymodel.core/rel-1-n :student :dept-id]])
-            #_(do-join [[:dept :id :dadymodel.core/rel-1-n :student :dept-id]])
+            (do-disjoin [[:dept :id :spec-model.core/rel-1-n :student :dept-id]])
+            #_(do-join [[:dept :id :spec-model.core/rel-1-n :student :dept-id]])
             ))))
 
 
@@ -111,8 +111,8 @@
                  :student-list
                        [{:name "", :id -1}
                         {:name "", :id -1}]}})
-        j-value (do-disjoin w [[:dept :id :dadymodel.core/rel-1-n :student :dept-id]])
-        dj-value (do-join j-value [[:dept :id :dadymodel.core/rel-1-n :student :dept-id]])]
+        j-value (do-disjoin w [[:dept :id :spec-model.core/rel-1-n :student :dept-id]])
+        dj-value (do-join j-value [[:dept :id :spec-model.core/rel-1-n :student :dept-id]])]
     (clojure.pprint/pprint j-value)
     (clojure.pprint/pprint dj-value)
     )

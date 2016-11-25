@@ -1,4 +1,4 @@
-# dadymodel
+# spec-model
  
 Define model and generate Clojure(Script) spec as convention.    
 
@@ -7,7 +7,7 @@ Status: **Alpha**
 
 ## Latest version 
 
-[![Clojars Project](http://clojars.org/mamun/dadymodel/latest-version.svg)](http://clojars.org/mamun/dadymodel)  
+[![Clojars Project](http://clojars.org/mamun/spec-model/latest-version.svg)](http://clojars.org/mamun/spec-model)  
 
 ## Why do you need it 
 Clojure spec specifies the structure of your data. But to define your spec for client request validation (unqualified key), business logic (qualified key) or sql data model 
@@ -26,7 +26,7 @@ is challenging. How do you define your spec for one or list of entity? How do yo
 ### Define data model 
 ```clj
 (require '[clojure.spec :as s])
-(require '[dadymodel.core :as m])
+(require '[spec-model.core :as m])
 
 ;; Define model 
 ;; app should be name should be same as maven groupid 
@@ -38,8 +38,8 @@ is challenging. How do you define your spec for one or list of entity? How do yo
                            :opt {:note string?}}
                  :student {:req {:name string?
                                  :id   int?}}}
-            :dadymodel.core/join
-            [[:dept :id :dadymodel.core/rel-1-n :student :dept-id]])
+            :spec-model.core/join
+            [[:dept :id :spec-model.core/rel-1-n :student :dept-id]])
 
 ;;generate spec 
 ;; :app/dept           {:app.dept/id 1 :app.dept/name "a"}
@@ -76,7 +76,7 @@ To check full list of spec
                               :opt {:note string?}}
                     :student {:req {:name string?
                                     :id   int?}}}
-             {:dadymodel.core/join [[:dept :id :dadymodel.core/rel-1-n :student :dept-id]]})
+             {:spec-model.core/join [[:dept :id :spec-model.core/rel-1-n :student :dept-id]]})
  
  ```
  
@@ -91,7 +91,7 @@ To check full list of spec
        (clojure.pprint/pprint w)
        (->> w
             (first)
-            (do-disjoin [[:dept :id :dadymodel.core/rel-1-n :student :dept-id]])
+            (do-disjoin [[:dept :id :spec-model.core/rel-1-n :student :dept-id]])
             (clojure.pprint/pprint)
             ))
      )
@@ -103,8 +103,8 @@ To check full list of spec
         (clojure.pprint/pprint w)
         (->> w
              (first)
-             (do-disjoin [[:dept :id :dadymodel.core/rel-1-n :student :dept-id]])
-             (do-join [[:dept :id :dadymodel.core/rel-1-n :student :dept-id]])
+             (do-disjoin [[:dept :id :spec-model.core/rel-1-n :student :dept-id]])
+             (do-join [[:dept :id :spec-model.core/rel-1-n :student :dept-id]])
              (clojure.pprint/pprint)
              ))
       )

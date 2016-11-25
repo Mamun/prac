@@ -1,5 +1,5 @@
-(ns dadymodel.join.core
-  (:require [dadymodel.join.util :as p]))
+(ns spec-model.join.core
+  (:require [spec-model.join.util :as p]))
 
 
 (defmulti join-acc-fn (fn [acc j] (nth j 2)))
@@ -15,7 +15,7 @@
 
 
 (defmethod join-acc-fn
-  :dadymodel.core/rel-n-n
+  :spec-model.core/rel-n-n
   [acc j]
   (let [[s _ _ d _ [rd _ _]] j
         d-n (p/target-key-identifier j)]
@@ -55,7 +55,7 @@
 
 
 (defmethod dis-join-acc-fn
-  :dadymodel.core/rel-n-n
+  :spec-model.core/rel-n-n
   [acc j]
   (let [[s _ _ d _ [rd _ _]] j
         d-n (p/target-key-identifier j)]
@@ -76,7 +76,7 @@
 
 (comment
 
-  (let [join [[:tab :id :dadymodel.core/rel-n-n :tab1 :tab-id [:ntab :tab-id :tab1-id]]]
+  (let [join [[:tab :id :spec-model.core/rel-n-n :tab1 :tab-id [:ntab :tab-id :tab1-id]]]
         data {:tab {:id        100
                     :tab1-list [{:tab-id 100}
                                 {:tab-id 101}]}}

@@ -1,6 +1,6 @@
-(ns dadymodel.core-test
+(ns spec-model.core-test
   (:use [clojure.test]
-        [dadymodel.core])
+        [spec-model.core])
   (:require [clojure.spec.test :as stest]
             [clojure.spec :as s]
             [cheshire.core :as ch]
@@ -15,8 +15,8 @@
 
 #_(deftest relation-merge-test
   (testing "testing relation merge"
-    (let [w (relation-merge :hello [[:a :ta :dadymodel.core/rel-1-1 :b :tb]
-                                    [:a :ta :dadymodel.core/rel-1-1 :c :tc]])]
+    (let [w (relation-merge :hello [[:a :ta :spec-model.core/rel-1-1 :b :tb]
+                                    [:a :ta :spec-model.core/rel-1-1 :c :tc]])]
       (is (= w
              [`(clojure.spec/merge
                  :hello/a
@@ -30,8 +30,8 @@
                                        :opt {:note string?}}
                              :student {:req {:name string?
                                              :dob  inst?}}}
-                      {:dadymodel.core/join [[:dept :id :dadymodel.core/rel-1-1 :student :dept-id]]
-                       :dadymodel.core/gen-type #{:dadymodel.core/un-qualified}
+                      {:spec-model.core/join [[:dept :id :spec-model.core/rel-1-1 :student :dept-id]]
+                       :spec-model.core/gen-type #{:spec-model.core/un-qualified}
                        })]
       (is (not-empty v)))))
 
@@ -43,10 +43,10 @@
                              :opt {:note string?}}
                    :student {:req {:name string?
                                    :id   int?}}}
-                :dadymodel.core/join [[:dept :id :dadymodel.core/rel-1-1 :student :dept-id]]
-                :dadymodel.core/gen-type #{:dadymodel.core/un-qualified
-                                           :dadymodel.core/qualified
-                                           :dadymodel.core/ex})
+                :spec-model.core/join [[:dept :id :spec-model.core/rel-1-1 :student :dept-id]]
+                :spec-model.core/gen-type #{:spec-model.core/un-qualified
+                                           :spec-model.core/qualified
+                                           :spec-model.core/ex})
       (is (s/valid? :test/dept {:test.dept/id 123}))
       (is (s/valid? :test/dept {:test.dept/id      123
                                 :test/student-list [{:test.student/id   23
@@ -64,8 +64,8 @@
                    [{:name "", :id -1}
                     {:name "", :id -1}]}})
 
-          j-value  (do-disjoin w [[:dept :id :dadymodel.core/rel-1-n :student :dept-id]] )
-          dj-value (do-join j-value [[:dept :id :dadymodel.core/rel-1-n :student :dept-id]] )]
+          j-value  (do-disjoin w [[:dept :id :spec-model.core/rel-1-n :student :dept-id]] )
+          dj-value (do-join j-value [[:dept :id :spec-model.core/rel-1-n :student :dept-id]] )]
       (is (= w dj-value)))))
 
 
@@ -78,7 +78,7 @@
                    :student-list
                    [{:name "", :id -1}
                     {:name "", :id -1}]}})
-          j-value  (do-disjoin w [[:dept :id :dadymodel.core/rel-1-n :student :dept-id]] )
+          j-value  (do-disjoin w [[:dept :id :spec-model.core/rel-1-n :student :dept-id]] )
           expected-value {:dept {:id -1, :name "", :note ""},
                           :student [{:name "", :id -1, }
                                     {:name "", :id -1, }]}]

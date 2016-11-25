@@ -23,7 +23,7 @@
 ;(var int?)
 
 #_(clojure.pprint/pprint
-  (get-in (read-file "tie.edn.sql") [:get-dept-employee :dadymodel.core/join]))
+  (get-in (read-file "tie.edn.sql") [:get-dept-employee :spec-model.core/join]))
 
 
 (deftest read-file-test
@@ -45,7 +45,7 @@
           2000 (get-in w [:get-dept-by-id :dadysql.core/timeout])
           ;["select * from department where id = :id " :id] (get-in w [:get-dept-by-id :dadysql.core/sql])
        ;   [[:id :type (resolve 'int?) "Id will be Long "]] (get-in w [:get-dept-by-id validation-key])
-          [[:department :id :dadymodel.core/rel-1-n :employee :dept_id]] (get-in w [:get-dept-by-id :dadymodel.core/join])
+          [[:department :id :spec-model.core/rel-1-n :employee :dept_id]] (get-in w [:get-dept-by-id :spec-model.core/join])
 
           #_[[:id :type #'clojure.core/vector? "Id will be sequence"]
            [:id :contain #'clojure.core/int? "Id contain will be Long "]]
@@ -66,14 +66,14 @@
           (= expected actual)
 
           ;join test
-          [[:employee :id :dadymodel.core/rel-1-1 :employee-detail :employee_id]
+          [[:employee :id :spec-model.core/rel-1-1 :employee-detail :employee_id]
            [:employee
             :id
-            :dadymodel.core/rel-n-n
+            :spec-model.core/rel-n-n
             :meeting
             :meeting_id
             [:employee-meeting :employee_id :meeting_id]]
-           [:employee :dept_id :dadymodel.core/rel-n-1 :department :id]] (get-in w [:get-dept-employee :dadymodel.core/join]))
+           [:employee :dept_id :spec-model.core/rel-n-1 :department :id]] (get-in w [:get-dept-employee :spec-model.core/join]))
 
         (are [expected actual]
           (= expected actual)
@@ -81,10 +81,10 @@
           :meeting (get-in w [:create-meeting :dadysql.core/model])
           [[:meeting
             :meeting_id
-            :dadymodel.core/rel-n-n
+            :spec-model.core/rel-n-n
             :employee
             :id
-            [:employee-meeting :meeting_id :employee_id]]] (get-in w [:get-meeting-by-id :dadymodel.core/join])))))
+            [:employee-meeting :meeting_id :employee_id]]] (get-in w [:get-meeting-by-id :spec-model.core/join])))))
   )
 
 

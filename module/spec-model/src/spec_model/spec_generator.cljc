@@ -1,12 +1,12 @@
-(ns dadymodel.spec-generator
+(ns spec-model.spec-generator
   (:require [clojure.spec :as s]
-            [dadymodel.util :as u]
+            [spec-model.util :as u]
             [clojure.spec :as s]))
 
 
 (defn add-list [model-k opt-config-m]
   (let [k-list (u/add-postfix-to-key model-k "-list")]
-    (when (:dadymodel.core/gen-list? opt-config-m)
+    (when (:spec-model.core/gen-list? opt-config-m)
       `(clojure.spec/def ~k-list
          (clojure.spec/coll-of ~model-k :kind vector?))
       )
@@ -15,14 +15,14 @@
 
 (defn model-spec-template
   [model-k opt-config-m]
-  (let [ns-identifer (name (:dadymodel.core/ns-identifier opt-config-m))
-        prefix (:dadymodel.core/prefix opt-config-m)
-        type (:dadymodel.core/gen-type opt-config-m)
-        entity-identifier (name (:dadymodel.core/entity-identifer opt-config-m))
+  (let [ns-identifer (name (:spec-model.core/ns-identifier opt-config-m))
+        prefix (:spec-model.core/prefix opt-config-m)
+        type (:spec-model.core/gen-type opt-config-m)
+        entity-identifier (name (:spec-model.core/entity-identifer opt-config-m))
         k (if prefix
             (keyword (str (name prefix) "." entity-identifier "." ns-identifer "/" (name model-k)))
             (keyword (str entity-identifier "." ns-identifer "/" (name model-k))))]
-    (if (= type :dadymodel.core/qualified)
+    (if (= type :spec-model.core/qualified)
       (list `(clojure.spec/def ~k (clojure.spec/keys :req [~model-k]))
             (add-list k opt-config-m))
       (list `(clojure.spec/def ~k (clojure.spec/keys :req-un [~model-k]))
@@ -30,10 +30,10 @@
 
 
 (defn model-template [model-k req opt opt-config-m]
-  (if (= :dadymodel.core/qualified
-         (:dadymodel.core/gen-type opt-config-m))
+  (if (= :spec-model.core/qualified
+         (:spec-model.core/gen-type opt-config-m))
 
-    (if (:dadymodel.core/fixed-key? opt-config-m)
+    (if (:spec-model.core/fixed-key? opt-config-m)
       (let [t (into #{} (into req opt))]
         (list `(clojure.spec/def ~model-k (clojure.spec/merge (clojure.spec/keys :req ~req :opt ~opt)
                                                               (s/map-of ~t any?)))
@@ -42,7 +42,7 @@
             (add-list model-k opt-config-m)))
 
 
-    (if (:dadymodel.core/fixed-key? opt-config-m)
+    (if (:spec-model.core/fixed-key? opt-config-m)
       (let [t (into #{} (mapv (comp keyword name) (into req opt)))]
         (list `(clojure.spec/def ~model-k (clojure.spec/merge (clojure.spec/keys :req-un ~req :opt-un ~opt)
                                                               (s/map-of ~t any?)))
@@ -59,9 +59,9 @@
 
 
 (defn app-spec-template [opt-config-m k-coll]
-  (let [prefix (:dadymodel.core/prefix opt-config-m)
-        ns-identifier (:dadymodel.core/ns-identifier opt-config-m)
-        entity-identifier (keyword (:dadymodel.core/entity-identifer opt-config-m))
+  (let [prefix (:spec-model.core/prefix opt-config-m)
+        ns-identifier (:spec-model.core/ns-identifier opt-config-m)
+        entity-identifier (keyword (:spec-model.core/entity-identifer opt-config-m))
 
         n (-> ns-identifier
               (u/add-prefix-to-key prefix)
@@ -69,15 +69,15 @@
 
         model-coll (mapv (fn [w] (-> (u/as-ns-keyword ns-identifier w)
                                      (u/add-prefix-to-key prefix))) k-coll)
-        model-coll-with-list (when (:dadymodel.core/gen-list? opt-config-m)
+        model-coll-with-list (when (:spec-model.core/gen-list? opt-config-m)
                                (mapv #(u/add-postfix-to-key % "-list") model-coll))
 
-        entity-coll (when (:dadymodel.core/gen-entity? opt-config-m)
+        entity-coll (when (:spec-model.core/gen-entity? opt-config-m)
                       (mapv (fn [w]
                               (-> (u/as-ns-keyword ns-identifier w)
                                   (u/add-prefix-to-key entity-identifier)
                                   (u/add-prefix-to-key prefix))) k-coll))
-        entity-coll-with-list (when (:dadymodel.core/gen-list? opt-config-m)
+        entity-coll-with-list (when (:spec-model.core/gen-list? opt-config-m)
                                 (mapv #(u/add-postfix-to-key % "-list") entity-coll))
 
 
@@ -89,8 +89,8 @@
 
 
 (defn- model->spec-one [opt-config-m j-m [k v]]
-  (let [ns-identifier (:dadymodel.core/ns-identifier opt-config-m)
-        prefix (:dadymodel.core/prefix opt-config-m)
+  (let [ns-identifier (:spec-model.core/ns-identifier opt-config-m)
+        prefix (:spec-model.core/prefix opt-config-m)
         namespace-name (u/add-prefix-to-key ns-identifier prefix)
         j (->> (get j-m k)
                (mapv #(u/assoc-ns-join namespace-name %)))
@@ -102,7 +102,7 @@
         req-list (into [] (keys req))]
     (concat (property-template req opt)
             (model-template model-k req-list opt-list opt-config-m)
-            (when (:dadymodel.core/gen-entity? opt-config-m)
+            (when (:spec-model.core/gen-entity? opt-config-m)
               (model-spec-template model-k opt-config-m)  )
             )))
 
@@ -116,7 +116,7 @@
 
 
 (defn model->spec [m opt-config-m]
-  (let [join (:dadymodel.core/join opt-config-m)
+  (let [join (:spec-model.core/join opt-config-m)
         j-m (join-m join)]
     (->> m
          (map (partial model->spec-one opt-config-m j-m))
@@ -138,23 +138,23 @@
 
 
   (model->spec {:student {:opt {:id :a}}}
-               {:dadymodel.core/gen-type         :dadymodel.core/un-qualified
-                :dadymodel.core/gen-list?        true
-                :dadymodel.core/gen-entity?      true
-                :dadymodel.core/ns-identifier    :app
-                :dadymodel.core/entity-identifer :enitiy
-                :dadymodel.core/fixed-key?       true
-                ;:dadymodel.core/prefix           :ex
+               {:spec-model.core/gen-type         :spec-model.core/un-qualified
+                :spec-model.core/gen-list?        true
+                :spec-model.core/gen-entity?      true
+                :spec-model.core/ns-identifier    :app
+                :spec-model.core/entity-identifer :enitiy
+                :spec-model.core/fixed-key?       true
+                ;:spec-model.core/prefix           :ex
                 }
-               ;:dadymodel.core/un-qualified
-               ;:dadymodel.core/qualified
+               ;:spec-model.core/un-qualified
+               ;:spec-model.core/qualified
 
                )
 
 
 
 
-  (join-m [[:dept :id :dadymodel.core/rel-one-many :student :dept-id]])
+  (join-m [[:dept :id :spec-model.core/rel-one-many :student :dept-id]])
 
 
 

@@ -31,7 +31,7 @@
   [join model-coll]
   (->> join
        (filter (fn [[_ _ rel d-table _ nr]]
-                 (if (= rel :dadymodel.core/rel-n-n)
+                 (if (= rel :spec-model.core/rel-n-n)
                    (some #{(first nr)} model-coll)
                    (some #{d-table} model-coll))))
        (into [])))
@@ -42,7 +42,7 @@
   (let [model-key-coll (mapv :dadysql.core/model coll)
         p (comp
             (cc/xf-skip-type #(= :dadysql.core/dml-call (:dadysql.core/dml %)))
-            (map #(update-in % [:dadymodel.core/join] filter-join-key-coll model-key-coll)))]
+            (map #(update-in % [:spec-model.core/join] filter-join-key-coll model-key-coll)))]
     (transduce p conj [] coll)))
 
 

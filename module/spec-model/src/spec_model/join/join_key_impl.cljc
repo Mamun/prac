@@ -1,11 +1,11 @@
-(ns dadymodel.join.join-key-impl
+(ns spec-model.join.join-key-impl
   (:require [clojure.walk :as w]
-            [dadymodel.join.util :as p]))
+            [spec-model.join.util :as p]))
 
 
 (defn group-by-target-entity-one
   [data j]
-  (if (= :dadymodel.core/rel-n-n (nth j 2))
+  (if (= :spec-model.core/rel-n-n (nth j 2))
     (let [[st stc _ dt dtc [rdt s d]] j]
       {rdt [{s (get-in data (conj st stc))
              d (get-in data (conj dt dtc))}]})
@@ -33,7 +33,7 @@
 
 (defn assoc-n-n-join-key [data join-coll]
   (let [n-join (filter (fn [[_ _ rel]]
-                         (if (= rel :dadymodel.core/rel-n-n)
+                         (if (= rel :spec-model.core/rel-n-n)
                            true
                            false)
                          ) join-coll)]
@@ -48,8 +48,8 @@
 
 (defn assoc-1-join-key [data join-coll]
   (let [join (w/postwalk (fn [w]
-                           (if (= :dadymodel.core/rel-n-n w)
-                             :dadymodel.core/rel-1-n
+                           (if (= :spec-model.core/rel-n-n w)
+                             :spec-model.core/rel-1-n
                              w)
                            ) join-coll)
         acc-fn (fn [data [s-tab s _ d-tab d]]
@@ -70,8 +70,8 @@
        (reduce (fn [acc [s _ r d _]]
                  (update-in acc s
                             (fn [m]
-                              (if (or (= r :dadymodel.core/rel-1-1)
-                                      (= r :dadymodel.core/rel-n-1))
+                              (if (or (= r :spec-model.core/rel-1-1)
+                                      (= r :spec-model.core/rel-n-1))
                                 (assoc m d (first (get target-data-m d)))
                                 (assoc m d (get target-data-m d)))))
                  ) data)))
@@ -103,7 +103,7 @@
 
 
 
-  (let [join [[:tab :id :dadymodel.core/rel-n-n :tab1 :tab1-id [:ntab :tab-id :tab1-id]]]
+  (let [join [[:tab :id :spec-model.core/rel-n-n :tab1 :tab1-id [:ntab :tab-id :tab1-id]]]
         data {:tab {:id        100
                     :tab1-list [{:tab1-id 10}
                                 {:tab1-id 101}]}}
@@ -115,7 +115,7 @@
 
   ;(get-in {:a 3} [:v])
 
-  (let [j [[:dept :id :dadymodel.core/rel-1-n :student :dept-id]]
+  (let [j [[:dept :id :spec-model.core/rel-1-n :student :dept-id]]
         ;j (rename-joi-key j)
 
         data {:dept

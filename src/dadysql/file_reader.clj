@@ -12,11 +12,11 @@
                             :file-reload  :dadysql.core/file-reload
                             :tx-prop      :dadysql.core/tx-prop
 
-                            :join         :dadymodel.core/join
-                            :1-1          :dadymodel.core/rel-1-1
-                            :1-n          :dadymodel.core/rel-1-n
-                            :n-1          :dadymodel.core/rel-n-1
-                            :n-n          :dadymodel.core/rel-n-n
+                            :join         :spec-model.core/join
+                            :1-1          :spec-model.core/rel-1-1
+                            :1-n          :spec-model.core/rel-1-n
+                            :n-1          :spec-model.core/rel-n-1
+                            :n-n          :spec-model.core/rel-n-n
 
                             :name         :dadysql.core/name
                             :model        :dadysql.core/model
