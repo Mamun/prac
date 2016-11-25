@@ -6,17 +6,20 @@
 
   :dependencies [[org.clojure/clojure "1.9.0-alpha14" :scope "provided"]
                  [org.clojure/clojurescript "1.9.229" :scope "provided"]
-                 [ring "1.4.0" :scope "provided"]
+                 [ring/ring-defaults "0.2.0"]
+                 [ring "1.4.0"]
                  [ring-middleware-format "0.6.0"
                   :exclusions [ring
                                org.clojure/core.memoize
                                org.clojure/tools.reader]]
-                 [dadysql "0.1.0-alpha-SNAPSHOT" :scope "provided"]
-                 [cljs-ajax "0.5.2"]
-                 [reagent "0.6.0" :scope "provided"]
+                 [compojure "1.1.6"]
+
+                 [dadysql "0.1.0-alpha-SNAPSHOT" ]
+                 [cljs-ajax "0.5.2" :scope "provided"]
+                 [reagent "0.6.0"  :scope "provided"]
                  [re-frame "0.7.0-alpha-3" :scope "provided"]]
 
-  :plugins [[lein-cljsbuild "1.1.1"]
+  :plugins [[lein-cljsbuild "1.1.4"]
             [lein-figwheel "0.5.8"]
             [lein-doo "0.1.6"]]
 
@@ -45,8 +48,6 @@
                    :source-paths   [ "dev"]
                    :resource-paths ["../../test-i" "dev-resources"]
                    :dependencies   [[devcards "0.2.1-5" ]
-                                    [ring/ring-defaults "0.2.0"]
-                                    [compojure "1.1.6"]
                                     [org.immutant/web "2.1.3" ;; default Web server
                                      :exclusions [ch.qos.logback/logback-core
                                                   org.slf4j/slf4j-api]]

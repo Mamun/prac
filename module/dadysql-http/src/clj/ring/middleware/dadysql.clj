@@ -30,23 +30,22 @@
 (defn load-module
   [{:keys [ds file-name init-name spec-dir]
     :or   {spec-dir "target"}
-    :as m}]
+    :as   m}]
   (try
     (let [v (tj/read-file file-name)]
       (do
         (log/info "Loading file " file-name)
         (when init-name
           (log/info "Doing database init " init-name)
-          (io/db-do ds (tj/select-name v {:dadysql.core/name init-name})))
-        (io/validate-dml! ds (tj/get-sql-statement v))
-        (tj/write-spec-to-file v spec-dir)
+          (io/db-do @ds (tj/select-name v {:dadysql.core/name init-name})))
+        (io/validate-dml! @ds (tj/get-sql-statement v))
         (-> m
             (assoc :url (str "/" (first (clojure.string/split file-name #"\."))))
             (assoc :tms v)
             (dissoc :init-name))))
     (catch Exception e
       (clojure.stacktrace/print-stack-trace e)
-      (log/info (str " File loading error " (str m )) (.getMessage e))
+      (log/info (str " File loading error " (str m)) (.getMessage e))
       nil)))
 
 
@@ -76,9 +75,11 @@
   (get-module-by-url @config-atom req-url))
 
 
-(defn- reload-and-get-config [config-atom req-url]
+(defn- reload-and-get-config [config-atom req-url reload?]
   (if-let [config (get-module-by-url @config-atom req-url)]
-    (let [config (load-module config)]
+    (let [config (if reload?
+                   (load-module config)
+                   config) ]
       (when config
         (swap! config-atom (fn [v] (assoc-module v config)))
         config))))
@@ -98,23 +99,25 @@
    pull-path and push path string
 
   "
-  [handler config-atom & {:keys [pull-path push-path log? encoding]
+  [handler config-atom & {:keys [pull-path push-path log? encoding reload?]
                           :or   {pull-path "/pull"
-                                 push-path "/push"}}]
+
+                                 push-path "/push"
+                                 reload? true}}]
   (fn [req]
     (let [request-path (clojure.string/split (or (:path-info req)
                                                  (:uri req)) #"/")
           req-url (clojure.string/join "/" (butlast request-path))]
       (if (config-available? config-atom req-url)
-        (let [config (reload-and-get-config config-atom req-url)
+        (let [config (reload-and-get-config config-atom req-url reload?)
               ds (or (:ds req) (:ds config))
               tms (or (:tms req) (:tms config))
               op (str "/" (last request-path))]
           (condp = op
             pull-path
-            ((get-handler :pull ds tms) req)
+            ((get-handler :pull @ds tms) req)
             push-path
-            ((get-handler :push ds tms) req)
+            ((get-handler :push @ds tms) req)
             (handler req)))
         (handler req)))))
 

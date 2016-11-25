@@ -13,36 +13,34 @@
     [com.mchange.v2.c3p0 ComboPooledDataSource])
   (:gen-class))
 
-;(defonce ds-atom (atom nil))
+(defonce ds-atom (atom nil))
 (defonce m-config (atom nil))
 
-#_(comment
 
-  (tj/write-spec-to-file (tj/read-file "tie.edn.sql") "dev" )
-  (tj/write-spec-to-file (tj/read-file "tie2.edn.sql") "dev" )
-
-  (t/load-module {:file-name "tie.edn.sql"
-                  :init-name [:init-db :init-data]
-                  ;:spec-dir "dev"
-                  :ds        {:datasource (ComboPooledDataSource.)}})
-
-  )
+(defn init-ds []
+  (when (nil? @ds-atom)
+    (reset! ds-atom {:datasource (ComboPooledDataSource.)})))
 
 
 (defn init-state []
-  (let [ds {:datasource (ComboPooledDataSource.)}
-        config [{:file-name "tie.edn.sql"
+  (init-ds)
+  (let [config [{:file-name "tie.edn.sql"
                  :init-name [:init-db :init-data]
-                 :spec-dir "dev"
-                 :ds        ds}
-                {:file-name "tie2.edn.sql"
-                 :spec-dir "dev"
-                 :ds        ds}
-                {:file-name "tie5.edn.sql"
-                 :spec-dir "dev"
-                 :ds        ds}]
-        v (mapv #(t/load-module %) config )]
+                 :ds        ds-atom}
+                #_{:file-name "tie2.edn.sql"
+                   :spec-dir  "dev"
+                   :ds        ds}
+                #_{:file-name "tie5.edn.sql"
+                   :spec-dir  "dev"
+                   :ds        ds}]
+        v (mapv #(t/load-module %) config)]
     (reset! m-config v)))
+
+
+(comment
+  (init-ds)
+  (init-state)
+  )
 
 
 
@@ -64,32 +62,17 @@
 
 (defn warp-log [handler]
   (fn [req]
-    ;(log/info "Request -----------------" req)
-    (let [w (handler req)]
-      ; (log/info "Response -----------------" w)
-      ; (println "---" w)
-      w
-      )
-    ))
-
-
-(defn warp-execption [handler]
-  (fn [req]
     (try
+      (log/info "Execption in server " req)
       (handler req)
       (catch Exception e
         (do
-          (log/info "Execption in server " (.getMessage e))
-          )
-        ))
-    )
-  )
+          (log/info "Execption in server " (.getMessage e)))))))
 
 
 (def http-handler
   (-> app-routes
-      (t/warp-dadysql-handler m-config )
-      (warp-execption)
+      (t/warp-dadysql-handler m-config)
       (warp-log)))
 
 

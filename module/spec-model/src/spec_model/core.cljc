@@ -145,13 +145,13 @@
      `~(cons 'do opt-m))))
 
 
-(defn merge-spec [& spec-coll]
+#_(defn merge-spec [& spec-coll]
   (->> spec-coll
        (remove nil?)
        (cons 'clojure.spec/merge)))
 
 
-(defn relation-merge [namespace join & {:as m}]
+#_(defn relation-merge [namespace join & {:as m}]
   (let [w (mapv #(u/assoc-ns-join namespace %) join)
         w-m (group-by first w)]
     (mapv (fn [[k v]]
@@ -191,33 +191,14 @@
 
 
 
-(defn as-file-str [ns-name spec-list]
-  (let [w (str "(ns " ns-name " \n (:require [clojure.spec :as s] [spec-model.core])) \n\n")]
+(defn as-file-str [ns-ident-k spec-list]
+  (let [w (str "(ns " (name ns-ident-k)  " \n (:require [clojure.spec :as s] [spec-model.core])) \n\n")]
     (->> (map str spec-list)
          (interpose "\n")
          (cons w)
          (clojure.string/join))))
 
 
-#?(:clj
-
-   (defn write-spec-to-file* [dir spec-des]
-     (let [package-name (name (first spec-des))
-           spec-list (apply gen-spec spec-des)
-           file-str (as-file-str package-name spec-list)
-
-           as-dir (clojure.string/join "/" (clojure.string/split package-name #"\."))
-           file-path (str dir "/" as-dir ".cljc")]
-       (spit file-path file-str)))
-
-   )
-
-
-#?(:clj
-   (defmacro write-spec-to-file [dir & spec-des]
-     (write-spec-to-file* dir spec-des))
-
-   )
 
 
 

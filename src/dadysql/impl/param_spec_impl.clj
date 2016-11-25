@@ -42,16 +42,15 @@
        (into {})))
 
 
-(defn gen-spec [file-name coll]
-  (let [f-k (filename-as-keyword file-name)
-        q-spec (get-query-spec coll)
+(defn gen-spec [ns-identifier coll]
+  (let [q-spec (get-query-spec coll)
         m-spec (get-model-spec coll)]
     (into
-      (sg/gen-spec f-k m-spec {:spec-model.core/gen-type    #{:spec-model.core/un-qualified}
+      (sg/gen-spec ns-identifier m-spec {:spec-model.core/gen-type    #{:spec-model.core/un-qualified}
                                :spec-model.core/gen-list?   false
                                :spec-model.core/gen-entity? false})
       (reverse
-        (sg/gen-spec f-k q-spec {:spec-model.core/gen-type    #{:spec-model.core/ex
+        (sg/gen-spec ns-identifier q-spec {:spec-model.core/gen-type    #{:spec-model.core/ex
                                                                :spec-model.core/un-qualified}
                                  :spec-model.core/gen-list?   false
                                  :spec-model.core/gen-entity? false})))))
@@ -71,12 +70,11 @@
 
 
 (defn eval-and-assoc-spec [file-name cata-coll]
-  (do
-    (doseq [s (gen-spec file-name cata-coll)]
+  (let [ns-identifier (filename-as-keyword file-name)]
+    (doseq [s (gen-spec ns-identifier cata-coll)]
       (eval s))
-    (let [;m (get-spec-map file-name cata-coll)
-          f-k (filename-as-keyword file-name)]
-      (mapv (fn [w] (assosc-spec-to-m f-k w)) cata-coll))))
+    (mapv (fn [w] (assosc-spec-to-m ns-identifier w)) cata-coll)
+    ))
 
 
 

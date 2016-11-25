@@ -1,6 +1,6 @@
 # spec-model
  
-Define model and generate Clojure(Script) spec as convention.    
+Define model as data and generate Clojure(Script) spec with convention.    
 
   
 Status: **Alpha** 

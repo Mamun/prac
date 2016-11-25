@@ -1,6 +1,6 @@
 (ns dadysql.jdbc
   (:require
-    [spec-model.core :as dsc]
+    [spec-model.core :as sm]
     [dadysql.workflow-exec :as tie]
     [dadysql.compiler.core :as cc]
     [dadysql.clj.fail :as f]
@@ -102,19 +102,25 @@
           (tie/process-input (select-name tms req-m) :disjoin false)))))
 
 
-(defn write-spec-to-file
-  ([tms dir package-name]
-   (let [f-name (or (get-in tms [:_global_ :dadysql.core/file-name]) "nofound.clj")
-         f-name (first (clojure.string/split f-name #"\."))
-         package-name (if (or (nil? package-name)
-                              (empty? package-name))
-                        f-name
-                        (str package-name "." f-name)) ]
+(defn get-spec
+  ([tms ]
+   (let [ns-identifier (ps/filename-as-keyword
+                         (or (get-in tms [:_global_ :dadysql.core/file-name]) "nofound.clj"))]
      (->> (vals tms)
-          (ps/gen-spec (or (get-in tms [:_global_ :dadysql.core/file-name]) "nofound.clj"))
-          #_(dsc/write-spec-to-file dir package-name)))
-   (log/info (format  "Spec file generation is done in dir %s, package %s " dir package-name) ))
-  ([tms dir]
-   (write-spec-to-file tms dir (clojure.string/join "." (butlast (clojure.string/split (str *ns*) #"\."))))))
+          (ps/gen-spec ns-identifier)))))
+
+
+
+(defn get-spec-str
+  ([tms ns-name]
+   (let [ns-identifier (ps/filename-as-keyword
+                         (or (get-in tms [:_global_ :dadysql.core/file-name]) "nofound.clj"))]
+     (->> (vals tms)
+          (ps/gen-spec ns-identifier)
+          (sm/as-file-str (or ns-name ns-identifier ) ))))
+  ([tms]
+   (get-spec-str tms nil)))
+
+
 
 
