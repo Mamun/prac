@@ -19,8 +19,9 @@
   ([file-name pc]
    (-> (fr/read-file file-name)
        (cc/do-compile file-name)
+
        ;;file name is needed to gen spec
-       (assoc-in [:_global_ :dadysql.core/file-name] file-name))))
+       )))
 
 
 (defn select-name [tms req-m]
@@ -103,20 +104,15 @@
 
 
 (defn get-spec
-  ([tms ]
-   (let [ns-identifier (ps/filename-as-keyword
-                         (or (get-in tms [:_global_ :dadysql.core/file-name]) "nofound.clj"))]
-     (->> (vals tms)
-          (ps/gen-spec ns-identifier)))))
-
+  [tms ]
+  (ps/gen-spec tms))
 
 
 (defn get-spec-str
   ([tms ns-name]
    (let [ns-identifier (ps/filename-as-keyword
                          (or (get-in tms [:_global_ :dadysql.core/file-name]) "nofound.clj"))]
-     (->> (vals tms)
-          (ps/gen-spec ns-identifier)
+     (->> (ps/gen-spec tms)
           (sm/as-file-str (or ns-name ns-identifier ) ))))
   ([tms]
    (get-spec-str tms nil)))

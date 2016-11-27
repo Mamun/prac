@@ -111,12 +111,12 @@
 
 
 #_(defn remove-duplicate [m]
-  (->> (keys m)
-       (reduce (fn [acc k]
-                 (condp = k
-                   :dadysql.core/default-param (update-in acc [k] (fn [w] (cc/distinct-with-range 2 w)))
-                   acc)
-                 ) m)))
+    (->> (keys m)
+         (reduce (fn [acc k]
+                   (condp = k
+                     :dadysql.core/default-param (update-in acc [k] (fn [w] (cc/distinct-with-range 2 w)))
+                     acc)
+                   ) m)))
 
 
 (defmulti compile-m (fn [type _ _] type))
@@ -148,7 +148,7 @@
                (group-by-join-src))
         w (merge-with merge v (get-in tm [:dadysql.core/extend]))]
     (-> tm
-        (dissoc :spec-model.core/join)
+        ;  (dissoc :spec-model.core/join)
         (assoc :dadysql.core/extend w))))
 
 
@@ -175,16 +175,32 @@
     (u/validate-join-key! coll)))
 
 
+
+
+
+
+(defn evel-spec [tms]
+  (do
+    (doall (map eval (su/gen-spec tms)))
+    tms))
+
+
 (defn do-compile [coll file-name]
   (do-validation coll)
   (let [{:keys [modules global reserve]} (do-grouping coll)
         global (first (mapv #(compile-global % nil) global))
         modules (apply concat (mapv #(compile-module % global) modules))
         reserve (mapv #(compile-reserve % nil) reserve)
-        global (dissoc global :dadysql.core/extend)]
+        global (-> (dissoc global :dadysql.core/extend)
+                   (assoc :dadysql.core/file-name file-name))
+
+
+        r (su/filename-as-keyword file-name)]
+
     (->> (concat [global] modules reserve)
-         (su/eval-and-assoc-spec file-name)
-         (into {} (map into-name-map)))))
+         (mapv (fn [w] (assosc-spec-to-m r w)))
+         (into {} (map into-name-map))
+         (evel-spec) )))
 
 
 

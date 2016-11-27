@@ -1,8 +1,8 @@
- (ns workspec-spec
-   (:require [clojure.java.jdbc :as jdbc]
-             [dadysql.jdbc :as t]
-             [dadysql.jdbc-io :as io]
-             [clojure.spec :as s]))
+(ns workspec-spec
+  (:require [clojure.java.jdbc :as jdbc]
+            [dadysql.jdbc :as t]
+            [dadysql.jdbc-io :as io]
+            [clojure.spec :as s]))
 
 
 (comment
@@ -12,7 +12,7 @@
 
   (->> {:dadysql.core/name  [:get-employee-by-id :get-employee-dept :get-employee-detail]
         :dadysql.core/param {:id 1}}
-       (t/select-name  (t/read-file "tie.edn.sql") )
+       (t/select-name (t/read-file "tie.edn.sql"))
 
        )
 
@@ -24,17 +24,17 @@
     (clojure.pprint/pprint))
 
 
-
+  (s/exercise :unq.entity.tie/department)
 
   (spit
     "./target/tie.cljs"
     (-> (t/read-file "tie.edn.sql")
         (t/get-spec-str "target.core")))
 
-
+  (s/registry)
 
   (-> (t/read-file "tie.edn.sql")
-      (t/get-spec )
+      (t/get-spec)
       )
 
   ;(s/exercise  :ex.tie/get-dept-employee)

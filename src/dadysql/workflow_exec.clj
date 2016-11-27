@@ -7,7 +7,7 @@
     [dadysql.impl.sql-bind-impl :as bi]
     [dadysql.selector :as dc]
     [dadysql.impl.param-impl :as pi]
-    [dadysql.impl.param-spec-impl :as psi ]
+    [dadysql.impl.param-spec-impl :as psi]
     [dadysql.clj.common :as cc]
     [dadysql.impl.common-impl :as ci]))
 
@@ -177,7 +177,7 @@
 
 
   (->> [[:meeting :meeting_id :spec-model.core/rel-n-n :employee :id [:employee-meeting :meeting_id :employee_id]]]
-       (ji/do-disjoin input )
+       (ji/do-disjoin input)
        )
   )
 
@@ -190,21 +190,23 @@
 
 (defn process-input [req-m tm-coll & {:keys [disjoin]
                                       :or   {disjoin true}}]
-  (let [pull-fn (:dadysql.core/pull req-m)
-        in-format (input-format req-m)
-        apply-disjoin (fn [input]
-                        (if (and disjoin
-                                 (= in-format :dadysql.core/format-nested))
-                          (ji/do-disjoin input (get-in tm-coll [0 :spec-model.core/join]))
-                          input))]
-    (f/try-> tm-coll
-             (psi/validate-param-spec req-m)
-             (pi/assoc-generator pull-fn)
-             (pi/param-exec (:dadysql.core/param req-m) in-format)
-   ;          (show-local-value)
-             (ji/do-assoc-relation-key (get-in tm-coll [0 :spec-model.core/join]))
-             (apply-disjoin))))
-
+  (let [req-m (-> (psi/get-spec tm-coll req-m)
+                  (psi/validate-param-spec req-m))]
+    (if (f/failed? req-m)
+      req-m
+      (let [pull-fn (:dadysql.core/pull req-m)
+            in-format (input-format req-m)
+            apply-disjoin (fn [input]
+                            (if (and disjoin
+                                     (= in-format :dadysql.core/format-nested))
+                              (ji/do-disjoin input (get-in tm-coll [0 :spec-model.core/join]))
+                              input))]
+        (f/try-> tm-coll
+                 (pi/assoc-generator pull-fn)
+                 (pi/param-exec (:dadysql.core/param req-m) in-format)
+                 ;          (show-local-value)
+                 (ji/do-assoc-relation-key (get-in tm-coll [0 :spec-model.core/join]))
+                 (apply-disjoin))))))
 
 
 (defn- bind-param [input tm-coll request-m]
