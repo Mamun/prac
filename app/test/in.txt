@@ -1,0 +1,54 @@
+	FieldNo = 101, FieldContent = A, FieldContentSize = 1
+	FieldNo = 102, FieldContent = O, FieldContentSize = 1
+	FieldNo = 1, FieldContent = Q, FieldContentSize = 1
+	FieldNo = 10, FieldContent = 800/11700, FieldContentSize = 9
+	FieldNo = 11, FieldContent = WKVBAN20, FieldContentSize = 8
+	FieldNo = 13, FieldContent = 00732581, FieldContentSize = 8
+	FieldNo = 15, FieldContent = D, FieldContentSize = 1
+	FieldNo = 17, FieldContent = 800/11700, FieldContentSize = 9
+	FieldNo = 18, FieldContent = WKVBAN20, FieldContentSize = 8
+	FieldNo = 21, FieldContent = STANDARD-SCHUFA, FieldContentSize = 15
+	FieldNo = 22, FieldContent = KREDITNEHMER-ZWEI, FieldContentSize = 17
+	FieldNo = 23, FieldContent = M, FieldContentSize = 1
+	FieldNo = 24, FieldContent = 13121988, FieldContentSize = 8
+	FieldNo = 25, FieldContent = BEI OHNE PLZ, FieldContentSize = 12
+	FieldNo = 27, FieldContent = M�NCHEN, FieldContentSize = 7
+	FieldNo = 28, FieldContent = SCHWANTHALERSTR. 31, FieldContentSize = 19
+	FieldNo = 40, FieldContent = KK, FieldContentSize = 2
+	FieldNo = 47, FieldContent = CTLM, FieldContentSize = 4
+	FieldNo = 52, FieldContent = 02, FieldContentSize = 2
+	FieldNo = 105, FieldContent = MUENCHEN, FieldContentSize = 8
+	FieldNo = 106, FieldContent = 1, FieldContentSize = 1
+	FieldNo = 110, FieldContent = P   , FieldContentSize = 4
+	FieldNo = 121, FieldContent = STANDARD-SCHUFA, FieldContentSize = 15
+	FieldNo = 122, FieldContent = KREDITNEHMER-ZWEI, FieldContentSize = 17
+	FieldNo = 123, FieldContent = M, FieldContentSize = 1
+	FieldNo = 124, FieldContent = 13121988, FieldContentSize = 8
+	FieldNo = 125, FieldContent = BEI OHNE PLZ, FieldContentSize = 12
+	FieldNo = 127, FieldContent = M�NCHEN, FieldContentSize = 7
+	FieldNo = 128, FieldContent = SCHWANTHALERSTR. 31, FieldContentSize = 19
+	FieldNo = 152, FieldContent = 02, FieldContentSize = 2
+	FieldNo = 110, FieldContent = A   , FieldContentSize = 4
+	FieldNo = 140, FieldContent = ST, FieldContentSize = 2
+	FieldNo = 150, FieldContent = TIME REQ 201602031140390030022016, FieldContentSize = 33
+	FieldNo = 110, FieldContent = A   , FieldContentSize = 4
+	FieldNo = 140, FieldContent = SC, FieldContentSize = 2
+	FieldNo = 157, FieldContent = 722, FieldContentSize = 3
+	FieldNo = 158, FieldContent = 0.54, FieldContentSize = 4
+	FieldNo = 159, FieldContent = A, FieldContentSize = 1
+	FieldNo = 150, FieldContent = RATINGSTUFE A, FieldContentSize = 13
+	FieldNo = 110, FieldContent = A   , FieldContentSize = 4
+	FieldNo = 140, FieldContent = KR, FieldContentSize = 2
+	FieldNo = 141, FieldContent = EUR, FieldContentSize = 3
+	FieldNo = 142, FieldContent = 0023456, FieldContentSize = 7
+	FieldNo = 143, FieldContent = 02022012, FieldContentSize = 8
+	FieldNo = 145, FieldContent = 062, FieldContentSize = 3
+	FieldNo = 146, FieldContent = M, FieldContentSize = 1
+	FieldNo = 110, FieldContent = A   , FieldContentSize = 4
+	FieldNo = 140, FieldContent = CC, FieldContentSize = 2
+	FieldNo = 143, FieldContent = 02022013, FieldContentSize = 8
+	FieldNo = 110, FieldContent = A   , FieldContentSize = 4
+	FieldNo = 140, FieldContent = RK, FieldContentSize = 2
+	FieldNo = 141, FieldContent = EUR, FieldContentSize = 3
+	FieldNo = 142, FieldContent = 0002222, FieldContentSize = 7
+	FieldNo = 143, FieldContent = 00000000, FieldContentSize = 8
