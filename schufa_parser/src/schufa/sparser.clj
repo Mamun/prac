@@ -1,7 +1,7 @@
- (ns sparser
+ (ns schufa.sparser
    (:require [clojure.java.io :as io]
              [clojure.tools.reader :as edn]
-             [formatter :as f]))
+             [schufa.formatter :as f]))
 
 
 (defn read-file-as-line-coll [file-name]
@@ -40,7 +40,7 @@
 
 (comment
 
-  (->> (read-file-as-line-coll "test/in.txt")
+  (->> (read-file-as-line-coll "src/schufa/in.txt")
        (mapv parse-line)
        (partition-by-field-100)
        (f/do-line-format))

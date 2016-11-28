@@ -1,3 +1,5 @@
+package combi;
+
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -9,7 +11,7 @@ import java.util.List;
 public class Combine {
 
     public static ArrayList <String> combineTwo(List <String> x, List <String> y  ){
-        ArrayList <String> v = new ArrayList<>();
+        ArrayList <String> v = new ArrayList<String>();
         for (int i = 0; i < x.size() ; i++ )
             for (int j = 0; j < y.size() ; j++) {
                 v.add( x.get(i) + y.get(j) );
@@ -20,7 +22,7 @@ public class Combine {
 
     public static ArrayList <String> combineBatch (List <List <String>> coll){
         int total = coll.size();
-        ArrayList <String> result = new ArrayList <> ();
+        ArrayList <String> result = new ArrayList <String> ();
         for (int i = 0; total-1 > i ; i ++ ){
             if (i == 0){
                 result = combineTwo(coll.get(i), coll.get(i+ 1) );
