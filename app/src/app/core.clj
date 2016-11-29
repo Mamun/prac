@@ -17,7 +17,7 @@
 (defn init-state []
   (when (nil? @ds-atom)
     (reset! ds-atom {:datasource (ComboPooledDataSource.)}))
-  (let [config [{:file-name "tie.edn.sql"
+  (let [config [{:file-name "app.sql"
                  :init-name [:init-db :init-data]
                  :ds        ds-atom}]
         v (mapv #(t/load-module %) config)]

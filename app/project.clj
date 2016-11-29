@@ -21,7 +21,10 @@
                  [c3p0/c3p0 "0.9.1.2"]
                  [dadysql-http "0.1.0-SNAPSHOT" :exclusions [org.clojure/tools.analyzer
                                                              org.clojure/data.priority-map]]
-                 [devcards "0.2.1-5" :scope "provided"]]
+                 [devcards "0.2.1-5" :scope "provided"]
+                 [cljs-ajax "0.5.2" :scope "provided"]
+                 [reagent "0.6.0"  :scope "provided"]
+                 [re-frame "0.7.0-alpha-3" :scope "provided"]]
 
 
   :plugins [[lein-cljsbuild "1.1.4"]
@@ -32,21 +35,22 @@
              :ring-handler   user/http-handler
              :server-logfile "target/figwheel.log"}
 
+
   :cljsbuild {:builds
               {:app
                {:figwheel {:devcards true}
-                :compiler {:main                 app.debug
+                :compiler {:main                 app.dev
                            :asset-path           "js/compiled/out"
                            :output-dir           "resources/public/js/compiled/out"
                            :output-to            "resources/public/js/compiled/app.js"
                            :source-map-timestamp true}}}}
 
-  :profiles {:dev     {:source-paths ["dev"]
-                       :dependencies [[org.clojure/test.check "0.9.0"]
+  :profiles {:dev     {:dependencies [[org.clojure/test.check "0.9.0"]
                                       [figwheel "0.5.0-6"]
                                       [figwheel-sidecar "0.5.0-6"]
                                       [com.cemerick/piggieback "0.2.1"]
                                       [org.clojure/tools.nrepl "0.2.12"]]
+                       :source-paths ["dev"]
 
                        :repl-options {:port             4555
                                       :nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}}

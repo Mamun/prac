@@ -1,6 +1,7 @@
  (ns workspec-spec
    (:require [clojure.java.jdbc :as jdbc]
              [dadysql.jdbc :as t]
+             [dadysql.clj.walk :as w]
              [dadysql.jdbc-io :as io]
              [clojure.spec :as s]))
 
@@ -8,6 +9,7 @@
 (comment
 
 
+  ;(w/postwalk-filter "1" {:a 2 :b 1})
 
 
   (t/read-file "tie.edn.sql")

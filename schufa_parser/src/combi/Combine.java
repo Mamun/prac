@@ -39,9 +39,6 @@ public class Combine {
         String[] y = { "a", "b", "c" };
         String[] z = { "1", "2", "3", "4" };
 
-        //Input { { "x" } { "a", "b", "c" } { "1", "2", "3", "4" }}
-        //Expected outout
-        // {"xa1" "xa2"  "xa3" "xa4" "xb1" "xb2" ....}
 
         ArrayList input = new ArrayList();
         input.add(Arrays.asList(x));
@@ -50,9 +47,8 @@ public class Combine {
 
         ArrayList <String> output = combineBatch( input);
 
-        for (int i = 0 ; i < output.size() ; i ++){
-            System.out.println(input.get(0));
-        }
+        System.out.println(output);
+
 
     }
 
