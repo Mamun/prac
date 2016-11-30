@@ -1,41 +1,48 @@
 (ns app.core
   (:require [reagent.core :as r]
+            [devcards.util.edn-renderer :as d]
             [re-frame.core :as rf]
-            [dadysql.client :as dc]))
+            [dadysql.client :as dc]
+            [dadysql.clj.walk :as w]
+            [re-frame.core :as re]))
 
 
-(defn add-key-for-table-data [[headers & rows]]
-  (cons headers
-        (for [r rows]
-          (map (fn [r1 h1]
-                 [r1 (str h1 r1)]
-                 ) r headers))))
 
-(defn table [data & {:keys [on-row-click]}]
-  (let [[header & row] (add-key-for-table-data data)]
-    [:div.table-responsive
-     [:table {:class "table table-striped table-hover"}
-      [:thead
-       [:tr
-        (for [h header]
-          [:th {:key h} (str h)])]]
-      [:tbody
-       (for [r row]
-         [:tr {:key      r
-               :on-click #(on-row-click r)}
-          (for [[c k] r]
-            [:td {:key k} c])])]]]))
+(defn load-employee [id]
+  (dc/pull "/app" {:dadysql.core/group :load-employee
+                   :dadysql.core/param {:id id}}))
 
 
-(defn employee-list []
-  (let [s (rf/subscribe (dc/sub-path :get-employee-list))]
+(defn employee-data-view []
+  (let [e-atom (re/subscribe (dc/sub-path :load-employee))
+        error-atom (re/subscribe (dc/sub-error-path :load-employee))
+        local-state (r/atom {:id nil :filter-text nil})]
     (fn []
       [:div
-       [:p "Display emplyee list "]
-       [:div "asdf" #_(pr-str @s)]])))
+       [:input {:type        "text"
+                :placeholder "Load employee "
+                :on-change   (fn [event] (swap! local-state assoc-in [:id] (-> event .-target .-value)))}]
+       (if @error-atom
+         [:dev
+          [:br]
+          [:text @error-atom]
+          [:br]])
+       [:button {:on-click (fn [_] (load-employee (get @local-state :id)))}
+        "Load employee "]
+       [:br]
+       [:input {:type        "text"
+                :placeholder "filter value "
+                :on-change   (fn [event] (swap! local-state assoc-in [:filter-text] (-> event .-target .-value)))}]
+       [:br]
+       [:div
+        (d/html-edn (if-let [w (get @local-state :filter-text)]
+                      (w/postwalk-filter w @e-atom)
+                      @e-atom
+                      ))]])))
+
 
 
 
 (defn ^:export run []
-  (r/render-component [employee-list]
+  (r/render-component [employee-data-view]
                       (.-body js/document)))

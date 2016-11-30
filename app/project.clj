@@ -39,6 +39,7 @@
   :cljsbuild {:builds
               {:app
                {:figwheel {:devcards true}
+                :source-paths ["src" "dev"]
                 :compiler {:main                 app.dev
                            :asset-path           "js/compiled/out"
                            :output-dir           "resources/public/js/compiled/out"
@@ -50,7 +51,7 @@
                                       [figwheel-sidecar "0.5.0-6"]
                                       [com.cemerick/piggieback "0.2.1"]
                                       [org.clojure/tools.nrepl "0.2.12"]]
-                       :source-paths ["dev"]
+                       :source-paths ["src" "dev"]
 
                        :repl-options {:port             4555
                                       :nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}}

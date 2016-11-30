@@ -1,7 +1,6 @@
 (ns ^:figwheel-always app.dev
   (:require [app.core :as ac]
             [dadysql.client :as dc]
-            [ajax.core :as a]
             [devcards.core]
             [devcards.util.edn-renderer :as d]
             [reagent.core :as r]
@@ -24,52 +23,19 @@
 
 
 
-#_(let [s (re/subscribe (dc/sub-path :load-employee))]
-    (defcard Load-Employee
-             "Date view "
-             s))
-
-
-
-(defn reagent-component-example [e-atom]
-  (let [s-text (r/atom nil)]
-    [:div
-     [:input {:type        "text"
-              :placeholder "filter value "
-              :on-change (fn [event]
-                           (reset! s-text (-> event .-target .-value))
-                           )  #_(do
-                     ;       (.log js/console (-> % .-target .-value))
-                             ;(swap! f-atom assoc-in [:filter-text] )
-                             (swap! s-text   (-> % .-target .-value))
-                             )}]
-     [:br]
-     [:div
-      (.log js/console (pr-str @s-text) )
-      (.log js/console (pr-str (w/postwalk-filter @s-text @e-atom)) )
-      (d/html-edn (if @s-text
-                    (w/postwalk-filter @s-text @e-atom)
-                    @e-atom
-
-                    ))]]))
-
-
-
-
-(let [s (re/subscribe (dc/sub-path :load-employee))]
-  (defcard-rg my-first-card
-              "Reagent view "
-              [reagent-component-example s]
-              s))
-
+(defcard details-view
+         "Deatils view "
+         (r/as-element [ac/employee-data-view])
+         )
 
 
 ;(re/clear-store [])
 
 (let [s (re/subscribe (dc/sub-path))]
   (defcard All
-           "all view "
+           "app data  "
            s))
+
 
 
 
@@ -82,8 +48,9 @@
 
 
 
-(->> (dc/pull "/app" {:dadysql.core/group :load-employee
-                      :dadysql.core/param {:id 1}}))
+
+
+
 
 
 (comment

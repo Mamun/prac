@@ -1,0 +1,79 @@
+1. Build quick prototype on the top of legacy system using spec-model, dadysql and reframe
+3. About me
+- Love to solve small problem, build prototype
+-
+- Worked for telecom, bank and e-commerce
+
+2. What do you really need to do something fast? 
+-  Tools 
+-  Unterstand problem fast than solution.  
+
+
+2. Why clojure
+-
+- Example
+- Compare with java, need to think more about type, syntax than problem
+
+
+3. More about clojure
+- REPL Non stop you.
+- Lot of core function like map, reduce, select etc. Commutation is easy with others.
+- Structureing and destructuring too easy
+- Persistance data structure, don't need to think about threading
+
+
+
+3. How do we model our data?
+
+One customer has many credit
+
+  Image
+
+- Object oriented way
+- How do you validate different format for request/response
+
+API endpoint                   {:credit-id “1213” :customer {:c-name “Max”}} or [{:credit-id “34”}]
+Messaging with type       {:credit {:credit-id “1234”}}
+For batch precessing        [{:credit {:credit-id “1234”}}]
+
+- Type is not enough to do modeling.
+- Lot of manual parsing for validation, string conformation.
+- Need something else
+
+4. Clojure spec
+
+- A specification is about how something 'looks'
+-
+- Get default validation, error reporting, destructuring, test data generation and more.
+
+Spec-model
+Same as UML, define model and generate spec
+
+5. What is hard in  legacy system
+
+- Method is not understandable.
+- To reuse exiting modeling.
+- No correct API end point, test cases, no test data. It is just working with certain condition.
+- To redefine exiting model, need lot of work with time
+- Database is final desitional to check something or working or not.
+- SQL database, cobol, corba, c++, java and etc
+- No way to replace SQL database
+
+
+
+6. Make data available first using dadysql and clojure spec
+- Write sql statement 
+- Virtual join 
+- Parallel query run
+- Don't need to learn additional stuff (Hibernate query) it is just sql.
+- Only two api pull and push (With db transaction)
+- Clojure spec support inside
+- CQRS (Command Query Responsibility Segregation), It is just query part
+
+7. Back to code
+
+
+8. Question and ans
+
+
+
