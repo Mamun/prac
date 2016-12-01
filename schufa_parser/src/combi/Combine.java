@@ -5,9 +5,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-/**
- * Created by mamun on 28.11.16.
- */
+
 public class Combine {
 
     public static ArrayList <String> combineTwo(List <String> x, List <String> y  ){

@@ -13,8 +13,6 @@
 (defn fig-reload []
   ;; optionally touch your app-state to force rerendering depending on
   ;; your application
-  ;; (swap! app-state update-in [:__figwheel_counter] inc)
-  ;        (query "http://localhost:3000/tie" [:get-dept-by-id] {:id 1} handler)
   )
 
 
@@ -54,6 +52,8 @@
 
 
 (comment
+
+  (js/alert "Ping")
 
 
   (->> (dc/pull "/app" {:dadysql.core/group :load-employee
