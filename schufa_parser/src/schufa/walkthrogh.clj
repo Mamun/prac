@@ -6,10 +6,10 @@
 
 (comment
 
-  (->> (p/read-file "src/schufa/in.txt")
+  (->> (p/read-file "./src/schufa/in.txt")
        (mapv p/parse-line)
        (p/partition-by-field-100)
-       #_(p/do-line-format))
+       (p/do-line-format))
 
 
   )
