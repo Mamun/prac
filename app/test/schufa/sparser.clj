@@ -140,7 +140,15 @@
 
 
 
+(comment
 
+
+  (->> (read-file "./test/schufa/in.txt")
+       (mapv parse-line)
+       (partition-by-field-100)
+       (do-line-format))
+
+  )
 
 ;;;; End mapping ;;;;;;;;;;;;;;;;;;
 

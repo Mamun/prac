@@ -1,4 +1,4 @@
- (ns comb-impl)
+ (ns combi.comb-impl)
 
 
 (defn combine-two [f-coll s-coll]

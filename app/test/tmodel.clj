@@ -6,6 +6,12 @@
 
 (comment
 
+
+  (s/def :student/id (s/and int? pos-int?) )
+  (gen/sample (s/gen :student/id))
+  
+
+
   ;;Generate qualified, unqalified, string value spec
   ;;Generate
   (gen-spec :app '{:dept    {:req {:id   int?
