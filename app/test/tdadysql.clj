@@ -1,4 +1,4 @@
-(ns w-dadysql
+(ns tdadysql
   (:require [clojure.java.jdbc :as jdbc]
             [dadysql.jdbc :as t]
             [dadysql.jdbc-io :as io])
@@ -36,13 +36,13 @@
 
   ;; Load one table
   (->> {:dadysql.core/name [:get-dept-list]}
-       (t/pull @ds (t/read-file "tie.edn.sql"))
-       (clojure.pprint/pprint))
+       (t/pull @ds (t/read-file "app.sql"))
+       #_(clojure.pprint/pprint))
 
   ;; Load two table
   (->> {:dadysql.core/name [:get-dept-list :get-employee-list]}
-       (t/pull @ds (t/read-file "tie.edn.sql"))
-       (clojure.pprint/pprint))
+       (t/pull @ds (t/read-file "app.sql"))
+       #_(clojure.pprint/pprint))
 
 
   ;; sql in
@@ -57,7 +57,7 @@
   (->> {:dadysql.core/name  [:get-dept-by-ids]
         :dadysql.core/param {:id [1 2 "3"]}}
        (t/pull @ds (t/read-file "tie.edn.sql"))
-       (clojure.pprint/pprint))
+       )
 
 
 

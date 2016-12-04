@@ -9,6 +9,7 @@
   :main app.core
   :repl-options {:init-ns user}
   :clean-targets ^{:protect false} [:target-path :compile-path "resources/public/js"]
+  :jvm-opts ["-Xmx2g"]
 
   :dependencies [[org.clojure/clojure "1.9.0-alpha14"]
                  [org.clojure/clojurescript "1.9.293" :scope "provided"]
@@ -21,14 +22,18 @@
                  [c3p0/c3p0 "0.9.1.2"]
                  [dadysql-http "0.1.0-SNAPSHOT" :exclusions [org.clojure/tools.analyzer
                                                              org.clojure/data.priority-map]]
-                 [devcards "0.2.1-5" :scope "provided"]
-                 [cljs-ajax "0.5.2" :scope "provided"]
-                 [reagent "0.6.0"  :scope "provided"]
-                 [re-frame "0.7.0-alpha-3" :scope "provided"]]
+                 [devcards "0.2.1-5" :scope "provided"]]
 
+  :plugins [[lein-cljsbuild "1.1.4"]]
 
-  :plugins [[lein-cljsbuild "1.1.4"]
-            [lein-figwheel "0.5.0-6"]]
+  :cljsbuild {:builds {:app
+                       {:figwheel     {:devcards true}
+                        :source-paths ["src" "dev"]
+                        :compiler     {:main                 app.dev
+                                       :asset-path           "js/compiled/out"
+                                       :output-dir           "resources/public/js/compiled/out"
+                                       :output-to            "resources/public/js/compiled/app.js"
+                                       :source-map-timestamp true}}}}
 
   :figwheel {:server-port    3001                           ;; default
              :css-dirs       ["resources/public/css"]       ;; watch and update CSS
@@ -36,39 +41,5 @@
              :server-logfile "target/figwheel.log"}
 
 
-  :cljsbuild {:builds
-              {:app
-               {:figwheel {:devcards true}
-                :source-paths ["src" "dev"]
-                :compiler {:main                 app.dev
-                           :asset-path           "js/compiled/out"
-                           :output-dir           "resources/public/js/compiled/out"
-                           :output-to            "resources/public/js/compiled/app.js"
-                           :source-map-timestamp true}}}}
-
-  :profiles {:dev     {:dependencies [[org.clojure/test.check "0.9.0"]
-                                      [figwheel "0.5.0-6"]
-                                      [figwheel-sidecar "0.5.0-6"]
-                                      [com.cemerick/piggieback "0.2.1"]
-                                      [org.clojure/tools.nrepl "0.2.12"]]
-                       :source-paths ["src" "dev"]
-
-                       :repl-options {:port             4555
-                                      :nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}}
-             :uberjar {:source-paths ^:replace ["src"]
-                       :resource-paths ^:replace []
-                       :hooks        [leiningen.cljsbuild]
-                       :manifest     {"Class-Path" "lib"}
-                       :omit-source  true
-                       :aot          :all
-                       :cljsbuild    {:builds
-                                      {:app
-                                       {:source-paths ^:replace ["src"]
-                                        :compiler     {:optimizations :advanced
-                                                       :main          app.core
-                                                       :devcards      true
-                                                       :output-to     "resources/public/js/compiled/app.min.js"
-                                                       :asset-path    "js/compiled/out"
-                                                       :output-dir    "resources/public/js/compiled/out"
-                                                       :pretty-print  false}}}}}})
+  )
 

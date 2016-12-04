@@ -4,7 +4,7 @@
 
 
 (deftest check-test
-  (testing "Hello "
+  (testing "Check  "
     (is (= 1 1 ))
 
     )
@@ -12,9 +12,3 @@
 
 
 
-
-(comment
-
-  (println "sdfsd")
-
-  )

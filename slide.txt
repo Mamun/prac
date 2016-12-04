@@ -33,8 +33,8 @@ One customer has many credit
 - How do you validate different format for request/response
 
 API endpoint                   {:credit-id “1213” :customer {:c-name “Max”}} or [{:credit-id “34”}]
-Messaging with type       {:credit {:credit-id “1234”}}
-For batch precessing        [{:credit {:credit-id “1234”}}]
+Messaging with type            {:credit {:credit-id “1234”}}
+For batch precessing           [{:credit {:credit-id “1234”}}]
 
 - Type is not enough to do modeling.
 - Lot of manual parsing for validation, string conformation.

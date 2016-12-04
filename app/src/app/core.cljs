@@ -28,7 +28,7 @@
           [:text @error-atom]
           [:br]])
        [:button {:on-click (fn [_] (load-employee (get @local-state :id)))}
-        "Load employee "]
+        "Submit  "]
        [:br]
        [:input {:type        "text"
                 :placeholder "filter value "
