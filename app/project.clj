@@ -9,7 +9,7 @@
   :main app.core
   :repl-options {:init-ns user}
   :clean-targets ^{:protect false} [:target-path :compile-path "resources/public/js"]
-  :jvm-opts ["-Xmx2g"]
+  :jvm-opts ["-Xmx3g"]
 
   :dependencies [[org.clojure/clojure "1.9.0-alpha14"]
                  [org.clojure/clojurescript "1.9.293" :scope "provided"]

@@ -3,7 +3,7 @@
             :dependencies [[org.clojure/test.check "0.9.0"]]}
 
  :repl     {:plugins      [[cider/cider-nrepl "0.15.0-SNAPSHOT"]
-                           [refactor-nrepl "2.2.0"]
+                           #_[refactor-nrepl "2.2.0"]
                            #_[lein-figwheel "0.5.0-6"]]
             :dependencies [[org.clojure/tools.nrepl "0.2.12"]
                            [figwheel "0.5.0-6"]

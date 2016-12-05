@@ -1,0 +1,25 @@
+
+
+
+
+About problem: 
+
+Let start with small probelm 
+Many of us have already join some programming contest in college. 
+
+I have very hard time with c, spending more time just on file io instaed of problem solve.
+
+
+Code compare with java and clojure: 
+
+Java has already lot of stuff, you can do anything even you could write another cojure right? 
+But what is really missing in java? 
+
+- There is no abstraction. 
+- Using only loop to do combine and othere
+- Communication is hard, code review is hard 
+
+
+About data shape!
+How do you inform your user about implementation?
+

@@ -7,9 +7,26 @@
 (comment
 
 
-  (s/def :student/id (s/and int? pos-int?) )
-  (gen/sample (s/gen :student/id))
-  
+  (s/def :app.student/id (s/and int? pos-int?) )
+  (s/def :app/student (s/keys :req [:app.student/id]) )
+
+  (gen/sample (s/gen :app/student))
+
+
+
+
+  ;;; Generate spec as model 
+  (defmodel :app {:dept    {:req {:id   int?
+                                 :des  string?
+                                 :name string?}
+                           :opt {:note string?}}
+                 :student {:req {:name string?
+                                 :age  int?
+                                 :id   int?}}}
+    :spec-model.core/join
+    [[:dept :id :spec-model.core/rel-1-n :student :dept-id]])
+
+
 
 
   ;;Generate qualified, unqalified, string value spec
@@ -22,16 +39,7 @@
             {:spec-model.core/join [[:dept :id :spec-model.core/rel-1-n :student :dept-id]]})
 
 
-  (defmodel app {:dept    {:req {:id   int?
-                                 :des  string?
-                                 :name string?}
-                           :opt {:note string?}}
-                 :student {:req {:name string?
-                                 :age  int?
-                                 :id   int?}}}
-            :spec-model.core/join
-            [[:dept :id :spec-model.core/rel-1-n :student :dept-id]])
-
+  
 
 
   (binding [s/*recursion-limit* 0]
